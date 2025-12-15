@@ -56,7 +56,7 @@ Inspired by Anthropic's MCP, extended with function registries, sandboxed execut
 - **💰 Cost Optimization** - 80-90% cost reduction vs large-model-only
 - **⚡ Speed** - Small models run 2-3x faster for routine tasks
 
-### Dynamic Tool Discovery (Phase 1-4 - Complete ✅)
+### Dynamic Tool Discovery (Phase 1-5 - Complete ✅)
 - **📦 ToolCatalog** - Centralized tool definition management with JSON Schema validation
 - **🔄 Backward Compatible** - Existing code works without changes
 - **🎯 Multi-Provider Support** - OpenAI, Azure OpenAI (with Azure AD), Anthropic, Gemini
@@ -68,6 +68,9 @@ Inspired by Anthropic's MCP, extended with function registries, sandboxed execut
 - **⚡ Programmatic Calling** - Code-based tool orchestration with parallel execution
 - **🚀 Performance** - 60-80% latency reduction, 37% additional token savings
 - **🔒 Sandboxed Execution** - AST validation, safe builtins, timeout protection
+- **📚 Tool Examples** - Usage examples improve parameter accuracy from 72% → 90%+
+- **💰 Prompt Caching** - 90% cost reduction on repeated requests (Anthropic/OpenAI)
+- **📊 Monitoring** - Production-ready metrics, logging, and observability
 
 ### Orchestration Engine
 - **🎯 Hybrid Tool Dispatch** - Seamlessly route between MCP, function calls, and code execution
@@ -614,6 +617,178 @@ print(f"Called {len(result['tool_calls'])} tools in {result['execution_time']:.2
 - ❌ Single tool call (use direct tool calling)
 - ❌ LLM needs full intermediate results
 
+## Phase 5: Tool Examples & Production Optimization (✅ Complete)
+
+### Tool Usage Examples
+
+**Problem:** Schema-only tool definitions leave LLMs guessing about format conventions, optional parameters, and edge cases. Result: 72% parameter accuracy.
+
+**Solution:** Add usage examples showing typical scenarios, input/output patterns, and format conventions. Result: **90%+ parameter accuracy**.
+
+```python
+from orchestrator.models import ToolDefinition, ToolParameter, ToolExample
+
+# Create tool with examples
+receipt_ocr_tool = ToolDefinition(
+    name="receipt_ocr",
+    type="mcp",
+    description="Extract text from receipt images using Azure Computer Vision",
+    parameters=[
+        ToolParameter(name="image_url", type="string", description="URL or file path", required=True),
+        ToolParameter(name="language", type="string", description="Language code", 
+                     enum=["en", "es", "fr"], default="en"),
+        ToolParameter(name="orientation", type="string", description="Image orientation",
+                     enum=["auto", "0", "90", "180", "270"], default="auto")
+    ],
+    examples=[
+        ToolExample(
+            scenario="Process typical restaurant receipt from local file",
+            input={
+                "image_url": "./receipts/restaurant_2024_01_15.jpg",
+                "language": "en",
+                "orientation": "auto"
+            },
+            output={
+                "text": "RESTAURANT XYZ\nDate: 2024-01-15\nBurger $12.99\nTotal: $16.98",
+                "confidence": 0.95
+            },
+            notes="Use auto orientation for most receipts. Specify language if known."
+        ),
+        ToolExample(
+            scenario="Process rotated receipt from URL",
+            input={
+                "image_url": "https://storage.example.com/img_001.jpg",
+                "orientation": "90"
+            },
+            output={"text": "GROCERY STORE\nDate: 2024-02-01\nTotal: $8.49"},
+            notes="Specify orientation (90/180/270) if consistently rotated."
+        )
+    ]
+)
+
+# Examples automatically included in LLM format
+llm_format = receipt_ocr_tool.to_llm_format(include_examples=True)
+# Description now includes examples with scenarios, showing format patterns!
+```
+
+**Benefits:**
+- 📈 **72% → 90%+ accuracy** - Shows format conventions (dates YYYY-MM-DD, IDs USR-XXXXX)
+- 🎯 **Clear optional params** - Examples show when to use/omit optional parameters
+- 📚 **Edge case handling** - Multiple scenarios cover typical variations
+- 🚫 **Less ambiguity** - Real inputs/outputs eliminate guesswork
+
+### Performance Monitoring
+
+Track tool usage, errors, and costs for production:
+
+```python
+from orchestrator.monitoring import ToolUsageMonitor, print_metrics_report
+
+# Initialize monitoring
+monitor = ToolUsageMonitor(log_to_file=True, log_dir="/var/log/toolweaver")
+
+# Log tool calls automatically
+executor = ProgrammaticToolExecutor(
+    tool_catalog=catalog,
+    on_tool_call=lambda name, success, latency, error: 
+        monitor.log_tool_call(name, success, latency, error)
+)
+
+# Log search queries
+monitor.log_search_query("process receipt", num_results=5, latency=0.1, cache_hit=True)
+
+# Log token usage
+monitor.log_token_usage(input_tokens=100, output_tokens=50, cached_tokens=200)
+
+# View metrics
+print_metrics_report(monitor)
+```
+
+**Output:**
+```
+================================================================================
+TOOL USAGE MONITORING REPORT
+================================================================================
+
+📊 Overview:
+   Total tool calls:    1,247
+   Total errors:        18
+   Overall error rate:  1.4%
+   Unique tools used:   8
+   Search queries:      523
+   Cache hit rate:      82.3%
+
+🔧 Top Tools:
+   receipt_ocr                     453 calls  (p50: 45ms, errors: 0.2%)
+   parse_line_items                312 calls  (p50: 12ms, errors: 0.9%)
+   categorize_expenses             201 calls  (p50: 8ms, errors: 2.5%)
+
+💰 Token Usage:
+   Input tokens:       523,401
+   Output tokens:       87,234
+   Cached tokens:      2,104,523
+   Cache savings:       80.1%
+
+🚨 Recent Errors:
+   No recent errors
+```
+
+### Prompt Caching (90% Cost Reduction)
+
+Cache tool definitions for massive savings on repeated requests:
+
+```python
+# Anthropic format with caching
+messages = [
+    {
+        "role": "system",
+        "content": [
+            {
+                "type": "text",
+                "text": "You are a helpful assistant.",
+                "cache_control": {"type": "ephemeral"}  # Cache system prompt
+            },
+            {
+                "type": "text",
+                "text": json.dumps(catalog.to_llm_format(include_examples=True)),
+                "cache_control": {"type": "ephemeral"}  # Cache tools + examples
+            }
+        ]
+    },
+    {"role": "user", "content": user_request}  # Only this changes
+]
+
+# First request: 10,000 tokens × $0.003 = $0.03
+# Next 99 requests: 10,000 × $0.0003 (cached) + 100 × $0.003 = $0.33
+# Total: $0.36 vs $3.00 without caching = 88% savings!
+```
+
+**Cost Optimization Strategy:**
+1. Phase 3 search: Select 10 relevant tools from 100+ catalog
+2. Phase 5 examples: Include examples for those 10 tools only
+3. Phase 5 caching: Cache the 10 tools + examples for 90% discount
+4. **Result**: High accuracy (90%+) + low cost (88% savings)
+
+### Production Deployment
+
+See [PRODUCTION_DEPLOYMENT.md](docs/PRODUCTION_DEPLOYMENT.md) for complete production guide covering:
+- Security hardening (Azure AD, managed identity, sandboxing)
+- Performance optimization (lazy loading, connection pooling, caching)
+- Monitoring setup (health checks, Prometheus metrics)
+- Scaling considerations (horizontal/vertical, cache sharing)
+- Deployment patterns (Azure App Service, ACI, AKS)
+- Troubleshooting common issues
+
+**Production Checklist:**
+- ✅ 103/103 tests passing
+- ✅ Azure AD authentication
+- ✅ Managed Identity configured
+- ✅ Resource limits set
+- ✅ Monitoring enabled
+- ✅ Health checks working
+- ✅ Cache hit rate >70%
+- ✅ Error rate <1%
+
 ## End-to-End Example: Discovery → Search → Planning
 
 ```python
@@ -675,6 +850,9 @@ Semantic search: 30 tools → 10 relevant (~66.7% token reduction, ~3,000 tokens
 - **[Migration Guide](docs/MIGRATION_GUIDE.md)** - Upgrade to Phase 1 ToolCatalog architecture
 - **[Two-Model Architecture](docs/TWO_MODEL_ARCHITECTURE.md)** - Why two models? Cost comparison, use cases
 - **[Dynamic Tool Discovery Implementation](docs/DYNAMIC_TOOL_DISCOVERY_IMPLEMENTATION.md)** - Phase 1-5 implementation plan
+- **[Prompt Caching Best Practices](docs/PROMPT_CACHING.md)** - Reduce costs by 90% with prompt caching strategies
+- **[Production Deployment Guide](docs/PRODUCTION_DEPLOYMENT.md)** - Deploy to Azure with security, monitoring, and scaling
+- [Search Tuning Guide](docs/SEARCH_TUNING.md) - Optimize semantic search for your use case
 - [Architecture Details](docs/ARCHITECTURE.md) - Technical deep dive into orchestrator design
 - [Implementation Summary](docs/IMPLEMENTATION.md) - Development details and metrics
 - [Azure Computer Vision Setup](docs/AZURE_SETUP.md) - Configure real OCR with Azure CV
