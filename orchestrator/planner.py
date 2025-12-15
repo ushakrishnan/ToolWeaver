@@ -62,6 +62,13 @@ class LargePlanner:
             provider: "openai", "azure-openai", "anthropic", or "gemini" (defaults to PLANNER_PROVIDER env var)
             model: Specific model name (defaults to PLANNER_MODEL env var)
             tool_catalog: Optional ToolCatalog with tool definitions (defaults to legacy hardcoded tools)
+        
+        Phase 2 Usage - Tool Discovery:
+            To use auto-discovered tools, run discovery first:
+            
+                from orchestrator.tool_discovery import discover_tools
+                catalog = await discover_tools(mcp_client=client, ...)
+                planner = LargePlanner(tool_catalog=catalog)
         """
         # Get provider from env if not specified
         self.provider = (provider or os.getenv("PLANNER_PROVIDER", "openai")).lower()
@@ -298,7 +305,8 @@ class LargePlanner:
         Priority:
         1. available_tools parameter (Phase 3 semantic search results)
         2. self.tool_catalog (injected at init)
-        3. Default catalog (legacy hardcoded tools)
+        3. Auto-discovered catalog (Phase 2, if auto_discover=True)
+        4. Default catalog (legacy hardcoded tools)
         
         Args:
             available_tools: Optional list of tools from semantic search (Phase 3)

@@ -78,6 +78,7 @@ class ToolCatalog(BaseModel):
     discovered_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     source: str = "unknown"
     version: str = "1.0"
+    metadata: Dict[str, Any] = Field(default_factory=dict)
     
     def add_tool(self, tool: ToolDefinition):
         """Register a new tool in the catalog."""
