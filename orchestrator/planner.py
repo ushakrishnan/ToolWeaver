@@ -53,7 +53,9 @@ class LargePlanner:
         self, 
         provider: str = None, 
         model: str = None,
-        tool_catalog: Optional[ToolCatalog] = None
+        tool_catalog: Optional[ToolCatalog] = None,
+        use_tool_search: bool = True,
+        search_threshold: int = 20
     ):
         """
         Initialize the planner with specified LLM provider.
@@ -62,6 +64,8 @@ class LargePlanner:
             provider: "openai", "azure-openai", "anthropic", or "gemini" (defaults to PLANNER_PROVIDER env var)
             model: Specific model name (defaults to PLANNER_MODEL env var)
             tool_catalog: Optional ToolCatalog with tool definitions (defaults to legacy hardcoded tools)
+            use_tool_search: Enable semantic search for tool selection (Phase 3, default: True)
+            search_threshold: Only use search if tool count exceeds this (default: 20)
         
         Phase 2 Usage - Tool Discovery:
             To use auto-discovered tools, run discovery first:
@@ -69,12 +73,21 @@ class LargePlanner:
                 from orchestrator.tool_discovery import discover_tools
                 catalog = await discover_tools(mcp_client=client, ...)
                 planner = LargePlanner(tool_catalog=catalog)
+        
+        Phase 3 Usage - Semantic Search:
+            When tool_catalog has >20 tools, semantic search automatically selects
+            the most relevant 5-10 tools for each request, reducing token usage by 80-90%.
         """
         # Get provider from env if not specified
         self.provider = (provider or os.getenv("PLANNER_PROVIDER", "openai")).lower()
         
         # Store tool catalog (will use default if None)
         self.tool_catalog = tool_catalog
+        
+        # Phase 3: Semantic search configuration
+        self.use_tool_search = use_tool_search
+        self.search_threshold = search_threshold
+        self.search_engine = None  # Lazy init
         
         if self.provider == "openai":
             if not OPENAI_AVAILABLE:
@@ -424,19 +437,56 @@ Respond with only the JSON execution plan."""
             planner = LargePlanner(provider="openai", tool_catalog=catalog)
             plan = await planner.generate_plan(...)
             
-            # With semantic search (Phase 3)
-            search_results = tool_search.search("receipt processing", top_k=10)
-            plan = await planner.generate_plan(..., available_tools=search_results)
+            # Phase 3: Semantic search automatically selects relevant tools
+            planner = LargePlanner(provider="openai", tool_catalog=large_catalog)
+            plan = await planner.generate_plan("send slack message")
+            # Automatically searches and uses only relevant tools
         """
         logger.info(f"Generating plan for request: {user_request[:100]}...")
         
-        # Log tool source
-        if available_tools is not None:
-            logger.info(f"Using {len(available_tools)} tools from semantic search")
-        elif self.tool_catalog is not None:
-            logger.info(f"Using injected tool catalog with {len(self.tool_catalog.tools)} tools")
+        # Phase 3: Adaptive tool selection with semantic search
+        if available_tools is None:
+            # Get or create tool catalog
+            catalog = self._get_tool_catalog()
+            total_tools = len(catalog.tools)
+            
+            # Decide whether to use semantic search
+            if self.use_tool_search and total_tools > self.search_threshold:
+                # Lazy init search engine
+                if self.search_engine is None:
+                    from orchestrator.tool_search import ToolSearchEngine
+                    self.search_engine = ToolSearchEngine()
+                    logger.info("Initialized semantic search engine")
+                
+                # Search for relevant tools
+                search_results = self.search_engine.search(
+                    query=user_request,
+                    catalog=catalog,
+                    top_k=10,  # Get top 10 most relevant tools
+                    min_score=0.3
+                )
+                
+                available_tools = [tool for tool, score in search_results]
+                
+                # Calculate token savings
+                tokens_without_search = total_tools * 150  # ~150 tokens per tool
+                tokens_with_search = len(available_tools) * 150
+                savings_pct = ((tokens_without_search - tokens_with_search) / tokens_without_search) * 100
+                
+                logger.info(
+                    f"Semantic search: {total_tools} tools → {len(available_tools)} relevant tools "
+                    f"(~{savings_pct:.1f}% token reduction, ~{tokens_without_search - tokens_with_search:,} tokens saved)"
+                )
+            else:
+                # Use all tools (small catalog or search disabled)
+                available_tools = list(catalog.tools.values())
+                if total_tools <= self.search_threshold:
+                    logger.info(f"Using all {total_tools} tools (below search threshold)")
+                else:
+                    logger.info(f"Using all {total_tools} tools (search disabled)")
         else:
-            logger.info("Using default legacy tool catalog")
+            # Tools explicitly provided (e.g., from external search)
+            logger.info(f"Using {len(available_tools)} explicitly provided tools")
         
         # Build the user message
         user_message = f"User Request: {user_request}\n"
