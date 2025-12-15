@@ -61,15 +61,13 @@ Inspired by Anthropic's MCP, extended with function registries, sandboxed execut
 - **🔄 Backward Compatible** - Existing code works without changes
 - **🎯 Multi-Provider Support** - OpenAI, Azure OpenAI (with Azure AD), Anthropic, Gemini
 - **🤖 Automatic Discovery** - Introspects MCP workers, Python functions, code execution
-- **💾 Smart Caching** - 24-hour tool cache (1ms cached vs 50ms discovery), 1-hour query cache
-- **🔍 Semantic Search** - Hybrid BM25 + embeddings for intelligent tool selection
-- **📉 Token Reduction** - 66.7% fewer tokens for 30+ tool catalogs ($2,737/year savings @ 1000 req/day)
+- **💾 Smart Caching** - 24-hour tool cache, 1-hour query cache, 5-minute LLM cache
+- **🔍 Semantic Search** - Hybrid BM25 + embeddings selects most relevant tools (reduces tokens sent to LLM)
 - **🎚️ Smart Routing** - Auto-activates search for 20+ tools, skips for smaller catalogs
 - **⚡ Programmatic Calling** - Code-based tool orchestration with parallel execution
-- **🚀 Performance** - 60-80% latency reduction, 37% additional token savings
 - **🔒 Sandboxed Execution** - AST validation, safe builtins, timeout protection
-- **📚 Tool Examples** - Usage examples improve parameter accuracy from 72% → 90%+
-- **💰 Prompt Caching** - 90% cost reduction on repeated requests (Anthropic/OpenAI)
+- **📚 Tool Examples** - Usage examples with scenario/input/output improve parameter accuracy
+- **💰 Prompt Caching** - Anthropic/OpenAI support for caching tool definitions
 - **📊 Monitoring** - Production-ready metrics, logging, and observability
 
 ### Orchestration Engine
@@ -450,10 +448,10 @@ plan = await planner.generate_plan("Process receipt and categorize items")
   - Query results: 1-hour TTL (pickled, includes catalog hash)
 
 **Performance:**
-- **Initial model load:** ~11 seconds (downloads 80MB model)
+- **Initial model load:** ~11 seconds (one-time, downloads 80MB model)
 - **Search time:** 31-624ms (after model loaded)
-- **Token reduction:** 66.7% (30 tools → 10 relevant)
-- **Cost savings:** $0.0075/request = $2,737/year @ 1000 req/day
+- **Token reduction:** Selects top 10 from 30+ tools (logs actual reduction %)
+- **Example:** 30 tools → 10 tools = 4,500 → 1,500 tokens sent to LLM
 
 **Manual Search Usage:**
 ```python
@@ -758,16 +756,16 @@ messages = [
     {"role": "user", "content": user_request}  # Only this changes
 ]
 
-# First request: 10,000 tokens × $0.003 = $0.03
-# Next 99 requests: 10,000 × $0.0003 (cached) + 100 × $0.003 = $0.33
-# Total: $0.36 vs $3.00 without caching = 88% savings!
+# First request: Full tokens × full price
+# Next requests: Cached tokens × discounted price (90% Anthropic, 50% OpenAI)
+# Significant savings on repeated requests with same tool catalog
 ```
 
 **Cost Optimization Strategy:**
 1. Phase 3 search: Select 10 relevant tools from 100+ catalog
 2. Phase 5 examples: Include examples for those 10 tools only
-3. Phase 5 caching: Cache the 10 tools + examples for 90% discount
-4. **Result**: High accuracy (90%+) + low cost (88% savings)
+3. Phase 5 caching: Cache the 10 tools + examples (Anthropic 90% discount, OpenAI 50% discount)
+4. **Result**: Improved accuracy + reduced token costs on repeated requests
 
 ### Production Deployment
 
@@ -786,8 +784,6 @@ See [PRODUCTION_DEPLOYMENT.md](docs/PRODUCTION_DEPLOYMENT.md) for complete produ
 - ✅ Resource limits set
 - ✅ Monitoring enabled
 - ✅ Health checks working
-- ✅ Cache hit rate >70%
-- ✅ Error rate <1%
 
 ## End-to-End Example: Discovery → Search → Planning
 
