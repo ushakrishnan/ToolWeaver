@@ -76,5 +76,6 @@ receipts/
 # OS
 Thumbs.db
 
-# Temporary test files
-test_azure_connection.py
+# Tool discovery and search cache
+.toolweaver/
+.tool_logs/

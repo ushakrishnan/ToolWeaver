@@ -876,33 +876,59 @@ Semantic search: 30 tools → 10 relevant (~66.7% token reduction, ~3,000 tokens
 
 ## Examples
 
-Run the demo with example plans:
+See the [examples/](examples/) directory for comprehensive demos:
 
 ```bash
-# Run all examples
+# Run main demo with example plans
 python run_demo.py
 
-# Run specific plan
-python run_demo.py example_plan.json
-python run_demo.py example_plan_hybrid.json
+# Or run specific examples
+python examples/demo_integrated.py      # Full pipeline
+python examples/test_discovery.py       # Tool discovery
+python examples/test_search.py          # Semantic search
+python examples/demo_tool_examples.py   # Parameter accuracy
 ```
+
+See [examples/README.md](examples/README.md) for complete list.
 
 ## Project Structure
 
 ```
-CodeExec/
-├── orchestrator/           # Core orchestration engine
-│   ├── orchestrator.py    # Main execution engine
+ToolWeaver/
+├── orchestrator/              # Core orchestration engine
+│   ├── orchestrator.py       # Main execution engine
+│   ├── planner.py            # LLM-based planner
+│   ├── models.py             # Tool definitions (ToolCatalog, ToolExample)
+│   ├── tool_discovery.py     # Automatic tool discovery
+│   ├── tool_search.py        # Semantic search engine
+│   ├── programmatic_executor.py  # Code-based tool calling
+│   ├── monitoring.py         # Production monitoring
 │   ├── hybrid_dispatcher.py  # Tool routing
-│   ├── functions.py       # Registered functions
-│   ├── workers.py         # MCP workers
-│   ├── code_exec_worker.py   # Code execution
-│   ├── mcp_client.py      # MCP client
-│   └── models.py          # Pydantic models
-├── docs/                  # Documentation
-├── example_plan.json      # Example: MCP + code-exec
-├── example_plan_hybrid.json  # Example: All tool types
-└── run_demo.py           # Demo script
+│   ├── functions.py          # Registered functions
+│   ├── workers.py            # MCP workers
+│   ├── code_exec_worker.py   # Sandboxed code execution
+│   └── mcp_client.py         # MCP client
+├── tests/                    # Test suite (103 tests)
+│   ├── test_tool_models.py
+│   ├── test_planner_integration.py
+│   ├── test_tool_search.py
+│   ├── test_programmatic_executor.py
+│   └── test_monitoring.py
+├── docs/                     # Documentation
+│   ├── CONFIGURATION.md      # Provider setup
+│   ├── PRODUCTION_DEPLOYMENT.md  # Deploy to Azure
+│   ├── PROMPT_CACHING.md     # 90% cost reduction
+│   ├── SEARCH_TUNING.md      # Optimize search
+│   ├── MIGRATION_GUIDE.md    # Upgrade guide
+│   └── ...
+├── examples/                 # Example scripts
+│   ├── demo_integrated.py    # Full pipeline
+│   ├── demo_tool_examples.py # Parameter accuracy
+│   ├── test_discovery.py     # Tool discovery
+│   └── ...
+├── example_plan.json         # Example execution plans
+├── requirements.txt          # Dependencies
+└── run_demo.py              # Main demo script
 ```
 
 ## Requirements
@@ -928,7 +954,9 @@ Contributions are welcome! Please see the documentation for architecture details
 
 ## License
 
-[Your License Here]
+Proprietary - All rights reserved. See [LICENSE](LICENSE) file for details.
+
+This is a private repository and the code is not licensed for public use or distribution.
 
 ## Acknowledgments
 
