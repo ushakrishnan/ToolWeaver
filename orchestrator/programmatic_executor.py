@@ -399,6 +399,7 @@ class ProgrammaticToolExecutor:
         - Math operations (sum, min, max, etc.)
         - Type conversions (str, int, float, etc.)
         - Data structures (list, dict, set, tuple)
+        - Exception classes (for error handling)
         
         Explicitly excludes:
         - File I/O (open)
@@ -425,6 +426,9 @@ class ProgrammaticToolExecutor:
             "print",
             # Constants
             "True", "False", "None",
+            # Exception classes (for error handling)
+            "Exception", "ValueError", "TypeError", "KeyError", "IndexError",
+            "RuntimeError", "AttributeError", "ZeroDivisionError",
             # Other safe operations
             "all", "any", "slice", "hash", "id"
         }
