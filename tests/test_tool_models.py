@@ -396,5 +396,143 @@ class TestToolCatalogIntegration:
         assert "image_url" in ocr_tool["parameters"]["properties"]
 
 
+class TestToolExamples:
+    """Test tool examples functionality (Phase 5)."""
+    
+    def test_tool_example_creation(self):
+        """Test creating a tool example."""
+        from orchestrator.models import ToolExample
+        
+        example = ToolExample(
+            scenario="Critical production bug requiring urgent attention",
+            input={
+                "title": "Database connection timeout in production",
+                "description": "Users cannot login, error logs show connection timeouts",
+                "priority": "critical",
+                "assignee": "USR-12345"
+            },
+            output={"ticket_id": "TICK-001", "status": "created", "sla_hours": 2},
+            notes="Use critical priority for production outages, include escalation path"
+        )
+        
+        assert example.scenario == "Critical production bug requiring urgent attention"
+        assert example.input["priority"] == "critical"
+        assert example.output["ticket_id"] == "TICK-001"
+        assert "production outages" in example.notes
+    
+    def test_tool_definition_with_examples(self):
+        """Test ToolDefinition with examples."""
+        from orchestrator.models import ToolExample
+        
+        tool = ToolDefinition(
+            name="create_ticket",
+            type="function",
+            description="Create a support ticket",
+            parameters=[
+                ToolParameter(name="title", type="string", description="Ticket title", required=True),
+                ToolParameter(name="priority", type="string", description="Priority level", 
+                            enum=["low", "medium", "high", "critical"], required=True)
+            ],
+            examples=[
+                ToolExample(
+                    scenario="Critical production bug",
+                    input={"title": "DB timeout", "priority": "critical"},
+                    output={"ticket_id": "TICK-001", "sla_hours": 2}
+                ),
+                ToolExample(
+                    scenario="Feature request",
+                    input={"title": "Add dark mode", "priority": "low"},
+                    output={"ticket_id": "TICK-002", "sla_hours": 72}
+                )
+            ]
+        )
+        
+        assert len(tool.examples) == 2
+        assert tool.examples[0].scenario == "Critical production bug"
+        assert tool.examples[1].input["priority"] == "low"
+    
+    def test_llm_format_with_examples(self):
+        """Test to_llm_format includes examples in description."""
+        from orchestrator.models import ToolExample
+        
+        tool = ToolDefinition(
+            name="create_ticket",
+            type="function",
+            description="Create a support ticket",
+            parameters=[
+                ToolParameter(name="title", type="string", description="Ticket title", required=True)
+            ],
+            examples=[
+                ToolExample(
+                    scenario="Critical bug",
+                    input={"title": "DB timeout"},
+                    output={"ticket_id": "TICK-001"}
+                )
+            ]
+        )
+        
+        llm_format = tool.to_llm_format(include_examples=True)
+        
+        # Examples should be appended to description
+        assert "Examples:" in llm_format["description"]
+        assert "Critical bug" in llm_format["description"]
+        assert "DB timeout" in llm_format["description"]
+        assert "TICK-001" in llm_format["description"]
+    
+    def test_llm_format_without_examples(self):
+        """Test to_llm_format excludes examples when requested."""
+        from orchestrator.models import ToolExample
+        
+        tool = ToolDefinition(
+            name="create_ticket",
+            type="function",
+            description="Create a support ticket",
+            parameters=[
+                ToolParameter(name="title", type="string", description="Ticket title", required=True)
+            ],
+            examples=[
+                ToolExample(
+                    scenario="Critical bug",
+                    input={"title": "DB timeout"},
+                    output={"ticket_id": "TICK-001"}
+                )
+            ]
+        )
+        
+        llm_format = tool.to_llm_format(include_examples=False)
+        
+        # Examples should NOT be in description
+        assert "Examples:" not in llm_format["description"]
+        assert "Critical bug" not in llm_format["description"]
+    
+    def test_catalog_with_examples(self):
+        """Test ToolCatalog propagates include_examples parameter."""
+        from orchestrator.models import ToolExample
+        
+        catalog = ToolCatalog(source="test")
+        
+        catalog.add_tool(ToolDefinition(
+            name="tool1",
+            type="function",
+            description="First tool",
+            parameters=[],
+            examples=[
+                ToolExample(
+                    scenario="Example scenario",
+                    input={},
+                    output={"result": "success"}
+                )
+            ]
+        ))
+        
+        # With examples
+        llm_tools_with = catalog.to_llm_format(include_examples=True)
+        assert "Examples:" in llm_tools_with[0]["description"]
+        
+        # Without examples
+        llm_tools_without = catalog.to_llm_format(include_examples=False)
+        assert "Examples:" not in llm_tools_without[0]["description"]
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

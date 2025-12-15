@@ -4,6 +4,21 @@ from datetime import datetime, timezone
 
 # --- Tool Definition Models (Phase 1: Foundation) ---
 
+class ToolExample(BaseModel):
+    """
+    Example of how to use a tool, including scenario, input, output, and notes.
+    Helps LLMs understand tool usage patterns and parameter conventions.
+    
+    Examples improve parameter accuracy from 72% to 90%+ by showing:
+    - Format conventions (dates, IDs, etc.)
+    - Optional parameter usage patterns
+    - Typical scenarios and expected outputs
+    """
+    scenario: str = Field(..., description="Description of when to use this tool in this way")
+    input: Dict[str, Any] = Field(..., description="Example input parameters")
+    output: Any = Field(..., description="Example output result")
+    notes: Optional[str] = Field(None, description="Additional usage notes or conventions")
+
 class ToolParameter(BaseModel):
     """
     Individual tool parameter definition with validation.
@@ -35,8 +50,9 @@ class ToolDefinition(BaseModel):
     source: str = "unknown"  # Where tool was discovered from
     version: str = "1.0"
     defer_loading: bool = False  # Phase 3: For semantic search
+    examples: List[ToolExample] = Field(default_factory=list)  # Phase 5: Usage examples
     
-    def to_llm_format(self) -> Dict[str, Any]:
+    def to_llm_format(self, include_examples: bool = True) -> Dict[str, Any]:
         """
         Convert to OpenAI/Anthropic function calling format.
         
@@ -45,10 +61,25 @@ class ToolDefinition(BaseModel):
         - Azure OpenAI function calling
         - Anthropic tool use
         - Google Gemini function calling
+        
+        Args:
+            include_examples: If True, appends examples to description (Phase 5)
         """
+        description = self.description
+        
+        # Append examples to description for better LLM understanding
+        if include_examples and self.examples:
+            description += "\n\nExamples:\n"
+            for i, ex in enumerate(self.examples, 1):
+                description += f"\n{i}. {ex.scenario}\n"
+                description += f"   Input: {ex.input}\n"
+                description += f"   Output: {ex.output}\n"
+                if ex.notes:
+                    description += f"   Notes: {ex.notes}\n"
+        
         return {
             "name": self.name,
-            "description": self.description,
+            "description": description,
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -92,15 +123,16 @@ class ToolCatalog(BaseModel):
         """Get all tools of specific type (mcp, function, code_exec)."""
         return [t for t in self.tools.values() if t.type == tool_type]
     
-    def to_llm_format(self, defer_loading: bool = False) -> List[Dict[str, Any]]:
+    def to_llm_format(self, defer_loading: bool = False, include_examples: bool = True) -> List[Dict[str, Any]]:
         """
         Convert all tools to LLM function calling format.
         
         Args:
             defer_loading: If True, only include tools with defer_loading=False
+            include_examples: If True, include usage examples in descriptions (Phase 5)
         """
         return [
-            t.to_llm_format() 
+            t.to_llm_format(include_examples=include_examples) 
             for t in self.tools.values() 
             if not defer_loading or not t.defer_loading
         ]
