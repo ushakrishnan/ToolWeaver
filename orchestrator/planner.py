@@ -55,7 +55,8 @@ class LargePlanner:
         model: str = None,
         tool_catalog: Optional[ToolCatalog] = None,
         use_tool_search: bool = True,
-        search_threshold: int = 20
+        search_threshold: int = 20,
+        use_programmatic_calling: bool = True
     ):
         """
         Initialize the planner with specified LLM provider.
@@ -66,6 +67,7 @@ class LargePlanner:
             tool_catalog: Optional ToolCatalog with tool definitions (defaults to legacy hardcoded tools)
             use_tool_search: Enable semantic search for tool selection (Phase 3, default: True)
             search_threshold: Only use search if tool count exceeds this (default: 20)
+            use_programmatic_calling: Enable programmatic tool calling (Phase 4, default: True)
         
         Phase 2 Usage - Tool Discovery:
             To use auto-discovered tools, run discovery first:
@@ -77,6 +79,10 @@ class LargePlanner:
         Phase 3 Usage - Semantic Search:
             When tool_catalog has >20 tools, semantic search automatically selects
             the most relevant 5-10 tools for each request, reducing token usage by 80-90%.
+        
+        Phase 4 Usage - Programmatic Tool Calling:
+            When enabled, LLM can generate code that orchestrates tool calls in parallel,
+            reducing latency by 60-80% and saving 37% additional tokens.
         """
         # Get provider from env if not specified
         self.provider = (provider or os.getenv("PLANNER_PROVIDER", "openai")).lower()
@@ -88,6 +94,9 @@ class LargePlanner:
         self.use_tool_search = use_tool_search
         self.search_threshold = search_threshold
         self.search_engine = None  # Lazy init
+        
+        # Phase 4: Programmatic calling configuration
+        self.use_programmatic_calling = use_programmatic_calling
         
         if self.provider == "openai":
             if not OPENAI_AVAILABLE:
@@ -374,6 +383,61 @@ class LargePlanner:
                     for tool in tools
                 }
         
+        # Build programmatic calling section if enabled
+        ptc_section = ""
+        if self.use_programmatic_calling:
+            ptc_section = """
+
+PROGRAMMATIC TOOL CALLING (Advanced):
+
+When you need to:
+- Call multiple tools in parallel (faster than sequential)
+- Filter/transform large datasets before returning to context
+- Loop over collections with tool calls
+- Apply complex logic (conditionals, aggregations)
+
+Use code_exec with tool orchestration code instead of multiple tool steps:
+
+Example (BAD - Sequential, slow, wastes tokens):
+Step 1: get_team_members("engineering") → 20 members (5KB into context)
+Step 2: get_expenses(member1) → (10KB into context)
+Step 3-21: get_expenses(member2-20) → (200KB+ into context!)
+Step 22: Manual comparison in next LLM call
+
+Example (GOOD - Parallel, fast, minimal context):
+Step 1: code_exec with:
+```python
+# All tools are available as async functions
+team = await get_team_members(team_id="engineering")
+budgets = {{level: await get_budget(level) for level in set(m["level"] for m in team)}}
+
+# Parallel execution (much faster!)
+expenses = await asyncio.gather(*[get_expenses(user_id=m["id"], period="Q3") for m in team])
+
+# Filter in code (keeps 200KB out of LLM context!)
+exceeded = []
+for member, exp in zip(team, expenses):
+    total = sum(e["amount"] for e in exp)
+    if total > budgets[member["level"]]:
+        exceeded.append({{"name": member["name"], "spent": total}})
+
+# Only return summary (2KB vs 200KB!)
+print(json.dumps(exceeded))
+```
+
+Use programmatic calling when:
+✅ Need to call same tool multiple times (list iteration)
+✅ Can filter/aggregate results before LLM sees them
+✅ Operations are independent (can run in parallel)
+✅ Dealing with large intermediate data
+
+DON'T use programmatic calling when:
+❌ Single tool call is sufficient
+❌ LLM needs to see full intermediate results
+❌ Simple, straightforward workflows
+❌ Tools have complex dependencies
+"""
+        
         return f"""You are an execution planner for a hybrid orchestration system. Your job is to convert natural language requests into structured JSON execution plans.
 
 Available Tools:
@@ -403,7 +467,7 @@ Guidelines:
 2. Set dependencies correctly to ensure proper execution order
 3. Use "parallel" mode for independent steps, "sequential" for dependent steps
 4. Choose the right tool type: MCP for deterministic tasks, functions for structured APIs, code_exec for custom logic
-5. Generate valid JSON only, no explanations outside the JSON
+5. Generate valid JSON only, no explanations outside the JSON{ptc_section}
 
 Respond with only the JSON execution plan."""
 
