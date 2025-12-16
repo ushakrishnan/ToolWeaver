@@ -206,24 +206,57 @@ async def execute_tools_parallel(tools):
 
 ## Monitoring Setup
 
-### 1. Initialize Monitoring
+### 1. Automatic Monitoring (Built-in)
+
+**Monitoring is enabled by default** and configured via environment variables:
+
+```bash
+# .env
+MONITORING_BACKENDS=local,wandb,prometheus  # Comma-separated list
+
+# Local backend (always available, zero dependencies)
+TOOL_LOGS_DIR=.tool_logs
+
+# Weights & Biases (optional - pip install wandb)
+WANDB_API_KEY=your-wandb-api-key
+WANDB_PROJECT=ToolWeaver
+WANDB_ENTITY=your-username
+WANDB_RUN_NAME=production-run-1
+
+# Prometheus (optional - pip install prometheus-client)
+PROMETHEUS_PORT=8000
+```
+
+**All plan executions are automatically logged:**
+
+```python
+from orchestrator import execute_plan
+
+# No manual monitoring setup needed
+context = await execute_plan(plan)
+
+# Metrics automatically logged to all enabled backends:
+# - Tool calls (name, success, latency, errors)
+# - Step execution (id, duration)
+# - Plan start/completion
+```
+
+### 2. Manual Monitoring (Advanced)
+
+For custom monitoring or standalone tool calls:
 
 ```python
 from orchestrator.monitoring import ToolUsageMonitor
 
-# Create global monitor
+# Create monitor with specific backends
 monitor = ToolUsageMonitor(
-    log_to_file=True,
-    log_dir="/var/log/toolweaver"  # Or /logs for container
+    backends=["local", "wandb"],
+    log_dir="/var/log/toolweaver"
 )
 
-# Log all tool calls
-executor = ProgrammaticToolExecutor(
-    tool_catalog=catalog,
-    mcp_client=mcp_client,
-    on_tool_call=lambda name, success, latency, error: 
-        monitor.log_tool_call(name, success, latency, error)
-)
+# Manual logging
+monitor.log_tool_call("my_tool", success=True, latency=0.5)
+monitor.flush()  # Ensure logs sent to backends
 ```
 
 ### 2. Export Metrics

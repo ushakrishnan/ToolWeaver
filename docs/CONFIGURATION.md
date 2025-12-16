@@ -4,6 +4,58 @@
 
 This system supports flexible configuration for both **large planner models** and **small worker models**, allowing you to use different providers based on your needs.
 
+## Monitoring Configuration
+
+Configure observability backends via `.env`:
+
+```bash
+# Monitoring backends (comma-separated)
+MONITORING_BACKENDS=local,wandb  # Options: local, wandb, prometheus
+
+# Local backend (file-based logging)
+TOOL_LOGS_DIR=.tool_logs
+
+# Weights & Biases (optional)
+WANDB_API_KEY=your-api-key
+WANDB_PROJECT=ToolWeaver
+WANDB_ENTITY=your-username
+
+# Prometheus (optional)
+PROMETHEUS_PORT=8000
+```
+
+**Monitoring is automatic** - all plan executions are logged to enabled backends.
+
+## GitHub MCP Server Configuration
+
+Connect to GitHub's remote MCP server for programmatic repository operations:
+
+```bash
+# GitHub authentication
+GITHUB_TOKEN=ghp_your_token_here  # Get from https://github.com/settings/tokens
+GITHUB_OWNER=your-github-username
+
+# GitHub MCP Server settings
+GITHUB_MCP_SERVER_URL=https://api.githubcopilot.com/mcp/
+GITHUB_MCP_TOOLSETS=repos,issues,pull_requests  # Available toolsets
+GITHUB_MCP_READONLY=false  # Set true for read-only mode
+```
+
+**Required GitHub token scopes:**
+- `repo` - Full repository access
+- `read:org` - Organization information
+- `workflow` - GitHub Actions
+- `read:user` - User information
+
+**Available toolsets:**
+- `repos` - Repository operations (files, branches, commits)
+- `issues` - Issue management
+- `pull_requests` - PR operations
+- `actions` - GitHub Actions workflows
+- `code_security` - Security scanning
+- `copilot` - Copilot agent invocation (remote-only)
+- Many more - see [GitHub MCP docs](https://github.com/github/github-mcp-server)
+
 ## Large Model Planner Configuration
 
 The large model generates execution plans from natural language requests.
