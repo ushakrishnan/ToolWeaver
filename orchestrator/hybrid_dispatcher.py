@@ -9,7 +9,7 @@ This module provides a unified interface for dispatching to:
 
 import asyncio
 import logging
-from typing import Dict, Any, Callable
+from typing import Dict, Any, Callable, Optional
 from .mcp_client import MCPClientShim
 from .code_exec_worker import code_exec_worker
 from .models import FunctionCallInput, FunctionCallOutput
@@ -76,7 +76,8 @@ async def function_call_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
 async def dispatch_step(
     step: Dict[str, Any],
     step_outputs: Dict[str, Any],
-    mcp_client: MCPClientShim
+    mcp_client: MCPClientShim,
+    monitor: Optional[Any] = None
 ) -> Dict[str, Any]:
     """
     Main hybrid dispatcher that routes to appropriate worker based on tool type.
