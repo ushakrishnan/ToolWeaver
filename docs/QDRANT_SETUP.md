@@ -141,24 +141,54 @@ QDRANT_URL=https://xxxxx.us-east-1-0.aws.cloud.qdrant.io
 QDRANT_API_KEY=your-api-key-here
 ```
 
-### Test Connection
+5. **Create Collection in Qdrant Cloud Dashboard**:
+
+Navigate to your cluster and click "Create Collection":
+
+```yaml
+Collection Name:     toolweaver_tools
+Use Case:           Global search  # Search across whole collection with optional filters
+Tenant Field:       (skip/none)    # Not using multitenancy
+
+Search Type:        Simple Hybrid Search  # Dense + Sparse vectors
+
+Dense Vector Configuration:
+  Name:             default
+  Dimensions:       384           # For all-MiniLM-L6-v2 embeddings
+  Metric:           Cosine        # Best for semantic similarity
+
+Sparse Vector Configuration:
+  Name:             sparse         # Or 'bm25' (unused by ToolWeaver, but required by UI)
+  Use IDF:          No (unchecked) # Not using sparse vectors
+```
+
+**Why these settings?**
+- **384 dimensions**: Matches our sentence-transformers model (all-MiniLM-L6-v2)
+- **Cosine metric**: Best for normalized embeddings (semantic similarity)
+- **Sparse vector**: Required by UI but not used by ToolWeaver code (only dense "default" vector is used)
+
+6. **Test Connection**:
 
 ```powershell
 # From project directory with venv activated
 .\.venv\Scripts\Activate.ps1
-python -c "
-from qdrant_client import QdrantClient
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-client = QdrantClient(
-    url=os.getenv('QDRANT_URL'),
-    api_key=os.getenv('QDRANT_API_KEY')
-)
-print(client.get_collections())
-"
+python test_cloud_connections.py
 ```
+
+Expected output:
+```
+✅ Connected successfully!
+✅ Collection 'toolweaver_tools' exists
+   📊 Vectors: 0
+   🔢 Dimensions: 384
+   📈 Status: green
+```
+
+**Troubleshooting**:
+- If collection not found: Verify you clicked "Create Collection" button (not just "Next")
+- Wait 30-60 seconds for collection to appear after creation
+- Check collection name matches exactly: `toolweaver_tools` (no spaces, all lowercase)
+- Refresh Qdrant Cloud dashboard to see the new collection
 
 ### Monitoring Qdrant Cloud
 
