@@ -172,7 +172,7 @@ Both plans execute successfully with **100% success rate**:
 
 ```bash
 # Install dependencies
-pip install -r requirements.txt
+pip install -e .
 
 # Run all demo plans
 python run_demo.py

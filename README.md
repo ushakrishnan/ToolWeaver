@@ -653,26 +653,49 @@ llm_format = receipt_ocr_tool.to_llm_format(include_examples=True)
 
 ### Performance Monitoring
 
-Track tool usage, errors, and costs for production:
+**Automatic monitoring** is built-in and configured via `.env`:
+
+```bash
+# .env - Configure monitoring backends
+MONITORING_BACKENDS=local,wandb  # Options: local, wandb, prometheus
+
+# Weights & Biases (optional - pip install wandb)
+WANDB_API_KEY=your-key-here
+WANDB_PROJECT=ToolWeaver
+WANDB_ENTITY=your-username
+
+# Prometheus (optional - pip install prometheus-client)
+PROMETHEUS_PORT=8000
+```
+
+**All plan executions are automatically logged** to enabled backends:
+
+```python
+from orchestrator import execute_plan
+
+# Monitoring is automatic - no manual setup required
+context = await execute_plan(plan)
+
+# Metrics automatically logged:
+# - Tool calls (success/failure)
+# - Execution latency
+# - Error details
+# - Plan start/completion
+```
+
+**Manual logging (for standalone tool calls):**
 
 ```python
 from orchestrator.monitoring import ToolUsageMonitor, print_metrics_report
 
-# Initialize monitoring
-monitor = ToolUsageMonitor(log_to_file=True, log_dir="/var/log/toolweaver")
+# Create monitor with specific backends
+monitor = ToolUsageMonitor(backends=["local", "wandb"])
 
-# Log tool calls automatically
-executor = ProgrammaticToolExecutor(
-    tool_catalog=catalog,
-    on_tool_call=lambda name, success, latency, error: 
-        monitor.log_tool_call(name, success, latency, error)
-)
+# Log tool calls
+monitor.log_tool_call("receipt_ocr", success=True, latency=0.045)
 
 # Log search queries
 monitor.log_search_query("process receipt", num_results=5, latency=0.1, cache_hit=True)
-
-# Log token usage
-monitor.log_token_usage(input_tokens=100, output_tokens=50, cached_tokens=200)
 
 # View metrics
 print_metrics_report(monitor)
