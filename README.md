@@ -58,13 +58,14 @@ Inspired by Anthropic's MCP, extended with function registries, sandboxed execut
 - **⚡ Speed** - Small models run 2-3x faster for routine tasks
 - **🔄 Auto-Retry** - Up to 3 retry attempts with JSON repair for robust error handling
 
-### Dynamic Tool Discovery (Phase 1-5 - Complete ✅)
+### Dynamic Tool Discovery (Phase 1-6 - Complete ✅)
 - **📦 ToolCatalog** - Centralized tool definition management with JSON Schema validation
 - **🔄 Backward Compatible** - Existing code works without changes
 - **🎯 Multi-Provider Support** - OpenAI, Azure OpenAI (with Azure AD), Anthropic, Gemini
 - **🤖 Automatic Discovery** - Introspects MCP workers, Python functions, code execution
 - **💾 Smart Caching** - 24-hour tool cache, 1-hour query cache, 5-minute LLM cache
 - **🔍 Semantic Search** - Hybrid BM25 + embeddings selects most relevant tools (reduces tokens sent to LLM)
+- **🔍 Tool Search Tool** - LLM can dynamically discover tools mid-conversation via tool_search_tool (Phase 6 - NEW)
 - **🎚️ Smart Routing** - Auto-activates search for 20+ tools, skips for smaller catalogs
 - **⚡ Programmatic Calling** - Code-based tool orchestration with parallel execution
 - **🔒 Sandboxed Execution** - AST validation, safe builtins, timeout protection

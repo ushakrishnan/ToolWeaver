@@ -374,6 +374,17 @@ class ToolDiscoveryOrchestrator:
         metrics.discovery_duration_ms = (end_time - start_time).total_seconds() * 1000
         catalog.metadata["discovery_metrics"] = metrics.model_dump()
         
+        # Phase 6: Always add tool_search_tool
+        try:
+            from .tool_search_tool import get_tool_search_definition
+            tool_search_def = get_tool_search_definition()
+            catalog.add_tool(tool_search_def)
+            metrics.total_tools_found += 1
+            metrics.sources["built-in"] = metrics.sources.get("built-in", 0) + 1
+            print(f"Added tool_search_tool to catalog")
+        except Exception as e:
+            print(f"Warning: Failed to add tool_search_tool: {e}")
+        
         # Cache results
         if use_cache:
             self._save_cache(catalog)

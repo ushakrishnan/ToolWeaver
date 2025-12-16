@@ -172,3 +172,13 @@ def compute_item_statistics(items: List[Dict[str, Any]]) -> Dict[str, Any]:
         "avg_amount": round(total_amount / count, 2) if count > 0 else 0,
         "categories": categories
     }
+
+
+# Phase 6: Tool Search Tool
+# Import and register the tool search function
+try:
+    from .tool_search_tool import tool_search_tool
+    register_function("tool_search_tool")(tool_search_tool)
+except ImportError as e:
+    import logging
+    logging.getLogger(__name__).warning(f"Failed to register tool_search_tool: {e}")
