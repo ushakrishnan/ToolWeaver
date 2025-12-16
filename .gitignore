@@ -88,7 +88,6 @@ wandb/
 *.wandb
 prometheus_multiproc_dir/
 
-# Build system
-*.egg-info/
-.eggs/
-*.whl
+# Linter and type checker caches
+.ruff_cache/
+.mypy_cache/
