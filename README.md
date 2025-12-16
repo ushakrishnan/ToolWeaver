@@ -1,89 +1,91 @@
-# Hybrid Orchestrator with Two-Model Architecture
+# ToolWeaver
 
-A production-ready orchestrator for AI agent workflows featuring a **two-model architecture**: large models (GPT-4o, Claude) for planning and small models (Phi-3, Llama) for efficient execution. Supports **three types of tools** through a unified interface: MCP workers, structured function calls, and sandboxed code execution.
+**Production-ready AI agent orchestrator with intelligent tool management and cost-optimized execution.**
 
-## What Does This Do?
+Automatically discovers, searches, and chains tools while reducing costs by 80-90% through a two-model architecture: large models (GPT-4o, Claude) for planning, small models (Phi-3, Llama) for execution.
 
-### 🎓 Simple Explanation
-Imagine you have two teammates:
-- **Smart Planner** (expensive consultant) - Figures out what needs to be done
-- **Fast Worker** (efficient employee) - Actually does the work
+## Overview
 
-You ask the Smart Planner: "Process these receipts and categorize items"
+### 🎯 What It Does
 
-The Smart Planner thinks and says: "Okay, here's the plan:
-1. Extract text from image
-2. Find all items and prices
-3. Put items into categories (food, beverage, etc.)"
+**For AI Applications:**
+Turn natural language requests into multi-step tool executions with automatic dependency resolution, parallel execution, and intelligent caching.
 
-Then the Fast Worker executes each step quickly and cheaply, only asking the Smart Planner if something goes wrong.
+**For Developers:**
+- **Automatic tool discovery** - Introspects MCP servers, Python functions, and code execution capabilities
+- **Semantic tool search** - Finds relevant tools from 100+ catalog using hybrid BM25 + embedding search
+- **Workflow composition** - Chains tools automatically with dependency resolution and parallel execution
+- **Cost optimization** - 80-90% reduction through two-model architecture and multi-layer caching
+- **Production-ready** - Monitoring, logging, security sandboxing, and distributed caching
 
-**Result:** You get smart planning + fast execution = better and cheaper than using the expensive consultant for everything!
+### 💡 Simple Example
 
-### 🔬 Technical Explanation
-This is an **execution orchestrator** with a **two-model architecture** for agentic AI systems:
+```
+User: "Process receipt.jpg and send expenses over $50 to #finance"
+                           ↓
+System automatically:
+1. Searches 100+ tools → finds receipt_ocr, slack_send
+2. Plans execution → extract → filter → notify
+3. Executes workflow → OCR (Azure) → filter (sandbox) → Slack (API)
+4. Monitors & logs → 275ms, 3 tools, 100% success
 
-**Architecture:**
-1. **Large Planner Model** (GPT-4o, Claude 3.5) - Converts natural language → JSON execution plans
-2. **Small Worker Models** (Phi-3, Llama 3.2) - Executes specific tasks (parsing, classification)
-3. **Hybrid Orchestrator** - DAG-based execution with three tool types
+Cost: $0.05 vs $0.45 (89% savings through caching + search + two-model architecture)
+```
 
-**Problem:** Using large models for everything is expensive and slow. Using small models for planning fails at complex reasoning.
+### 🏗️ Architecture
 
-**Solution:** 
-- **Large model**: Planning, complex reasoning (1 call per user request)
-- **Small models**: Text extraction, classification, parsing (1000s of calls, local/cheap)
-- **80-90% cost reduction** vs large-model-only approach
+```
+Natural Language → Large Model (Planning) → Tool Search → Workflow Execution
+                   1 call, $0.03          Select 10/100   Parallel steps
+                                           90% token       25% faster
+                                           reduction       
+                           ↓
+        ┌──────────────────┼──────────────────┐
+        ↓                  ↓                  ↓
+   MCP Workers      Function Calls     Code Execution
+   (OCR, APIs)      (Python funcs)     (Sandboxed)
+        ↓                  ↓                  ↓
+   Small Models (Phi-3/Llama) - 1000s of calls, $0.0001 each
+```
 
-**Three Tool Types:**
-- **MCP Workers** - Deterministic operations (OCR, APIs) with optional small model enhancement
-- **Function Calls** - Structured APIs with Pydantic validation
-- **Code Execution** - Sandboxed Python (multiprocessing, restricted builtins)
+**Key Innovation:** Right model for each task - GPT-4 for complex reasoning, Phi-3 for simple parsing/classification.
 
-**Research Applications:**
-- Multi-agent workflows with heterogeneous model requirements
-- Cost-optimized ML pipelines (right model for each task)
-- Hybrid symbolic-neural systems
-- Privacy-preserving AI (sensitive data processed locally with small models)
+## Core Features
 
-Inspired by Anthropic's MCP, extended with function registries, sandboxed execution, and two-model optimization.
+### 🤖 Tool Management
+- **Automatic Discovery** - Introspects MCP servers, Python functions, and code execution at startup
+- **Semantic Search** - Hybrid BM25 + embedding search finds relevant tools from 100+ catalog (90% token reduction)
+- **Smart Routing** - Auto-activates search for large catalogs, bypasses for small ones
+- **Tool Examples** - Include usage examples to improve LLM parameter accuracy from 72% to 90%+
+- **Dynamic Discovery** - LLMs can search for tools mid-conversation via `tool_search_tool`
 
-## Features
+### ⚡ Workflow Engine
+- **Automatic Chaining** - Composes multi-step workflows with dependency resolution
+- **Parallel Execution** - Independent steps run concurrently (25% faster)
+- **Variable Substitution** - Pass data between steps: `{{previous_step.result}}`
+- **Pattern Learning** - Detects common tool sequences from usage logs
+- **Workflow Library** - Pre-built and custom reusable workflow templates
+- **Error Handling** - Retry logic with exponential backoff
 
-### Two-Model Architecture
-- **🧠 Large Model Planner** - GPT-4o or Claude generates execution plans from natural language
-- **🤖 Small Model Workers** - Phi-3/Llama for parsing, classification (local or cloud)
-- **✨ Improved Reliability** - Enhanced JSON prompts + retry logic = 100% parse success rate (Dec 2025 update)
-- **💰 Cost Optimization** - 80-90% cost reduction vs large-model-only
-- **⚡ Speed** - Small models run 2-3x faster for routine tasks
-- **🔄 Auto-Retry** - Up to 3 retry attempts with JSON repair for robust error handling
+### 💰 Cost Optimization
+- **Two-Model Architecture** - GPT-4 for planning (1 call), Phi-3 for execution (1000s of calls)
+- **Multi-Layer Caching** - Query cache (1h), embedding cache (24h), LLM prompt cache (5min)
+- **Token Reduction** - Search selects 10/100 tools → 90% fewer tokens sent to LLM
+- **Prompt Caching** - Anthropic 90% discount, OpenAI 50% discount on cached tool definitions
+- **Result: 80-90% cost reduction** vs single large model approach
 
-### Dynamic Tool Discovery (Phase 1-8 - Complete ✅)
-- **📦 ToolCatalog** - Centralized tool definition management with JSON Schema validation
-- **🔄 Backward Compatible** - Existing code works without changes
-- **🎯 Multi-Provider Support** - OpenAI, Azure OpenAI (with Azure AD), Anthropic, Gemini
-- **🤖 Automatic Discovery** - Introspects MCP workers, Python functions, code execution
-- **💾 Smart Caching** - 24-hour tool cache, 1-hour query cache, 5-minute LLM cache
-- **🔍 Semantic Search** - Hybrid BM25 + embeddings selects most relevant tools (reduces tokens sent to LLM)
-- **🔍 Tool Search Tool** - LLM can dynamically discover tools mid-conversation via tool_search_tool (Phase 6)
-- **🎚️ Smart Routing** - Auto-activates search for 20+ tools, skips for smaller catalogs
-- **⚡ Workflow Composition** - Automatic tool chaining with dependency resolution (Phase 8 - NEW)
-- **🔗 Pattern Recognition** - Learn common tool sequences from usage logs (Phase 8 - NEW)
-- **📚 Workflow Library** - Pre-built and custom workflow templates (Phase 8 - NEW)
-- **⚡ Programmatic Calling** - Code-based tool orchestration with parallel execution
-- **🔒 Sandboxed Execution** - AST validation, safe builtins, timeout protection
-- **📚 Tool Examples** - Usage examples with scenario/input/output improve parameter accuracy
-- **💰 Prompt Caching** - Anthropic/OpenAI support for caching tool definitions
-- **📊 Monitoring** - Production-ready metrics, logging, and observability
+### 🔒 Security & Reliability
+- **Sandboxed Execution** - AST validation, restricted builtins, timeout enforcement
+- **Type Safety** - Full Pydantic validation on inputs/outputs
+- **Auto-Retry** - Up to 3 retry attempts with JSON repair
+- **Process Isolation** - Code runs in separate process with resource limits
+- **Monitoring** - Track usage, performance, errors, and costs in production
 
-### Orchestration Engine
-- **🎯 Hybrid Tool Dispatch** - Seamlessly route between MCP, function calls, and code execution
-- **🔒 Type Safety** - Full Pydantic validation for all inputs and outputs
-- **⚡ Parallel Execution** - Automatic dependency resolution and concurrent step execution
-- **🔄 Retry Logic** - Configurable retry policies with exponential backoff
-- **🔐 Sandboxed Code** - Isolated process execution with safe builtins
-- **📝 Function Registry** - Easy function registration via decorators
-- **🔑 Idempotency** - Built-in idempotency key support
+### 🎯 Multi-Provider Support
+- **LLM Providers** - OpenAI, Azure OpenAI (API key or Azure AD), Anthropic, Google Gemini
+- **Small Models** - Ollama (local), Azure OpenAI, OpenAI, or any OpenAI-compatible endpoint
+- **Caching** - Redis (distributed) or file-based (local development)
+- **Vector Search** - Qdrant Cloud (free tier) or local deployment
 
 ## Quick Start
 
@@ -338,89 +340,49 @@ def my_function(arg1: str, arg2: int) -> dict:
    Total cost: $0.002 (vs $0.15 with GPT-4o for everything)
 ```
 
-## Phase 1: Dynamic Tool Discovery
+## Usage Guide
 
-### ToolCatalog Architecture
+### Tool Discovery & Management
 
-The planner now uses a **ToolCatalog** system for flexible tool management:
-
-```python
-from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
-from orchestrator.planner import LargePlanner
-
-# Option 1: Use default catalog (backward compatible)
-planner = LargePlanner(provider="azure-openai")
-plan = await planner.generate_plan("Process receipt...")
-
-# Option 2: Custom catalog
-catalog = ToolCatalog(source="my_tools", version="1.0")
-catalog.add_tool(ToolDefinition(
-    name="custom_analyzer",
-    type="mcp",
-    description="Analyze custom data",
-    parameters=[
-        ToolParameter(name="data", type="object", description="Input data", required=True)
-    ]
-))
-
-planner = LargePlanner(provider="azure-openai", tool_catalog=catalog)
-plan = await planner.generate_plan("Analyze this data...")
-```
-
-**Key Features:**
-- **Backward Compatible** - Existing code works without changes
-- **Type Safe** - Full Pydantic validation with JSON Schema support
-- **Multi-Provider** - Converts to OpenAI/Anthropic/Gemini formats automatically
-- **Search Ready** - `available_tools` parameter for dynamic tool filtering (Phase 3)
-
-See [MIGRATION_GUIDE.md](docs/MIGRATION_GUIDE.md) for upgrading existing code.
-
-## Phase 2: Automatic Tool Discovery
-
-### Discover Tools Automatically
-
-ToolWeaver can automatically discover tools from multiple sources:
+**Automatic tool discovery** from multiple sources:
 
 ```python
 from orchestrator.tool_discovery import ToolDiscoveryOrchestrator
 from orchestrator.planner import LargePlanner
 
-# Discover tools from all sources (MCP, functions, code execution)
+# Discover all available tools
 orchestrator = ToolDiscoveryOrchestrator(
-    enable_cache=True,  # Cache results for 24 hours
+    enable_cache=True,  # 24-hour cache
     cache_ttl=86400
 )
 
 catalog = await orchestrator.discover_all()
+# Sources: MCP workers, Python functions, code execution
+# Performance: ~50ms first run, <1ms cached
 
-print(f"Discovered {len(catalog.tools)} tools:")
-for tool in catalog.tools:
-    print(f"  - {tool.name} ({tool.type}): {tool.description}")
-
-# Use discovered catalog with planner
+# Use with planner
 planner = LargePlanner(provider="azure-openai", tool_catalog=catalog)
 plan = await planner.generate_plan("Process receipt...")
 ```
 
-**Discovery Sources:**
-- **MCP Workers** - Introspects `MCPClientShim.tool_map`, extracts signatures and docstrings
-- **Python Functions** - Scans modules for `@register_function` decorators, extracts type hints
-- **Code Execution** - Registers sandboxed Python execution as a synthetic tool
+**Or manually define tools:**
 
-**Performance:**
-- **First run:** ~50ms (introspection + type extraction)
-- **Cached:** 1ms (loads from `~/.toolweaver/discovered_tools.json`)
-- **Cache TTL:** 24 hours (configurable)
-
-**Discovery Metrics:**
 ```python
-catalog = await orchestrator.discover_all()
-print(f"Discovery completed in {catalog.metadata['discovery_time_ms']:.2f}ms")
-print(f"Cache hit: {catalog.metadata.get('cache_hit', False)}")
-print(f"Tools by source: {catalog.metadata['tools_by_source']}")
+from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
+
+catalog = ToolCatalog()
+catalog.add_tool(ToolDefinition(
+    name="analyze_data",
+    type="function",
+    description="Analyze dataset and return insights",
+    parameters=[
+        ToolParameter(name="data", type="object", required=True),
+        ToolParameter(name="format", type="string", enum=["json", "csv"])
+    ]
+))
 ```
 
-## Phase 3: Semantic Tool Search
+### Semantic Tool Search
 
 ### Intelligent Tool Selection at Scale
 
@@ -520,9 +482,9 @@ engine.clear_cache()
 - ✅ Dynamic tool selection based on query
 - ❌ Small catalogs (≤20 tools, overhead not worth it)
 
-## Phase 4: Programmatic Tool Calling
+### Programmatic Tool Calling
 
-### Parallel Execution with Code Orchestration
+**Parallel execution with code orchestration:**
 
 When you need to call multiple tools or process large datasets, ToolWeaver can **generate code that orchestrates tools in parallel**:
 
@@ -621,9 +583,9 @@ print(f"Called {len(result['tool_calls'])} tools in {result['execution_time']:.2
 - ❌ Single tool call (use direct tool calling)
 - ❌ LLM needs full intermediate results
 
-## Phase 5: Tool Examples & Production Optimization
-
 ### Tool Usage Examples
+
+**Improve LLM parameter accuracy with examples:**
 
 **Problem:** Schema-only tool definitions leave LLMs guessing about format conventions, optional parameters, and edge cases. Result: 72% parameter accuracy.
 
@@ -768,9 +730,9 @@ messages = [
 ```
 
 **Cost Optimization Strategy:**
-1. Phase 3 search: Select 10 relevant tools from 100+ catalog
-2. Phase 5 examples: Include examples for those 10 tools only
-3. Phase 5 caching: Cache the 10 tools + examples (Anthropic 90% discount, OpenAI 50% discount)
+1. Semantic search: Select 10 relevant tools from 100+ catalog
+2. Tool examples: Include examples for those 10 tools only
+3. Prompt caching: Cache the 10 tools + examples (Anthropic 90% discount, OpenAI 50% discount)
 4. **Result**: Improved accuracy + reduced token costs on repeated requests
 
 ### Production Deployment
@@ -784,16 +746,16 @@ See [PRODUCTION_DEPLOYMENT.md](docs/PRODUCTION_DEPLOYMENT.md) for complete produ
 - Troubleshooting common issues
 
 **Production Checklist:**
-- ✅ 234/234 tests passing (updated with Phase 8)
+- ✅ 234/234 tests passing
 - ✅ Azure AD authentication
 - ✅ Managed Identity configured
 - ✅ Resource limits set
 - ✅ Monitoring enabled
 - ✅ Health checks working
 
-## Phase 8: Workflow Composition & Pattern Recognition
+### Workflow Composition
 
-### Automatic Tool Chaining
+**Automatic multi-step workflows with dependency resolution:**
 
 **Problem:** Complex tasks require multiple tools, but manually orchestrating dependencies is error-prone. LLMs repeat common tool sequences instead of learning patterns.
 
@@ -880,7 +842,7 @@ library.register(custom_workflow)
 library.save_to_disk("workflows/custom")
 ```
 
-**Phase 8 Benefits:**
+**Workflow System Benefits:**
 - ✅ **25% faster** - Parallel execution of independent steps
 - ✅ **Pattern learning** - Automatically detect common tool sequences
 - ✅ **Reusable workflows** - Build library of proven patterns
@@ -888,7 +850,7 @@ library.save_to_disk("workflows/custom")
 - ✅ **Error handling** - Retry logic with exponential backoff
 - ✅ **52 tests** - Comprehensive test coverage for workflows and patterns
 
-**See:** [Workflow Usage Guide](docs/WORKFLOW_USAGE_GUIDE.md) | [Architecture Docs](docs/PHASE8_WORKFLOW_ARCHITECTURE.md) | [Demo](examples/demo_workflow.py)
+**See:** [Workflow Usage Guide](docs/WORKFLOW_USAGE_GUIDE.md) | [Architecture Docs](docs/WORKFLOW_ARCHITECTURE.md) | [Demo](examples/demo_workflow.py)
 
 ## End-to-End Example: Discovery → Search → Planning
 
@@ -947,19 +909,29 @@ Semantic search: 30 tools → 10 relevant (~66.7% token reduction, ~3,000 tokens
 
 ## Documentation
 
+### Getting Started
 - **[Configuration Guide](docs/CONFIGURATION.md)** - Complete setup for all providers (Azure OpenAI, OpenAI, Claude, Gemini, Ollama, Azure AI Foundry)
-- **[Migration Guide](docs/MIGRATION_GUIDE.md)** - Upgrade to Phase 1 ToolCatalog architecture
-- **[Two-Model Architecture](docs/TWO_MODEL_ARCHITECTURE.md)** - Why two models? Cost comparison, use cases
-- **[Dynamic Tool Discovery Implementation](docs/DYNAMIC_TOOL_DISCOVERY_IMPLEMENTATION.md)** - Phase 1-8 complete, roadmap for Phase 9-10
-- **[Workflow System Guide](docs/WORKFLOW_USAGE_GUIDE.md)** - Phase 8 workflow composition, pattern recognition, and library
-- **[Workflow Architecture](docs/PHASE8_WORKFLOW_ARCHITECTURE.md)** - Phase 8 technical design and implementation details
-- **[Small Model Improvements](docs/SMALL_MODEL_IMPROVEMENTS.md)** - NEW (Dec 2025): Enhanced Phi3 JSON parsing + Azure CV integration
+- **[Quick Reference](docs/QUICK_REFERENCE.md)** - Common patterns and code snippets
+
+### Core Features
+- **[Workflow System Guide](docs/WORKFLOW_USAGE_GUIDE.md)** - Workflow composition, pattern recognition, and library management
+- **[Two-Model Architecture](docs/TWO_MODEL_ARCHITECTURE.md)** - Cost-optimized architecture with large planner + small executor
 - **[Prompt Caching Best Practices](docs/PROMPT_CACHING.md)** - Reduce costs by 90% with prompt caching strategies
+- **[Search Tuning Guide](docs/SEARCH_TUNING.md)** - Optimize semantic search for your use case
+
+### Deployment & Production
 - **[Production Deployment Guide](docs/PRODUCTION_DEPLOYMENT.md)** - Deploy to Azure with security, monitoring, and scaling
-- [Search Tuning Guide](docs/SEARCH_TUNING.md) - Optimize semantic search for your use case
-- [Architecture Details](docs/ARCHITECTURE.md) - Technical deep dive into orchestrator design
-- [Implementation Summary](docs/IMPLEMENTATION.md) - Development details and metrics
-- [Azure Computer Vision Setup](docs/AZURE_SETUP.md) - Configure real OCR with Azure CV
+- **[Azure Computer Vision Setup](docs/AZURE_SETUP.md)** - Configure real OCR with Azure CV
+- **[Small Model Improvements](docs/SMALL_MODEL_IMPROVEMENTS.md)** - Enhanced Phi3 JSON parsing + Azure CV integration
+
+### Architecture & Technical Details
+- **[Architecture Details](docs/ARCHITECTURE.md)** - Technical deep dive into orchestrator design
+- **[Workflow Architecture](docs/WORKFLOW_ARCHITECTURE.md)** - Workflow engine design and implementation
+- **[Dynamic Tool Discovery](docs/DYNAMIC_TOOL_DISCOVERY_IMPLEMENTATION.md)** - Tool discovery and registration system
+- **[Implementation Summary](docs/IMPLEMENTATION.md)** - Development details and metrics
+
+### Migration & Maintenance
+- **[Migration Guide](docs/MIGRATION_GUIDE.md)** - Upgrade guides and breaking changes
 
 ## Provider Support
 
