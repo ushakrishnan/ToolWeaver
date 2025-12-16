@@ -1,6 +1,55 @@
 # ToolWeaver Examples
 
-This directory contains example scripts demonstrating ToolWeaver functionality.
+This directory contains example scripts, demo applications, and sample data files demonstrating ToolWeaver functionality.
+
+## Demo Applications (Run These First!)
+
+### run_demo.py
+**Complete orchestrator demo** - Execute predefined execution plans
+
+**Usage**:
+```bash
+python examples/run_demo.py
+```
+
+**What it shows**:
+- Hybrid orchestration (MCP workers + function calls + code execution)
+- DAG-based execution with dependencies
+- Receipt OCR → parsing → tax calculation workflow
+- Uses `example_plan.json` and `example_plan_hybrid.json`
+
+### run_planner_demo.py
+**Two-model architecture demo** - Generate and execute plans from natural language
+
+**Usage**:
+```bash
+python examples/run_planner_demo.py "Calculate tax on grocery receipt"
+```
+
+**What it shows**:
+- Large model (GPT-4o/Claude) generates execution plans
+- Small models (Phi-3/Llama) execute specific tasks
+- Hybrid orchestrator manages DAG execution
+- Full natural language → plan → execution pipeline
+
+---
+
+## Example Data Files
+
+### example_plan.json
+Sample execution plan for receipt processing workflow:
+1. OCR image
+2. Parse line items
+3. Calculate tax
+
+### example_plan_hybrid.json
+Advanced execution plan demonstrating:
+- Parallel execution
+- Function calls (compute_tax)
+- Code execution (filter operations)
+- Complex dependencies
+
+---
 
 ## Quick Start Examples
 
@@ -36,6 +85,8 @@ python examples/demo_tool_examples.py
 
 | Example | Features | Output |
 |---------|----------|--------|
+| **run_demo.py** | Hybrid orchestration, DAG execution | Full receipt workflow |
+| **run_planner_demo.py** | Two-model architecture, NL → plan | Complete pipeline demo |
 | **usage_examples.py** | Basic tool registration, function decorators | Tool catalog operations |
 | **test_discovery.py** | Automatic tool discovery, caching | 14 tools discovered in 1ms |
 | **test_search.py** | Semantic search, relevance scoring | Top 10 tools for 6 queries |
