@@ -102,13 +102,13 @@ async def main():
     if 'compute_stats' in context['steps']:
         stats = context['steps']['compute_stats']['result']
         print("💰 Summary:")
-        print(f"   Total Amount: ${stats['total']:.2f}")
+        print(f"   Total Amount: ${stats['total_amount']:.2f}")
         print(f"   Item Count: {stats['count']}")
-        print(f"   Average: ${stats['avg']:.2f}")
+        print(f"   Average: ${stats['avg_amount']:.2f}")
         print()
         print("   By Category:")
-        for category, amount in stats['by_category'].items():
-            print(f"   - {category}: ${amount:.2f}")
+        for category, cat_stats in stats['categories'].items():
+            print(f"   - {category}: ${cat_stats['total']:.2f}")
         print()
 
 
