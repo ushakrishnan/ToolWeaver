@@ -15,6 +15,18 @@ from dotenv import load_dotenv
 logger = logging.getLogger(__name__)
 load_dotenv()
 
+# JSON repair utility
+def _repair_json(text: str) -> str:
+    """Attempt to repair common JSON formatting issues."""
+    import re
+    # Remove control characters (keep standard whitespace)
+    text = ''.join(char for char in text if ord(char) >= 32 or char in '\n\r\t')
+    # Fix common issues
+    text = text.replace('\n', ' ').replace('\r', '')
+    # Remove extra whitespace
+    text = re.sub(r'\s+', ' ', text)
+    return text
+
 # Optional imports for different backends
 try:
     import requests
@@ -293,86 +305,162 @@ class SmallModelWorker:
         
         return await asyncio.to_thread(_request)
     
-    async def parse_line_items(self, ocr_text: str) -> List[Dict[str, Any]]:
+    async def parse_line_items(self, ocr_text: str, max_retries: int = 2) -> List[Dict[str, Any]]:
         """
         Parse receipt OCR text into structured line items using small model.
         
         Args:
             ocr_text: Raw text from OCR
+            max_retries: Number of retry attempts if JSON parsing fails
             
         Returns:
             List of line items with description, quantity, price, total
         """
-        system_prompt = """You are a receipt parser. Extract line items from receipt text.
-Output valid JSON array only, no explanations.
+        system_prompt = """You are a JSON-only parser. Return ONLY the JSON array, nothing else.
 
-Format:
-[
-  {"description": "item name", "quantity": 1, "unit_price": 2.50, "total": 2.50},
-  ...
-]
+Extract line items from receipts. Skip totals/tax/subtotals.
+Format: [{"description": "Item", "quantity": N, "unit_price": X.XX, "total": Y.YY}]
 
-If no items found, return empty array []."""
+NO explanations. NO markdown. ONLY the JSON array."""
         
         prompt = f"""Receipt text:
 {ocr_text}
 
-Extract all line items as JSON array:"""
+JSON array of line items:"""
         
-        response = await self.generate(prompt, system_prompt, max_tokens=1024, temperature=0.1)
-        
-        # Extract JSON from response
-        try:
-            # Try to find JSON array in response
-            start = response.find('[')
-            end = response.rfind(']') + 1
-            if start >= 0 and end > start:
-                json_str = response[start:end]
-                items = json.loads(json_str)
-                logger.info(f"Parsed {len(items)} line items with small model")
-                return items
-            else:
-                logger.warning("No JSON array found in response")
+        for attempt in range(max_retries + 1):
+            try:
+                response = await self.generate(prompt, system_prompt, max_tokens=1024, temperature=0.05)
+                
+                # Clean up response - remove markdown code blocks if present
+                response = response.strip()
+                if response.startswith('```'):
+                    lines = response.split('\n')
+                    response = '\n'.join(lines[1:-1] if len(lines) > 2 else lines)
+                response = response.strip()
+                
+                # Extract JSON array from response - try multiple positions
+                start_pos = 0
+                while True:
+                    start = response.find('[', start_pos)
+                    if start < 0:
+                        break
+                    
+                    # Find matching closing bracket
+                    bracket_count = 0
+                    end = start
+                    for i in range(start, len(response)):
+                        if response[i] == '[':
+                            bracket_count += 1
+                        elif response[i] == ']':
+                            bracket_count -= 1
+                            if bracket_count == 0:
+                                end = i + 1
+                                break
+                    
+                    if end > start:
+                        try:
+                            json_str = response[start:end]
+                            json_str = _repair_json(json_str)
+                            items = json.loads(json_str)
+                            if isinstance(items, list):  # Verify it's actually an array
+                                logger.info(f"Parsed {len(items)} line items with small model (attempt {attempt + 1})")
+                                return items
+                        except json.JSONDecodeError:
+                            # Try next array in response
+                            start_pos = start + 1
+                            continue
+                    
+                    start_pos = start + 1
+                
+                logger.warning(f"No valid JSON array found in response (attempt {attempt + 1})")
+                if attempt < max_retries:
+                    continue
                 return []
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse line items JSON: {e}")
-            logger.debug(f"Response was: {response}")
-            return []
+            except json.JSONDecodeError as e:
+                logger.warning(f"JSON parse error on attempt {attempt + 1}: {e}")
+                if attempt < max_retries:
+                    # Adjust prompt for retry
+                    system_prompt += "\n\nIMPORTANT: Ensure output is valid JSON with proper escaping."
+                    continue
+                else:
+                    logger.error(f"Failed to parse line items after {max_retries + 1} attempts")
+                    logger.error(f"Final response was: {response[:800]}")
+                    return []
+            except Exception as e:
+                logger.error(f"Unexpected error parsing line items: {e}")
+                return []
+        
+        return []
     
-    async def categorize_items(self, items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    async def categorize_items(self, items: List[Dict[str, Any]], max_retries: int = 2) -> List[Dict[str, Any]]:
         """
         Categorize items into expense categories using small model.
         
         Args:
             items: List of items to categorize
+            max_retries: Number of retry attempts if JSON parsing fails
             
         Returns:
             Items with added 'category' field
         """
-        system_prompt = """You are an expense categorizer. Assign categories to items.
-Categories: food, beverage, household, health, other
-Output valid JSON array only, with original fields plus "category"."""
+        if not items:
+            return []
+            
+        system_prompt = """You are an expense categorizer.
+
+RULES:
+1. Output ONLY a valid JSON array - no markdown, no explanations
+2. Categories: food, beverage, household, health, other
+3. Keep all original fields and add "category" field
+4. Use standard ASCII characters only
+
+EXAMPLE:
+Input: [{"description": "Coffee", "quantity": 1, "unit_price": 3.50, "total": 3.50}]
+Output: [{"description": "Coffee", "quantity": 1, "unit_price": 3.50, "total": 3.50, "category": "beverage"}]"""
         
         items_json = json.dumps(items, indent=2)
-        prompt = f"""Items:
+        prompt = f"""Items to categorize:
 {items_json}
 
-Add "category" field to each item and return complete JSON array:"""
+JSON array with category added:"""
         
-        response = await self.generate(prompt, system_prompt, max_tokens=2048, temperature=0.1)
-        
-        try:
-            start = response.find('[')
-            end = response.rfind(']') + 1
-            if start >= 0 and end > start:
-                json_str = response[start:end]
-                categorized = json.loads(json_str)
-                logger.info(f"Categorized {len(categorized)} items with small model")
-                return categorized
-            else:
-                logger.warning("No JSON array found in categorization response")
+        for attempt in range(max_retries + 1):
+            try:
+                response = await self.generate(prompt, system_prompt, max_tokens=2048, temperature=0.05)
+                
+                # Clean up response - remove markdown code blocks
+                response = response.strip()
+                if response.startswith('```'):
+                    lines = response.split('\n')
+                    response = '\n'.join(lines[1:-1] if len(lines) > 2 else lines)
+                response = response.strip()
+                
+                # Extract JSON array
+                start = response.find('[')
+                end = response.rfind(']') + 1
+                if start >= 0 and end > start:
+                    json_str = response[start:end]
+                    json_str = _repair_json(json_str)
+                    categorized = json.loads(json_str)
+                    logger.info(f"Categorized {len(categorized)} items with small model (attempt {attempt + 1})")
+                    return categorized
+                else:
+                    logger.warning(f"No JSON array found in categorization response (attempt {attempt + 1})")
+                    if attempt < max_retries:
+                        continue
+                    return items
+            except json.JSONDecodeError as e:
+                logger.warning(f"JSON parse error on attempt {attempt + 1}: {e}")
+                if attempt < max_retries:
+                    system_prompt += "\n\nIMPORTANT: Ensure output is valid JSON with proper escaping."
+                    continue
+                else:
+                    logger.error(f"Failed to parse categorization after {max_retries + 1} attempts")
+                    logger.debug(f"Final response was: {response[:500]}")
+                    return items
+            except Exception as e:
+                logger.error(f"Unexpected error categorizing items: {e}")
                 return items
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse categorization JSON: {e}")
-            logger.debug(f"Response was: {response}")
-            return items
+        
+        return items

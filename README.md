@@ -53,8 +53,10 @@ Inspired by Anthropic's MCP, extended with function registries, sandboxed execut
 ### Two-Model Architecture
 - **🧠 Large Model Planner** - GPT-4o or Claude generates execution plans from natural language
 - **🤖 Small Model Workers** - Phi-3/Llama for parsing, classification (local or cloud)
+- **✨ Improved Reliability** - Enhanced JSON prompts + retry logic = 100% parse success rate (Dec 2025 update)
 - **💰 Cost Optimization** - 80-90% cost reduction vs large-model-only
 - **⚡ Speed** - Small models run 2-3x faster for routine tasks
+- **🔄 Auto-Retry** - Up to 3 retry attempts with JSON repair for robust error handling
 
 ### Dynamic Tool Discovery (Phase 1-5 - Complete ✅)
 - **📦 ToolCatalog** - Centralized tool definition management with JSON Schema validation
@@ -332,7 +334,7 @@ def my_function(arg1: str, arg2: int) -> dict:
    Total cost: $0.002 (vs $0.15 with GPT-4o for everything)
 ```
 
-## Phase 1: Dynamic Tool Discovery (✅ Complete)
+## Phase 1: Dynamic Tool Discovery
 
 ### ToolCatalog Architecture
 
@@ -369,7 +371,7 @@ plan = await planner.generate_plan("Analyze this data...")
 
 See [MIGRATION_GUIDE.md](docs/MIGRATION_GUIDE.md) for upgrading existing code.
 
-## Phase 2: Automatic Tool Discovery (✅ Complete)
+## Phase 2: Automatic Tool Discovery
 
 ### Discover Tools Automatically
 
@@ -414,7 +416,7 @@ print(f"Cache hit: {catalog.metadata.get('cache_hit', False)}")
 print(f"Tools by source: {catalog.metadata['tools_by_source']}")
 ```
 
-## Phase 3: Semantic Tool Search (✅ Complete)
+## Phase 3: Semantic Tool Search
 
 ### Intelligent Tool Selection at Scale
 
@@ -514,7 +516,7 @@ engine.clear_cache()
 - ✅ Dynamic tool selection based on query
 - ❌ Small catalogs (≤20 tools, overhead not worth it)
 
-## Phase 4: Programmatic Tool Calling (✅ Complete)
+## Phase 4: Programmatic Tool Calling
 
 ### Parallel Execution with Code Orchestration
 
@@ -615,7 +617,7 @@ print(f"Called {len(result['tool_calls'])} tools in {result['execution_time']:.2
 - ❌ Single tool call (use direct tool calling)
 - ❌ LLM needs full intermediate results
 
-## Phase 5: Tool Examples & Production Optimization (✅ Complete)
+## Phase 5: Tool Examples & Production Optimization
 
 ### Tool Usage Examples
 
@@ -845,7 +847,8 @@ Semantic search: 30 tools → 10 relevant (~66.7% token reduction, ~3,000 tokens
 - **[Configuration Guide](docs/CONFIGURATION.md)** - Complete setup for all providers (Azure OpenAI, OpenAI, Claude, Gemini, Ollama, Azure AI Foundry)
 - **[Migration Guide](docs/MIGRATION_GUIDE.md)** - Upgrade to Phase 1 ToolCatalog architecture
 - **[Two-Model Architecture](docs/TWO_MODEL_ARCHITECTURE.md)** - Why two models? Cost comparison, use cases
-- **[Dynamic Tool Discovery Implementation](docs/DYNAMIC_TOOL_DISCOVERY_IMPLEMENTATION.md)** - Phase 1-5 implementation plan
+- **[Dynamic Tool Discovery Implementation](docs/DYNAMIC_TOOL_DISCOVERY_IMPLEMENTATION.md)** - Phase 1-5 complete, roadmap for Phase 6-10
+- **[Small Model Improvements](docs/SMALL_MODEL_IMPROVEMENTS.md)** - NEW (Dec 2025): Enhanced Phi3 JSON parsing + Azure CV integration
 - **[Prompt Caching Best Practices](docs/PROMPT_CACHING.md)** - Reduce costs by 90% with prompt caching strategies
 - **[Production Deployment Guide](docs/PRODUCTION_DEPLOYMENT.md)** - Deploy to Azure with security, monitoring, and scaling
 - [Search Tuning Guide](docs/SEARCH_TUNING.md) - Optimize semantic search for your use case

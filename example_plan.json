@@ -21,6 +21,7 @@
         "step-1"
       ],
       "mode": "sequential",
+      "timeout_s": 120,
       "idempotency_key": "parse-req-0001"
     },
     {
@@ -48,6 +49,7 @@
         "step-2"
       ],
       "mode": "parallel",
+      "timeout_s": 120,
       "idempotency_key": "cat-req-0001"
     }
   ],

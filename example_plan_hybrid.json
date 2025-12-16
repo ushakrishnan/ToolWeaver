@@ -21,6 +21,7 @@
         "step-1"
       ],
       "mode": "sequential",
+      "timeout_s": 120,
       "idempotency_key": "parse-hybrid-001"
     },
     {
