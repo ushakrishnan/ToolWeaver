@@ -20,6 +20,7 @@ from qdrant_client.models import (
 )
 from sentence_transformers import SentenceTransformer
 import numpy as np
+import torch
 
 from .models import ToolCatalog, ToolDefinition
 
@@ -57,7 +58,9 @@ class VectorToolSearchEngine:
         collection_name: str = "toolweaver_tools",
         embedding_model: str = "all-MiniLM-L6-v2",
         embedding_dim: int = 384,
-        fallback_to_memory: bool = True
+        fallback_to_memory: bool = True,
+        use_gpu: bool = True,
+        precompute_embeddings: bool = True
     ):
         """
         Initialize vector search engine.
@@ -68,12 +71,19 @@ class VectorToolSearchEngine:
             embedding_model: SentenceTransformer model name
             embedding_dim: Embedding dimension
             fallback_to_memory: Use in-memory search if Qdrant unavailable
+            use_gpu: Use GPU for embedding generation if available
+            precompute_embeddings: Pre-compute embeddings at startup
         """
         self.qdrant_url = qdrant_url
         self.collection_name = collection_name
         self.embedding_model_name = embedding_model
         self.embedding_dim = embedding_dim
         self.fallback_to_memory = fallback_to_memory
+        self.use_gpu = use_gpu
+        self.precompute_embeddings = precompute_embeddings
+        
+        # Detect GPU availability
+        self.device = self._detect_device()
         
         # Lazy initialization
         self.client: Optional[QdrantClient] = None
@@ -84,7 +94,36 @@ class VectorToolSearchEngine:
         self.memory_embeddings: Dict[str, np.ndarray] = {}
         self.memory_tools: Dict[str, ToolDefinition] = {}
         
-        logger.info(f"VectorToolSearchEngine initialized (Qdrant: {qdrant_url})")
+        # Pre-computed embeddings cache
+        self.embedding_cache: Dict[str, np.ndarray] = {}
+        
+        logger.info(f"VectorToolSearchEngine initialized (Qdrant: {qdrant_url}, Device: {self.device})")
+    
+    def _detect_device(self) -> str:
+        """
+        Detect best available device for embedding generation.
+        
+        Returns:
+            Device string: 'cuda', 'mps', or 'cpu'
+        """
+        if not self.use_gpu:
+            logger.info("GPU disabled by configuration, using CPU")
+            return "cpu"
+        
+        # Check for NVIDIA CUDA
+        if torch.cuda.is_available():
+            gpu_name = torch.cuda.get_device_name(0)
+            gpu_memory = torch.cuda.get_device_properties(0).total_memory / (1024**3)  # GB
+            logger.info(f"GPU detected: {gpu_name} ({gpu_memory:.1f} GB)")
+            return "cuda"
+        
+        # Check for Apple Silicon MPS (Metal Performance Shaders)
+        if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            logger.info("Apple Silicon GPU detected (MPS)")
+            return "mps"
+        
+        logger.info("No GPU available, using CPU")
+        return "cpu"
     
     def _init_qdrant_client(self):
         """Initialize Qdrant client with connection pooling"""
@@ -107,11 +146,21 @@ class VectorToolSearchEngine:
                 logger.info("Will use in-memory fallback for vector search")
     
     def _init_embedding_model(self):
-        """Lazy initialization of embedding model"""
+        """Lazy initialization of embedding model with GPU support"""
         if self.embedding_model is None:
             logger.info(f"Loading embedding model: {self.embedding_model_name}")
             self.embedding_model = SentenceTransformer(self.embedding_model_name)
-            logger.info(f"Embedding model loaded (dim={self.embedding_dim})")
+            
+            # Move model to GPU if available
+            if self.device in ["cuda", "mps"]:
+                try:
+                    self.embedding_model.to(self.device)
+                    logger.info(f"Embedding model moved to {self.device.upper()}")
+                except Exception as e:
+                    logger.warning(f"Failed to move model to {self.device}: {e}")
+                    self.device = "cpu"
+            
+            logger.info(f"Embedding model loaded (dim={self.embedding_dim}, device={self.device})")
     
     def _ensure_collection_exists(self):
         """Create collection if it doesn't exist"""
@@ -155,16 +204,14 @@ class VectorToolSearchEngine:
             logger.warning("Empty catalog - nothing to index")
             return False
         
-        logger.info(f"Indexing {len(tools)} tools (batch_size={batch_size})...")
+        logger.info(f"Indexing {len(tools)} tools (batch_size={batch_size}, device={self.device})...")
         
-        # Generate embeddings in batches
+        # Generate embeddings in batches with GPU acceleration
         descriptions = [self._get_searchable_text(tool) for tool in tools]
-        embeddings = self.embedding_model.encode(
+        embeddings = self._generate_embeddings_batch(
             descriptions,
             batch_size=batch_size,
-            show_progress_bar=True,
-            convert_to_numpy=True,
-            normalize_embeddings=True
+            show_progress=True
         )
         
         if self.qdrant_available:
@@ -233,12 +280,13 @@ class VectorToolSearchEngine:
         self._init_qdrant_client()
         self._init_embedding_model()
         
-        # Generate query embedding
-        query_embedding = self.embedding_model.encode(
-            query,
-            convert_to_numpy=True,
-            normalize_embeddings=True
+        # Generate query embedding (uses cache if available)
+        query_embeddings = self._generate_embeddings_batch(
+            [query],
+            batch_size=1,
+            show_progress=False
         )
+        query_embedding = query_embeddings[0]
         
         # Try Qdrant search first
         if self.qdrant_available:
@@ -342,6 +390,128 @@ class VectorToolSearchEngine:
         
         logger.info(f"In-memory search returned {len(results)} results")
         return results
+    
+    def _generate_embeddings_batch(
+        self,
+        texts: List[str],
+        batch_size: int = 32,
+        show_progress: bool = True
+    ) -> np.ndarray:
+        """
+        Generate embeddings in batches with GPU acceleration.
+        
+        Args:
+            texts: List of text strings to encode
+            batch_size: Batch size for encoding (larger for GPU)
+            show_progress: Show progress bar
+        
+        Returns:
+            Numpy array of embeddings (shape: [num_texts, embedding_dim])
+        """
+        # Check cache first
+        cached_embeddings = []
+        texts_to_encode = []
+        text_indices = []
+        
+        for i, text in enumerate(texts):
+            cache_key = self._get_cache_key(text)
+            if cache_key in self.embedding_cache:
+                cached_embeddings.append((i, self.embedding_cache[cache_key]))
+            else:
+                texts_to_encode.append(text)
+                text_indices.append(i)
+        
+        # If all cached, return immediately
+        if not texts_to_encode:
+            logger.info(f"All {len(texts)} embeddings retrieved from cache")
+            result = np.zeros((len(texts), self.embedding_dim))
+            for idx, emb in cached_embeddings:
+                result[idx] = emb
+            return result
+        
+        logger.info(f"Generating {len(texts_to_encode)} embeddings ({len(cached_embeddings)} cached)")
+        
+        # Adjust batch size for GPU (can handle larger batches)
+        if self.device in ["cuda", "mps"]:
+            batch_size = min(batch_size * 4, 128)  # 4x larger batches on GPU
+            logger.debug(f"Using GPU batch size: {batch_size}")
+        
+        # Generate embeddings
+        new_embeddings = self.embedding_model.encode(
+            texts_to_encode,
+            batch_size=batch_size,
+            show_progress_bar=show_progress,
+            convert_to_numpy=True,
+            normalize_embeddings=True,
+            device=self.device
+        )
+        
+        # Cache new embeddings
+        for i, text in enumerate(texts_to_encode):
+            cache_key = self._get_cache_key(text)
+            self.embedding_cache[cache_key] = new_embeddings[i]
+        
+        # Combine cached and new embeddings
+        result = np.zeros((len(texts), self.embedding_dim))
+        for idx, emb in cached_embeddings:
+            result[idx] = emb
+        for i, idx in enumerate(text_indices):
+            result[idx] = new_embeddings[i]
+        
+        return result
+    
+    def _get_cache_key(self, text: str) -> str:
+        """Generate cache key from text (first 100 chars hash)"""
+        return str(hash(text[:100]))
+    
+    def precompute_catalog_embeddings(self, catalog: ToolCatalog):
+        """
+        Pre-compute embeddings for all tools in catalog at startup.
+        
+        This eliminates cold-start latency by caching embeddings in memory.
+        
+        Args:
+            catalog: Tool catalog to pre-compute embeddings for
+        """
+        if not self.precompute_embeddings:
+            logger.debug("Embedding pre-computation disabled")
+            return
+        
+        tools = list(catalog.tools.values())
+        if not tools:
+            logger.warning("Empty catalog - nothing to pre-compute")
+            return
+        
+        logger.info(f"Pre-computing embeddings for {len(tools)} tools...")
+        descriptions = [self._get_searchable_text(tool) for tool in tools]
+        
+        # Generate and cache embeddings
+        start_time = torch.cuda.Event(enable_timing=True) if self.device == "cuda" else None
+        end_time = torch.cuda.Event(enable_timing=True) if self.device == "cuda" else None
+        
+        if start_time:
+            start_time.record()
+        
+        embeddings = self._generate_embeddings_batch(
+            descriptions,
+            batch_size=64,  # Larger batch for pre-computation
+            show_progress=False
+        )
+        
+        if end_time:
+            end_time.record()
+            torch.cuda.synchronize()
+            elapsed_ms = start_time.elapsed_time(end_time)
+            logger.info(f"Pre-computed {len(tools)} embeddings in {elapsed_ms:.1f}ms on {self.device.upper()}")
+        else:
+            logger.info(f"Pre-computed {len(tools)} embeddings on {self.device.upper()}")
+        
+        # Cache results
+        for i, tool in enumerate(tools):
+            cache_key = self._get_cache_key(self._get_searchable_text(tool))
+            self.embedding_cache[cache_key] = embeddings[i]
+        
+        logger.info(f"Embedding cache size: {len(self.embedding_cache)} entries")
     
     def _get_searchable_text(self, tool: ToolDefinition) -> str:
         """Extract searchable text from tool definition"""
