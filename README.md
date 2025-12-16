@@ -909,9 +909,12 @@ Semantic search: 30 tools → 10 relevant (~66.7% token reduction, ~3,000 tokens
 
 ## Documentation
 
+> **📚 See [docs/README.md](docs/README.md) for complete documentation index with reading paths and use case guides**
+
 ### Getting Started
 - **[Configuration Guide](docs/CONFIGURATION.md)** - Complete setup for all providers (Azure OpenAI, OpenAI, Claude, Gemini, Ollama, Azure AI Foundry)
 - **[Quick Reference](docs/QUICK_REFERENCE.md)** - Common patterns and code snippets
+- **[Free Tier Setup](docs/FREE_TIER_SETUP.md)** - Get started with free providers (no credit card)
 
 ### Core Features
 - **[Features Guide](docs/FEATURES_GUIDE.md)** - Complete feature overview with performance metrics and capabilities
@@ -922,8 +925,13 @@ Semantic search: 30 tools → 10 relevant (~66.7% token reduction, ~3,000 tokens
 
 ### Deployment & Production
 - **[Production Deployment Guide](docs/PRODUCTION_DEPLOYMENT.md)** - Deploy to Azure with security, monitoring, and scaling
+- **[Security Guide](docs/SECURITY.md)** - Security best practices, AST validation, and authentication
 - **[Azure Computer Vision Setup](docs/AZURE_SETUP.md)** - Configure real OCR with Azure CV
 - **[Small Model Improvements](docs/SMALL_MODEL_IMPROVEMENTS.md)** - Enhanced Phi3 JSON parsing + Azure CV integration
+
+### Scaling & Infrastructure
+- **[Qdrant Setup](docs/QDRANT_SETUP.md)** - Vector database for 1000+ tool catalogs
+- **[Redis Setup](docs/REDIS_SETUP.md)** - Distributed cache for multi-instance deployments
 
 ### Architecture & Technical Details
 - **[Architecture Details](docs/ARCHITECTURE.md)** - Technical deep dive into orchestrator design
