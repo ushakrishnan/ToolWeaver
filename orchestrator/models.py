@@ -51,6 +51,7 @@ class ToolDefinition(BaseModel):
     version: str = "1.0"
     defer_loading: bool = False  # Phase 3: For semantic search
     examples: List[ToolExample] = Field(default_factory=list)  # Phase 5: Usage examples
+    domain: str = "general"  # Phase 7: Tool domain for sharding (github, slack, aws, etc.)
     
     def to_llm_format(self, include_examples: bool = True) -> Dict[str, Any]:
         """
