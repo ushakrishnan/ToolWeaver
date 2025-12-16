@@ -172,7 +172,7 @@ Sparse Vector Configuration:
 ```powershell
 # From project directory with venv activated
 .\.venv\Scripts\Activate.ps1
-python test_cloud_connections.py
+python scripts/test_cloud_connections.py
 ```
 
 Expected output:

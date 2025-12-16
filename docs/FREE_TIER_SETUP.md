@@ -120,6 +120,10 @@ REDIS_FALLBACK_ENABLED=true
 ## Testing Your Setup
 
 ```powershell
+# Quick test both services
+python scripts/test_cloud_connections.py
+
+# Or test individually:
 # Activate venv
 cd C:\Usha\UKRepos\ToolWeaver
 .\.venv\Scripts\Activate.ps1
