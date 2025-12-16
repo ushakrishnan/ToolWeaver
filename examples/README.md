@@ -1,8 +1,73 @@
 # ToolWeaver Examples
 
-This directory contains example scripts, demo applications, and sample data files demonstrating ToolWeaver functionality.
+Real-world examples demonstrating ToolWeaver capabilities with increasing complexity.
 
-## Demo Applications (Run These First!)
+## 📚 Structured Examples (Start Here!)
+
+### [01-basic-receipt-processing](01-basic-receipt-processing/)
+**Complexity:** ⭐ Basic  
+**Time:** 5 minutes
+
+Simple OCR extraction from receipt images using Azure Computer Vision.
+
+**What You'll Learn:**
+- Basic execution plans
+- MCP workers
+- Orchestrator execution
+
+### [02-receipt-with-categorization](02-receipt-with-categorization/)
+**Complexity:** ⭐⭐ Intermediate  
+**Time:** 10 minutes
+
+End-to-end receipt processing: OCR → Parse → Categorize → Statistics.
+
+**What You'll Learn:**
+- Multi-step workflows
+- Step dependencies
+- Small model workers (Phi-3)
+- Function calls
+- Cost optimization (98% savings vs GPT-4o)
+
+### [03-github-operations](03-github-operations/)
+**Complexity:** ⭐⭐⭐ Advanced  
+**Time:** 15 minutes
+
+GitHub operations using remote MCP server: list files, create issues, PRs, search code.
+
+**What You'll Learn:**
+- Remote MCP servers
+- GitHub integration
+- SSE protocol
+- Token authentication
+- 36+ GitHub tools
+
+## 🚀 Quick Start
+
+Each example is self-contained with:
+- **README.md** - What it does, setup, run instructions
+- **.env** - Minimal configuration (only what's needed)
+- **Python script** - Working code with comments
+
+```bash
+# Navigate to any example
+cd 01-basic-receipt-processing
+
+# Follow the README
+cat README.md
+
+# Run
+python process_receipt.py
+```
+
+## 📖 Learning Path
+
+1. Start with **01-basic** to understand execution plans
+2. Move to **02-receipt-with-categorization** for multi-step workflows
+3. Try **03-github-operations** for external integrations
+
+---
+
+## Legacy Demo Applications (Unstructured)
 
 ### run_demo.py
 **Complete orchestrator demo** - Execute predefined execution plans
