@@ -31,6 +31,7 @@ dependencies = [
     "anyio>=4.0.0",
     "python-dotenv>=1.0.0",
     "requests>=2.31.0",
+    "httpx>=0.27.0",
     "aiohttp>=3.9.0",
     "azure-ai-vision-imageanalysis>=1.0.0",
     "azure-identity>=1.15.0",
