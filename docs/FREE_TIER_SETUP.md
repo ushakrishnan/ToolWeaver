@@ -199,19 +199,16 @@ tool_cache.EMBEDDING_TTL = 24 * 3600  # 24h instead of 7d
 
 ---
 
-## Requirements.txt
+## Installation
 
-Already added in your project:
+Install ToolWeaver with optional scaling dependencies:
 
-```pip
-# Phase 7: Scale Optimization (1000+ tools)
-qdrant-client>=1.16.0  # Vector database
-redis>=5.0.0  # Distributed caching
-```
-
-Install both:
 ```powershell
-pip install qdrant-client redis
+# Core + Redis + Qdrant
+pip install -e . redis qdrant-client
+
+# Or install everything
+pip install -e ".[all]"
 ```
 
 ---

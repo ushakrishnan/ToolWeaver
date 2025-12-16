@@ -48,7 +48,7 @@ No setup needed! The system uses fake receipt data for testing.
 ### Step 4: Install Dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install -e .
 ```
 
 ### Step 5: Test It
@@ -103,7 +103,7 @@ Update the example plans with your image URLs:
 - Set `OCR_MODE=azure`
 
 ### Error: "Module 'azure.ai.vision.imageanalysis' not found"
-- Run: `pip install -r requirements.txt`
+- Run: `pip install -e .`
 
 ### Error: "Access denied" or "Invalid subscription key"
 - Verify your API key is correct

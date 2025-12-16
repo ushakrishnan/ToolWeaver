@@ -191,8 +191,8 @@ WORKER_MODEL=microsoft/Phi-3-mini-4k-instruct
 
 **Setup Steps:**
 ```bash
-# Install dependencies
-pip install transformers torch accelerate
+# Install with local model support
+pip install -e ".[local-models]"
 
 # Models will auto-download on first use
 ```

@@ -89,19 +89,28 @@ Natural Language → Large Model (Planning) → Tool Search → Workflow Executi
 
 ## Quick Start
 
-### Option 1: Pre-Defined Plans (No LLM Required)
+### Installation
 
 ```bash
 # Clone and setup
-git clone <your-repo-url>
-cd CodeExec
+git clone https://github.com/ushakrishnan/ToolWeaver
+cd ToolWeaver
 python -m venv .venv
 .venv\Scripts\activate          # Windows
 # source .venv/bin/activate     # Linux/Mac
 
-# Install core dependencies
-pip install -r requirements.txt
+# Install ToolWeaver (editable mode for development)
+pip install -e .
 
+# Or install with optional features:
+pip install -e ".[monitoring]"   # Add W&B + Prometheus monitoring
+pip install -e ".[dev]"          # Add development tools
+pip install -e ".[all]"          # Everything
+```
+
+### Option 1: Pre-Defined Plans (No LLM Required)
+
+```bash
 # Run demo with existing plans
 python run_demo.py
 ```
@@ -109,8 +118,7 @@ python run_demo.py
 ### Option 2: Natural Language Planning (Requires LLM API Key)
 
 ```bash
-# Install LLM dependencies
-pip install openai anthropic
+# LLM providers already included in core install
 
 # Configure provider in .env
 # Edit .env and add:
