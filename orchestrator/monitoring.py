@@ -1,15 +1,20 @@
 """
-Tool Usage Monitoring and Observability (Phase 5)
+Tool Usage Monitoring and Observability
 
 Tracks tool usage, errors, performance, and costs for production monitoring.
 Provides metrics collection, logging, and performance analysis.
+
+Supports pluggable backends:
+- Local: File-based logging (default, no dependencies)
+- W&B: Weights & Biases integration (optional)
+- Prometheus: Metrics export (optional)
 """
 
 import os
 import json
 import pickle
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Union
 from datetime import datetime, timezone
 from collections import defaultdict
 from dataclasses import dataclass, asdict
@@ -45,22 +50,78 @@ class ToolUsageMonitor:
     - Search query tracking
     - Cache hit/miss rates
     - Token usage tracking
-    - File-based logging
+    - Pluggable backends (local, W&B, Prometheus)
     - In-memory metrics aggregation
+    
+    Examples:
+        # Local only (default)
+        monitor = ToolUsageMonitor()
+        
+        # W&B integration
+        monitor = ToolUsageMonitor(backends=["local", "wandb"])
+        
+        # Prometheus for production
+        monitor = ToolUsageMonitor(backends=["prometheus"])
+        
+        # All backends
+        monitor = ToolUsageMonitor(backends=["local", "wandb", "prometheus"])
     """
     
-    def __init__(self, log_to_file: bool = True, log_dir: str = ".tool_logs"):
+    def __init__(
+        self,
+        backends: Optional[Union[str, List[str]]] = None,
+        log_to_file: bool = True,
+        log_dir: str = ".tool_logs",
+        backend_config: Optional[Dict[str, Any]] = None
+    ):
         """
-        Initialize monitoring.
+        Initialize monitoring with pluggable backends.
         
         Args:
-            log_to_file: Enable file logging
-            log_dir: Directory for log files
+            backends: Backend(s) to use: "local", "wandb", "prometheus" or list
+            log_to_file: Enable file logging (for local backend)
+            log_dir: Directory for log files (for local backend)
+            backend_config: Backend-specific configuration dict
         """
+        # Normalize backends
+        if backends is None:
+            backends = ["local"]
+        elif isinstance(backends, str):
+            backends = [backends]
+        
+        self.backends = []
+        backend_config = backend_config or {}
+        
+        # Initialize backends
+        for backend_type in backends:
+            try:
+                if backend_type == "local":
+                    from orchestrator.monitoring_backends import LocalBackend
+                    config = backend_config.get("local", {"log_dir": log_dir})
+                    self.backends.append(LocalBackend(**config))
+                
+                elif backend_type == "wandb":
+                    from orchestrator.monitoring_backends import WandbBackend
+                    config = backend_config.get("wandb", {})
+                    self.backends.append(WandbBackend(**config))
+                    print("✅ W&B monitoring enabled")
+                
+                elif backend_type == "prometheus":
+                    from orchestrator.monitoring_backends import PrometheusBackend
+                    config = backend_config.get("prometheus", {})
+                    self.backends.append(PrometheusBackend(**config))
+                
+                else:
+                    print(f"⚠️  Unknown backend type: {backend_type}")
+            
+            except ImportError as e:
+                print(f"⚠️  Could not load {backend_type} backend: {e}")
+        
+        # Backward compatibility
         self.log_to_file = log_to_file
         self.log_dir = log_dir
         
-        # In-memory metrics
+        # In-memory metrics (for get_summary, etc.)
         self.metrics = {
             "tool_calls": defaultdict(int),
             "tool_errors": defaultdict(int),
@@ -74,9 +135,6 @@ class ToolUsageMonitor:
         # Detailed logs (last 1000 events)
         self.tool_call_log: List[ToolCallMetric] = []
         self.search_log: List[SearchMetric] = []
-        
-        if log_to_file:
-            os.makedirs(log_dir, exist_ok=True)
     
     def log_tool_call(
         self,
@@ -116,9 +174,12 @@ class ToolUsageMonitor:
         if len(self.tool_call_log) > 1000:
             self.tool_call_log.pop(0)
         
-        # Write to file
-        if self.log_to_file:
-            self._write_log("tool_calls", asdict(metric))
+        # Send to all backends
+        for backend in self.backends:
+            try:
+                backend.log_tool_call(tool_name, success, latency, error, execution_id)
+            except Exception as e:
+                print(f"⚠️  Backend error: {e}")
     
     def log_search_query(
         self,
@@ -153,8 +214,12 @@ class ToolUsageMonitor:
         else:
             self.metrics["cache_misses"] += 1
         
-        if self.log_to_file:
-            self._write_log("search_queries", asdict(metric))
+        # Send to all backends
+        for backend in self.backends:
+            try:
+                backend.log_search_query(query, num_results, latency, cache_hit)
+            except Exception as e:
+                print(f"⚠️  Backend error: {e}")
     
     def log_token_usage(
         self,
@@ -174,13 +239,12 @@ class ToolUsageMonitor:
         self.metrics["token_usage"]["output"] += output_tokens
         self.metrics["token_usage"]["cached"] += cached_tokens
         
-        if self.log_to_file:
-            self._write_log("token_usage", {
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-                "input": input_tokens,
-                "output": output_tokens,
-                "cached": cached_tokens
-            })
+        # Send to all backends
+        for backend in self.backends:
+            try:
+                backend.log_token_usage(input_tokens, output_tokens, cached_tokens)
+            except Exception as e:
+                print(f"⚠️  Backend error: {e}")
     
     def get_tool_metrics(self, tool_name: str) -> Dict[str, Any]:
         """
@@ -289,6 +353,17 @@ class ToolUsageMonitor:
         with open(filepath, 'w') as f:
             json.dump(export_data, f, indent=2)
     
+    def flush(self):
+        """
+        Flush all backends (useful for W&B, graceful shutdown).
+        Call this at the end of your program.
+        """
+        for backend in self.backends:
+            try:
+                backend.flush()
+            except Exception as e:
+                print(f"⚠️  Backend flush error: {e}")
+    
     def _get_top_tools(self, limit: int = 5) -> List[Dict[str, Any]]:
         """Get top tools by call count."""
         tools = [
@@ -296,18 +371,6 @@ class ToolUsageMonitor:
             for name, count in self.metrics["tool_calls"].items()
         ]
         return sorted(tools, key=lambda x: x["calls"], reverse=True)[:limit]
-    
-    def _write_log(self, log_type: str, entry: Dict[str, Any]):
-        """Write log entry to file."""
-        if not self.log_to_file:
-            return
-        
-        # Daily log files
-        date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        log_file = Path(self.log_dir) / f"{log_type}_{date_str}.jsonl"
-        
-        with open(log_file, 'a') as f:
-            f.write(json.dumps(entry) + '\n')
 
 
 # Convenience functions
