@@ -306,7 +306,7 @@ class VectorToolSearchEngine:
                 score = hit.score
                 results.append((tool, score))
         
-        logger.info(f"Qdrant search returned {len(results)} results for query: '{query[:50]}...'")
+        logger.info(f"Qdrant search returned {len(results)} results (top_k={top_k}, domain={domain})")
         return results
     
     def _memory_search(
