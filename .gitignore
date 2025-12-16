@@ -81,3 +81,14 @@ Thumbs.db
 # Tool discovery and search cache
 .toolweaver/
 .tool_logs/
+
+# Monitoring and observability
+wandb/
+.wandb/
+*.wandb
+prometheus_multiproc_dir/
+
+# Build system
+*.egg-info/
+.eggs/
+*.whl
