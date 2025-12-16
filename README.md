@@ -8,10 +8,51 @@ Automatically discovers, searches, and chains tools while reducing costs by 80-9
 
 ### 🎯 What It Does
 
-**For AI Applications:**
-Turn natural language requests into multi-step tool executions with automatic dependency resolution, parallel execution, and intelligent caching.
+#### 💡 Simple Explanation
+Imagine you have two teammates:
+- **Smart Planner** (expensive consultant) - Figures out what needs to be done
+- **Fast Worker** (efficient employee) - Actually does the work
 
-**For Developers:**
+You ask the Smart Planner: "Process these receipts and categorize items"
+
+The Smart Planner thinks and says: "Okay, here's the plan:
+1. Extract text from image
+2. Find all items and prices
+3. Put items into categories (food, beverage, etc.)"
+
+Then the Fast Worker executes each step quickly and cheaply, only asking the Smart Planner if something goes wrong.
+
+**Result:** You get smart planning + fast execution = better and cheaper than using the expensive consultant for everything!
+
+#### 🔬 Technical Explanation
+This is an **execution orchestrator** with a **two-model architecture** for agentic AI systems:
+
+**Architecture:**
+1. **Large Planner Model** (GPT-4o, Claude 3.5) - Converts natural language → JSON execution plans
+2. **Small Worker Models** (Phi-3, Llama 3.2) - Executes specific tasks (parsing, classification)
+3. **Hybrid Orchestrator** - DAG-based execution with three tool types
+
+**Problem:** Using large models for everything is expensive and slow. Using small models for planning fails at complex reasoning.
+
+**Solution:**
+- **Large model**: Planning, complex reasoning (1 call per user request)
+- **Small models**: Text extraction, classification, parsing (1000s of calls, local/cheap)
+- **80-90% cost reduction** vs large-model-only approach
+
+**Three Tool Types:**
+- **MCP Workers** - Deterministic operations (OCR, APIs) with optional small model enhancement
+- **Function Calls** - Structured APIs with Pydantic validation
+- **Code Execution** - Sandboxed Python (multiprocessing, restricted builtins)
+
+**Research Applications:**
+- Multi-agent workflows with heterogeneous model requirements
+- Cost-optimized ML pipelines (right model for each task)
+- Hybrid symbolic-neural systems
+- Privacy-preserving AI (sensitive data processed locally with small models)
+
+Inspired by Anthropic's MCP, extended with function registries, sandboxed execution, and two-model optimization.
+
+#### 🚀 For Developers
 - **Automatic tool discovery** - Introspects MCP servers, Python functions, and code execution capabilities
 - **Semantic tool search** - Finds relevant tools from 100+ catalog using hybrid BM25 + embedding search
 - **Workflow composition** - Chains tools automatically with dependency resolution and parallel execution
@@ -74,18 +115,28 @@ Natural Language → Large Model (Planning) → Tool Search → Workflow Executi
 - **Prompt Caching** - Anthropic 90% discount, OpenAI 50% discount on cached tool definitions
 - **Result: 80-90% cost reduction** vs single large model approach
 
+### � Production Monitoring
+- **Zero-Configuration** - Automatic monitoring for all plan executions
+- **Pluggable Backends** - Local (JSONL), Weights & Biases, Prometheus
+- **Multi-Backend Support** - Log to multiple systems simultaneously via `MONITORING_BACKENDS`
+- **Performance Metrics** - Latency, success/failure rates, tool usage patterns
+- **Cost Tracking** - Monitor token usage and API costs in real-time
+- **Production Ready** - W&B dashboards, Prometheus metrics endpoint (port 8000)
+
 ### 🔒 Security & Reliability
 - **Sandboxed Execution** - AST validation, restricted builtins, timeout enforcement
 - **Type Safety** - Full Pydantic validation on inputs/outputs
 - **Auto-Retry** - Up to 3 retry attempts with JSON repair
 - **Process Isolation** - Code runs in separate process with resource limits
-- **Monitoring** - Track usage, performance, errors, and costs in production
+- **Error Handling** - Comprehensive logging with stack traces
 
 ### 🎯 Multi-Provider Support
 - **LLM Providers** - OpenAI, Azure OpenAI (API key or Azure AD), Anthropic, Google Gemini
 - **Small Models** - Ollama (local), Azure OpenAI, OpenAI, or any OpenAI-compatible endpoint
+- **MCP Servers** - Local and remote MCP servers, including GitHub MCP (36+ tools)
 - **Caching** - Redis (distributed) or file-based (local development)
 - **Vector Search** - Qdrant Cloud (free tier) or local deployment
+- **Monitoring** - W&B (cloud), Prometheus (metrics), Local (JSONL)
 
 ## Quick Start
 
@@ -104,18 +155,44 @@ pip install -e .
 
 # Or install with optional features:
 pip install -e ".[monitoring]"   # Add W&B + Prometheus monitoring
+pip install -e ".[github-mcp]"   # Add GitHub MCP server support
 pip install -e ".[dev]"          # Add development tools
 pip install -e ".[all]"          # Everything
+
+# Optional: Configure monitoring (see .env.example)
+cp .env.example .env
+# Edit .env and set: MONITORING_BACKENDS=local,wandb
 ```
 
-### Option 1: Pre-Defined Plans (No LLM Required)
+### Option 1: Try Structured Examples (Recommended)
+
+```bash
+# Start with basic OCR example (⭐)
+cd examples/01-basic-receipt-processing
+cp .env.example .env  # Configure Azure Computer Vision
+python process_receipt.py
+
+# Try multi-step workflow with Phi-3 (⭐⭐)
+cd ../02-receipt-with-categorization
+cp .env.example .env  # Configure Azure CV + Ollama
+python categorize_receipt.py
+
+# Test GitHub MCP integration (⭐⭐⭐)
+cd ../03-github-operations
+cp .env.example .env  # Add GitHub token
+python test_connection.py
+
+# See examples/README.md for detailed walkthroughs
+```
+
+### Option 2: Pre-Defined Plans (No LLM Required)
 
 ```bash
 # Run demo with existing plans
 python run_demo.py
 ```
 
-### Option 2: Natural Language Planning (Requires LLM API Key)
+### Option 3: Natural Language Planning (Requires LLM API Key)
 
 ```bash
 # LLM providers already included in core install
@@ -142,9 +219,9 @@ python run_demo.py
 python run_planner_demo.py "Process this receipt and categorize items"
 ```
 
-### Option 3: With Small Model Workers
+### Option 4: With Small Model Workers
 
-**Option 3A: Ollama (Local - Free)**
+**Option 4A: Ollama (Local - Free)**
 ```bash
 # Install Ollama (https://ollama.ai)
 ollama pull phi3
@@ -158,7 +235,7 @@ WORKER_MODEL=phi3
 python run_demo.py
 ```
 
-**Option 3B: Azure AI Foundry (Cloud - Managed)**
+**Option 4B: Azure AI Foundry (Cloud - Managed)**
 ```bash
 # Deploy Phi-3 in Azure AI Foundry (https://ai.azure.com)
 
