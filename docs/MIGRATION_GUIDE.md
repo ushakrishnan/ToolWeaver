@@ -1,6 +1,6 @@
-# Migration Guide: Phase 1 ToolCatalog Architecture
+# Migration Guide: ToolCatalog Architecture
 
-This guide helps you upgrade existing code to use the new **ToolCatalog** architecture introduced in Phase 1.
+This guide helps you upgrade existing code to use the **ToolCatalog** architecture.
 
 ## Summary of Changes
 

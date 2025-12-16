@@ -59,7 +59,7 @@ Advanced execution plan demonstrating:
 ### Discovery & Search
 - **test_discovery.py** - Tool discovery validation (discovers 14 tools)
 - **test_search.py** - Semantic search demo (6 queries with relevance scores)
-- **demo_auto_discover.py** - Phase 2 automatic discovery integration
+- **demo_auto_discover.py** - Automatic tool discovery integration
 
 ### Advanced Features
 - **demo_integrated.py** - Full pipeline: discovery → search → planning (30 tools)

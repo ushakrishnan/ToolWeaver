@@ -1,8 +1,10 @@
-# Implementation Summary
+# Implementation Details
 
-## What Was Built
+## System Architecture
 
 A **production-ready hybrid orchestrator** that treats MCP workers, function calls, and code execution as **interchangeable tools** through a unified dispatcher.
+
+This document provides technical implementation details for developers working with ToolWeaver's internals.
 
 ---
 

@@ -1,8 +1,8 @@
-# Phase 8: Tool Composition & Workflows - Architecture
+# Workflow System Architecture
 
 ## Overview
 
-Phase 8 enables automatic tool chaining and workflow optimization by recognizing common patterns, managing dependencies, and sharing context between tool executions.
+The workflow system enables automatic tool chaining and workflow optimization by recognizing common patterns, managing dependencies, and sharing context between tool executions.
 
 ## Goals
 

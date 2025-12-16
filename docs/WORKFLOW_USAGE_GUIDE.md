@@ -1,6 +1,6 @@
 # Workflow Usage Guide
 
-Complete guide to using ToolWeaver's workflow composition system (Phase 8).
+Complete guide to using ToolWeaver's workflow composition system.
 
 ## Table of Contents
 

@@ -914,6 +914,7 @@ Semantic search: 30 tools → 10 relevant (~66.7% token reduction, ~3,000 tokens
 - **[Quick Reference](docs/QUICK_REFERENCE.md)** - Common patterns and code snippets
 
 ### Core Features
+- **[Features Guide](docs/FEATURES_GUIDE.md)** - Complete feature overview with performance metrics and capabilities
 - **[Workflow System Guide](docs/WORKFLOW_USAGE_GUIDE.md)** - Workflow composition, pattern recognition, and library management
 - **[Two-Model Architecture](docs/TWO_MODEL_ARCHITECTURE.md)** - Cost-optimized architecture with large planner + small executor
 - **[Prompt Caching Best Practices](docs/PROMPT_CACHING.md)** - Reduce costs by 90% with prompt caching strategies
@@ -927,8 +928,7 @@ Semantic search: 30 tools → 10 relevant (~66.7% token reduction, ~3,000 tokens
 ### Architecture & Technical Details
 - **[Architecture Details](docs/ARCHITECTURE.md)** - Technical deep dive into orchestrator design
 - **[Workflow Architecture](docs/WORKFLOW_ARCHITECTURE.md)** - Workflow engine design and implementation
-- **[Dynamic Tool Discovery](docs/DYNAMIC_TOOL_DISCOVERY_IMPLEMENTATION.md)** - Tool discovery and registration system
-- **[Implementation Summary](docs/IMPLEMENTATION.md)** - Development details and metrics
+- **[Implementation Details](docs/IMPLEMENTATION.md)** - Internal architecture and technical specifications
 
 ### Migration & Maintenance
 - **[Migration Guide](docs/MIGRATION_GUIDE.md)** - Upgrade guides and breaking changes
