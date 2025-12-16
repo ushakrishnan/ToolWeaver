@@ -246,19 +246,117 @@ az redis delete --name toolweaver-cache --resource-group rg-toolweaver --yes
 
 ---
 
+## Option 4: Redis Cloud (Free Tier) ⭐ Recommended for Development
+
+### Free Tier Limits
+- **Memory**: 30 MB
+- **Connections**: 30 concurrent
+- **Bandwidth**: Unlimited
+- **Availability**: Always on
+- **Cost**: $0/month forever
+- **Perfect for**: Development, testing, proof of concepts
+
+### Setup
+
+1. **Create Redis Cloud Account**:
+   - Go to [https://redis.io/cloud](https://redis.io/cloud)
+   - Click "Try Free"
+   - Sign up with Google/GitHub or email (no credit card required)
+
+2. **Create Free Database**:
+   - Click "New Database"
+   - **Name**: `toolweaver-cache`
+   - **Cloud**: AWS or Google Cloud
+   - **Region**: Choose nearest (e.g., us-east-1)
+   - **Type**: Redis Stack (includes JSON, Search modules)
+   - **Plan**: Select **"Free"** (30 MB)
+   - Click "Activate"
+   - Wait 2-3 minutes for provisioning
+
+3. **Get Connection Details**:
+   - Click on your database
+   - Copy:
+     - **Public endpoint**: `redis-12345.c123.us-east-1-2.ec2.cloud.redislabs.com:12345`
+     - **Default user password**: Click "View" icon → Copy password
+
+4. **Configure ToolWeaver**:
+```bash
+# .env file
+REDIS_URL=redis://redis-12345.c123.us-east-1-2.ec2.cloud.redislabs.com:12345
+REDIS_PASSWORD=your-password-here
+```
+
+### Test Connection
+
+```powershell
+# From project directory with venv activated
+.\.venv\Scripts\Activate.ps1
+python -c "
+import redis
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+# Parse URL to get host and port
+url = os.getenv('REDIS_URL')
+host = url.split('//')[1].split(':')[0]
+port = int(url.split(':')[-1])
+
+client = redis.Redis(
+    host=host,
+    port=port,
+    password=os.getenv('REDIS_PASSWORD'),
+    ssl=False,
+    decode_responses=True
+)
+print(client.ping())  # Should print True
+print(f'Memory: {client.info(\"memory\")[\"used_memory_human\"]}')
+"
+```
+
+### Monitoring Redis Cloud
+
+- **Dashboard**: https://app.redislabs.com
+- **Metrics**: Memory usage, operations/sec, latency
+- **Alerts**: Email notifications for high memory
+- **Logs**: Connection logs and slow queries
+
+### 30 MB Capacity Planning
+
+**What fits in 30 MB?**
+- ~5,000 tool catalog entries (6 KB each)
+- ~30,000 search result caches (1 KB each)
+- ~75,000 small embeddings cached (400 bytes each)
+
+**Cache Strategy for 30 MB Limit**:
+```python
+# Prioritize frequently-used caches
+tool_cache.CATALOG_TTL = 6 * 3600   # 6 hours (vs 24h)
+tool_cache.SEARCH_TTL = 30 * 60     # 30 min (vs 1h)
+tool_cache.EMBEDDING_TTL = 24 * 3600  # 24 hours (vs 7d)
+```
+
+### Upgrade When Needed
+- **Paid Plans**: Start at $7/month (100 MB)
+- **Essentials**: $7-200/month (100 MB - 50 GB)
+- **Pro**: Custom pricing (>50 GB, multi-AZ, clustering)
+
+---
+
 ## Configuration Comparison
 
-| Feature | Docker | WSL | Azure Redis |
-|---------|--------|-----|-------------|
-| **Cost** | Free | Free | ~$18-266/month |
-| **Setup Time** | 2 min | 10 min | 15 min |
-| **Persistence** | Yes (volume) | Yes (disk) | Yes (RDB+AOF) |
-| **Clustering** | No | No | Yes (Premium) |
-| **TLS/SSL** | Optional | Optional | Required |
-| **Scalability** | Single node | Single node | Up to 10 shards |
-| **Availability** | None | None | 99.9% SLA |
-| **Monitoring** | Basic | Basic | Azure Monitor |
-| **Best For** | Dev | Dev/Test | Production |
+| Feature | Docker | WSL | Redis Cloud (Free) | Azure Redis |
+|---------|--------|-----|--------------------|-------------|
+| **Cost** | Free | Free | Free (30 MB) | ~$18-266/month |
+| **Setup Time** | 2 min | 10 min | 5 min | 15 min |
+| **Memory** | Unlimited | Unlimited | 30 MB | 250 MB - 120 GB |
+| **Persistence** | Yes (volume) | Yes (disk) | Yes (RDB+AOF) | Yes (RDB+AOF) |
+| **Clustering** | No | No | No | Yes (Premium) |
+| **TLS/SSL** | Optional | Optional | Optional | Required |
+| **Scalability** | Single node | Single node | Single node | Up to 10 shards |
+| **Availability** | None | None | 99.99% SLA | 99.9% SLA |
+| **Monitoring** | Basic | Basic | Cloud dashboard | Azure Monitor |
+| **Best For** | Dev | Dev/Test | Dev/Small prod | Production |
 
 ---
 
@@ -303,6 +401,10 @@ REDIS_URL=redis://172.xx.xx.xx:6379
 
 # Option 3: Azure Cache for Redis
 REDIS_URL=rediss://toolweaver-cache.redis.cache.windows.net:6380
+
+# Option 4: Redis Cloud (Free Tier)
+REDIS_URL=redis://redis-12345.c123.us-east-1-2.ec2.cloud.redislabs.com:12345
+REDIS_PASSWORD=your-redis-cloud-password
 REDIS_PASSWORD=your-azure-redis-access-key
 ```
 
