@@ -18,9 +18,10 @@ def ollama_worker():
     if not os.getenv("OLLAMA_API_URL"):
         os.environ["OLLAMA_API_URL"] = "http://localhost:11434"
     
+    # Use phi3:latest which is what's installed
     return SmallModelWorker(
         backend="ollama",
-        model_name="phi3:mini"  # Fast, small model
+        model_name=os.getenv("WORKER_MODEL", "phi3:latest")
     )
 
 
@@ -93,7 +94,7 @@ async def test_ollama_streaming():
     """Test streaming responses from Ollama"""
     worker = SmallModelWorker(
         backend="ollama",
-        model_name="phi3:mini"
+        model_name=os.getenv("WORKER_MODEL", "phi3:latest")
     )
     
     # Test basic generation works
@@ -117,7 +118,7 @@ async def test_ollama_batch_processing():
     """Test processing multiple requests"""
     worker = SmallModelWorker(
         backend="ollama",
-        model_name="phi3:mini"
+        model_name=os.getenv("WORKER_MODEL", "phi3:latest")
     )
     
     prompts = [
@@ -143,13 +144,14 @@ async def test_ollama_batch_processing():
 
 def test_ollama_initialization():
     """Test Ollama worker initialization"""
+    model_name = os.getenv("WORKER_MODEL", "phi3:latest")
     worker = SmallModelWorker(
         backend="ollama",
-        model_name="phi3:mini"
+        model_name=model_name
     )
     
     assert worker.backend == "ollama"
-    assert worker.model_name == "phi3:mini"
+    assert worker.model_name == model_name
 
 @pytest.mark.asyncio
 @pytest.mark.skipif(
