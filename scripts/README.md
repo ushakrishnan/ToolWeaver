@@ -43,13 +43,9 @@ python scripts/verify_install.py
 
 **When to use**:
 - After fresh install (`pip install -e '.[dev]'`)
-- After updating `pyproject.toml`
-- In CI/CD pipelines to verify environment
-
 ---
 
 ## Testing Scripts
-
 ## Files
 
 ### test_cloud_connections.py
@@ -60,6 +56,44 @@ python scripts/verify_install.py
 python scripts/test_cloud_connections.py
 ```
 
+---
+
+## Manual Integration Testing Scripts
+
+**Note**: These are NOT part of the automated test suite (`tests/`). They require live service credentials and are for manual validation only.
+
+### test_cloud_connections.py
+**Purpose**: Validate Qdrant and Redis Cloud connections
+
+**Prerequisites**:
+- `.env` configured with `QDRANT_URL`, `REDIS_URL`, credentials
+
+**Usage**:
+```powershell
+python scripts/test_cloud_connections.py
+```
+
+**Tests**:
+- Qdrant Cloud: Connection, collections, vector counts
+- Redis Cloud: Connection, ping, read/write, memory usage
+- Pretty formatted output with status indicators
+
+**When to use**: After setting up cloud services or changing credentials in `.env`
+
+---
+
+### test_azure_cv.py
+**Purpose**: Test Azure Computer Vision OCR endpoint
+
+**Prerequisites**:
+- `.env` configured with `AZURE_CV_ENDPOINT`, `AZURE_CV_KEY` (or Azure AD auth)
+
+**Usage**:
+```powershell
+python scripts/test_azure_cv.py
+```
+
+**Tests**:
 **Tests**:
 - Qdrant Cloud: Connection, collections, vector counts
 - Redis Cloud: Connection, ping, read/write, memory usage
