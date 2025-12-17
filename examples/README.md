@@ -1,69 +1,152 @@
 # ToolWeaver Examples
 
-Real-world examples demonstrating ToolWeaver capabilities with increasing complexity.
+Complete showcase of ToolWeaver capabilities through real-world examples.
 
-## 📚 Structured Examples (Start Here!)
+## 📚 Example Index
 
-### [01-basic-receipt-processing](01-basic-receipt-processing/)
-**Complexity:** ⭐ Basic  
-**Time:** 5 minutes
+### Getting Started (Basic Usage)
 
-Simple OCR extraction from receipt images using Azure Computer Vision.
+#### [01-basic-receipt-processing](01-basic-receipt-processing/)
+**Complexity:** ⭐ Basic | **Time:** 5 minutes  
+**Demonstrates:** Basic tool execution, MCP workers, Azure Computer Vision
 
-**What You'll Learn:**
-- Basic execution plans
-- MCP workers
-- Orchestrator execution
+Simple OCR extraction from receipt images.
 
-### [02-receipt-with-categorization](02-receipt-with-categorization/)
-**Complexity:** ⭐⭐ Intermediate  
-**Time:** 10 minutes
+#### [02-receipt-with-categorization](02-receipt-with-categorization/)
+**Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
+**Demonstrates:** Multi-step workflows, small model workers, cost optimization
 
-End-to-end receipt processing: OCR → Parse → Categorize → Statistics.
+End-to-end receipt processing with categorization (98% cost savings).
 
-**What You'll Learn:**
-- Multi-step workflows
-- Step dependencies
-- Small model workers (Phi-3)
-- Function calls
-- Cost optimization (98% savings vs GPT-4o)
+#### [03-github-operations](03-github-operations/)
+**Complexity:** ⭐⭐⭐ Advanced | **Time:** 15 minutes  
+**Demonstrates:** Remote MCP servers, GitHub integration, 36+ tools
 
-### [03-github-operations](03-github-operations/)
-**Complexity:** ⭐⭐⭐ Advanced  
-**Time:** 15 minutes
+GitHub operations: list files, create issues/PRs, search code.
 
-GitHub operations using remote MCP server: list files, create issues, PRs, search code.
+---
 
-**What You'll Learn:**
-- Remote MCP servers
-- GitHub integration
-- SSE protocol
-- Token authentication
-- 36+ GitHub tools
+### Core Capabilities
+
+#### [04-vector-search-discovery](04-vector-search-discovery/)
+**Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
+**Demonstrates:** Tool discovery, semantic search, token reduction (66-95%)
+
+Automatically discover tools and use hybrid search to find relevant ones from large catalogs.
+
+#### [05-workflow-library](05-workflow-library/)
+**Complexity:** ⭐⭐ Intermediate | **Time:** 15 minutes  
+**Demonstrates:** Workflow composition, dependency resolution, parallel execution
+
+Create reusable workflow templates with automatic parallelization (25-40% speedup).
+
+#### [06-monitoring-observability](06-monitoring-observability/)
+**Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
+**Demonstrates:** WandB integration, Prometheus metrics, cost tracking, error monitoring
+
+Production-grade observability with real-time dashboards.
+
+---
+
+### Optimization Techniques
+
+#### [07-caching-optimization](07-caching-optimization/)
+**Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
+**Demonstrates:** Redis caching, multi-layer cache strategies, 90% cost savings
+
+Distributed caching for discovery, search, and results (87% faster, 90% cheaper).
+
+#### [08-hybrid-model-routing](08-hybrid-model-routing/)
+**Complexity:** ⭐⭐⭐ Advanced | **Time:** 15 minutes  
+**Demonstrates:** Two-model architecture, 80-90% cost reduction, intelligent routing
+
+GPT-4 for planning, Phi-3 for execution (98.7% cost savings at scale).
+
+#### [09-code-execution](09-code-execution/)
+**Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
+**Demonstrates:** Sandboxed Python execution, security features, dynamic operations
+
+Safe code execution for custom logic without predefined tools.
+
+---
+
+### Advanced Orchestration
+
+#### [10-multi-step-planning](10-multi-step-planning/)
+**Complexity:** ⭐⭐⭐ Advanced | **Time:** 15 minutes  
+**Demonstrates:** LLM-generated plans, DAG construction, conditional execution
+
+Natural language → executable plans with automatic parallelization.
+
+#### [11-programmatic-executor](11-programmatic-executor/)
+**Complexity:** ⭐⭐⭐ Advanced | **Time:** 15 minutes  
+**Demonstrates:** Programmatic workflows, context management, batch processing
+
+Keep intermediate results out of LLM context for large-scale processing.
+
+#### [12-sharded-catalog](12-sharded-catalog/)
+**Complexity:** ⭐⭐⭐ Advanced | **Time:** 15 minutes  
+**Demonstrates:** Sharded catalogs, sub-linear scaling, 1000+ tools
+
+Scale to thousands of tools with constant search performance.
 
 ## 🚀 Quick Start
 
 Each example is self-contained with:
 - **README.md** - What it does, setup, run instructions
-- **.env** - Minimal configuration (only what's needed)
-- **Python script** - Working code with comments
+- **.env** / **.env.example** - Configuration templates
+- **Python script** - Working code with detailed comments
 
 ```bash
 # Navigate to any example
 cd 01-basic-receipt-processing
 
-# Follow the README
-cat README.md
+# Setup
+cp .env.example .env
+# Edit .env with your API keys
 
 # Run
 python process_receipt.py
 ```
 
-## 📖 Learning Path
+## 📖 Recommended Learning Paths
 
-1. Start with **01-basic** to understand execution plans
-2. Move to **02-receipt-with-categorization** for multi-step workflows
-3. Try **03-github-operations** for external integrations
+### Path 1: Quick Start (30 minutes)
+For those who want to see basic functionality:
+1. **01-basic-receipt-processing** - Understand basic execution
+2. **02-receipt-with-categorization** - Learn multi-step workflows
+3. **04-vector-search-discovery** - See tool discovery in action
+
+### Path 2: Production Ready (1-2 hours)
+For those building production systems:
+1. **01, 02, 03** - Master the basics
+2. **06-monitoring-observability** - Set up monitoring
+3. **07-caching-optimization** - Reduce costs
+4. **08-hybrid-model-routing** - Optimize model selection
+
+### Path 3: Advanced Orchestration (2-3 hours)
+For complex workflow scenarios:
+1. **05-workflow-library** - Reusable patterns
+2. **10-multi-step-planning** - Auto-generated plans
+3. **11-programmatic-executor** - Large-scale processing
+4. **12-sharded-catalog** - Scale to 1000+ tools
+
+### Path 4: Full Tour (4+ hours)
+Complete understanding of all capabilities:
+- Do all 12 examples in order
+- Each builds on previous concepts
+- Covers all ToolWeaver features
+
+## 🎯 Use Case Examples
+
+**Need to...**
+- Process images? → Start with **01** or **02**
+- Integrate with GitHub? → See **03**
+- Scale to many tools? → Try **04** and **12**
+- Reduce costs? → Check **07** and **08**
+- Monitor production? → Use **06**
+- Build complex workflows? → Explore **05**, **10**, **11**
+- Execute custom code? → Look at **09**
 
 ---
 
