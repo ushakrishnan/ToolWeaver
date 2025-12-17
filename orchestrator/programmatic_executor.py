@@ -30,6 +30,7 @@ from pathlib import Path
 from orchestrator.models import ToolCatalog, ToolDefinition
 from orchestrator.code_generator import StubGenerator
 from orchestrator.tool_filesystem import ToolFileSystem
+from orchestrator.sandbox import create_sandbox, ExecutionResult, ResourceLimits
 
 
 class SecurityError(Exception):
@@ -63,7 +64,9 @@ class ProgrammaticToolExecutor:
         max_tool_calls: int = 100,
         logger: Optional[logging.Logger] = None,
         enable_stubs: bool = True,
-        stub_dir: Optional[Path] = None
+        stub_dir: Optional[Path] = None,
+        use_sandbox: bool = True,
+        sandbox_limits: Optional[ResourceLimits] = None,
     ):
         """
         Initialize programmatic executor
@@ -81,6 +84,7 @@ class ProgrammaticToolExecutor:
         self.max_tool_calls = max_tool_calls
         self.logger = logger or logging.getLogger(__name__)
         self.enable_stubs = enable_stubs
+        self.use_sandbox = use_sandbox
         
         # Track tool calls for billing/monitoring
         self.tool_call_count = 0
@@ -94,6 +98,9 @@ class ProgrammaticToolExecutor:
         
         if self.enable_stubs:
             self._prepare_stub_environment()
+        
+        # Initialize sandbox (Phase 2)
+        self.sandbox = create_sandbox(use_docker=False, limits=sandbox_limits)
     
     async def execute(
         self,
@@ -120,48 +127,97 @@ class ProgrammaticToolExecutor:
         self.tool_call_count = 0
         self.tool_call_log = []
         
-        # Build execution environment
-        exec_globals = {
-            "__builtins__": self._get_safe_builtins(),
-            "asyncio": asyncio,
+        # Build execution environment / context
+        exec_context = {
             "json": json,
             **(context or {})
         }
         
         # Inject tool functions
         for tool_name, tool_def in self.tool_catalog.tools.items():
-            exec_globals[tool_name] = self._create_tool_wrapper(tool_def)
-        
-        # Capture stdout
-        stdout_buffer = StringIO()
+            exec_context[tool_name] = self._create_tool_wrapper(tool_def)
         
         try:
-            # Parse and validate code
-            parsed = ast.parse(code)
-            self._validate_code_safety(parsed)
-            
-            # Execute with timeout
-            with redirect_stdout(stdout_buffer):
-                result = await asyncio.wait_for(
-                    self._exec_async(code, exec_globals),
-                    timeout=self.timeout
+            if self.use_sandbox:
+                # Wrap code into async __main__ for sandbox
+                wrapped_code = "async def __main__():\n" + "\n".join(
+                    f"    {line}" if line.strip() else "" for line in code.split("\n")
                 )
-            
-            execution_time = time.time() - start_time
-            
-            self.logger.info(
-                f"Programmatic execution {self.execution_id}: "
-                f"{self.tool_call_count} tools called in {execution_time:.2f}s"
-            )
-            
-            return {
-                "output": stdout_buffer.getvalue(),
-                "result": result,
-                "tool_calls": self.tool_call_log,
-                "execution_time": execution_time,
-                "error": None,
-                "execution_id": self.execution_id
-            }
+                
+                # Align sandbox timeout with executor timeout
+                if hasattr(self.sandbox, "limits") and self.sandbox.limits:
+                    try:
+                        self.sandbox.limits.max_duration = float(self.timeout)
+                    except Exception:
+                        pass
+                
+                # Execute in sandbox (sandbox enforces its own timeout)
+                sres: ExecutionResult = await self.sandbox.execute(wrapped_code, exec_context)
+                execution_time = time.time() - start_time
+                
+                self.logger.info(
+                    f"Programmatic execution {self.execution_id}: "
+                    f"{self.tool_call_count} tools called in {execution_time:.2f}s"
+                )
+                
+                # Normalize error format to match legacy expectations
+                if sres.success:
+                    error_val = None
+                else:
+                    if sres.error_type == "SecurityError":
+                        msg = sres.error or "Sandbox security violation"
+                        # Ensure 'SyntaxError' token is present for syntax errors
+                        if isinstance(msg, str) and "Syntax error" in msg:
+                            msg = "SyntaxError: " + msg.split("Syntax error:", 1)[-1].strip()
+                        error_val = f"Security violation: {msg}"
+                    elif sres.error_type:
+                        if sres.error:
+                            error_val = f"{sres.error_type}: {sres.error}"
+                        else:
+                            error_val = sres.error_type
+                    else:
+                        error_val = sres.error or "Execution failed"
+
+                return {
+                    "output": sres.stdout,
+                    "result": sres.output,
+                    "tool_calls": self.tool_call_log,
+                    "execution_time": execution_time,
+                    "error": error_val,
+                    "execution_id": self.execution_id
+                }
+            else:
+                # Legacy in-process execution path
+                exec_globals = {
+                    "__builtins__": self._get_safe_builtins(),
+                    "asyncio": asyncio,
+                    "json": json,
+                    **(context or {})
+                }
+                for tool_name, tool_def in self.tool_catalog.tools.items():
+                    exec_globals[tool_name] = self._create_tool_wrapper(tool_def)
+                
+                stdout_buffer = StringIO()
+                parsed = ast.parse(code)
+                self._validate_code_safety(parsed)
+                with redirect_stdout(stdout_buffer):
+                    result = await asyncio.wait_for(
+                        self._exec_async(code, exec_globals),
+                        timeout=self.timeout
+                    )
+                execution_time = time.time() - start_time
+                self.logger.info(
+                    f"Programmatic execution {self.execution_id}: "
+                    f"{self.tool_call_count} tools called in {execution_time:.2f}s"
+                )
+                return {
+                    "output": stdout_buffer.getvalue(),
+                    "result": result,
+                    "tool_calls": self.tool_call_log,
+                    "execution_time": execution_time,
+                    "error": None,
+                    "execution_id": self.execution_id
+                }
             
         except asyncio.TimeoutError:
             execution_time = time.time() - start_time
@@ -169,7 +225,7 @@ class ProgrammaticToolExecutor:
             self.logger.error(f"{self.execution_id}: {error_msg}")
             
             return {
-                "output": stdout_buffer.getvalue(),
+                "output": stdout_buffer.getvalue() if 'stdout_buffer' in locals() else "",
                 "result": None,
                 "tool_calls": self.tool_call_log,
                 "execution_time": execution_time,

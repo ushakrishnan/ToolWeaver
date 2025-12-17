@@ -65,6 +65,8 @@ class SandboxEnvironment:
         'eval', 'exec', 'compile', '__import__',
         'open',  # Use controlled file API instead
         'input',  # No interactive input in sandbox
+        # Introspection and environment access
+        'globals', 'locals', 'vars', 'dir',
     }
     
     # Forbidden modules that could be security risks
@@ -148,6 +150,14 @@ class SandboxEnvironment:
                     if node.value.id == '__builtins__':
                         raise SandboxSecurityError(
                             "Direct __builtins__ access forbidden"
+                        )
+            
+            # Prevent assignments to builtins/globals
+            elif isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id in ['__builtins__', '__globals__', '__dict__']:
+                        raise SandboxSecurityError(
+                            f"Cannot modify: {target.id}"
                         )
     
     def _create_safe_globals(

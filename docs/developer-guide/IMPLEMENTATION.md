@@ -231,3 +231,49 @@ def my_function(arg: str) -> dict:
 
 Generated: December 2025  
 Status: **Active Development**
+
+---
+
+## 🔧 Orchestrator Package Refactor Plan
+
+To keep growth in Phases 3–5 manageable, we are introducing subpackages under `orchestrator/` to clarify boundaries and reduce coupling. This is a non-breaking scaffold: no files are moved yet, and all existing imports continue to work.
+
+### Target Layout (scaffolded)
+
+```
+orchestrator/
+  core/         -> orchestrator, planner, models, workers
+  execution/    -> programmatic_executor, sandbox, code_exec_worker, small_model_worker
+  workflows/    -> control_flow_patterns, workflow, workflow_library
+  tools/        -> tool_discovery, tool_search, tool_search_tool, mcp_client, functions
+  search/       -> vector_search, sharded_catalog
+  monitoring/   -> monitoring, monitoring_backends
+  infra/        -> redis_cache
+```
+
+Each subfolder contains an `__init__.py` that re-exports the existing flat modules. Example:
+
+```python
+# orchestrator/workflows/__init__.py
+from orchestrator import control_flow_patterns as control_flow_patterns
+from orchestrator import workflow as workflow
+from orchestrator import workflow_library as workflow_library
+__all__ = ["control_flow_patterns", "workflow", "workflow_library"]
+```
+
+This enables optional imports like:
+
+```python
+from orchestrator.workflows import control_flow_patterns
+```
+
+### Migration Strategy (non-breaking)
+- Phase A (done): Create subpackages with re-export shims; no file moves.
+- Phase B: Update new code to prefer absolute imports via subpackages.
+- Phase C: Move modules into subfolders, keep temporary compatibility shims if needed.
+- Phase D: Remove shims after a short deprecation window.
+
+### Benefits
+- Clear boundaries and dependency direction (core → execution → workflows → integrations).
+- Easier navigation and testing; fewer circular imports.
+- Low-risk incremental adoption with full backward compatibility.

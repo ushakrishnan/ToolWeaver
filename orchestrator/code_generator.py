@@ -18,11 +18,19 @@ Usage:
 import textwrap
 import re
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from pathlib import Path
 from dataclasses import dataclass
 
 from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
+from orchestrator.control_flow_patterns import (
+    ControlFlowPatterns,
+    PatternType,
+    create_polling_code,
+    create_parallel_code,
+    create_conditional_code,
+    create_retry_code,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +119,32 @@ class StubGenerator:
         
         logger.info(f"Generated {len(stubs)} stubs")
         return stubs
+
+    # --- Control Flow Integration (Phase 2) ---
+    def list_control_flow_patterns(self) -> List[Dict[str, Any]]:
+        """Expose available control flow patterns for code generation prompts."""
+        patterns = ControlFlowPatterns.list_patterns()
+        return [
+            {
+                "type": p.type.value,
+                "description": p.description,
+                "required_params": p.required_params,
+                "example": p.example,
+            }
+            for p in patterns
+        ]
+
+    def render_control_flow(self, pattern_type: str, params: Dict[str, Any]) -> str:
+        """Render a control flow code snippet by pattern type and parameters."""
+        try:
+            ptype = PatternType(pattern_type)
+        except Exception:
+            # best-effort: allow lowercase names
+            ptype = PatternType(pattern_type.lower())
+        pattern = ControlFlowPatterns.get_pattern(ptype)
+        if not pattern:
+            raise ValueError(f"Unknown control flow pattern: {pattern_type}")
+        return ControlFlowPatterns.generate_code(pattern, params)
         
     def _group_by_server(self) -> Dict[str, List[ToolDefinition]]:
         """Group tools by server/domain"""
