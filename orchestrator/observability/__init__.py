@@ -1,19 +1,28 @@
-"""
-Observability subpackage
+﻿"""
+Observability subpackage.
 
-Provides a stable namespace for monitoring-related modules without
-renaming or relocating existing files. This avoids import conflicts
-with the existing `orchestrator.monitoring` module.
+Consolidates monitoring, metrics collection, and observability backends.
 """
 
-from orchestrator.monitoring import (
+from .monitoring import (
     ToolUsageMonitor,
     ToolCallMetric,
     SearchMetric,
     create_monitor,
     print_metrics_report,
 )
-from orchestrator import monitoring_backends as monitoring_backends
+
+# Optional: Monitoring backends (require wandb, prometheus_client for some)
+try:
+    from .monitoring_backends import (
+        MonitoringBackend,
+        LocalBackend,
+        WandbBackend,
+        PrometheusBackend,
+    )
+    _BACKENDS_AVAILABLE = True
+except ImportError:
+    _BACKENDS_AVAILABLE = False
 
 __all__ = [
     "ToolUsageMonitor",
@@ -21,5 +30,12 @@ __all__ = [
     "SearchMetric",
     "create_monitor",
     "print_metrics_report",
-    "monitoring_backends",
 ]
+
+if _BACKENDS_AVAILABLE:
+    __all__.extend([
+        "MonitoringBackend",
+        "LocalBackend",
+        "WandbBackend",
+        "PrometheusBackend",
+    ])
