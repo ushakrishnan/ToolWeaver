@@ -97,14 +97,17 @@ python run_planner_demo.py "Process receipt and categorize"
 
 ```
 orchestrator/
-├── planner.py              # Large model → generates plans
-├── small_model_worker.py   # Small model → parses/categorizes
-├── workers.py              # MCP workers with small model integration
-├── hybrid_dispatcher.py    # Routes to correct tool type
-├── functions.py            # Registered functions
-├── code_exec_worker.py     # Sandboxed Python execution
-└── orchestrator.py         # Main execution engine
+├── planning/planner.py              # Large model → generates plans
+├── execution/small_model_worker.py  # Small model → parses/categorizes
+├── dispatch/
+│   ├── workers.py                   # MCP workers with small model integration
+│   ├── hybrid_dispatcher.py         # Routes to correct tool type
+│   └── functions.py                 # Registered functions
+├── execution/code_exec_worker.py    # Sandboxed Python execution
+└── runtime/orchestrator.py          # Main execution engine
 ```
+
+**Note:** Top-level imports (`from orchestrator.planner import ...`) remain backward-compatible via shims. See [PACKAGE_STRUCTURE.md](../developer-guide/PACKAGE_STRUCTURE.md) for full subpackage layout.
 
 ## Environment Variables Cheatsheet
 

@@ -68,7 +68,7 @@ The Hybrid Orchestrator is a flexible execution engine that supports three disti
 
 ## Component Details
 
-### 1. Execution Engine (`orchestrator.py`)
+### 1. Execution Engine (`runtime/orchestrator.py`)
 
 **Responsibilities:**
 - Validate execution plans against Pydantic schema
@@ -95,7 +95,7 @@ The Hybrid Orchestrator is a flexible execution engine that supports three disti
 4. Generate final synthesis
 ```
 
-### 2. Hybrid Dispatcher (`hybrid_dispatcher.py`)
+### 2. Hybrid Dispatcher (`dispatch/hybrid_dispatcher.py`)
 
 **Responsibilities:**
 - Resolve `step:` references in inputs
@@ -122,7 +122,7 @@ else:
 
 ### 3. Tool Types
 
-#### A. MCP Workers (`workers.py`, `mcp_client.py`)
+#### A. MCP Workers (`dispatch/workers.py`, `infra/mcp_client.py`)
 
 **Characteristics:**
 - Deterministic and predictable
@@ -146,7 +146,7 @@ _tool_map = {
 }
 ```
 
-#### B. Function Calls (`functions.py`)
+#### B. Function Calls (`dispatch/functions.py`)
 
 **Characteristics:**
 - Structured APIs with argument schemas
@@ -168,7 +168,7 @@ def compute_tax(amount: float, tax_rate: float = 0.07) -> float:
 - `filter_items_by_category` - Category filtering
 - `compute_item_statistics` - Statistical analysis
 
-#### C. Code Execution Worker (`code_exec_worker.py`)
+#### C. Code Execution Worker (`execution/code_exec_worker.py`)
 
 **Characteristics:**
 - Sandboxed Python execution
@@ -295,18 +295,18 @@ PlanModel
 
 ### Adding New MCP Worker
 ```python
-# 1. Define in workers.py
+# 1. Define in dispatch/workers.py
 async def my_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
     # ... implementation
     return MyOutput(**result).model_dump()
 
-# 2. Register in mcp_client.py
+# 2. Register in infra/mcp_client.py
 _tool_map["my_tool"] = my_worker
 ```
 
 ### Adding New Function
 ```python
-# In functions.py
+# In dispatch/functions.py
 @register_function("my_function")
 def my_function(arg1: str) -> dict:
     return {"result": ...}
@@ -314,10 +314,12 @@ def my_function(arg1: str) -> dict:
 
 ### Custom Dispatcher Logic
 ```python
-# Extend dispatch_step() in hybrid_dispatcher.py
+# Extend dispatch_step() in dispatch/hybrid_dispatcher.py
 elif tool_type == "my_custom_type":
     return await my_custom_worker(resolved_input)
 ```
+
+**Note:** Backward-compatible imports (`from orchestrator.workers import ...`) remain available via top-level shims. See [PACKAGE_STRUCTURE.md](PACKAGE_STRUCTURE.md) for full module layout.
 
 ## Security Considerations
 
