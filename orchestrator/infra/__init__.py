@@ -1,11 +1,14 @@
-"""
-Infra & Caching subpackage
+﻿"""
+Infrastructure subpackage.
 
-Stable namespace for infrastructure-related modules without relocating files.
+Consolidates caching, MCP client, and other infrastructure utilities.
 """
 
-from orchestrator import redis_cache as redis_cache
+from .redis_cache import RedisCache
+
+from .mcp_client import MCPClientShim
 
 __all__ = [
-    "redis_cache",
+    "RedisCache",
+    "MCPClientShim",
 ]
