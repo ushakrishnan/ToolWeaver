@@ -1,0 +1,11 @@
+{
+  "name": "current_baseline",
+  "timestamp": 1765993711.0192058,
+  "completion_rate": 0.4090909090909091,
+  "avg_context": 804.4545454545455,
+  "avg_duration": 4.479018124667081e-05,
+  "avg_steps": 1.2272727272727273,
+  "total_tasks": 22,
+  "successful_tasks": 9,
+  "failed_tasks": 13
+}

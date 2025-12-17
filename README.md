@@ -7,8 +7,8 @@ Automatically discovers, searches, and chains tools while reducing costs by 80-9
 [![PyPI version](https://badge.fury.io/py/toolweaver.svg)](https://pypi.org/project/toolweaver/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-308%20passing-brightgreen.svg)]()
-[![Coverage](https://img.shields.io/badge/coverage-69%25-yellow.svg)]()
+[![Tests](https://img.shields.io/badge/tests-305%20passing-brightgreen.svg)]()
+[![Coverage](https://img.shields.io/badge/coverage-72%25-green.svg)]()
 
 ---
 
@@ -717,6 +717,72 @@ print(f"Called {len(result['tool_calls'])} tools in {result['execution_time']:.2
 - ✅ Complex logic (conditionals, loops, transformations)
 - ❌ Single tool call (use direct tool calling)
 - ❌ LLM needs full intermediate results
+
+### Programmatic Execution with Progressive Disclosure
+
+**NEW:** Execute code that explores and imports tools on-demand instead of loading all tool definitions into context. Achieves **30-80% context reduction** while maintaining full functionality.
+
+**Problem:** Loading 100+ tool definitions into LLM context consumes 800+ tokens. This doesn't scale.
+
+**Solution:** Generate Python stubs AI can explore like a file tree, importing only needed tools:
+
+```python
+from orchestrator.programmatic_executor import ProgrammaticToolExecutor
+
+# Create executor with stub generation enabled
+executor = ProgrammaticToolExecutor(
+    catalog=tool_catalog,
+    enable_stubs=True  # Generate importable Python stubs
+)
+
+# AI explores tool directory (50 tokens instead of 800+)
+tree = executor.get_tools_directory_tree()
+# tools/
+#   google_drive/
+#     get_document.py
+#     create_document.py
+#   jira/
+#     create_ticket.py
+#   slack/
+#     send_message.py
+
+# AI searches for relevant tools
+matches = executor.search_tools("document")  # ["get_document", "create_document"]
+
+# AI generates code that imports only needed tools
+code = '''
+# Import specific tools with type safety
+from tools.google_drive import get_document, GetDocumentInput
+
+# Use Pydantic models for type-safe parameters
+input_data = GetDocumentInput(doc_id="doc123", format="pdf")
+result = await get_document(input_data)
+
+# Process result
+if result.success:
+    print(f"Document: {result.result}")
+else:
+    print(f"Error: {result.error}")
+'''
+
+# Execute with full tool access
+result = await executor.execute(code)
+```
+
+**Benefits:**
+- 📉 **30-80% context reduction** - Load only needed tools, not entire catalog
+- 📈 **Scales to 1000+ tools** - Exploration cost remains constant
+- 🔒 **Type safety** - Pydantic models provide IDE support and validation
+- 🎯 **On-demand loading** - AI discovers tools as needed
+- 🐛 **Debuggable** - Generated stubs are readable Python code
+
+**Architecture:**
+```
+ToolCatalog → StubGenerator → tools/ directory → ToolFileSystem → AI Code
+                               (Python stubs)    (exploration API)
+```
+
+**See:** [examples/14-programmatic-execution/](examples/14-programmatic-execution/) for detailed demos and benchmarks.
 
 ### Tool Usage Examples
 

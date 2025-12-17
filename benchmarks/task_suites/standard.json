@@ -1,0 +1,274 @@
+{
+  "name": "standard_tasks",
+  "version": "1.0",
+  "description": "Standard benchmark for agent evaluation covering simple, multi-step, and complex workflows",
+  "tasks": [
+    {
+      "id": "simple_tool_call",
+      "category": "simple",
+      "prompt": "Calculate tax on $100 at 7% rate",
+      "context": {},
+      "expected": {
+        "type": "function_call",
+        "function": "compute_tax",
+        "result_contains": "7.0"
+      }
+    },
+    {
+      "id": "simple_discount",
+      "category": "simple",
+      "prompt": "Apply 20% discount to $50",
+      "context": {},
+      "expected": {
+        "type": "function_call",
+        "function": "apply_discount",
+        "result_contains": "40"
+      }
+    },
+    {
+      "id": "list_and_filter",
+      "category": "simple",
+      "prompt": "Filter items by category 'electronics'",
+      "context": {
+        "items": [
+          {"name": "Laptop", "category": "electronics", "price": 1000},
+          {"name": "Book", "category": "media", "price": 20},
+          {"name": "Phone", "category": "electronics", "price": 800}
+        ]
+      },
+      "expected": {
+        "type": "function_call",
+        "function": "filter_items_by_category"
+      }
+    },
+    {
+      "id": "compute_statistics",
+      "category": "simple",
+      "prompt": "Calculate statistics for the given items",
+      "context": {
+        "items": [
+          {"name": "Item1", "price": 100},
+          {"name": "Item2", "price": 200},
+          {"name": "Item3", "price": 300}
+        ]
+      },
+      "expected": {
+        "type": "function_call",
+        "function": "compute_item_statistics"
+      }
+    },
+    {
+      "id": "multi_step_document",
+      "category": "multi-step",
+      "prompt": "Get document ABC123 and summarize it",
+      "context": {
+        "document_id": "ABC123"
+      },
+      "expected": {
+        "min_steps": 2,
+        "tools_used": ["get_document", "summarize"]
+      }
+    },
+    {
+      "id": "multi_step_process",
+      "category": "multi-step",
+      "prompt": "Fetch user data for ID 456 and update their status to active",
+      "context": {
+        "user_id": "456"
+      },
+      "expected": {
+        "min_steps": 2,
+        "tools_used": ["get_user", "update_user"]
+      }
+    },
+    {
+      "id": "multi_step_validation",
+      "category": "multi-step",
+      "prompt": "Validate the email format and then send a verification email",
+      "context": {
+        "email": "test@example.com"
+      },
+      "expected": {
+        "min_steps": 2,
+        "tools_used": ["validate_email", "send_email"]
+      }
+    },
+    {
+      "id": "data_pipeline_simple",
+      "category": "data-pipeline",
+      "prompt": "List all items in collection 'products' and calculate total value",
+      "context": {
+        "collection": "products"
+      },
+      "expected": {
+        "min_steps": 2,
+        "tools_used": ["list_items", "compute_statistics"]
+      }
+    },
+    {
+      "id": "data_pipeline_transform",
+      "category": "data-pipeline",
+      "prompt": "Get all documents from folder X, extract metadata, and save to database",
+      "context": {
+        "folder_id": "folder_x"
+      },
+      "expected": {
+        "min_steps": 3,
+        "tools_used": ["list_documents", "extract_metadata", "save_to_db"]
+      }
+    },
+    {
+      "id": "data_pipeline_copy",
+      "category": "data-pipeline",
+      "prompt": "Copy all Google Docs from folder X to Salesforce as records",
+      "context": {
+        "folder_id": "google_folder_123"
+      },
+      "expected": {
+        "min_steps": 3,
+        "tools_used": ["list_documents", "get_document", "create_record"]
+      }
+    },
+    {
+      "id": "error_handling_retry",
+      "category": "error-handling",
+      "prompt": "Fetch data from API with retry on failure",
+      "context": {
+        "api_url": "https://api.example.com/data"
+      },
+      "expected": {
+        "min_steps": 1
+      }
+    },
+    {
+      "id": "error_handling_validation",
+      "category": "error-handling",
+      "prompt": "Validate input data and return error if invalid",
+      "context": {
+        "data": {"name": "", "age": -5}
+      },
+      "expected": {
+        "type": "validation_error"
+      }
+    },
+    {
+      "id": "conditional_branch_if",
+      "category": "conditional",
+      "prompt": "If the price is greater than $100, apply premium shipping, else standard shipping",
+      "context": {
+        "price": 150
+      },
+      "expected": {
+        "min_steps": 1
+      }
+    },
+    {
+      "id": "conditional_branch_status",
+      "category": "conditional",
+      "prompt": "Check order status. If completed, send confirmation. If pending, send reminder.",
+      "context": {
+        "order_id": "order_789",
+        "status": "completed"
+      },
+      "expected": {
+        "min_steps": 2
+      }
+    },
+    {
+      "id": "batch_processing",
+      "category": "batch",
+      "prompt": "Process all pending orders in the queue",
+      "context": {
+        "order_ids": ["order_1", "order_2", "order_3"]
+      },
+      "expected": {
+        "min_steps": 3
+      }
+    },
+    {
+      "id": "aggregation_report",
+      "category": "aggregation",
+      "prompt": "Generate sales report for last month with totals by category",
+      "context": {
+        "month": "2024-12"
+      },
+      "expected": {
+        "min_steps": 2,
+        "tools_used": ["fetch_sales_data", "aggregate_by_category"]
+      }
+    },
+    {
+      "id": "search_and_update",
+      "category": "search",
+      "prompt": "Find all users with email domain 'example.com' and update their tier to premium",
+      "context": {
+        "domain": "example.com"
+      },
+      "expected": {
+        "min_steps": 2,
+        "tools_used": ["search_users", "update_users"]
+      }
+    },
+    {
+      "id": "integration_workflow",
+      "category": "integration",
+      "prompt": "When a new Jira ticket is created, send Slack notification and update project dashboard",
+      "context": {
+        "ticket_id": "JIRA-123"
+      },
+      "expected": {
+        "min_steps": 3,
+        "tools_used": ["get_ticket", "send_slack_message", "update_dashboard"]
+      }
+    },
+    {
+      "id": "complex_workflow_approval",
+      "category": "complex",
+      "prompt": "Submit expense report, wait for manager approval, then process payment",
+      "context": {
+        "expense_id": "exp_456",
+        "amount": 250
+      },
+      "expected": {
+        "min_steps": 3
+      }
+    },
+    {
+      "id": "complex_workflow_pipeline",
+      "category": "complex",
+      "prompt": "Fetch data from API, transform to required format, validate, then save to database",
+      "context": {
+        "api_endpoint": "https://api.example.com/users"
+      },
+      "expected": {
+        "min_steps": 4,
+        "tools_used": ["fetch_api_data", "transform_data", "validate_data", "save_to_db"]
+      }
+    },
+    {
+      "id": "receipt_ocr",
+      "category": "real-world",
+      "prompt": "Extract line items from receipt image",
+      "context": {
+        "image_path": "receipts/sample.jpg"
+      },
+      "expected": {
+        "type": "function_call",
+        "function": "receipt_ocr_worker"
+      }
+    },
+    {
+      "id": "expense_categorization",
+      "category": "real-world",
+      "prompt": "Categorize this expense: 'Coffee at Starbucks - $5.50'",
+      "context": {
+        "description": "Coffee at Starbucks",
+        "amount": 5.50
+      },
+      "expected": {
+        "type": "function_call",
+        "function": "expense_categorizer_worker"
+      }
+    }
+  ]
+}

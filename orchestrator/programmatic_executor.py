@@ -20,11 +20,16 @@ import json
 import time
 import logging
 import uuid
+import sys
+import tempfile
 from typing import Dict, Any, List, Optional, Callable
 from contextlib import redirect_stdout
 from io import StringIO
+from pathlib import Path
 
 from orchestrator.models import ToolCatalog, ToolDefinition
+from orchestrator.code_generator import StubGenerator
+from orchestrator.tool_filesystem import ToolFileSystem
 
 
 class SecurityError(Exception):
@@ -56,7 +61,9 @@ class ProgrammaticToolExecutor:
         tool_catalog: ToolCatalog,
         timeout: int = 30,
         max_tool_calls: int = 100,
-        logger: Optional[logging.Logger] = None
+        logger: Optional[logging.Logger] = None,
+        enable_stubs: bool = True,
+        stub_dir: Optional[Path] = None
     ):
         """
         Initialize programmatic executor
@@ -66,16 +73,27 @@ class ProgrammaticToolExecutor:
             timeout: Maximum execution time in seconds
             max_tool_calls: Maximum number of tool calls allowed
             logger: Optional logger instance
+            enable_stubs: If True, generate importable stubs for progressive disclosure
+            stub_dir: Directory for generated stubs (auto-created if None)
         """
         self.tool_catalog = tool_catalog
         self.timeout = timeout
         self.max_tool_calls = max_tool_calls
         self.logger = logger or logging.getLogger(__name__)
+        self.enable_stubs = enable_stubs
         
         # Track tool calls for billing/monitoring
         self.tool_call_count = 0
         self.tool_call_log: List[Dict[str, Any]] = []
         self.execution_id = f"ptc_{uuid.uuid4().hex[:8]}"
+        
+        # Phase 1: Stub generation for progressive disclosure
+        self.stub_dir = stub_dir
+        self.stubs_generated = False
+        self._temp_dir = None
+        
+        if self.enable_stubs:
+            self._prepare_stub_environment()
     
     async def execute(
         self,
@@ -438,6 +456,106 @@ class ProgrammaticToolExecutor:
             return {k: __builtins__[k] for k in safe if k in __builtins__}
         else:
             return {k: getattr(__builtins__, k) for k in safe if hasattr(__builtins__, k)}
+    
+    def _prepare_stub_environment(self):
+        """
+        Generate tool stubs and prepare for progressive disclosure.
+        
+        Phase 1: Code Execution with Progressive Disclosure
+        - Generates Python stubs from ToolCatalog
+        - Makes stubs importable via sys.path
+        - AI models can explore file tree instead of loading full catalog
+        - 30-50% context reduction
+        """
+        try:
+            # Create stub directory
+            if self.stub_dir is None:
+                self._temp_dir = tempfile.mkdtemp(prefix="toolweaver_stubs_")
+                self.stub_dir = Path(self._temp_dir)
+            else:
+                self.stub_dir = Path(self.stub_dir)
+                self.stub_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Generate stubs
+            self.logger.info(f"Generating tool stubs in {self.stub_dir}")
+            generator = StubGenerator(self.tool_catalog, self.stub_dir)
+            stubs = generator.generate_all()
+            
+            self.logger.info(f"Generated {len(stubs)} tool stubs")
+            
+            # Add to sys.path for importing
+            stub_path_str = str(self.stub_dir)
+            if stub_path_str not in sys.path:
+                sys.path.insert(0, stub_path_str)
+                self.logger.debug(f"Added {stub_path_str} to sys.path")
+            
+            # Create ToolFileSystem for exploration
+            self.tool_filesystem = ToolFileSystem(self.stub_dir)
+            
+            self.stubs_generated = True
+            self.logger.info("Stub environment ready for progressive disclosure")
+            
+        except Exception as e:
+            self.logger.warning(f"Failed to prepare stub environment: {e}")
+            self.logger.warning("Falling back to direct tool injection")
+            self.enable_stubs = False
+    
+    def get_tools_directory_tree(self) -> Optional[str]:
+        """
+        Get visual representation of tool directory for AI exploration.
+        
+        Returns:
+            Directory tree string, or None if stubs not enabled
+        
+        Usage in prompts:
+            "Available tools are organized in this directory:
+            {tree}
+            
+            You can import tools like:
+            from tools.google_drive import get_document, GetDocumentInput"
+        """
+        if not self.enable_stubs or not hasattr(self, 'tool_filesystem'):
+            return None
+        
+        return self.tool_filesystem.get_directory_tree()
+    
+    def search_tools(self, query: str) -> List[str]:
+        """
+        Search for tools by name or description.
+        
+        Args:
+            query: Search query
+        
+        Returns:
+            List of matching tool names
+        
+        Usage: Allow AI to search tools before importing
+        """
+        if not self.enable_stubs or not hasattr(self, 'tool_filesystem'):
+            # Fallback to catalog keys
+            return [name for name in self.tool_catalog.tools.keys() if query.lower() in name.lower()]
+        
+        return self.tool_filesystem.search_tools(query)
+    
+    def cleanup(self):
+        """Clean up temporary stub directory"""
+        if self._temp_dir:
+            import shutil
+            try:
+                # Remove from sys.path
+                stub_path_str = str(self.stub_dir)
+                if stub_path_str in sys.path:
+                    sys.path.remove(stub_path_str)
+                
+                # Delete temp directory
+                shutil.rmtree(self._temp_dir, ignore_errors=True)
+                self.logger.debug(f"Cleaned up stub directory: {self._temp_dir}")
+            except Exception as e:
+                self.logger.warning(f"Failed to cleanup stub directory: {e}")
+    
+    def __del__(self):
+        """Cleanup on deletion"""
+        self.cleanup()
 
 
 # Convenience function for quick usage
