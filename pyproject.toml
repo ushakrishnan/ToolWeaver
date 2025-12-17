@@ -4,7 +4,7 @@ version = "0.1.3"
 description = "Production-ready AI tool orchestration with dynamic discovery, semantic search, and workflow composition"
 readme = "README.md"
 requires-python = ">=3.10"
-license = "MIT"
+license = {text = "Apache-2.0"}
 authors = [
     { name = "Usha Krishnan", email = "ushapriya.krishnan@gmail.com" }
 ]
