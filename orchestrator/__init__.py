@@ -8,22 +8,22 @@ Architecture:
 """
 
 from .models import *
-from .orchestrator import execute_plan, final_synthesis
-from .mcp_client import MCPClientShim
-from .workers import *
-from .code_exec_worker import code_exec_worker
-from .hybrid_dispatcher import dispatch_step, register_function, get_registered_functions
+from .runtime.orchestrator import execute_plan, final_synthesis
+from .infra.mcp_client import MCPClientShim
+from .dispatch.workers import *
+from .execution.code_exec_worker import code_exec_worker
+from .dispatch.hybrid_dispatcher import dispatch_step, register_function, get_registered_functions
 from . import functions  # Import to register functions
 
 # Optional imports (only if packages installed)
 try:
-    from .planner import LargePlanner
+    from .planning.planner import LargePlanner
     _PLANNER_AVAILABLE = True
 except ImportError:
     _PLANNER_AVAILABLE = False
 
 try:
-    from .small_model_worker import SmallModelWorker
+    from .execution.small_model_worker import SmallModelWorker
     _SMALL_MODEL_AVAILABLE = True
 except ImportError:
     _SMALL_MODEL_AVAILABLE = False

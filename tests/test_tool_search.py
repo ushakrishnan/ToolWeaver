@@ -11,7 +11,7 @@ import tempfile
 import shutil
 
 from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
-from orchestrator.tool_search import ToolSearchEngine, search_tools
+from orchestrator.tools.tool_search import ToolSearchEngine, search_tools
 
 
 @pytest.fixture

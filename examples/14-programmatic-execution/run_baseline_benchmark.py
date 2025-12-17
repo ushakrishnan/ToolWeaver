@@ -19,8 +19,8 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from orchestrator.evaluation import AgentEvaluator
-from orchestrator.context_tracker import ContextTracker
+from orchestrator.assessment.evaluation import AgentEvaluator
+from orchestrator.observability.context_tracker import ContextTracker
 from orchestrator.functions import (
     compute_tax, apply_discount, merge_items, 
     filter_items_by_category, compute_item_statistics

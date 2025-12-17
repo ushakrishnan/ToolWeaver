@@ -1,5 +1,7 @@
 # Sample: Programmatic Execution with Progressive Disclosure
 
+> Status: PyPI package refresh is in progress. This sample may lag behind the latest source; for the most up-to-date code paths, use [examples/](../../examples/). Samples will be regenerated after the refresh.
+
 **Status:** 🚧 Coming Soon
 
 This sample will demonstrate programmatic execution where AI models generate code that explores and imports tools on-demand, achieving 30-80% context reduction.

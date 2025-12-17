@@ -113,7 +113,7 @@ def get_tool_search_definition() -> ToolDefinition:
     
     This tool should always be loaded in the initial context.
     """
-    from .models import ToolParameter, ToolExample
+    from ..models import ToolParameter, ToolExample
     
     return ToolDefinition(
         name="tool_search_tool",

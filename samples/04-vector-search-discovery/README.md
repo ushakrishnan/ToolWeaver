@@ -1,5 +1,6 @@
 # Sample 04: Vector Search and Tool Discovery
 
+> Status: PyPI package refresh is in progress. This sample may lag behind the latest source; for the most up-to-date code paths, use [examples/](../../examples/). Samples will be regenerated after the refresh.
 > **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
 
 

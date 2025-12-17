@@ -5,7 +5,7 @@ Validates that tool_search_tool correctly searches and returns relevant tools.
 """
 
 import pytest
-from orchestrator.tool_search_tool import (
+from orchestrator.tools.tool_search_tool import (
     tool_search_tool,
     initialize_tool_search,
     get_tool_search_definition

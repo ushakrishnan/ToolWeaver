@@ -6,7 +6,7 @@ Tests worker functions: receipt_ocr_worker, line_item_parser_worker, expense_cat
 
 import pytest
 import os
-from orchestrator.workers import (
+from orchestrator.dispatch.workers import (
     receipt_ocr_worker,
     line_item_parser_worker,
     expense_categorizer_worker,

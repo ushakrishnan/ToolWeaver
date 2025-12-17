@@ -14,7 +14,7 @@ import numpy as np
 import torch
 from unittest.mock import Mock, patch, MagicMock
 
-from orchestrator.vector_search import VectorToolSearchEngine
+from orchestrator.tools.vector_search import VectorToolSearchEngine
 from orchestrator.models import (
     ToolCatalog,
     ToolDefinition,

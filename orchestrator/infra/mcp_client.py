@@ -1,12 +1,17 @@
 import asyncio
 from typing import Dict, Any
-from .. import workers, code_exec_worker
+from ..dispatch.workers import (
+    receipt_ocr_worker,
+    line_item_parser_worker,
+    expense_categorizer_worker,
+)
+from ..execution.code_exec_worker import code_exec_worker
 
 _tool_map = {
-    "receipt_ocr": workers.receipt_ocr_worker,
-    "line_item_parser": workers.line_item_parser_worker,
-    "expense_categorizer": workers.expense_categorizer_worker,
-    "code_exec": code_exec_worker.code_exec_worker
+    "receipt_ocr": receipt_ocr_worker,
+    "line_item_parser": line_item_parser_worker,
+    "expense_categorizer": expense_categorizer_worker,
+    "code_exec": code_exec_worker
 }
 
 _idempotency_store = {}

@@ -3,7 +3,7 @@ Tests for control flow patterns.
 """
 
 import pytest
-from orchestrator.control_flow_patterns import (
+from orchestrator.workflows.control_flow_patterns import (
     ControlFlowPatterns,
     PatternType,
     ControlFlowPattern,

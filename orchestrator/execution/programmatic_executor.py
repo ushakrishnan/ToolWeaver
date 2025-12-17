@@ -22,14 +22,18 @@ import logging
 import uuid
 import sys
 import tempfile
+import shutil
 from typing import Dict, Any, List, Optional, Callable
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
 
+import orchestrator.tools.tool_executor as tool_executor
+import importlib
+
 from orchestrator.models import ToolCatalog, ToolDefinition
 from .code_generator import StubGenerator
-from orchestrator.tool_filesystem import ToolFileSystem
+from orchestrator.tools.tool_filesystem import ToolFileSystem
 from .sandbox import SandboxEnvironment, ExecutionResult, ResourceLimits, create_sandbox
 
 
@@ -69,15 +73,15 @@ class ProgrammaticToolExecutor:
         sandbox_limits: Optional[ResourceLimits] = None,
     ):
         """
-        Initialize programmatic executor
-        
         Args:
-            tool_catalog: Available tools to inject into execution environment
-            timeout: Maximum execution time in seconds
-            max_tool_calls: Maximum number of tool calls allowed
+            tool_catalog: ToolCatalog instance with available tools
+            timeout: Max execution time for user code
+            max_tool_calls: Limit on tool calls per execution
             logger: Optional logger instance
             enable_stubs: If True, generate importable stubs for progressive disclosure
             stub_dir: Directory for generated stubs (auto-created if None)
+            use_sandbox: Execute code inside sandbox with safety checks
+            sandbox_limits: Optional resource limits for sandbox
         """
         self.tool_catalog = tool_catalog
         self.timeout = timeout
@@ -126,12 +130,66 @@ class ProgrammaticToolExecutor:
         start_time = time.time()
         self.tool_call_count = 0
         self.tool_call_log = []
+
+        # Patch call_tool so generated stubs route back through this executor
+        original_call_tool = None
+        patched_call_tool = False
+        if self.enable_stubs:
+            try:
+                original_call_tool = getattr(tool_executor, "call_tool", None)
+
+                async def _call_tool_proxy(server: str, tool_name: str, parameters: Dict[str, Any], **kwargs):
+                    tool_def = self.tool_catalog.tools.get(tool_name)
+                    if not tool_def:
+                        raise ValueError(f"Tool not found: {tool_name}")
+
+                    # Enforce limits
+                    if self.tool_call_count >= self.max_tool_calls:
+                        raise RuntimeError(
+                            f"Exceeded max tool calls ({self.max_tool_calls}). "
+                            f"Consider optimizing your code or increasing the limit."
+                        )
+
+                    # Track call
+                    self.tool_call_count += 1
+                    call_record = {
+                        "tool": tool_def.name,
+                        "type": tool_def.type,
+                        "parameters": parameters,
+                        "timestamp": time.time(),
+                        "caller": {
+                            "type": "stub_import",
+                            "execution_id": self.execution_id,
+                            "tool_id": f"tool_call_{self.tool_call_count}"
+                        }
+                    }
+                    self.tool_call_log.append(call_record)
+
+                    try:
+                        result = await self._execute_tool(tool_def, parameters)
+                        call_record["result_size"] = len(str(result))
+                        call_record["completed_at"] = time.time()
+                        call_record["duration"] = call_record["completed_at"] - call_record["timestamp"]
+                        call_record["error"] = None
+                        return result
+                    except Exception as e:
+                        call_record["error"] = str(e)
+                        call_record["completed_at"] = time.time()
+                        call_record["duration"] = call_record["completed_at"] - call_record["timestamp"]
+                        raise
+
+                tool_executor.call_tool = _call_tool_proxy
+                patched_call_tool = True
+            except Exception as patch_exc:
+                self.logger.warning(f"{self.execution_id}: Failed to patch call_tool for stubs: {patch_exc}")
         
         # Build execution environment / context
         exec_context = {
             "json": json,
             **(context or {})
         }
+        # Provide sys for safe path adjustments inside sandbox (no import needed)
+        exec_context["sys"] = sys
         
         # Inject tool functions
         for tool_name, tool_def in self.tool_catalog.tools.items():
@@ -139,10 +197,19 @@ class ProgrammaticToolExecutor:
         
         try:
             if self.use_sandbox:
-                # Wrap code into async __main__ for sandbox
-                wrapped_code = "async def __main__():\n" + "\n".join(
+                # Wrap code with prelude to ensure stub paths are importable, then async __main__ for sandbox
+                prelude_lines = []
+                try:
+                    if self.stub_dir is not None:
+                        prelude_lines.append(f"sys.path.insert(0, r'{str(self.stub_dir)}')")
+                        prelude_lines.append("import importlib")
+                        prelude_lines.append("importlib.invalidate_caches()")
+                except Exception:
+                    pass
+                user_body = "\n".join(
                     f"    {line}" if line.strip() else "" for line in code.split("\n")
                 )
+                wrapped_code = "\n".join(prelude_lines + ["async def __main__():", user_body])
                 
                 # Align sandbox timeout with executor timeout
                 if hasattr(self.sandbox, "limits") and self.sandbox.limits:
@@ -260,6 +327,13 @@ class ProgrammaticToolExecutor:
                 "error": error_msg,
                 "execution_id": self.execution_id
             }
+
+        finally:
+            if self.enable_stubs and patched_call_tool:
+                try:
+                    tool_executor.call_tool = original_call_tool
+                except Exception as restore_exc:
+                    self.logger.warning(f"{self.execution_id}: Failed to restore call_tool: {restore_exc}")
     
     def _create_tool_wrapper(self, tool_def: ToolDefinition) -> Callable:
         """
@@ -339,7 +413,7 @@ class ProgrammaticToolExecutor:
         """
         if tool_def.type == "mcp":
             # Call MCP worker
-            from orchestrator.workers import MCPClientShim
+            from orchestrator.infra.mcp_client import MCPClientShim
             
             shim = MCPClientShim()
             if tool_def.name not in shim.tool_map:
@@ -539,7 +613,7 @@ class ProgrammaticToolExecutor:
             
             self.logger.info(f"Generated {len(stubs)} tool stubs")
             
-            # Add to sys.path for importing
+            # Add to sys.path for importing (only stub root; contains 'tools' package)
             stub_path_str = str(self.stub_dir)
             if stub_path_str not in sys.path:
                 sys.path.insert(0, stub_path_str)
@@ -547,6 +621,20 @@ class ProgrammaticToolExecutor:
             
             # Create ToolFileSystem for exploration
             self.tool_filesystem = ToolFileSystem(self.stub_dir)
+
+            # Eagerly import generated stub modules so sandbox imports resolve from sys.modules
+            try:
+                importlib.invalidate_caches()
+                for tool_def in self.tool_catalog.tools.values():
+                    server = tool_def.domain or "general"
+                    modname = f"tools.{server}.{tool_def.name}"
+                    try:
+                        importlib.import_module(modname)
+                        self.logger.debug(f"Imported stub module: {modname}")
+                    except Exception as im_err:
+                        self.logger.debug(f"Could not import stub module {modname}: {im_err}")
+            except Exception as imp_all_err:
+                self.logger.debug(f"Stub pre-import pass failed: {imp_all_err}")
             
             self.stubs_generated = True
             self.logger.info("Stub environment ready for progressive disclosure")
@@ -596,18 +684,27 @@ class ProgrammaticToolExecutor:
     def cleanup(self):
         """Clean up temporary stub directory"""
         if self._temp_dir:
-            import shutil
             try:
                 # Remove from sys.path
-                stub_path_str = str(self.stub_dir)
-                if stub_path_str in sys.path:
-                    sys.path.remove(stub_path_str)
+                if self.stub_dir and sys.path:
+                    stub_path_str = str(self.stub_dir)
+                    tools_path_str = str(self.stub_dir / "tools")
+                    for path_str in (stub_path_str, tools_path_str):
+                        try:
+                            if path_str in sys.path:
+                                sys.path.remove(path_str)
+                        except (TypeError, ValueError):
+                            pass
                 
                 # Delete temp directory
                 shutil.rmtree(self._temp_dir, ignore_errors=True)
                 self.logger.debug(f"Cleaned up stub directory: {self._temp_dir}")
             except Exception as e:
-                self.logger.warning(f"Failed to cleanup stub directory: {e}")
+                # Suppress noisy shutdown errors when interpreter is tearing down
+                try:
+                    self.logger.warning(f"Failed to cleanup stub directory: {e}")
+                except Exception:
+                    pass
     
     def __del__(self):
         """Cleanup on deletion"""

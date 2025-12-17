@@ -8,7 +8,7 @@ import pytest
 from pathlib import Path
 import shutil
 
-from orchestrator.code_generator import StubGenerator, GeneratedStub
+from orchestrator.execution.code_generator import StubGenerator, GeneratedStub
 from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
 
 
@@ -296,6 +296,7 @@ class OutputModel(BaseModel):
     def test_generated_stub_is_importable(self, generator, stub_dir):
         """Verify generated stubs can be imported"""
         import sys
+        import importlib
         
         generator.generate_all()
         
@@ -303,7 +304,8 @@ class OutputModel(BaseModel):
         sys.path.insert(0, str(stub_dir))
         
         try:
-            # Import generated module
+            # Import generated module (groups by domain when specified)
+            importlib.invalidate_caches()
             from tools.google_drive import get_document, GetDocumentInput, GetDocumentOutput
             
             # Verify types
@@ -313,7 +315,8 @@ class OutputModel(BaseModel):
             
         finally:
             # Cleanup
-            sys.path.remove(str(stub_dir))
+            if str(stub_dir) in sys.path:
+                sys.path.remove(str(stub_dir))
 
 
 if __name__ == "__main__":

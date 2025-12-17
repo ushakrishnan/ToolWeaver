@@ -25,9 +25,9 @@ from orchestrator.models import (
     ToolParameter,
     ToolExample
 )
-from orchestrator.tool_search import ToolSearchEngine  # Phase 3 baseline
-from orchestrator.vector_search import VectorToolSearchEngine  # Phase 7 optimized
-from orchestrator.sharded_catalog import ShardedCatalog
+from orchestrator.tools.tool_search import ToolSearchEngine  # Phase 3 baseline
+from orchestrator.tools.vector_search import VectorToolSearchEngine  # Phase 7 optimized
+from orchestrator.tools.sharded_catalog import ShardedCatalog
 
 
 # ============================================================

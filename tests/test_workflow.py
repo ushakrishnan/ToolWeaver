@@ -11,7 +11,7 @@ Tests cover:
 
 import pytest
 import asyncio
-from orchestrator.workflow import (
+from orchestrator.workflows.workflow import (
     WorkflowTemplate,
     WorkflowStep,
     WorkflowContext,

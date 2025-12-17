@@ -2,7 +2,7 @@
 
 import pytest
 from orchestrator.models import ToolDefinition, ToolParameter, ToolCatalog
-from orchestrator.sharded_catalog import ShardedCatalog, DOMAIN_KEYWORDS
+from orchestrator.tools.sharded_catalog import ShardedCatalog, DOMAIN_KEYWORDS
 
 
 @pytest.fixture

@@ -4,7 +4,7 @@ Tests for sandbox execution environment.
 
 import pytest
 import asyncio
-from orchestrator.sandbox import (
+from orchestrator.execution.sandbox import (
     SandboxEnvironment,
     SandboxSecurityError,
     ResourceLimits,

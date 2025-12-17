@@ -2,12 +2,21 @@
 
 **Standalone samples using ToolWeaver from PyPI.**
 
+> Current status: PyPI package refresh is in progress. The samples here may lag behind the latest source. For the most up-to-date code paths, use [examples/](../examples/) until the refreshed package is published. Samples will be regenerated after the refresh.
+
 These samples demonstrate how to use ToolWeaver in your own projects after installing it via `pip install toolweaver`.
 
 ## Difference from Examples
 
-- **[examples/](../examples/)** - Development examples that use the local source code
-- **[samples/](.)** - Production samples that use the PyPI package
+- **[examples/](../examples/)** - Development examples that use the local source code (canonical while PyPI refresh is pending)
+- **[samples/](.)** - Production samples that use the PyPI package (will be refreshed after the package update)
+
+## Coverage Status
+
+- Not yet mirrored: [examples/03-github-operations/](../examples/03-github-operations/)
+- Not yet mirrored: [examples/15-control-flow/](../examples/15-control-flow/)
+- Legacy demos live only in [examples/legacy-demos/](../examples/legacy-demos/)
+- [14-programmatic-execution](14-programmatic-execution/) is a placeholder; see [examples/14-programmatic-execution/](../examples/14-programmatic-execution/)
 
 ## Installation
 

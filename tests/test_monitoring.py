@@ -15,7 +15,7 @@ import tempfile
 import shutil
 import json
 from pathlib import Path
-from orchestrator.monitoring import (
+from orchestrator.observability.monitoring import (
     ToolUsageMonitor,
     ToolCallMetric,
     SearchMetric,

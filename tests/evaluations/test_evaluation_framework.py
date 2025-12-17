@@ -10,8 +10,8 @@ import json
 from pathlib import Path
 from unittest.mock import Mock, AsyncMock, patch
 
-from orchestrator.evaluation import AgentEvaluator, TaskResult, BenchmarkResults
-from orchestrator.context_tracker import ContextTracker
+from orchestrator.assessment.evaluation import AgentEvaluator, TaskResult, BenchmarkResults
+from orchestrator.observability.context_tracker import ContextTracker
 
 
 # Mock Orchestrator for testing

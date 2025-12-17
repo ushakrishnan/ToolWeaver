@@ -8,7 +8,7 @@ import pytest
 import os
 from unittest.mock import Mock, patch, MagicMock
 from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
-from orchestrator.planner import LargePlanner
+from orchestrator.planning.planner import LargePlanner
 
 
 # Mock environment variables for testing

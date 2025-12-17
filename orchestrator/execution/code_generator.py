@@ -23,7 +23,7 @@ from pathlib import Path
 from dataclasses import dataclass
 
 from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
-from orchestrator.control_flow_patterns import (
+from orchestrator.workflows.control_flow_patterns import (
     ControlFlowPatterns,
     PatternType,
     create_polling_code,
@@ -151,7 +151,8 @@ class StubGenerator:
         grouped = {}
         
         for tool in self.catalog.tools.values():
-            server = tool.domain or tool.type or "default"
+            # Default to a general bucket when no explicit domain is provided
+            server = tool.domain or "general"
             
             if server not in grouped:
                 grouped[server] = []
@@ -259,11 +260,13 @@ async def {tool.name}(input_data: {input_class}) -> {output_class}:
     """
 {docstring}
     """
-    from orchestrator.tool_executor import call_tool
+    from orchestrator.tools.tool_executor import call_tool
+    
+    from orchestrator.tools.tool_executor import call_tool
     
     try:
         result = await call_tool(
-            server="{tool.domain or 'default'}",
+            server="{tool.domain or 'general'}",
             tool_name="{tool.name}",
             parameters=input_data.model_dump()
         )

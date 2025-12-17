@@ -6,7 +6,7 @@ Validates Qdrant integration, fallback behavior, and performance.
 
 import pytest
 import time
-from orchestrator.vector_search import VectorToolSearchEngine
+from orchestrator.tools.vector_search import VectorToolSearchEngine
 from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
 
 

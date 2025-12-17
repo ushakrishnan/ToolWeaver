@@ -7,8 +7,8 @@ from pathlib import Path
 import tempfile
 
 from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
-from orchestrator.code_generator import StubGenerator
-from orchestrator.tool_filesystem import ToolFileSystem, ToolInfo
+from orchestrator.execution.code_generator import StubGenerator
+from orchestrator.tools.tool_filesystem import ToolFileSystem, ToolInfo
 
 
 @pytest.fixture

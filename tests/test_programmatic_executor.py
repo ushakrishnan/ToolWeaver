@@ -16,7 +16,7 @@ import asyncio
 import time
 from unittest.mock import AsyncMock, MagicMock
 
-from orchestrator.programmatic_executor import (
+from orchestrator.execution.programmatic_executor import (
     ProgrammaticToolExecutor,
     SecurityError,
     execute_programmatic_code
@@ -201,6 +201,25 @@ except ValueError as e:
         
         assert result["error"] is None
         assert "Missing required parameters" in result["output"]
+
+
+class TestStubIntegration:
+    """Ensure generated stubs can be imported and routed through executor."""
+
+    @pytest.mark.asyncio
+    async def test_stub_import_routes_through_executor(self, mock_tool_executor):
+        code = """
+    from tools.general.add_numbers import add_numbers, AddNumbersInput
+    result = await add_numbers(AddNumbersInput(a=2, b=3))
+    print(result.result)
+    """
+
+        result = await mock_tool_executor.execute(code)
+
+        assert result["error"] is None
+        assert "5" in result["output"]
+        assert len(result["tool_calls"]) == 1
+        assert result["tool_calls"][0]["tool"] == "add_numbers"
 
 
 class TestParallelExecution:

@@ -1,7 +1,8 @@
 # ToolWeaver Examples
 
 > **\ud83d\udee0\ufe0f For Developers:** These examples use local source code for development and testing.  
-> **\ud83d\udc64 New User?** See [samples/](../samples/) for ready-to-run examples using the installed package.
+> **\ud83d\udc64 New User?** See [samples/](../samples/) for ready-to-run examples using the installed package.  
+> **\ud83d\udccc Current status:** PyPI package refresh is in progress; treat `examples/` as the canonical, up-to-date source. We'll regenerate `samples/` after the package is finalized.
 
 Complete showcase of ToolWeaver capabilities through real-world examples using local source code.
 ✅ **All 13 examples tested and validated** - See [TESTING_REPORT.md](TESTING_REPORT.md)

@@ -4,9 +4,10 @@ Test the tool discovery system
 
 import pytest
 import asyncio
-from orchestrator.mcp_client import MCPClientShim
-from orchestrator.tool_discovery import discover_tools, ToolDiscoveryOrchestrator
-from orchestrator import workers, functions
+from orchestrator.infra.mcp_client import MCPClientShim
+from orchestrator.tools.tool_discovery import discover_tools, ToolDiscoveryOrchestrator
+from orchestrator.dispatch import workers
+from orchestrator import functions
 
 
 @pytest.mark.asyncio
@@ -70,7 +71,7 @@ async def test_tool_discovery_basic():
         print(f"   Required params: {example_tool['parameters']['required']}")
     
     print(f"\n6. Cache Information:")
-    from orchestrator.tool_discovery import ToolDiscoveryOrchestrator
+    from orchestrator.tools.tool_discovery import ToolDiscoveryOrchestrator
     orchestrator = ToolDiscoveryOrchestrator()
     print(f"   Cache file: {orchestrator.cache_file}")
     print(f"   Cache exists: {orchestrator.cache_file.exists()}")
