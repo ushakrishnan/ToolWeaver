@@ -1,0 +1,247 @@
+{
+  "name": "control_flow_tasks",
+  "description": "Benchmark suite for control flow patterns: loops, parallel, conditional, error handling",
+  "tasks": [
+    {
+      "id": "poll_until_complete",
+      "prompt": "Push code to GitHub and wait for CI to pass",
+      "category": "loop",
+      "expected": {
+        "pattern": "loop",
+        "no_context_growth_during_wait": true,
+        "max_wait_time": 300
+      },
+      "success_criteria": {
+        "uses_polling": true,
+        "has_sleep": true,
+        "checks_status": true
+      }
+    },
+    {
+      "id": "poll_with_timeout",
+      "prompt": "Check build status every 10 seconds until complete or 5 minutes elapsed",
+      "category": "loop",
+      "expected": {
+        "pattern": "loop",
+        "poll_interval": 10,
+        "timeout": 300
+      },
+      "success_criteria": {
+        "has_timeout_check": true,
+        "has_sleep_interval": true
+      }
+    },
+    {
+      "id": "batch_parallel",
+      "prompt": "Process all documents in folder ABC in parallel",
+      "category": "parallel",
+      "expected": {
+        "pattern": "parallel",
+        "duration_less_than_sequential": true,
+        "uses_gather": true
+      },
+      "success_criteria": {
+        "lists_items": true,
+        "uses_asyncio_gather": true,
+        "processes_concurrently": true
+      }
+    },
+    {
+      "id": "parallel_with_limit",
+      "prompt": "Process 100 files concurrently but max 10 at a time",
+      "category": "parallel",
+      "expected": {
+        "pattern": "parallel",
+        "max_concurrent": 10,
+        "uses_semaphore": true
+      },
+      "success_criteria": {
+        "uses_semaphore": true,
+        "limits_concurrency": true
+      }
+    },
+    {
+      "id": "conditional_branching",
+      "prompt": "If CI passes, merge PR and deploy, else notify team",
+      "category": "conditional",
+      "expected": {
+        "pattern": "conditional",
+        "pre_computed": true,
+        "has_else_branch": true
+      },
+      "success_criteria": {
+        "has_if_statement": true,
+        "has_else_statement": true,
+        "checks_condition": true
+      }
+    },
+    {
+      "id": "multi_conditional",
+      "prompt": "If priority is high, escalate immediately; if medium, schedule for tomorrow; if low, add to backlog",
+      "category": "conditional",
+      "expected": {
+        "pattern": "conditional",
+        "branches": 3
+      },
+      "success_criteria": {
+        "has_multiple_conditions": true,
+        "handles_all_cases": true
+      }
+    },
+    {
+      "id": "retry_api_call",
+      "prompt": "Call the API and retry up to 3 times with exponential backoff if it fails",
+      "category": "retry",
+      "expected": {
+        "pattern": "retry",
+        "max_retries": 3,
+        "uses_exponential_backoff": true
+      },
+      "success_criteria": {
+        "has_retry_loop": true,
+        "has_exception_handling": true,
+        "uses_backoff": true
+      }
+    },
+    {
+      "id": "retry_with_different_errors",
+      "prompt": "Try to fetch data, retry on timeout but fail immediately on auth error",
+      "category": "retry",
+      "expected": {
+        "pattern": "retry",
+        "selective_retry": true
+      },
+      "success_criteria": {
+        "catches_specific_errors": true,
+        "retries_some_errors": true,
+        "fails_on_others": true
+      }
+    },
+    {
+      "id": "sequential_with_early_exit",
+      "prompt": "Search through documents sequentially until you find one containing 'secret code', then stop",
+      "category": "sequential",
+      "expected": {
+        "pattern": "sequential",
+        "has_early_exit": true
+      },
+      "success_criteria": {
+        "processes_sequentially": true,
+        "breaks_on_condition": true,
+        "not_processing_all": true
+      }
+    },
+    {
+      "id": "pipeline_with_error_handling",
+      "prompt": "Fetch data, transform it, and save it. If any step fails, log error and continue with next item",
+      "category": "error_handling",
+      "expected": {
+        "pattern": "sequential",
+        "error_recovery": true
+      },
+      "success_criteria": {
+        "has_try_except": true,
+        "continues_on_error": true,
+        "logs_errors": true
+      }
+    },
+    {
+      "id": "parallel_with_failure_tolerance",
+      "prompt": "Process all files in parallel, collect successful results and log failures without stopping",
+      "category": "parallel",
+      "expected": {
+        "pattern": "parallel",
+        "error_tolerance": true
+      },
+      "success_criteria": {
+        "uses_gather": true,
+        "handles_exceptions": true,
+        "collects_results": true
+      }
+    },
+    {
+      "id": "nested_loops",
+      "prompt": "For each repository, poll each PR until all checks pass",
+      "category": "loop",
+      "expected": {
+        "pattern": "loop",
+        "nested": true
+      },
+      "success_criteria": {
+        "outer_loop": true,
+        "inner_loop": true,
+        "polls_status": true
+      }
+    },
+    {
+      "id": "conditional_in_loop",
+      "prompt": "Poll deployment status every 30 seconds. If successful, celebrate. If failed, rollback",
+      "category": "mixed",
+      "expected": {
+        "patterns": ["loop", "conditional"],
+        "combines_patterns": true
+      },
+      "success_criteria": {
+        "has_loop": true,
+        "has_conditional": true,
+        "takes_different_actions": true
+      }
+    },
+    {
+      "id": "parallel_then_aggregate",
+      "prompt": "Fetch metrics from all services concurrently, then sum them up",
+      "category": "parallel",
+      "expected": {
+        "pattern": "parallel",
+        "has_aggregation": true
+      },
+      "success_criteria": {
+        "fetches_parallel": true,
+        "waits_for_all": true,
+        "combines_results": true
+      }
+    },
+    {
+      "id": "rate_limited_sequential",
+      "prompt": "Process items one by one with 1 second delay between each to respect rate limit",
+      "category": "sequential",
+      "expected": {
+        "pattern": "sequential",
+        "rate_limited": true
+      },
+      "success_criteria": {
+        "processes_sequentially": true,
+        "has_delay": true,
+        "respects_rate_limit": true
+      }
+    },
+    {
+      "id": "batch_with_checkpoints",
+      "prompt": "Process 1000 items in batches of 100, save progress after each batch",
+      "category": "mixed",
+      "expected": {
+        "patterns": ["loop", "parallel"],
+        "has_checkpoints": true
+      },
+      "success_criteria": {
+        "batches_items": true,
+        "processes_batch": true,
+        "saves_progress": true
+      }
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "created": "2025-12-17",
+    "total_tasks": 16,
+    "categories": {
+      "loop": 4,
+      "parallel": 4,
+      "conditional": 2,
+      "retry": 2,
+      "sequential": 2,
+      "error_handling": 1,
+      "mixed": 3
+    }
+  }
+}
