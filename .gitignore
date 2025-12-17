@@ -92,5 +92,5 @@ prometheus_multiproc_dir/
 .ruff_cache/
 .mypy_cache/
 
-# Release notes (local only)
-docs/RELEASES.md
+# Internal documentation (business plans, strategy, private notes)
+docs/internal/
