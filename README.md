@@ -5,8 +5,10 @@
 Automatically discovers, searches, and chains tools while reducing costs by 80-90% through a two-model architecture: large models (GPT-4o, Claude) for planning, small models (Phi-3, Llama) for execution.
 
 [![PyPI version](https://badge.fury.io/py/toolweaver.svg)](https://pypi.org/project/toolweaver/)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)]()
+[![Coverage](https://img.shields.io/badge/coverage-55%25-yellow.svg)]()
 
 ---
 
