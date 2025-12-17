@@ -91,3 +91,6 @@ prometheus_multiproc_dir/
 # Linter and type checker caches
 .ruff_cache/
 .mypy_cache/
+
+# Release notes (local only)
+docs/RELEASES.md
