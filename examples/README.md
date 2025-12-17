@@ -2,7 +2,21 @@
 
 Complete showcase of ToolWeaver capabilities through real-world examples.
 
+## � Quick Start
+
+**New to ToolWeaver?** Start with [Example 13: Complete End-to-End Pipeline](13-complete-pipeline/) for a full demonstration of all features in action.
+
 ## 📚 Example Index
+
+### ⭐ Featured: Complete End-to-End
+
+#### [13-complete-pipeline](13-complete-pipeline/)
+**Complexity:** ⭐⭐⭐ Advanced | **Time:** 20 minutes  
+**Demonstrates:** ALL ToolWeaver features in production-ready pipeline
+
+Complete demonstration: discovery, search, caching, monitoring, hybrid models, workflows, code execution, and batch processing. Shows 95% cost reduction and 10x speedup.
+
+---
 
 ### Getting Started (Basic Usage)
 
@@ -111,6 +125,10 @@ python process_receipt.py
 
 ## 📖 Recommended Learning Paths
 
+### Path 0: Overview (20 minutes) ⭐ NEW
+Want to see everything at once?
+1. **13-complete-pipeline** - All features in one demo
+
 ### Path 1: Quick Start (30 minutes)
 For those who want to see basic functionality:
 1. **01-basic-receipt-processing** - Understand basic execution
@@ -119,7 +137,7 @@ For those who want to see basic functionality:
 
 ### Path 2: Production Ready (1-2 hours)
 For those building production systems:
-1. **01, 02, 03** - Master the basics
+1. **13-complete-pipeline** - See the full picture first
 2. **06-monitoring-observability** - Set up monitoring
 3. **07-caching-optimization** - Reduce costs
 4. **08-hybrid-model-routing** - Optimize model selection
@@ -133,9 +151,9 @@ For complex workflow scenarios:
 
 ### Path 4: Full Tour (4+ hours)
 Complete understanding of all capabilities:
-- Do all 12 examples in order
+- Start with **13-complete-pipeline** to understand the big picture
+- Then do examples 01-12 for deep dives into each feature
 - Each builds on previous concepts
-- Covers all ToolWeaver features
 
 ## 🎯 Use Case Examples
 
