@@ -1,10 +1,43 @@
 # ToolWeaver Examples
 
-Complete showcase of ToolWeaver capabilities through real-world examples.
+> **\ud83d\udee0\ufe0f For Developers:** These examples use local source code for development and testing.  
+> **\ud83d\udc64 New User?** See [samples/](../samples/) for ready-to-run examples using the installed package.
+
+Complete showcase of ToolWeaver capabilities through real-world examples using local source code.
 ✅ **All 13 examples tested and validated** - See [TESTING_REPORT.md](TESTING_REPORT.md)
-## � Quick Start
+
+## \ud83d\udd04 Examples vs Samples
+
+| Feature | **examples/** (Here) | **[samples/](../samples/)** |
+|---------|---------------------|---------------------------|
+| **For** | Contributors & Developers | End Users |
+| **Requires** | `git clone` + `pip install -e .` | `pip install toolweaver` |
+| **Imports** | From local source | From installed package |
+| **Modify** | Yes - edit source directly | No - use as reference |
+| **Use When** | Contributing to ToolWeaver | Building with ToolWeaver |
+
+## \ud83d\ude80 Quick Start
 
 **New to ToolWeaver?** Start with [Example 13: Complete End-to-End Pipeline](13-complete-pipeline/) for a full demonstration of all features in action.
+
+### Setup
+
+```bash
+# Clone and install (see main README.md)
+git clone https://github.com/ushakrishnan/ToolWeaver.git
+cd ToolWeaver
+pip install -e .
+
+# Navigate to an example
+cd examples/01-basic-receipt-processing
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your API keys
+
+# Run
+python process_receipt.py
+```
 
 ## 📚 Example Index
 

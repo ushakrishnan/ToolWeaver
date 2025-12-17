@@ -4,6 +4,22 @@
 
 Automatically discovers, searches, and chains tools while reducing costs by 80-90% through a two-model architecture: large models (GPT-4o, Claude) for planning, small models (Phi-3, Llama) for execution.
 
+[![PyPI version](https://badge.fury.io/py/toolweaver.svg)](https://pypi.org/project/toolweaver/)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+---
+
+## 🚀 Quick Navigation
+
+**New User?** → [Installation](#installation) • [Quick Start](#quick-start) • [Samples](samples/)
+
+**Developer?** → [Development Setup](#development-setup) • [Examples](examples/) • [Contributing](#contributing)
+
+**Documentation:** [Features Guide](docs/FEATURES_GUIDE.md) • [Architecture](docs/ARCHITECTURE.md) • [API Reference](docs/)
+
+---
+
 ## Overview
 
 ### 🎯 What It Does
@@ -93,36 +109,43 @@ Natural Language → Large Model (Planning) → Tool Search → Workflow Executi
 
 ## Installation
 
-### From PyPI (Recommended)
+### 👤 For Users (Install Package)
+
+**Use this if you want to use ToolWeaver in your projects.**
 
 ```bash
 # Basic installation
 pip install toolweaver
 
-# With monitoring support
-pip install toolweaver[monitoring]
-
-# With all optional features
-pip install toolweaver[all]
+# With optional features
+pip install toolweaver[monitoring]  # Add W&B monitoring
+pip install toolweaver[redis]       # Add Redis caching
+pip install toolweaver[vector]      # Add vector search
+pip install toolweaver[all]         # Everything
 ```
 
-### From Source
+Then explore ready-to-run examples:
+- **[samples/](samples/)** - Standalone examples using the installed package
+- Start with [Sample 01: Basic Receipt Processing](samples/01-basic-receipt-processing/)
+
+### 👨‍💻 For Contributors (Development Setup)
+
+**Use this if you want to modify ToolWeaver source code or contribute.**
 
 ```bash
 git clone https://github.com/ushakrishnan/ToolWeaver.git
 cd ToolWeaver
-pip install -e .
+python -m venv .venv
+.venv\Scripts\activate          # Windows
+# source .venv/bin/activate     # Linux/Mac
+
+pip install -e .                # Editable install
+# pip install -e ".[dev]"       # With dev tools
 ```
 
-### Quick Start
-
-```python
-from orchestrator.orchestrator import execute_plan
-
-# Your ToolWeaver code here
-```
-
-See [examples/](examples/) for complete demos or [samples/](samples/) for standalone usage examples.
+Then explore development examples:
+- **[examples/](examples/)** - Examples using local source code
+- See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines
 
 ## Core Features
 
@@ -173,57 +196,49 @@ See [examples/](examples/) for complete demos or [samples/](samples/) for standa
 
 ## Quick Start
 
-### Installation
+### \ud83c\udfaf For Users: Run a Sample
+
+After installing via pip, try a ready-to-run sample:
 
 ```bash
-# Clone and setup
-git clone https://github.com/ushakrishnan/ToolWeaver
-cd ToolWeaver
-python -m venv .venv
-.venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # Linux/Mac
+# Install the package
+pip install toolweaver
 
-# Install ToolWeaver (editable mode for development)
-pip install -e .
+# Navigate to a sample
+cd samples/01-basic-receipt-processing
 
-# Or install with optional features:
-pip install -e ".[monitoring]"   # Add W&B + Prometheus monitoring
-pip install -e ".[github-mcp]"   # Add GitHub MCP server support
-pip install -e ".[dev]"          # Add development tools
-pip install -e ".[all]"          # Everything
+# Install dependencies
+pip install -r requirements.txt
 
-# Optional: Configure monitoring (see .env.example)
+# Configure (optional - add your API keys)
 cp .env.example .env
-# Edit .env and set: MONITORING_BACKENDS=local,wandb
+# Edit .env with your Azure credentials
+
+# Run it!
+python process_receipt.py
 ```
 
-### Option 1: Try Structured Examples (Recommended)
+**Browse all samples:** [samples/README.md](samples/README.md)
+
+### \ud83d\udee0\ufe0f For Developers: Try Examples
+
+After cloning the repo and installing with `pip install -e .`:
 
 ```bash
-# Start with basic OCR example (⭐)
+# Basic OCR example (\u2b50)
 cd examples/01-basic-receipt-processing
-cp .env.example .env  # Configure Azure Computer Vision
 python process_receipt.py
 
-# Try multi-step workflow with Phi-3 (⭐⭐)
-cd ../02-receipt-with-categorization
-cp .env.example .env  # Configure Azure CV + Ollama
+# Multi-step workflow (\u2b50\u2b50)
+cd examples/02-receipt-with-categorization
 python categorize_receipt.py
 
-# Test GitHub MCP integration (⭐⭐⭐)
-cd ../03-github-operations
-cp .env.example .env  # Add GitHub token
-python test_connection.py
-
-# See examples/README.md for detailed walkthroughs
+# Complete end-to-end demo (\u2b50\u2b50\u2b50)
+cd examples/13-complete-pipeline
+python complete_pipeline.py
 ```
 
-### Option 2: Pre-Defined Plans (No LLM Required)
-
-```bash
-# Run demo with existing plans
-python run_demo.py
-```
+**Browse all examples:** [examples/README.md](examples/README.md)
 
 ### Option 3: Natural Language Planning (Requires LLM API Key)
 
@@ -1173,15 +1188,78 @@ ToolWeaver/
 | **Extensibility** | Easy to add new tools without core changes |
 | **MCP-Compatible** | Mirrors Anthropic's Model Context Protocol design |
 
+## Development Setup
+
+### Prerequisites
+- Python 3.8+
+- Git
+- (Optional) Docker for Redis/Qdrant
+
+### Clone and Setup
+
+```bash
+git clone https://github.com/ushakrishnan/ToolWeaver.git
+cd ToolWeaver
+
+# Create virtual environment
+python -m venv .venv
+.venv\Scripts\activate          # Windows
+# source .venv/bin/activate     # Linux/Mac
+
+# Install in editable mode
+pip install -e .
+
+# Or with all features
+pip install -e ".[all]"
+```
+
+### Configure Environment
+
+```bash
+# Copy example environment
+cp .env.example .env
+
+# Edit .env with your credentials
+# See docs/CONFIGURATION.md for details
+```
+
+### Run Tests
+
+```bash
+pytest                           # Run all tests
+pytest tests/test_tool_search.py # Specific test
+```
+
+### Project vs Package Usage
+
+| Aspect | **examples/** (Source) | **samples/** (Package) |
+|--------|----------------------|----------------------|
+| **Purpose** | Development/Contributing | Learning/Using |
+| **Installation** | `pip install -e .` | `pip install toolweaver` |
+| **Imports** | Local source code | Installed package |
+| **Use When** | Modifying ToolWeaver | Building with ToolWeaver |
+| **sys.path** | Modified | Not modified |
+
 ## Contributing
 
-Contributions are welcome! Please see the documentation for architecture details and coding guidelines.
+Contributions are welcome! 
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes in `examples/` or `orchestrator/`
+4. Add tests for new functionality
+5. Run `pytest` to ensure all tests pass
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## License
 
-Proprietary - All rights reserved. See [LICENSE](LICENSE) file for details.
+MIT License - See [LICENSE](LICENSE) file for details.
 
-This is a private repository and the code is not licensed for public use or distribution.
+This package is open source and free to use.
 
 ## Acknowledgments
 
