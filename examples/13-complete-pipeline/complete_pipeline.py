@@ -20,20 +20,13 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from orchestrator.orchestrator import ToolOrchestrator
-from orchestrator.tool_discovery import ToolDiscovery
-from orchestrator.tool_search import ToolSearch
-from orchestrator.planner import Planner
-from orchestrator.small_model_worker import SmallModelWorker
-from orchestrator.redis_cache import RedisCache
-from orchestrator.monitoring import MonitoringBackend
-from orchestrator.monitoring_backends import WandBBackend, LocalLoggingBackend
-from orchestrator.programmatic_executor import ProgrammaticExecutor
-from orchestrator.code_exec_worker import CodeExecutionWorker
 from dotenv import load_dotenv
 
 # Load environment
 load_dotenv()
+
+# Note: This is a demonstration script showing the conceptual pipeline
+# The actual orchestrator uses execute_plan() with JSON plans
 
 
 def print_header(text: str):
@@ -95,7 +88,7 @@ def create_mock_tools():
     ]
 
 
-def phase1_discovery(orchestrator: ToolOrchestrator, use_cache: bool = True):
+def phase1_discovery(use_cache: bool = True):
     """Phase 1: Tool Discovery with caching"""
     print_section("Phase 1: Tool Discovery")
     
@@ -103,10 +96,6 @@ def phase1_discovery(orchestrator: ToolOrchestrator, use_cache: bool = True):
     
     # Simulate discovery (in real scenario, would auto-discover from MCP servers, functions, etc.)
     tools = create_mock_tools()
-    
-    # Add to catalog
-    for tool in tools:
-        orchestrator.catalog.add_tool(tool)
     
     elapsed = (time.time() - start_time) * 1000
     cache_status = "(from cache, 2ms)" if use_cache and elapsed < 10 else f"({elapsed:.0f}ms)"
@@ -119,7 +108,7 @@ def phase1_discovery(orchestrator: ToolOrchestrator, use_cache: bool = True):
     return tools
 
 
-def phase2_search(orchestrator: ToolOrchestrator, query: str):
+def phase2_search(query: str):
     """Phase 2: Semantic Search"""
     print_section("Phase 2: Semantic Search")
     
@@ -274,22 +263,12 @@ def main():
     
     print_header("COMPLETE END-TO-END PIPELINE DEMO")
     
-    # Initialize orchestrator with all features
-    orchestrator = ToolOrchestrator(
-        enable_discovery=True,
-        enable_search=True,
-        enable_cache=True,
-        enable_monitoring=True,
-        enable_small_model=True,
-        enable_code_execution=True
-    )
-    
     # Phase 1: Discovery
-    tools = phase1_discovery(orchestrator, use_cache=True)
+    tools = phase1_discovery(use_cache=True)
     
     # Phase 2: Semantic Search
     query = "Process receipt, categorize items, calculate statistics"
-    relevant_tools = phase2_search(orchestrator, query)
+    relevant_tools = phase2_search(query)
     
     # Phase 3: Planning
     plan = phase3_planning(query, relevant_tools)
