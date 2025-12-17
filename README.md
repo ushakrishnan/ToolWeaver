@@ -91,6 +91,39 @@ Natural Language → Large Model (Planning) → Tool Search → Workflow Executi
 
 **Key Innovation:** Right model for each task - GPT-4 for complex reasoning, Phi-3 for simple parsing/classification.
 
+## Installation
+
+### From PyPI (Recommended)
+
+```bash
+# Basic installation
+pip install toolweaver
+
+# With monitoring support
+pip install toolweaver[monitoring]
+
+# With all optional features
+pip install toolweaver[all]
+```
+
+### From Source
+
+```bash
+git clone https://github.com/ushakrishnan/ToolWeaver.git
+cd ToolWeaver
+pip install -e .
+```
+
+### Quick Start
+
+```python
+from orchestrator.orchestrator import execute_plan
+
+# Your ToolWeaver code here
+```
+
+See [examples/](examples/) for complete demos or [samples/](samples/) for standalone usage examples.
+
 ## Core Features
 
 ### 🤖 Tool Management
