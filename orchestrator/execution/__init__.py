@@ -1,18 +1,41 @@
 """
 Execution subpackage
 
-Exposes programmatic execution and sandbox-related modules via a
-stable namespace without relocating files yet.
+Programmatic execution, sandbox, code generation, and worker orchestration.
 """
 
-from orchestrator import programmatic_executor as programmatic_executor
-from orchestrator import sandbox as sandbox
-from orchestrator import code_exec_worker as code_exec_worker
-from orchestrator import small_model_worker as small_model_worker  # optional
+from .sandbox import (
+    SandboxEnvironment,
+    ResourceLimits,
+    ExecutionResult,
+)
+from .programmatic_executor import (
+    ProgrammaticToolExecutor,
+)
+from .code_generator import (
+    StubGenerator,
+    GeneratedStub,
+)
+from .code_exec_worker import (
+    code_exec_worker,
+    _exec_code,
+)
+from .small_model_worker import (
+    SmallModelWorker,
+)
 
 __all__ = [
-    "programmatic_executor",
-    "sandbox",
+    # sandbox
+    "SandboxEnvironment",
+    "ResourceLimits",
+    "ExecutionResult",
+    # programmatic executor
+    "ProgrammaticToolExecutor",
+    # code generator
+    "StubGenerator",
+    "GeneratedStub",
+    # workers
     "code_exec_worker",
-    "small_model_worker",
+    "_exec_code",
+    "SmallModelWorker",
 ]
