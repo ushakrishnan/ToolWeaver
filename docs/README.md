@@ -1,171 +1,190 @@
 # ToolWeaver Documentation
 
-Complete documentation for ToolWeaver's features, deployment, and usage.
+Welcome to the ToolWeaver documentation! This guide is organized by audience and use case.
+
+## 🧭 Quick Navigation
+
+**👤 New User?** → Start with [User Guide](#-user-guide)  
+**👨‍💻 Contributing?** → See [Developer Guide](#-developer-guide)  
+**🚀 Deploying?** → Check [Deployment](#-deployment)  
+**📚 Deep Dive?** → Browse [Reference](#-reference)
 
 ---
 
-## 📚 Documentation Index
+## 👤 User Guide
 
-### 🚀 Getting Started
+*For users installing ToolWeaver via `pip install toolweaver`*
 
-| Document | Description | When to Read |
-|----------|-------------|--------------|
-| **[Configuration Guide](CONFIGURATION.md)** | Complete setup for all LLM providers (Azure OpenAI, OpenAI, Claude, Gemini, Ollama, Azure AI Foundry) | **Start here** - Set up your first deployment |
-| **[Quick Reference](QUICK_REFERENCE.md)** | Common patterns, code snippets, and quick examples | Need a fast reference for common tasks |
-| **[FREE_TIER_SETUP.md](FREE_TIER_SETUP.md)** | Get started with free tier providers (no credit card needed) | Want to try ToolWeaver without costs |
+| Document | Description | Time |
+|----------|-------------|------|
+| [Getting Started](user-guide/GETTING_STARTED.md) | Step-by-step tutorial for new users | 10 min |
+| [Configuration](user-guide/CONFIGURATION.md) | Configure API providers and settings | 15 min |
+| [Features Guide](user-guide/FEATURES_GUIDE.md) | Complete feature reference | 30 min |
+| [Workflow Usage](user-guide/WORKFLOW_USAGE_GUIDE.md) | Build and compose workflows | 20 min |
+| [Quick Reference](user-guide/QUICK_REFERENCE.md) | Common commands and patterns | 5 min |
+| [Free Tier Setup](user-guide/FREE_TIER_SETUP.md) | Use free services (Qdrant, Redis) | 10 min |
 
-### 💡 Core Features
-
-| Document | Description | When to Read |
-|----------|-------------|--------------|
-| **[Features Guide](FEATURES_GUIDE.md)** | Complete feature overview with performance metrics, capabilities, and examples | Want comprehensive understanding of all features |
-| **[Workflow System Guide](WORKFLOW_USAGE_GUIDE.md)** | Workflow composition, pattern recognition, dependency resolution, and library management | Building multi-step tool chains |
-| **[Two-Model Architecture](TWO_MODEL_ARCHITECTURE.md)** | Cost-optimized design: large planner + small executor, with cost comparisons | Understanding the cost/performance strategy |
-| **[Prompt Caching Best Practices](PROMPT_CACHING.md)** | Reduce costs by 90% with prompt caching strategies for Anthropic and OpenAI | Optimizing costs for production |
-| **[Search Tuning Guide](SEARCH_TUNING.md)** | Optimize semantic search: strategies (hybrid/BM25/embeddings), thresholds, performance | Improving tool selection accuracy |
-
-### 🔧 Deployment & Production
-
-| Document | Description | When to Read |
-|----------|-------------|--------------|
-| **[Production Deployment Guide](PRODUCTION_DEPLOYMENT.md)** | Deploy to Azure with security hardening, monitoring, scaling, and troubleshooting | **Essential for production** - Security, monitoring, scaling |
-| **[Security Guide](SECURITY.md)** | Security best practices, AST validation, sandboxing, authentication | Securing production deployments |
-| **[Azure Computer Vision Setup](AZURE_SETUP.md)** | Configure Azure Computer Vision for real OCR (receipt extraction, document processing) | Need production-grade OCR |
-| **[Small Model Improvements](SMALL_MODEL_IMPROVEMENTS.md)** | Enhanced Phi-3 JSON parsing, Azure CV integration, local model optimization | Using small models or Phi-3 |
-
-### 🗄️ Scaling & Infrastructure
-
-| Document | Description | When to Read |
-|----------|-------------|--------------|
-| **[Qdrant Setup](QDRANT_SETUP.md)** | Vector database setup for 1000+ tool catalogs | Scaling beyond 300 tools |
-| **[Redis Setup](REDIS_SETUP.md)** | Distributed cache setup for multi-instance deployments | Running multiple instances |
-
-### 🏗️ Architecture & Technical
-
-| Document | Description | When to Read |
-|----------|-------------|--------------|
-| **[Architecture Details](ARCHITECTURE.md)** | Technical deep dive: hybrid dispatcher, tool types, execution flow | Understanding internals |
-| **[Workflow Architecture](WORKFLOW_ARCHITECTURE.md)** | Workflow engine design: dependency resolution, parallel execution, pattern detection | Building on workflow system |
-| **[Implementation Details](IMPLEMENTATION.md)** | Internal architecture and technical specifications | **For contributors** - Working on ToolWeaver itself |
-
-### 🔄 Migration & Maintenance
-
-| Document | Description | When to Read |
-|----------|-------------|--------------|
-| **[Migration Guide](MIGRATION_GUIDE.md)** | Upgrade guides, breaking changes, backward compatibility | Upgrading from older versions |
+**Start here:** [Getting Started](user-guide/GETTING_STARTED.md)
 
 ---
 
-## 📖 Reading Paths
+## 👨‍💻 Developer Guide
 
-### Path 1: Quick Start (30 minutes)
-Perfect for trying ToolWeaver quickly:
+*For contributors modifying ToolWeaver source code*
 
-1. **[FREE_TIER_SETUP.md](FREE_TIER_SETUP.md)** - Set up with free providers
-2. **[Quick Reference](QUICK_REFERENCE.md)** - Run your first examples
-3. **[Features Guide](FEATURES_GUIDE.md)** - Explore capabilities
+| Document | Description | Time |
+|----------|-------------|------|
+| [Architecture](developer-guide/ARCHITECTURE.md) | System design and components | 30 min |
+| [Implementation](developer-guide/IMPLEMENTATION.md) | Code structure and patterns | 20 min |
+| [Security](developer-guide/SECURITY.md) | Security model and sandboxing | 15 min |
+| [Publishing](developer-guide/PUBLISHING.md) | Package release process | 10 min |
 
-### Path 2: Production Deployment (2-3 hours)
-For deploying to production:
-
-1. **[Configuration Guide](CONFIGURATION.md)** - Set up your LLM providers
-2. **[Features Guide](FEATURES_GUIDE.md)** - Understand all capabilities
-3. **[Two-Model Architecture](TWO_MODEL_ARCHITECTURE.md)** - Optimize costs
-4. **[Prompt Caching Best Practices](PROMPT_CACHING.md)** - Reduce costs 90%
-5. **[Production Deployment Guide](PRODUCTION_DEPLOYMENT.md)** - Deploy securely
-6. **[Security Guide](SECURITY.md)** - Harden your deployment
-
-### Path 3: Advanced Features (1-2 hours)
-For building complex workflows:
-
-1. **[Workflow System Guide](WORKFLOW_USAGE_GUIDE.md)** - Multi-step tool chains
-2. **[Workflow Architecture](WORKFLOW_ARCHITECTURE.md)** - Technical design
-3. **[Search Tuning Guide](SEARCH_TUNING.md)** - Optimize tool selection
-4. **[Qdrant Setup](QDRANT_SETUP.md)** - Scale to 1000+ tools
-
-### Path 4: Contributing (2-4 hours)
-For developers working on ToolWeaver:
-
-1. **[Architecture Details](ARCHITECTURE.md)** - System design
-2. **[Implementation Details](IMPLEMENTATION.md)** - Codebase structure
-3. **[Workflow Architecture](WORKFLOW_ARCHITECTURE.md)** - Workflow internals
+**Prerequisites:**
+- Read [../CONTRIBUTING.md](../CONTRIBUTING.md) first
+- Setup: `git clone` + `pip install -e .`
+- Explore: [../examples/](../examples/)
 
 ---
 
-## 🎯 Find What You Need
+## 🚀 Deployment
 
-### By Use Case
+*For deploying ToolWeaver to production environments*
 
-**"I want to try ToolWeaver for free"**
-→ [FREE_TIER_SETUP.md](FREE_TIER_SETUP.md)
+| Document | Description | Time |
+|----------|-------------|------|
+| [Production Deployment](deployment/PRODUCTION_DEPLOYMENT.md) | Deploy to production | 45 min |
+| [Azure Setup](deployment/AZURE_SETUP.md) | Configure Azure services | 30 min |
+| [Redis Setup](deployment/REDIS_SETUP.md) | Deploy Redis caching | 15 min |
+| [Qdrant Setup](deployment/QDRANT_SETUP.md) | Deploy vector search | 20 min |
 
-**"I need to deploy to production"**
-→ [Production Deployment Guide](PRODUCTION_DEPLOYMENT.md) + [Security Guide](SECURITY.md)
-
-**"My costs are too high"**
-→ [Two-Model Architecture](TWO_MODEL_ARCHITECTURE.md) + [Prompt Caching](PROMPT_CACHING.md)
-
-**"I need to build multi-step workflows"**
-→ [Workflow System Guide](WORKFLOW_USAGE_GUIDE.md)
-
-**"Tool selection isn't accurate"**
-→ [Search Tuning Guide](SEARCH_TUNING.md)
-
-**"I have 500+ tools"**
-→ [Qdrant Setup](QDRANT_SETUP.md)
-
-**"I need to process receipts/documents"**
-→ [Azure Computer Vision Setup](AZURE_SETUP.md)
-
-**"I want to understand how it works"**
-→ [Features Guide](FEATURES_GUIDE.md) + [Architecture Details](ARCHITECTURE.md)
-
-### By Provider
-
-**Azure OpenAI / Azure AI Foundry**
-→ [Configuration Guide](CONFIGURATION.md) + [Azure CV Setup](AZURE_SETUP.md)
-
-**OpenAI**
-→ [Configuration Guide](CONFIGURATION.md) + [Prompt Caching](PROMPT_CACHING.md)
-
-**Anthropic Claude**
-→ [Configuration Guide](CONFIGURATION.md) + [Prompt Caching](PROMPT_CACHING.md)
-
-**Local Models (Ollama, Phi-3)**
-→ [Configuration Guide](CONFIGURATION.md) + [Small Model Improvements](SMALL_MODEL_IMPROVEMENTS.md)
+**Best Practice:** Test locally with [samples/](../samples/) before deploying.
 
 ---
 
-## 📊 Document Statistics
+## 📚 Reference
 
-| Category | Files | Total Lines |
-|----------|-------|-------------|
-| Getting Started | 3 | ~1,200 |
-| Core Features | 5 | ~3,500 |
-| Deployment | 4 | ~2,800 |
-| Scaling | 2 | ~800 |
-| Architecture | 3 | ~1,500 |
-| Migration | 1 | ~400 |
-| **Total** | **18** | **~10,200** |
+*Technical deep-dives and advanced topics*
 
----
-
-## 🆘 Need Help?
-
-- **Quick questions**: Check [Quick Reference](QUICK_REFERENCE.md)
-- **Setup issues**: See [Configuration Guide](CONFIGURATION.md)
-- **Production problems**: See [Production Deployment Guide](PRODUCTION_DEPLOYMENT.md)
-- **Security concerns**: See [Security Guide](SECURITY.md)
-- **Cost optimization**: See [Two-Model Architecture](TWO_MODEL_ARCHITECTURE.md) + [Prompt Caching](PROMPT_CACHING.md)
+| Document | Description | Audience |
+|----------|-------------|----------|
+| [Two-Model Architecture](reference/TWO_MODEL_ARCHITECTURE.md) | Large + small model design | Advanced |
+| [Workflow Architecture](reference/WORKFLOW_ARCHITECTURE.md) | Workflow engine internals | Advanced |
+| [Prompt Caching](reference/PROMPT_CACHING.md) | Cost optimization techniques | All |
+| [Search Tuning](reference/SEARCH_TUNING.md) | Optimize tool search | Advanced |
+| [Migration Guide](reference/MIGRATION_GUIDE.md) | Upgrade between versions | All |
+| [Small Model Improvements](reference/SMALL_MODEL_IMPROVEMENTS.md) | Enhance small models | Advanced |
 
 ---
 
-## 📝 Documentation Maintenance
+## 📖 Additional Resources
 
-This documentation is organized by **user needs** and **use cases** rather than development phases.
+### Samples & Examples
+- [samples/](../samples/) - Ready-to-run examples using installed package
+- [examples/](../examples/) - Development examples using source code
 
-**For contributors**: When adding new documentation:
-1. Add entry to this README with description and "When to Read"
-2. Update the appropriate reading path
-3. Add to "Find What You Need" if it addresses a common use case
-4. Keep entries concise but informative
+### Project Documentation
+- [../README.md](../README.md) - Main project overview
+- [../CONTRIBUTING.md](../CONTRIBUTING.md) - Contribution guidelines
+- [RELEASES.md](RELEASES.md) - Version history (local only)
+- [DOCUMENTATION_BEST_PRACTICES.md](DOCUMENTATION_BEST_PRACTICES.md) - Doc standards
+
+### External Links
+- [PyPI Package](https://pypi.org/project/toolweaver/)
+- [GitHub Repository](https://github.com/ushakrishnan/ToolWeaver)
+- [Anthropic MCP](https://modelcontextprotocol.io/) - Inspiration
+
+---
+
+## 🗺️ Documentation Map
+
+```
+docs/
+├── README.md (this file)              # Navigation hub
+│
+├── user-guide/                        # 👤 For package users
+│   ├── GETTING_STARTED.md            # Start here!
+│   ├── CONFIGURATION.md              # Setup
+│   ├── FEATURES_GUIDE.md             # What's available
+│   ├── WORKFLOW_USAGE_GUIDE.md       # Build workflows
+│   ├── QUICK_REFERENCE.md            # Cheat sheet
+│   └── FREE_TIER_SETUP.md            # Free services
+│
+├── developer-guide/                   # 👨‍💻 For contributors
+│   ├── ARCHITECTURE.md               # How it works
+│   ├── IMPLEMENTATION.md             # Code structure
+│   ├── SECURITY.md                   # Security model
+│   └── PUBLISHING.md                 # Release process
+│
+├── deployment/                        # 🚀 For production
+│   ├── PRODUCTION_DEPLOYMENT.md      # Deploy guide
+│   ├── AZURE_SETUP.md                # Azure config
+│   ├── REDIS_SETUP.md                # Cache setup
+│   └── QDRANT_SETUP.md               # Vector DB
+│
+└── reference/                         # 📚 Technical details
+    ├── TWO_MODEL_ARCHITECTURE.md     # Design patterns
+    ├── WORKFLOW_ARCHITECTURE.md      # Internals
+    ├── PROMPT_CACHING.md             # Optimization
+    ├── SEARCH_TUNING.md              # Tuning guide
+    ├── MIGRATION_GUIDE.md            # Upgrades
+    └── SMALL_MODEL_IMPROVEMENTS.md   # Enhancements
+```
+
+---
+
+## 🎯 Learning Paths
+
+### Path 1: Quick Start (New User)
+1. [Getting Started](user-guide/GETTING_STARTED.md) - 10 min
+2. [Configuration](user-guide/CONFIGURATION.md) - 15 min
+3. Try [samples/01-basic-receipt-processing](../samples/01-basic-receipt-processing/)
+4. Browse [Features Guide](user-guide/FEATURES_GUIDE.md)
+
+### Path 2: Deep Understanding (Advanced User)
+1. [Features Guide](user-guide/FEATURES_GUIDE.md) - 30 min
+2. [Two-Model Architecture](reference/TWO_MODEL_ARCHITECTURE.md) - 20 min
+3. [Workflow Architecture](reference/WORKFLOW_ARCHITECTURE.md) - 20 min
+4. [Prompt Caching](reference/PROMPT_CACHING.md) - 15 min
+
+### Path 3: Contributor (Developer)
+1. [../CONTRIBUTING.md](../CONTRIBUTING.md) - 20 min
+2. [Architecture](developer-guide/ARCHITECTURE.md) - 30 min
+3. [Implementation](developer-guide/IMPLEMENTATION.md) - 20 min
+4. Try [examples/](../examples/)
+
+### Path 4: Production Deployment
+1. [Configuration](user-guide/CONFIGURATION.md) - 15 min
+2. [Production Deployment](deployment/PRODUCTION_DEPLOYMENT.md) - 45 min
+3. [Azure Setup](deployment/AZURE_SETUP.md) - 30 min
+4. [Redis Setup](deployment/REDIS_SETUP.md) + [Qdrant Setup](deployment/QDRANT_SETUP.md) - 35 min
+
+---
+
+## ❓ Need Help?
+
+**Can't find what you need?**
+1. Use the search function (Ctrl+F) in relevant section
+2. Check [../README.md](../README.md) for overview
+3. Browse [samples/](../samples/) for examples
+4. Search [GitHub Issues](https://github.com/ushakrishnan/ToolWeaver/issues)
+5. Create a new issue if needed
+
+**Contributing to docs?**
+- See [DOCUMENTATION_BEST_PRACTICES.md](DOCUMENTATION_BEST_PRACTICES.md)
+- Follow [../CONTRIBUTING.md](../CONTRIBUTING.md) guidelines
+
+---
+
+## 📝 Documentation Standards
+
+- **User Guide**: Task-oriented, step-by-step, beginner-friendly
+- **Developer Guide**: Architecture, patterns, contribution workflows
+- **Deployment**: Production setup, configuration, best practices
+- **Reference**: Technical details, deep-dives, advanced topics
+
+All documentation follows the standards in [DOCUMENTATION_BEST_PRACTICES.md](DOCUMENTATION_BEST_PRACTICES.md).
+
+---
+
+**Last Updated:** December 17, 2024  
+**Version:** 0.1.3

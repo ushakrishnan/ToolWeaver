@@ -117,7 +117,11 @@ pytest --cov=orchestrator       # Check coverage
 ```
 
 #### Documentation
-- Update relevant docs in `docs/`
+- Update relevant docs in appropriate `docs/` subdirectory:
+  - `docs/user-guide/` - User-facing features
+  - `docs/developer-guide/` - Architecture/implementation
+  - `docs/deployment/` - Production setup
+  - `docs/reference/` - Technical details
 - Add docstrings to new functions
 - Update README.md if adding major features
 - Add example if introducing new capability

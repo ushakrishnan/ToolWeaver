@@ -16,7 +16,7 @@ Automatically discovers, searches, and chains tools while reducing costs by 80-9
 
 **Developer?** → [Development Setup](#development-setup) • [Examples](examples/) • [Contributing](#contributing)
 
-**Documentation:** [Features Guide](docs/FEATURES_GUIDE.md) • [Architecture](docs/ARCHITECTURE.md) • [API Reference](docs/)
+**Documentation:** [User Guide](docs/user-guide/) • [Developer Guide](docs/developer-guide/) • [Deployment](docs/deployment/) • [Reference](docs/reference/)
 
 ---
 

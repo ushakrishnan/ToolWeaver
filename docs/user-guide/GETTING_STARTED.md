@@ -102,7 +102,7 @@ Browse all samples:
 - [FEATURES_GUIDE.md](FEATURES_GUIDE.md) - All features explained
 - [CONFIGURATION.md](CONFIGURATION.md) - Setup API providers
 - [WORKFLOW_USAGE_GUIDE.md](WORKFLOW_USAGE_GUIDE.md) - Build workflows
-- [ARCHITECTURE.md](ARCHITECTURE.md) - How it works
+- [../developer-guide/ARCHITECTURE.md](../developer-guide/ARCHITECTURE.md) - How it works
 
 ---
 
