@@ -58,7 +58,7 @@ qdrant = ["qdrant-client>=1.7.0"]
 pinecone = ["pinecone-client>=3.0.0"]
 
 # Distributed cache
-redis = ["redis>=5.0.0"]
+redis = ["redis>=5.0.0", "hiredis>=2.3.0"]
 
 # Development tools
 dev = [
@@ -89,10 +89,19 @@ all = [
     "qdrant-client>=1.7.0",
     "pinecone-client>=3.0.0",
     "redis>=5.0.0",
+    "hiredis>=2.3.0",
     "pytest>=9.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-mock>=3.12.0",
     "pytest-cov>=4.1.0",
+]
+
+# Integration testing with real services
+integration = [
+    "redis>=5.0.0",
+    "hiredis>=2.3.0",
+    "qdrant-client>=1.7.0",
+    "wandb>=0.16.0",
 ]
 
 [project.urls]
