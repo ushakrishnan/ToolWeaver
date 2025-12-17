@@ -94,6 +94,15 @@ async def test_ollama_streaming():
     worker = SmallModelWorker(
         backend="ollama",
         model_name="phi3:mini"
+    )
+    
+    # Test basic generation works
+    response = await worker.generate(
+        prompt="Count to 5",
+        system_prompt="Count numbers",
+        max_tokens=50,
+        temperature=0.1
+    )
     
     assert response is not None
     assert len(response) > 0
@@ -136,12 +145,11 @@ def test_ollama_initialization():
     """Test Ollama worker initialization"""
     worker = SmallModelWorker(
         backend="ollama",
-        model_name="phi3:mini",
-        ollama_url="http://loc
+        model_name="phi3:mini"
     )
     
     assert worker.backend == "ollama"
-    assert worker.model_name == "phi3:mini
+    assert worker.model_name == "phi3:mini"
 
 @pytest.mark.asyncio
 @pytest.mark.skipif(
