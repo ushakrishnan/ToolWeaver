@@ -1,7 +1,7 @@
 # ToolWeaver Examples
 
 Complete showcase of ToolWeaver capabilities through real-world examples.
-
+✅ **All 13 examples tested and validated** - See [TESTING_REPORT.md](TESTING_REPORT.md)
 ## � Quick Start
 
 **New to ToolWeaver?** Start with [Example 13: Complete End-to-End Pipeline](13-complete-pipeline/) for a full demonstration of all features in action.
@@ -245,18 +245,31 @@ python examples/legacy-demos/demo_tool_examples.py
 | **demo_tool_examples.py** | Tool examples, parameter accuracy | Cost-benefit analysis |
 | **test_azure_connection.py** | Azure AD authentication | Connection validation |
 
+## Testing Examples
+
+Run the comprehensive test suite to validate all examples:
+
+```bash
+# Activate virtual environment
+.\.venv\Scripts\Activate.ps1  # Windows
+source .venv/bin/activate      # Linux/Mac
+
+# Run validation
+cd examples
+python test_all_examples.py
+```
+
+See [TESTING_REPORT.md](TESTING_REPORT.md) for detailed test results.
+
 ## Requirements
 
 All examples require:
-- Python 3.11+
+- Python 3.10+
 - Virtual environment activated
-- Environment variables configured (see `.env.example`)
-- Azure OpenAI credentials (for planning examples)
+- Core dependencies: `pip install -e .`
+- Environment variables configured (see each example's `.env.example`)
 
-Optional for semantic search examples:
-- sentence-transformers
-- rank-bm25
-- torch
-- scikit-learn
+Optional dependencies for advanced features:
+- WandB, Redis, Qdrant: `pip install -e ".[all]"`
 
 See main [requirements.txt](../requirements.txt) for complete dependencies.
