@@ -150,66 +150,50 @@ Complete understanding of all capabilities:
 
 ---
 
-## Legacy Demo Applications (Unstructured)
+## Legacy Demo Applications
 
-### run_demo.py
-**Complete orchestrator demo** - Execute predefined execution plans
+Located in [`legacy-demos/`](legacy-demos/) folder for backward compatibility.
 
-**Usage**:
-```bash
-python examples/run_demo.py
-```
+### Main Demos
 
-**What it shows**:
+**`run_demo.py`** - Complete orchestrator demo
+- Execute predefined execution plans
 - Hybrid orchestration (MCP workers + function calls + code execution)
-- DAG-based execution with dependencies
-- Receipt OCR → parsing → tax calculation workflow
 - Uses `example_plan.json` and `example_plan_hybrid.json`
 
-### run_planner_demo.py
-**Two-model architecture demo** - Generate and execute plans from natural language
+**`run_planner_demo.py`** - Two-model architecture demo
+- Natural language → plan → execution pipeline
+- Large model (GPT-4o) generates plans, small models (Phi-3) execute
 
-**Usage**:
+### Testing & Discovery
+
+**`test_discovery.py`** - Tool discovery validation  
+**`test_search.py`** - Semantic search demo  
+**`test_azure_connection.py`** - Azure CV connection test  
+**`test_github_mcp.py`** - GitHub MCP server test  
+**`test_monitoring_integration.py`** - Monitoring backends test  
+
+### Additional Demos
+
+**`demo_auto_discover.py`** - Automatic tool discovery  
+**`demo_integrated.py`** - Integrated orchestrator example  
+**`demo_monitoring_backends.py`** - Monitoring backends showcase  
+**`demo_tool_examples.py`** - Tool registration examples  
+**`demo_workflow.py`** - Workflow execution examples  
+**`usage_examples.py`** - Basic usage patterns  
+
+### Usage
+
 ```bash
-python examples/run_planner_demo.py "Calculate tax on grocery receipt"
+# Run from examples directory
+cd examples/legacy-demos
+python run_demo.py
+python run_planner_demo.py "Calculate tax on grocery receipt"
 ```
 
-**What it shows**:
-- Large model (GPT-4o/Claude) generates execution plans
-- Small models (Phi-3/Llama) execute specific tasks
-- Hybrid orchestrator manages DAG execution
-- Full natural language → plan → execution pipeline
-
 ---
 
-## Example Data Files
-
-### example_plan.json
-Sample execution plan for receipt processing workflow:
-1. OCR image
-2. Parse line items
-3. Calculate tax
-
-### example_plan_hybrid.json
-Advanced execution plan demonstrating:
-- Parallel execution
-- Function calls (compute_tax)
-- Code execution (filter operations)
-- Complex dependencies
-
----
-
-## Quick Start Examples
-
-### Basic Usage
-- **usage_examples.py** - Simple examples of tool registration and execution
-
-### Discovery & Search
-- **test_discovery.py** - Tool discovery validation (discovers 14 tools)
-- **test_search.py** - Semantic search demo (6 queries with relevance scores)
-- **demo_auto_discover.py** - Automatic tool discovery integration
-
-### Advanced Features
+## Additional Resources
 - **demo_integrated.py** - Full pipeline: discovery → search → planning (30 tools)
 - **demo_tool_examples.py** - Tool usage examples showing 72% → 90%+ accuracy improvement
 
@@ -224,9 +208,9 @@ Advanced execution plan demonstrating:
 # source .venv/bin/activate  # Linux/Mac
 
 # Run any example
-python examples/demo_integrated.py
-python examples/test_discovery.py
-python examples/demo_tool_examples.py
+python examples/legacy-demos/demo_integrated.py
+python examples/legacy-demos/test_discovery.py
+python examples/legacy-demos/demo_tool_examples.py
 ```
 
 ## What Each Example Demonstrates

@@ -714,7 +714,7 @@ class WorkflowLibrary:
 
 ## Examples
 
-See [examples/demo_workflow.py](../examples/demo_workflow.py) for complete working examples.
+See [examples/legacy-demos/demo_workflow.py](../examples/legacy-demos/demo_workflow.py) for complete working examples.
 
 ## Next Steps
 

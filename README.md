@@ -958,7 +958,7 @@ library.save_to_disk("workflows/custom")
 - ✅ **Error handling** - Retry logic with exponential backoff
 - ✅ **52 tests** - Comprehensive test coverage for workflows and patterns
 
-**See:** [Workflow Usage Guide](docs/WORKFLOW_USAGE_GUIDE.md) | [Architecture Docs](docs/WORKFLOW_ARCHITECTURE.md) | [Demo](examples/demo_workflow.py)
+**See:** [Workflow Usage Guide](docs/WORKFLOW_USAGE_GUIDE.md) | [Architecture Docs](docs/WORKFLOW_ARCHITECTURE.md) | [Demo](examples/legacy-demos/demo_workflow.py)
 
 ## End-to-End Example: Discovery → Search → Planning
 
@@ -1075,10 +1075,10 @@ See the [examples/](examples/) directory for comprehensive demos:
 python run_demo.py
 
 # Or run specific examples
-python examples/demo_integrated.py      # Full pipeline
-python examples/test_discovery.py       # Tool discovery
-python examples/test_search.py          # Semantic search
-python examples/demo_tool_examples.py   # Parameter accuracy
+python examples/legacy-demos/demo_integrated.py      # Full pipeline
+python examples/legacy-demos/test_discovery.py       # Tool discovery
+python examples/legacy-demos/test_search.py          # Semantic search
+python examples/legacy-demos/demo_tool_examples.py   # Parameter accuracy
 ```
 
 See [examples/README.md](examples/README.md) for complete list.
