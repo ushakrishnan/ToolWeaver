@@ -1,8 +1,20 @@
 # Example 09: Code Execution
 
-**Capability Demonstrated:** Sandboxed Python code execution for dynamic operations
+**Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
+**Feature Demonstrated:** Sandboxed Python code execution for dynamic operations
 
-## What This Shows
+## Overview
+
+### What This Example Does
+Executes Python code safely in a sandboxed environment with security restrictions.
+
+### Key Features Showcased
+- **Safe Execution**: Sandboxed environment with restricted imports
+- **Security Features**: Timeout limits, memory limits, process isolation
+- **Dynamic Operations**: Custom logic without predefined tools
+- **Use Cases**: Data transformation, calculations, validation, parsing
+
+### Why This Matters
 
 - Safe code execution with restricted builtins
 - Multiprocessing isolation for security

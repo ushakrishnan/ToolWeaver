@@ -1,8 +1,20 @@
 # Example 06: Monitoring and Observability
 
-**Capability Demonstrated:** Production-grade monitoring with WandB and Prometheus integration
+**Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
+**Feature Demonstrated:** Production-grade monitoring with WandB and Prometheus
 
-## What This Shows
+## Overview
+
+### What This Example Does
+Integrates WandB and Prometheus for real-time monitoring, cost tracking, and performance profiling.
+
+### Key Features Showcased
+- **WandB Integration**: ML operations tracking with dashboards
+- **Prometheus Metrics**: Production monitoring with /metrics endpoint
+- **Cost Tracking**: Per-operation cost attribution and analysis
+- **Error Tracking**: Debug failures with detailed logging
+
+### Why This Matters
 
 This example demonstrates ToolWeaver's observability capabilities:
 - Real-time metrics tracking with WandB

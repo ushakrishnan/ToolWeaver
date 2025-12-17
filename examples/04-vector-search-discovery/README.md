@@ -1,23 +1,29 @@
 # Example 04: Vector Search and Tool Discovery
 
-**Capability Demonstrated:** Automatic tool discovery and semantic search across large tool catalogs
+**Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
+**Feature Demonstrated:** Automatic tool discovery and semantic search
 
-## What This Shows
+## Overview
 
-This example demonstrates ToolWeaver's ability to:
-- Automatically discover tools from multiple sources (MCP servers, functions, code execution)
-- Use semantic search to find relevant tools from 100+ tool catalogs
-- Reduce token usage by 66.7% through intelligent tool selection
-- Cache discovery results for performance optimization
+### What This Example Does
+Automatically discovers tools from multiple sources (MCP servers, Python functions, code execution) and uses semantic search to find relevant tools from large catalogs (100+ tools).
 
-## Real-World Use Case
+### Key Features Showcased
+- **Tool Discovery**: Automatic introspection of MCP servers, functions, and code execution
+- **Semantic Search**: Hybrid BM25 + embeddings to find relevant tools
+- **Token Reduction**: 66-95% reduction by selecting only relevant tools
+- **Caching**: Multi-layer cache (discovery, embeddings, search results)
+
+### Why This Matters
 
 When you have a large tool ecosystem (50-1000+ tools), you can't send all tool definitions to the LLM due to:
-- Token limits (Claude 200K context, but tools can use 100K+)
-- Cost (more tokens = more $$$)
-- Accuracy (too many tools confuse the model)
+- **Token limits**: Claude 200K context, but 1000 tools can use 100K+ tokens
+- **Cost**: More tokens = more money ($0.05 vs $0.0025 per request)
+- **Accuracy**: Too many tools confuse the model (65% → 92% with search)
 
 **Solution:** Semantic search finds only the 5-10 relevant tools for each task.
+
+### Real-World Use Case
 
 ## How It Works
 
@@ -62,20 +68,21 @@ Discovery Cache ← Tool Catalog ← MCP/Functions/Code
 - `.env.example` - Template for setup
 - `README.md` - This file
 
+## Prerequisites
+
+- Python 3.10+
+- Azure OpenAI or OpenAI API access
+- ToolWeaver installed (`pip install -e ../..`)
+
 ## Setup
 
-1. Copy `.env.example` to `.env`:
+1. **Configure environment** (if not already using main .env):
    ```bash
    cp .env.example .env
+   # Edit .env with your API keys if needed
    ```
 
-2. Add your API keys to `.env`:
-   ```
-   AZURE_OPENAI_ENDPOINT=your_endpoint_here
-   AZURE_OPENAI_KEY=your_key_here
-   ```
-
-3. Install dependencies (from project root):
+2. **Install dependencies** (from project root):
    ```bash
    pip install -r requirements.txt
    ```

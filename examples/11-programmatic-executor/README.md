@@ -1,8 +1,20 @@
 # Example 11: Programmatic Executor
 
-**Capability Demonstrated:** Execute workflows programmatically without sending intermediate results to LLM
+**Complexity:** ⭐⭐⭐ Advanced | **Time:** 15 minutes  
+**Feature Demonstrated:** Programmatic workflow execution keeping data out of LLM context
 
-## What This Shows
+## Overview
+
+### What This Example Does
+Executes workflows programmatically in Python, keeping large intermediate results out of LLM context.
+
+### Key Features Showcased
+- **Context Management**: Keep data in memory, not LLM context
+- **Large-Scale Processing**: Process 1000s of items efficiently
+- **Cost Efficiency**: 2 LLM calls (plan + summarize) vs 1000+
+- **Performance**: 10-50x faster than LLM-in-the-loop
+
+### Why This Matters
 
 - Keep large intermediate results out of LLM context
 - Python-based workflow orchestration

@@ -1,8 +1,20 @@
 # Example 07: Caching and Optimization
 
-**Capability Demonstrated:** Multi-layer caching with Redis for cost and performance optimization
+**Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
+**Feature Demonstrated:** Multi-layer caching with Redis for cost and performance optimization
 
-## What This Shows
+## Overview
+
+### What This Example Does
+Implements distributed Redis caching across multiple layers (discovery, search, results, embeddings).
+
+### Key Features Showcased
+- **Redis Integration**: Distributed caching with Redis Cloud
+- **Multi-Layer Cache**: Discovery (24h), search (1h), results (5min)
+- **Performance**: 87% faster with cache hits
+- **Cost Savings**: 90% reduction through cache optimization
+
+### Why This Matters
 
 - Redis-based distributed caching
 - Multiple cache layers (discovery, search, results, embeddings)

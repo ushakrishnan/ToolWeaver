@@ -1,8 +1,20 @@
 # Example 10: Multi-Step Planning
 
-**Capability Demonstrated:** Complex multi-step workflows with automatic planning
+**Complexity:** ⭐⭐⭐ Advanced | **Time:** 15 minutes  
+**Feature Demonstrated:** LLM-generated execution plans from natural language
 
-## What This Shows
+## Overview
+
+### What This Example Does
+Converts natural language requests into executable multi-step plans with dependencies.
+
+### Key Features Showcased
+- **Natural Language → Plans**: LLM generates structured execution plans
+- **Dependency Resolution**: Automatic DAG construction from steps
+- **Parallel Execution**: Identifies and runs independent steps concurrently
+- **Conditional Logic**: Support for if/else branches in plans
+
+### Why This Matters
 
 - LLM generates execution plans from natural language
 - Dependency resolution and DAG construction

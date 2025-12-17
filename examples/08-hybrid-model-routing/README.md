@@ -1,8 +1,20 @@
 # Example 08: Hybrid Model Routing
 
-**Capability Demonstrated:** Two-model architecture (GPT-4 planner + Phi-3 worker) for cost optimization
+**Complexity:** ⭐⭐⭐ Advanced | **Time:** 15 minutes  
+**Feature Demonstrated:** Two-model architecture (GPT-4 planner + Phi-3 workers)
 
-## What This Shows
+## Overview
+
+### What This Example Does
+Uses GPT-4 for planning and Phi-3 for execution, achieving 80-90% cost reduction.
+
+### Key Features Showcased
+- **Hybrid Architecture**: Large model for planning, small models for execution
+- **Intelligent Routing**: Automatic task complexity detection
+- **Cost Optimization**: 98.7% savings at scale (100+ tasks)
+- **Performance**: Parallel execution with local small models
+
+### Why This Matters
 
 - Large model (GPT-4) for planning and complex reasoning
 - Small model (Phi-3) for execution tasks (parsing, classification)

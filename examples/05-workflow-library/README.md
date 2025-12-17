@@ -1,8 +1,20 @@
 # Example 05: Workflow Library and Composition
 
-**Capability Demonstrated:** Reusable workflow patterns and automatic tool chaining
+**Complexity:** ⭐⭐ Intermediate | **Time:** 15 minutes  
+**Feature Demonstrated:** Reusable workflow patterns and automatic tool chaining
 
-## What This Shows
+## Overview
+
+### What This Example Does
+Defines reusable workflow templates with automatic dependency resolution and parallel execution.
+
+### Key Features Showcased
+- **Workflow Definition**: Create multi-step workflows with dependencies
+- **Automatic Parallelization**: Execute independent steps concurrently (25-40% speedup)
+- **Workflow Library**: Save, version, and reuse workflow patterns
+- **Composition**: Chain workflows together for complex processes
+
+### Why This Matters
 
 This example demonstrates ToolWeaver's workflow capabilities:
 - Define reusable workflow templates
