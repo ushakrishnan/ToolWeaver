@@ -198,7 +198,8 @@ class ShardedCatalog:
         self,
         query: str,
         domain: str,
-        min_results: int = 3
+        min_results: int = 3,
+        top_k: Optional[int] = None  # top_k kept for compatibility; not used currently
     ) -> Tuple[List, Optional[str]]:
         """
         Search within specific domain with fallback to global.
@@ -229,7 +230,8 @@ class ShardedCatalog:
     def search_with_detection(
         self,
         query: str,
-        min_results: int = 3
+        min_results: int = 3,
+        top_k: Optional[int] = None  # top_k kept for compatibility; not used currently
     ) -> Tuple[ToolCatalog, Optional[str]]:
         """
         Auto-detect domain and search with fallback.

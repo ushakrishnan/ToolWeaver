@@ -159,6 +159,36 @@ class TestStubGenerator:
         assert "GetDocumentOutput" in function
         assert "call_tool" in function
         assert "google_drive" in function
+
+    def test_control_flow_doc_injection(self, generator):
+        """Verify control-flow snippet is injected into docstring when specified"""
+        tool = ToolDefinition(
+            name="process_batch",
+            type="function",
+            description="Process a batch of items",
+            domain="general",
+            parameters=[],
+            metadata={
+                "control_flow": {
+                    "type": "parallel",
+                    "params": {
+                        "items_var": "items",
+                        "list_function": "list_items",
+                        "list_params": "",
+                        "process_function": "process_item",
+                        "item_param": "item"
+                    }
+                }
+            }
+        )
+
+        # Generate full stub to ensure compile validity
+        stub = generator._generate_stub(tool)
+        # Should compile since snippet lives in docstring
+        compile(stub, "<string>", "exec")
+        # Docstring should include control flow header and indicative content
+        assert "Control Flow:" in stub
+        assert "asyncio.gather" in stub
         
     def test_generate_docstring(self, generator, test_catalog):
         """Verify docstring generation"""

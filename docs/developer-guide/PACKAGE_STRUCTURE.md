@@ -9,7 +9,11 @@ ToolWeaver 1.0 refactored the orchestrator package into thematic subpackages for
 ```
 orchestrator/
 ├── __init__.py                    # Main exports
-├── models.py                      # Core data models (unchanged)
+│
+├── shared/                        # Shared core modules
+│   ├── __init__.py
+│   ├── models.py                  # Core data models (ToolCatalog, ToolDefinition, etc.)
+│   └── functions.py               # Re-exports from dispatch.functions
 │
 ├── workflows/                     # Workflow orchestration
 │   ├── __init__.py               # Exports: WorkflowTemplate, WorkflowExecutor, etc.
@@ -80,10 +84,13 @@ from orchestrator.monitoring import create_monitor
 
 ## Recommended Import Patterns
 
-### For New Code
-Use the subpackage imports for clarity:
+### Standard Imports
+Use the subpackage imports for all code:
 
 ```python
+# Core models
+from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
+
 # Workflows
 from orchestrator.workflows import WorkflowTemplate, WorkflowExecutor
 from orchestrator.workflows.control_flow_patterns import create_loop_code
@@ -103,15 +110,17 @@ from orchestrator.observability import print_metrics_report
 # Planning & Runtime
 from orchestrator.planning import LargePlanner
 from orchestrator.runtime import execute_plan, final_synthesis
+
+# Functions
+from orchestrator.dispatch import functions
+from orchestrator.dispatch.functions import register_function
 ```
 
-### For Existing Code
-No changes needed! Top-level imports remain supported:
+### Convenience Re-exports
+Top-level package re-exports common models for convenience:
 
 ```python
-from orchestrator.workflow import WorkflowTemplate
-from orchestrator.sandbox import SandboxEnvironment
-# ... these continue to work
+from orchestrator import ToolCatalog, ToolDefinition  # Works via __init__.py
 ```
 
 ## Optional Dependencies

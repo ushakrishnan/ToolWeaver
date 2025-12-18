@@ -19,6 +19,36 @@ import random
 from typing import List
 import numpy as np
 
+# Lightweight fallback for pytest-benchmark when plugin isn't installed.
+try:
+    from pytest_benchmark.fixture import BenchmarkFixture  # type: ignore
+except Exception:  # pragma: no cover - optional dependency
+    BenchmarkFixture = None
+
+
+@pytest.fixture
+def benchmark():
+    """Minimal benchmark fixture that approximates pytest-benchmark stats.mean."""
+    class _Stats:
+        def __init__(self, samples: List[float]):
+            self.mean = sum(samples) / len(samples)
+
+    class _Benchmark:
+        def __call__(self, func):
+            samples = []
+            result = None
+            for _ in range(3):
+                start = time.perf_counter()
+                result = func()
+                samples.append(time.perf_counter() - start)
+            self.stats = _Stats(samples)
+            return result
+
+    if BenchmarkFixture is None:
+        return _Benchmark()
+    # If plugin is available, defer to real fixture
+    return pytest.lazy_fixture("benchmark")
+
 from orchestrator.shared.models import (
     ToolCatalog,
     ToolDefinition,

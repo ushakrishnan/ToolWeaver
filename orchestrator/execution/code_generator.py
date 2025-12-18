@@ -302,6 +302,23 @@ async def {tool.name}(input_data: {input_class}) -> {output_class}:
         # Returns
         lines.append("    Returns:")
         lines.append(f"        {self._camel_case(tool.name)}Output with result")
+
+        # Optional: Inject control-flow guidance snippet into docstring
+        cf = tool.metadata.get("control_flow") if isinstance(tool.metadata, dict) else None
+        if cf and isinstance(cf, dict):
+            pattern_type = cf.get("type") or cf.get("pattern_type")
+            params = cf.get("params") or {}
+            try:
+                snippet = self.render_control_flow(str(pattern_type), params)
+                lines.append("")
+                lines.append("    Control Flow:")
+                # Indent snippet to align within docstring for readability
+                indented = textwrap.indent(snippet.strip(), prefix="        ")
+                lines.append(indented)
+            except Exception as e:
+                # If pattern rendering fails, include a brief note for debugging
+                lines.append("")
+                lines.append(f"    Control Flow: [invalid pattern: {e}]")
         
         return "\n".join(lines)
         
