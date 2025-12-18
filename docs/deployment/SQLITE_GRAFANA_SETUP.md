@@ -1,17 +1,132 @@
-# SQLite + Grafana Setup Guide for ToolWeaver Phase 5
+# Analytics Backend Setup Guide for ToolWeaver Phase 5
 
-This guide covers setting up SQLite for analytics data storage and Grafana for visualization, enabling real-time dashboards and metrics tracking.
+This guide covers setting up analytics for ToolWeaver with **two backend options**:
+- **OTLP (Recommended)**: Push to Grafana Cloud Prometheus (simpler, cloud-native)
+- **SQLite**: Local database storage (good for development)
 
 ---
 
-## Overview
+## Quick Start: Choose Your Backend
 
-**What you're setting up:**
-- **SQLite**: Local database for metrics time-series data (no server needed)
-- **Grafana**: Beautiful dashboards for visualizing analytics (free tier sufficient)
-- **ToolWeaver Analytics**: Python backend that populates data for Grafana
+**For production/cloud environments:**
+→ Use **OTLP Backend** (simpler, no storage management)
 
-**Architecture:**
+**For local development:**
+→ Use **SQLite Backend** (local files, no internet needed)
+
+Set in `.env`:
+```bash
+ANALYTICS_BACKEND=otlp    # Grafana Cloud (recommended)
+# OR
+ANALYTICS_BACKEND=sqlite  # Local database
+```
+
+---
+
+## OTLP Backend (Grafana Cloud Prometheus) ⭐ RECOMMENDED
+
+### Why OTLP?
+
+- ✅ **Simpler setup** - No local database files
+- ✅ **Cloud-native** - Push metrics directly to Grafana Cloud
+- ✅ **Auto-retention** - Grafana manages storage (14 days free tier)
+- ✅ **Industry standard** - OpenTelemetry protocol
+- ✅ **Free tier** - 10,000 metric series included
+- ✅ **No maintenance** - No backups, no cleanup needed
+
+### Architecture:
+```
+ToolWeaver (Python)
+  ↓ pushes metrics via OTLP
+  ↓
+Grafana Cloud Prometheus
+  ↓ queries
+  ↓
+Grafana Dashboards
+  ↓ visualizes
+  ↓
+Beautiful charts/leaderboards/trends
+```
+
+### Setup Steps
+
+1. **Go to Grafana Cloud** (https://grafana.com/auth/sign-up)
+   - Sign up for free account
+   - Verify email
+
+2. **Navigate to Prometheus Setup**
+   - Click "Connections" → "Add new connection"
+   - Search for "Prometheus"
+   - Click "Prometheus onboarding"
+
+3. **Select Options**
+   - Step 1: "Collect and send metrics to a fully-managed Prometheus Stack"
+   - Step 2: "Custom Setup Options"
+   - Step 3: "Send Metrics over HTTP" → "OpenTelemetry (OTEL)"
+
+4. **Copy Configuration**
+   You'll get three values:
+   ```
+   Endpoint: https://otlp-gateway-prod-{region}.grafana.net/otlp
+   Instance ID: 1234567 (numeric)
+   Token: glc_... (starts with glc_)
+   ```
+
+5. **Configure ToolWeaver**
+   Add to `.env`:
+   ```bash
+   # Backend selection
+   ANALYTICS_BACKEND=otlp
+   
+   # OTLP configuration
+   OTLP_ENDPOINT=https://otlp-gateway-prod-us-east-2.grafana.net/otlp
+   OTLP_INSTANCE_ID=1234567
+   OTLP_TOKEN=glc_your_token_here
+   OTLP_PUSH_INTERVAL=60  # seconds
+   ```
+
+6. **Install Dependencies**
+   ```bash
+   pip install opentelemetry-api opentelemetry-sdk opentelemetry-exporter-otlp-proto-http
+   ```
+
+7. **Test It**
+   ```python
+   from orchestrator.execution.analytics import OTLPMetrics
+   
+   metrics = OTLPMetrics()
+   metrics.record_skill_execution("test_skill", success=True, latency_ms=150)
+   # Metrics automatically pushed every 60 seconds
+   ```
+
+8. **View in Grafana**
+   - Go to your Grafana Cloud instance
+   - Navigate to: Explore → PromQL
+   - Query: `rate(toolweaver_skill_executions_total[5m])`
+
+### Available Metrics
+
+OTLP pushes these metrics automatically:
+- `toolweaver_skill_executions_total` - Counter of executions
+- `toolweaver_skill_success_total` - Successful executions
+- `toolweaver_skill_failures_total` - Failed executions
+- `toolweaver_skill_latency_milliseconds` - Execution time histogram
+- `toolweaver_skill_rating` - User ratings (1-5 stars)
+- `toolweaver_skill_health_score` - Health score (0-100)
+
+---
+
+## SQLite Backend (Local Database)
+
+### Why SQLite?
+
+- ✅ **Zero installation** - Built into Python
+- ✅ **No server needed** - File-based database
+- ✅ **Offline-friendly** - No internet required
+- ✅ **Good for dev** - Local testing and debugging
+- ✅ **Advanced queries** - Full SQL support
+
+### Architecture:
 ```
 ToolWeaver (Python)
   ↓ stores metrics
