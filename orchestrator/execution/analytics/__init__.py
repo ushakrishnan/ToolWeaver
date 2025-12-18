@@ -70,6 +70,17 @@ except ImportError:
     OTLP_AVAILABLE = False
     logging.warning("OTLP metrics not available. Install: pip install opentelemetry-api opentelemetry-sdk opentelemetry-exporter-otlp-proto-http")
 
+# Try to import Prometheus metrics (optional dependency)
+try:
+    from .prometheus_metrics import PrometheusMetrics, PrometheusConfig, create_prometheus_exporter
+    PROMETHEUS_AVAILABLE = True
+except ImportError:
+    PrometheusMetrics = None
+    PrometheusConfig = None
+    create_prometheus_exporter = None
+    PROMETHEUS_AVAILABLE = False
+    logging.warning("Prometheus client not available. Install: pip install prometheus-client")
+
 __all__ = [
     # Schema management (SQLite backend)
     "SQLiteSchema",
@@ -86,7 +97,12 @@ __all__ = [
     "MetricConfig",
     "create_otlp_client",
     "OTLP_AVAILABLE",
-    # Grafana integration (works with both backends)
+    # Prometheus metrics (scraping backend)
+    "PrometheusMetrics",
+    "PrometheusConfig",
+    "create_prometheus_exporter",
+    "PROMETHEUS_AVAILABLE",
+    # Grafana integration (works with all backends)
     "GrafanaClient",
     "GrafanaConfig",
     "setup_grafana",
@@ -103,17 +119,17 @@ def create_analytics_client(backend: str = None):
     Factory function to create analytics client based on backend selection.
     
     Args:
-        backend: 'sqlite' or 'otlp'. If None, reads from ANALYTICS_BACKEND env var.
+        backend: 'sqlite', 'otlp', or 'prometheus'. If None, reads from ANALYTICS_BACKEND env var.
     
     Returns:
-        SkillAnalytics (SQLite) or OTLPMetrics (OTLP) instance
+        SkillAnalytics (SQLite), OTLPMetrics (OTLP), or PrometheusMetrics (Prometheus) instance
     
     Examples:
         # Auto-detect from environment
         analytics = create_analytics_client()
         
         # Explicit backend
-        analytics = create_analytics_client(backend='otlp')
+        analytics = create_analytics_client(backend='prometheus')
     """
     if backend is None:
         backend = os.getenv("ANALYTICS_BACKEND", "sqlite").lower()
@@ -127,9 +143,18 @@ def create_analytics_client(backend: str = None):
         logging.info("Creating OTLP metrics client (Grafana Cloud)")
         return OTLPMetrics()
     
+    elif backend == "prometheus":
+        if not PROMETHEUS_AVAILABLE:
+            raise RuntimeError(
+                "Prometheus backend requested but dependencies not installed. "
+                "Run: pip install prometheus-client"
+            )
+        logging.info("Creating Prometheus metrics exporter (HTTP scraping)")
+        return PrometheusMetrics()
+    
     elif backend == "sqlite":
         logging.info("Creating SQLite analytics client (local database)")
         return SkillAnalytics()
     
     else:
-        raise ValueError(f"Unknown analytics backend: {backend}. Use 'sqlite' or 'otlp'.")
+        raise ValueError(f"Unknown analytics backend: {backend}. Use 'sqlite', 'otlp', or 'prometheus'.")

@@ -13,6 +13,7 @@ Features:
 - Grafana dashboard integration
 """
 
+import os
 import sqlite3
 import logging
 from pathlib import Path
@@ -700,6 +701,32 @@ class SkillAnalytics:
             logger.error(f"Error updating health scores: {e}")
             return 0
 
+    def update_health_score(self, skill_id: str, score: float):
+        """Adapter method for interface compatibility with OTLP and Prometheus backends.
+        
+        Sets health score for a specific skill (SQLite-specific).
+        
+        Args:
+            skill_id: The skill ID
+            score: Health score (0-100)
+        """
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                UPDATE skill_metrics
+                SET health_score = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE skill_id = ?
+                """,
+                (score, skill_id),
+            )
+            conn.commit()
+            conn.close()
+            logger.info(f"Updated health score for {skill_id}: {score}/100")
+        except sqlite3.Error as e:
+            logger.error(f"Error updating health score: {e}")
+
     # ========================================================================
     # Trend Analysis Methods
     # ========================================================================
@@ -843,3 +870,17 @@ class SkillAnalytics:
             True if healthy.
         """
         return self.schema.health_check()
+    
+    def get_config_summary(self) -> Dict[str, Any]:
+        """Get configuration summary for debugging.
+        
+        Returns:
+            Dictionary with backend info and config.
+        """
+        return {
+            "backend": "sqlite",
+            "db_path": str(self.db_path),
+            "exists": os.path.exists(self.db_path),
+            "size_bytes": os.path.getsize(self.db_path) if os.path.exists(self.db_path) else 0,
+            "healthy": self.health_check(),
+        }
