@@ -1,0 +1,34 @@
+agents:
+  - agent_id: test_agent
+    name: Test Agent
+    description: Handles generic tasks for testing
+    endpoint: http://localhost:8000/agents/test
+    protocol: http
+    capabilities:
+      - test
+      - data_analysis
+    metadata:
+      tags: [fast, test]
+
+  - agent_id: slow_agent
+    name: Slow Agent
+    description: Simulates a slow agent for timeout testing
+    endpoint: http://localhost:8000/agents/slow
+    protocol: http
+    capabilities:
+      - slow_path
+    latency_estimate: 120
+    metadata:
+      tags: [slow]
+
+  - agent_id: alt_agent
+    name: Alt Agent
+    description: Alternate agent for capability filtering
+    endpoint: http://localhost:8000/agents/alt
+    protocol: http
+    capabilities:
+      - code_generation
+      - testing
+    cost_estimate: 0.02
+    metadata:
+      tags: [alt, codegen]

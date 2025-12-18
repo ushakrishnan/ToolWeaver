@@ -12,6 +12,7 @@ import logging
 from typing import Dict, Any, Callable, Optional
 from ..execution.code_exec_worker import code_exec_worker
 from ..shared.models import FunctionCallInput, FunctionCallOutput
+from ..infra.a2a_client import AgentDelegationRequest
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,8 @@ async def dispatch_step(
     step: Dict[str, Any],
     step_outputs: Dict[str, Any],
     mcp_client: Any,
-    monitor: Optional[Any] = None
+    monitor: Optional[Any] = None,
+    a2a_client: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """
     Main hybrid dispatcher that routes to appropriate worker based on tool type.
@@ -116,13 +118,46 @@ async def dispatch_step(
     
     # Route to appropriate worker
     if tool_type in mcp_client.tool_map:
-        # MCP deterministic tool
+        # MCP deterministic tool (supports optional streaming)
+        if step.get("stream"):
+            chunks = []
+            async for chunk in mcp_client.call_tool_stream(
+                tool_type,
+                resolved_input,
+                timeout=step.get('timeout_s', 30),
+                chunk_timeout=step.get('chunk_timeout_s'),
+            ):
+                chunks.append(chunk)
+            return {"chunks": chunks}
         return await mcp_client.call_tool(
             tool_type,
             resolved_input,
             idempotency_key=step.get('idempotency_key'),
             timeout=step.get('timeout_s', 30)
         )
+    elif tool_type.startswith("agent_") and a2a_client:
+        agent_id = tool_type[len("agent_"):]
+        task = resolved_input.get("task") or step.get("task") or tool_type
+        context = resolved_input.get("context", resolved_input)
+        req = AgentDelegationRequest(
+            agent_id=agent_id,
+            task=task,
+            context=context if isinstance(context, dict) else {"context": context},
+            timeout=step.get('timeout_s', 30),
+            idempotency_key=step.get('idempotency_key'),
+            metadata=step.get('metadata', {}),
+        )
+
+        if step.get("stream"):
+            chunks = []
+            async for chunk in a2a_client.delegate_stream(
+                req,
+                chunk_timeout=step.get('chunk_timeout_s'),
+            ):
+                chunks.append(chunk)
+            return {"chunks": chunks}
+        resp = await a2a_client.delegate_to_agent(req)
+        return resp.result
     elif tool_type == "function_call":
         # Structured function call
         return await function_call_worker(resolved_input)

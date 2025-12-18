@@ -36,13 +36,13 @@ class ToolParameter(BaseModel):
 
 class ToolDefinition(BaseModel):
     """
-    Complete tool definition with metadata.
-    
-    Represents a tool that can be used by the planner/orchestrator.
-    Supports MCP tools, functions, and code execution.
+    Complete capability definition with metadata.
+
+    Represents a capability that can be used by the planner/orchestrator.
+    Supports MCP tools, Python functions, code execution, and agents (A2A).
     """
     name: str
-    type: Literal["mcp", "function", "code_exec"]
+    type: Literal["mcp", "function", "code_exec", "agent"]
     description: str
     parameters: List[ToolParameter]
     returns: Optional[Dict[str, Any]] = None  # Return type schema

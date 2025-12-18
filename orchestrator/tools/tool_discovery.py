@@ -100,6 +100,7 @@ class MCPToolDiscoverer(ToolDiscoveryService):
         """Extract tool definition from worker function"""
         sig = inspect.signature(worker_func)
         doc = inspect.getdoc(worker_func) or f"MCP tool: {tool_name}"
+        is_streaming = inspect.isasyncgenfunction(worker_func)
         
         # Extract parameters
         parameters = []
@@ -132,7 +133,8 @@ class MCPToolDiscoverer(ToolDiscoveryService):
             source=self.source_name,
             metadata={
                 "module": worker_func.__module__,
-                "discovered_at": datetime.now(timezone.utc).isoformat()
+                "discovered_at": datetime.now(timezone.utc).isoformat(),
+                "supports_streaming": is_streaming,
             }
         )
 
@@ -177,6 +179,7 @@ class FunctionToolDiscoverer(ToolDiscoveryService):
         """Convert Python function to ToolDefinition"""
         sig = inspect.signature(func)
         doc = inspect.getdoc(func) or f"Function: {func_name}"
+        is_streaming = inspect.isasyncgenfunction(func)
         
         # Extract parameters with type hints
         parameters = []
@@ -213,7 +216,8 @@ class FunctionToolDiscoverer(ToolDiscoveryService):
             metadata={
                 "module": func.__module__,
                 "file": inspect.getfile(func),
-                "discovered_at": datetime.now(timezone.utc).isoformat()
+                "discovered_at": datetime.now(timezone.utc).isoformat(),
+                "supports_streaming": is_streaming,
             }
         )
     
@@ -305,7 +309,7 @@ class ToolDiscoveryOrchestrator:
     This is the main entry point for tool discovery in the system.
     """
     
-    def __init__(self, cache_dir: Optional[Path] = None):
+    def __init__(self, cache_dir: Optional[Path] = None, cache_ttl_hours: int = 24):
         """
         Args:
             cache_dir: Directory to cache discovered tools. 
@@ -315,12 +319,13 @@ class ToolDiscoveryOrchestrator:
         self.cache_dir = cache_dir or Path.home() / ".toolweaver"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.cache_file = self.cache_dir / "discovered_tools.json"
+        self.cache_ttl_hours = cache_ttl_hours
     
     def register_discoverer(self, discoverer: ToolDiscoveryService):
         """Register a discovery service"""
         self.discoverers.append(discoverer)
     
-    async def discover_all(self, use_cache: bool = True, cache_ttl_hours: int = 24) -> ToolCatalog:
+    async def discover_all(self, use_cache: bool = True, cache_ttl_hours: Optional[int] = None) -> ToolCatalog:
         """
         Run all registered discoverers and build a unified ToolCatalog.
         
@@ -332,9 +337,10 @@ class ToolDiscoveryOrchestrator:
             ToolCatalog with all discovered tools
         """
         # Try to load from cache
+        ttl = cache_ttl_hours if cache_ttl_hours is not None else self.cache_ttl_hours
         if use_cache and self.cache_file.exists():
             cached_catalog = self._load_cache()
-            if cached_catalog and self._is_cache_valid(cached_catalog, cache_ttl_hours):
+            if cached_catalog and self._is_cache_valid(cached_catalog, ttl):
                 print(f"Using cached tools: {len(cached_catalog.tools)} tools from cache")
                 return cached_catalog
         
@@ -431,7 +437,8 @@ async def discover_tools(
     mcp_client=None,
     function_modules: Optional[List[Any]] = None,
     include_code_exec: bool = True,
-    use_cache: bool = True
+    use_cache: bool = True,
+    a2a_client=None,
 ) -> ToolCatalog:
     """
     Convenience function to discover tools from common sources.
@@ -459,6 +466,12 @@ async def discover_tools(
     # Register MCP discoverer
     if mcp_client:
         orchestrator.register_discoverer(MCPToolDiscoverer(mcp_client))
+
+    # Register A2A agent discoverer
+    if a2a_client:
+        from .agent_discovery import AgentDiscoverer  # Lazy import to avoid circular dependency
+
+        orchestrator.register_discoverer(AgentDiscoverer(a2a_client))
     
     # Register function discoverers
     if function_modules:

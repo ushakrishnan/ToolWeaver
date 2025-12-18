@@ -5,6 +5,7 @@ Test the tool discovery system
 import pytest
 import asyncio
 from orchestrator.infra.mcp_client import MCPClientShim
+from orchestrator.infra.a2a_client import A2AClient, AgentCapability
 from orchestrator.tools.tool_discovery import discover_tools, ToolDiscoveryOrchestrator
 from orchestrator.dispatch import workers
 from orchestrator.dispatch import functions
@@ -181,7 +182,7 @@ async def test_tool_discovery_llm_format():
 
 def test_tool_discovery_orchestrator():
     """Test ToolDiscoveryOrchestrator initialization"""
-    orchestrator = ToolDiscoveryOrchestrator()
+    orchestrator = ToolDiscoveryOrchestrator(cache_ttl_hours=1)
     
     assert orchestrator.cache_file is not None
     print(f"\n   Cache file: {orchestrator.cache_file}")
@@ -211,6 +212,118 @@ async def test_tool_discovery_by_type():
     
     total = len(mcp_tools) + len(function_tools) + len(code_tools)
     assert total == len(catalog.tools), "All tools should be categorized"
+
+
+@pytest.mark.asyncio
+async def test_discovery_includes_agent_and_streaming_metadata():
+    a2a_client = A2AClient(config_path=None)
+    a2a_client.register_agent(
+        AgentCapability(
+            agent_id="agent_stream",
+            name="Agent Stream",
+            description="Streaming agent",
+            endpoint="http://example.com/agents/stream",
+            metadata={"supports_streaming": True},
+        )
+    )
+
+    catalog = await discover_tools(
+        mcp_client=None,
+        function_modules=None,
+        include_code_exec=False,
+        use_cache=False,
+        a2a_client=a2a_client,
+    )
+
+    agents = catalog.get_by_type("agent")
+    assert len(agents) == 1
+    agent_def = agents[0]
+    assert agent_def.metadata.get("agent_id") == "agent_stream"
+    assert agent_def.metadata.get("supports_streaming") is True
+
+
+@pytest.mark.asyncio
+async def test_discovery_marks_mcp_streaming_tools():
+    async def streaming_worker(payload):
+        for i in range(2):
+            yield f"chunk-{i}"
+
+    async def plain_worker(payload):
+        return "ok"
+
+    mcp_client = MCPClientShim()
+    mcp_client.tool_map = {
+        "stream_tool": streaming_worker,
+        "plain_tool": plain_worker,
+    }
+
+    catalog = await discover_tools(
+        mcp_client=mcp_client,
+        function_modules=None,
+        include_code_exec=False,
+        use_cache=False,
+    )
+
+    mcp_tools = {t.name: t for t in catalog.get_by_type("mcp")}
+    assert mcp_tools["stream_tool"].metadata.get("supports_streaming") is True
+    assert mcp_tools["plain_tool"].metadata.get("supports_streaming") is False
+
+
+@pytest.mark.asyncio
+async def test_function_streaming_flag():
+    async def streaming_func():
+        yield "x"
+
+    def plain_func():
+        return "y"
+
+    class DummyModule:
+        __name__ = "dummy_mod"
+
+    dummy = DummyModule()
+    setattr(dummy, "streaming_func", streaming_func)
+    setattr(dummy, "plain_func", plain_func)
+
+    catalog = await discover_tools(
+        mcp_client=None,
+        function_modules=[dummy],
+        include_code_exec=False,
+        use_cache=False,
+    )
+
+    tools = {t.name: t for t in catalog.get_by_type("function")}
+    assert tools["streaming_func"].metadata.get("supports_streaming") is True
+    assert tools["plain_func"].metadata.get("supports_streaming") is False
+
+
+@pytest.mark.asyncio
+async def test_unified_discovery_mcp_and_a2a():
+    async def mcp_worker(payload):
+        return "ok"
+
+    mcp_client = MCPClientShim()
+    mcp_client.tool_map = {"mcp_tool": mcp_worker}
+
+    a2a_client = A2AClient(config_path=None)
+    a2a_client.register_agent(
+        AgentCapability(
+            agent_id="agent_one",
+            name="Agent One",
+            description="Simple agent",
+            endpoint="http://example.com/agents/one",
+        )
+    )
+
+    catalog = await discover_tools(
+        mcp_client=mcp_client,
+        function_modules=None,
+        include_code_exec=False,
+        use_cache=False,
+        a2a_client=a2a_client,
+    )
+
+    assert len(catalog.get_by_type("mcp")) == 1
+    assert len(catalog.get_by_type("agent")) == 1
 
 
 if __name__ == "__main__":
