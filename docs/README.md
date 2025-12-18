@@ -40,6 +40,7 @@ Welcome to the ToolWeaver documentation! This guide is organized by audience and
 | [Architecture](developer-guide/ARCHITECTURE.md) | System design and components | 30 min |
 | [Implementation](developer-guide/IMPLEMENTATION.md) | Code structure and patterns | 20 min |
 | [Security](developer-guide/SECURITY.md) | Security model and sandboxing | 15 min |
+| [Code Validation](developer-guide/CODE_VALIDATION.md) | Optional validation for generated code | 10 min |
 | [Publishing](developer-guide/PUBLISHING.md) | Package release process | 10 min |
 
 **Prerequisites:**
