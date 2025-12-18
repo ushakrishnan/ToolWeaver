@@ -33,6 +33,38 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+import re
+
+
+def _increment_version(version: str, bump_type: str = "patch") -> str:
+    """
+    Increment semantic version (major.minor.patch).
+    
+    Args:
+        version: Current version (e.g., "0.1.0")
+        bump_type: "major", "minor", or "patch"
+    
+    Returns:
+        Next version string
+    """
+    match = re.match(r"(\d+)\.(\d+)\.(\d+)", version)
+    if not match:
+        return "0.1.0"
+    
+    major, minor, patch = int(match.group(1)), int(match.group(2)), int(match.group(3))
+    
+    if bump_type == "major":
+        major += 1
+        minor = 0
+        patch = 0
+    elif bump_type == "minor":
+        minor += 1
+        patch = 0
+    else:  # patch
+        patch += 1
+    
+    return f"{major}.{minor}.{patch}"
+
 
 _ROOT = Path.home() / ".toolweaver" / "skills"
 _ROOT.mkdir(parents=True, exist_ok=True)
@@ -76,6 +108,9 @@ class Skill:
     tags: List[str] = None
     metadata: Dict[str, Any] = None
     dependencies: List[str] = None  # Names of skills this skill depends on
+    version: str = "0.1.0"  # Semantic version
+    created_at: Optional[str] = None  # ISO timestamp
+    updated_at: Optional[str] = None  # ISO timestamp
 
 
 def _load_manifest() -> Dict[str, Any]:
@@ -157,6 +192,8 @@ def save_skill(name: str, code: str, *, description: str = "", tags: Optional[Li
     Also caches in Redis if available for fast lookups.
     Indexes in Qdrant if available for semantic search.
     """
+    from datetime import datetime
+    
     safe_name = "".join(c for c in name if c.isalnum() or c in ("-", "_"))
     code_path = _ROOT / f"{safe_name}.py"
     
@@ -171,6 +208,19 @@ def save_skill(name: str, code: str, *, description: str = "", tags: Optional[Li
             # Note: We still save but log the warning
     
     code_path.write_text(code)
+    
+    # Check if this is a new skill or update
+    now = datetime.now().isoformat()
+    existing = get_skill(safe_name)
+    
+    if existing:
+        # This is an update - use existing creation time
+        created_at = existing.created_at or now
+        version = "0.1.0"  # Reset version on new save (use update_skill for versioning)
+    else:
+        # New skill
+        created_at = now
+        version = "0.1.0"
 
     skill = Skill(
         name=safe_name,
@@ -178,7 +228,10 @@ def save_skill(name: str, code: str, *, description: str = "", tags: Optional[Li
         description=description,
         tags=tags or [],
         metadata=metadata or {},
-        dependencies=dependencies
+        dependencies=dependencies,
+        version=version,
+        created_at=created_at,
+        updated_at=now
     )
     
     # Save to manifest (disk)
@@ -186,6 +239,15 @@ def save_skill(name: str, code: str, *, description: str = "", tags: Optional[Li
     skills = [s for s in data.get("skills", []) if s.get("name") != safe_name]
     skills.append(asdict(skill))
     data["skills"] = skills
+    
+    # Track version history
+    if "version_history" not in data:
+        data["version_history"] = {}
+    if safe_name not in data["version_history"]:
+        data["version_history"][safe_name] = []
+    if skill.version not in data["version_history"][safe_name]:
+        data["version_history"][safe_name].append(skill.version)
+    
     _save_manifest(data)
     
     # Cache in Redis if available
@@ -493,3 +555,236 @@ def search_skills(query: str, top_k: int = 5) -> List[Tuple[Skill, float]]:
     # Sort by score and return top_k
     matches.sort(key=lambda x: x[1], reverse=True)
     return matches[:top_k]
+
+
+def get_skill_versions(name: str) -> List[str]:
+    """
+    Get all versions of a skill.
+    
+    Args:
+        name: Skill name
+    
+    Returns:
+        List of version strings, sorted newest first
+    """
+    data = _load_manifest()
+    
+    if "version_history" not in data:
+        data["version_history"] = {}
+    
+    versions = data["version_history"].get(name, [])
+    # Sort versions in descending order (newest first)
+    return sorted(versions, key=lambda v: tuple(map(int, v.split('.'))), reverse=True)
+
+
+def get_skill_version(name: str, version: str) -> Optional[Skill]:
+    """
+    Get a specific version of a skill.
+    
+    Args:
+        name: Skill name
+        version: Version string (e.g., "0.2.0")
+    
+    Returns:
+        Skill object or None if not found
+    """
+    data = _load_manifest()
+    
+    if "version_history" not in data:
+        return None
+    
+    skill_versions = data["version_history"].get(name, [])
+    
+    if version not in skill_versions:
+        return None
+    
+    # Load versioned code file
+    version_code_path = _ROOT / f"{name}_{version}.py"
+    
+    if not version_code_path.exists():
+        return None
+    
+    code = version_code_path.read_text()
+    
+    # Find metadata in skills list for this version
+    for s in data.get("skills", []):
+        if s.get("name") == name and s.get("version") == version:
+            return Skill(**s)
+    
+    return None
+
+
+def update_skill(name: str, code: str, *, description: str = None, tags: Optional[List[str]] = None, bump_type: str = "patch") -> Skill:
+    """
+    Update an existing skill with new code.
+    
+    Creates a new version automatically.
+    
+    Args:
+        name: Skill name
+        code: New code
+        description: Optional new description
+        tags: Optional new tags
+        bump_type: "major", "minor", or "patch" (default: patch)
+    
+    Returns:
+        New Skill object with incremented version
+    
+    Raises:
+        KeyError: If skill not found
+    """
+    safe_name = "".join(c for c in name if c.isalnum() or c in ("-", "_"))
+    
+    # Get current skill
+    current = get_skill(safe_name)
+    if not current:
+        raise KeyError(f"Skill not found: {safe_name}")
+    
+    # Increment version
+    new_version = _increment_version(current.version, bump_type)
+    
+    # Archive old version
+    old_code_path = _ROOT / f"{safe_name}.py"
+    archived_path = _ROOT / f"{safe_name}_{current.version}.py"
+    
+    if old_code_path.exists() and not archived_path.exists():
+        old_code = old_code_path.read_text()
+        archived_path.write_text(old_code)
+    
+    # Save new version
+    code_path = _ROOT / f"{safe_name}.py"
+    code_path.write_text(code)
+    
+    # Detect dependencies
+    dependencies = _detect_dependencies(code)
+    
+    # Create new skill record
+    from datetime import datetime
+    skill = Skill(
+        name=safe_name,
+        code_path=str(code_path),
+        description=description if description is not None else current.description,
+        tags=tags if tags is not None else current.tags,
+        metadata=current.metadata or {},
+        dependencies=dependencies,
+        version=new_version,
+        created_at=current.created_at,
+        updated_at=datetime.now().isoformat()
+    )
+    
+    # Update manifest
+    data = _load_manifest()
+    
+    # Keep old version records in skills list (versioned entries)
+    skills = data.get("skills", [])
+    
+    # Replace current version only
+    skills = [s for s in skills if not (s.get("name") == safe_name and s.get("version") != current.version)]
+    
+    # Add old version as archive if not already there
+    old_skill_dict = asdict(current)
+    if old_skill_dict not in skills:
+        skills.append(old_skill_dict)
+    
+    # Add new version
+    skills.append(asdict(skill))
+    data["skills"] = skills
+    
+    # Track version history
+    if "version_history" not in data:
+        data["version_history"] = {}
+    
+    if safe_name not in data["version_history"]:
+        data["version_history"][safe_name] = []
+    
+    # Add versions to history
+    for v in [current.version, new_version]:
+        if v not in data["version_history"][safe_name]:
+            data["version_history"][safe_name].append(v)
+    
+    _save_manifest(data)
+    
+    # Update caches
+    r = _get_redis()
+    if r:
+        try:
+            cache_key = f"skill:{safe_name}"
+            r.setex(cache_key, _CACHE_TTL, json.dumps(asdict(skill)))
+        except Exception:
+            pass
+    
+    # Re-index in Qdrant
+    _index_skill_in_qdrant(skill)
+    
+    return skill
+
+
+def rollback_skill(name: str, version: str) -> Skill:
+    """
+    Rollback to a previous version of a skill.
+    
+    Args:
+        name: Skill name
+        version: Version to rollback to
+    
+    Returns:
+        Skill object for the restored version
+    
+    Raises:
+        KeyError: If skill or version not found
+    """
+    safe_name = "".join(c for c in name if c.isalnum() or c in ("-", "_"))
+    
+    # Get versioned code
+    versioned_path = _ROOT / f"{safe_name}_{version}.py"
+    if not versioned_path.exists():
+        raise KeyError(f"Version not found: {safe_name}@{version}")
+    
+    code = versioned_path.read_text()
+    
+    # Copy back to current version
+    current_path = _ROOT / f"{safe_name}.py"
+    current_path.write_text(code)
+    
+    # Get skill metadata from version history
+    data = _load_manifest()
+    skill_record = None
+    
+    for s in data.get("skills", []):
+        if s.get("name") == safe_name and s.get("version") == version:
+            skill_record = s
+            break
+    
+    if not skill_record:
+        raise KeyError(f"Skill metadata not found for {safe_name}@{version}")
+    
+    # Create new skill with same version (will be current)
+    from datetime import datetime
+    skill = Skill(
+        name=safe_name,
+        code_path=str(current_path),
+        description=skill_record.get("description", ""),
+        tags=skill_record.get("tags", []),
+        metadata=skill_record.get("metadata", {}),
+        dependencies=skill_record.get("dependencies", []),
+        version=version,
+        created_at=skill_record.get("created_at"),
+        updated_at=datetime.now().isoformat()
+    )
+    
+    # Update manifest
+    skills = [s for s in data.get("skills", []) if s.get("name") != safe_name]
+    skills.append(asdict(skill))
+    data["skills"] = skills
+    _save_manifest(data)
+    
+    # Update caches
+    r = _get_redis()
+    if r:
+        try:
+            cache_key = f"skill:{safe_name}"
+            r.setex(cache_key, _CACHE_TTL, json.dumps(asdict(skill)))
+        except Exception:
+            pass
+    
+    return skill

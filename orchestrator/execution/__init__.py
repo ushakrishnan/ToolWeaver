@@ -32,6 +32,10 @@ from .skill_library import (
     get_dependency_graph,
     get_skill_dependents,
     visualize_dependency_graph,
+    get_skill_versions,
+    get_skill_version,
+    update_skill,
+    rollback_skill,
 )
 from .skill_metrics import (
     SkillMetrics,
@@ -67,6 +71,11 @@ __all__ = [
     "get_dependency_graph",
     "get_skill_dependents",
     "visualize_dependency_graph",
+    # skill versioning (Phase 4.1)
+    "get_skill_versions",
+    "get_skill_version",
+    "update_skill",
+    "rollback_skill",
     # skill metrics
     "SkillMetrics",
     "record_skill_execution",
