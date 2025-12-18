@@ -52,15 +52,15 @@ exec(content, globals())
 print(top_k([1,5,2,9], 2))  # -> [9, 5]
 ```
 
-4) Search skills (placeholder)
+4) Search skills
 
 ```python
-# Planned API; backed by Qdrant vector search when enabled
-from orchestrator.execution import skill_library as sl
+# Semantic search with Qdrant (if available), otherwise keyword fallback
+from orchestrator.execution import search_skills
 
-results = sl.search_skills("sorting top k integers")  # returns lightweight matches
-for r in results:
-    print(r.name, r.score)
+results = search_skills("sorting top k integers", top_k=5)
+for skill, score in results:
+    print(f"{skill.name}: {score:.2f}")
 ```
 
 ## Conventions
@@ -74,11 +74,13 @@ for r in results:
 - Store examples/tests in `metadata` for future validation
 
 ## Roadmap (future work)
+- ✅ Redis cache for hot skill lookups
+- ✅ Qdrant-backed `search_skills()` with semantic embedding
 - Version pinning, rollback, and diff
 - Ratings, usage metrics, and pruning
 - Composition graphs and dependency metadata
+- Git integration for approved skills
 - Optional remote sync/backup
- - Qdrant-backed `search_skills()` with semantic embedding
 
 ## Source
 Implementation: orchestrator/execution/skill_library.py
@@ -93,11 +95,17 @@ This MVP aligns with the approved storage decision described in [docs/architectu
 - Write path: Save → Memory (instant), Redis (async), Disk (async), Qdrant (background)
 - Read path: Memory → Redis → Disk fallback
 
-Current implementation focuses on the Disk layer for simplicity. The following enhancements will bring the MVP to the full design:
+Current implementation status:
 
-- Redis cache for hot skills and fast lookups
-- Qdrant vectors for `search_skills()` by semantic similarity
-- Git integration for approved versioned skills
+- ✅ Disk storage (MVP baseline)
+- ✅ Redis cache for hot skill lookups (~1ms vs ~5-10ms disk)
+- ✅ Qdrant vectors for `search_skills()` by semantic similarity
+- ⏳ Git integration for approved versioned skills (planned)
+
+All features are optional and gracefully degrade:
+- Works disk-only without Redis/Qdrant
+- Set `REDIS_URL` to enable caching
+- Set `QDRANT_URL` to enable semantic search
 
 ## Planned Integrations
 

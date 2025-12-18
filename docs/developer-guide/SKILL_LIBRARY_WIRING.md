@@ -26,39 +26,59 @@ $env:QDRANT_COLLECTION = "toolweaver-skills"
 
 The skill library now automatically uses Redis for caching if available:
 - **save_skill()**: Writes to disk + Redis cache (7-day TTL)
-- **get_skill()**: Checks Redis first, falls back to disk
+- **get_skill()**: Checks Redis first (~1ms), falls back to disk (~5-10ms)
 - **Graceful degradation**: Works without Redis (disk-only mode)
 
 No code changes needed - just set `REDIS_URL` to enable caching.
 
-## Minimal Wiring Pattern
+## Qdrant Search (✅ Implemented)
+
+**Status**: Automatic opt-in when `QDRANT_URL` is set.
+
+The skill library now supports semantic search via Qdrant:
+- **save_skill()**: Automatically indexes in Qdrant if available
+- **search_skills(query, top_k)**: Vector search or keyword fallback
+- **Auto-collection**: Creates `toolweaver_skills` collection if missing
+- **Graceful degradation**: Falls back to keyword search if Qdrant unavailable
+
+Example:
+```python
+from orchestrator.execution import search_skills
+
+# Semantic search (uses Qdrant if available, keyword match otherwise)
+results = search_skills("validate email format", top_k=5)
+for skill, score in results:
+    print(f"{skill.name}: {score:.2f}")
+```
+
+## Usage Pattern
 
 ```python
-# wiring_example.py (conceptual pattern)
-from orchestrator.execution import skill_library as sl
-from orchestrator.vector_search import QdrantSkillIndex  # hypothetical thin wrapper
-from orchestrator.redis_cache import RedisClient          # existing utility
+from orchestrator.execution import save_skill, search_skills, get_skill
 
-# 1) Initialize caches/indexes (use env vars for config)
-redis = RedisClient.from_env()            # if missing, returns None
-skill_index = QdrantSkillIndex.from_env() # if missing, returns None
+# 1) Save skill → automatically uses Redis cache + Qdrant index if available
+skill = save_skill(
+    name="validate_email",
+    code="def validate(email): ...",
+    description="Validates email format",
+    tags=["validation", "string"]
+)
 
-# 2) Wire into library (MVP uses disk; add these if present)
-sl.set_cache(redis)           # cache lookups for hot skills
-sl.set_vector_index(skill_index)  # power search_skills() with vectors
+# 2) Search skills → vector search (Qdrant) or keyword fallback
+results = search_skills("email validation", top_k=5)
+for skill, score in results:
+    print(f"{skill.name}: {score:.2f}")
 
-# 3) Save skill → caches + disk + vector index
-ref = sl.save_skill(name="top_k", code="...", metadata={"tags": ["utility"]})
-
-# 4) Search
-for r in sl.search_skills("sorting top k integers"):
-    print(r.name, r.score)
+# 3) Retrieve skill → checks Redis cache first, then disk
+skill = get_skill("validate_email")
+print(skill.code_path)
 ```
 
 Notes:
-- Keep this optional: if Redis/Qdrant are not set, the library still works with disk-only.
-- Qdrant index schema: `id`, `name`, `tags`, embedding vector of the skill/code summary.
-- Embedding: Use your existing model provider or a lightweight local embedder.
+- **Zero configuration**: Works disk-only without Redis/Qdrant
+- **Automatic opt-in**: Set `REDIS_URL` and/or `QDRANT_URL` to enable features
+- **Graceful degradation**: Each feature degrades independently if unavailable
+- **Embedding model**: `all-MiniLM-L6-v2` (384-dim) downloaded on first use
 
 ## Operational Tips
 - Use short Redis TTLs to minimize stale entries during development

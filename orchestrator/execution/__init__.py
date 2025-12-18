@@ -23,6 +23,13 @@ from .code_exec_worker import (
 from .small_model_worker import (
     SmallModelWorker,
 )
+from .skill_library import (
+    Skill,
+    save_skill,
+    get_skill,
+    list_skills,
+    search_skills,
+)
 
 __all__ = [
     # sandbox
@@ -38,4 +45,10 @@ __all__ = [
     "code_exec_worker",
     "_exec_code",
     "SmallModelWorker",
+    # skill library
+    "Skill",
+    "save_skill",
+    "get_skill",
+    "list_skills",
+    "search_skills",
 ]
