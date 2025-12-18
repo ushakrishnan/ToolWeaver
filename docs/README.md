@@ -74,6 +74,8 @@ Welcome to the ToolWeaver documentation! This guide is organized by audience and
 |----------|-------------|----------|
 | [Two-Model Architecture](reference/TWO_MODEL_ARCHITECTURE.md) | Large + small model design | Advanced |
 | [Workflow Architecture](reference/WORKFLOW_ARCHITECTURE.md) | Workflow engine internals | Advanced |
+| [Analytics Strategy](reference/ANALYTICS_STRATEGY.md) | W&B vs Prometheus/Grafana comparison | All |
+| [Analytics Backends](reference/ANALYTICS_BACKENDS.md) | SQLite, Prometheus, OTLP setup | All |
 | [Prompt Caching](reference/PROMPT_CACHING.md) | Cost optimization techniques | All |
 | [Search Tuning](reference/SEARCH_TUNING.md) | Optimize tool search | Advanced |
 | [Migration Guide](reference/MIGRATION_GUIDE.md) | Upgrade between versions | All |

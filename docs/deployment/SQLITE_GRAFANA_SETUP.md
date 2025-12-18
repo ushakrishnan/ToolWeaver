@@ -1,24 +1,32 @@
-# Analytics Backend Setup Guide for ToolWeaver Phase 5
+# Analytics Backend Setup Guide
 
-This guide covers setting up analytics for ToolWeaver with **two backend options**:
-- **OTLP (Recommended)**: Push to Grafana Cloud Prometheus (simpler, cloud-native)
-- **SQLite**: Local database storage (good for development)
+This guide covers setting up analytics for ToolWeaver with **three backend options**:
+- **SQLite**: Local database storage (zero config, development)
+- **Prometheus**: Self-hosted metrics (real-time, production)
+- **OTLP**: Grafana Cloud push (managed, cloud-native)
+
+See [ANALYTICS_STRATEGY.md](../reference/ANALYTICS_STRATEGY.md) for detailed comparison.
 
 ---
 
 ## Quick Start: Choose Your Backend
 
-**For production/cloud environments:**
-→ Use **OTLP Backend** (simpler, no storage management)
-
 **For local development:**
-→ Use **SQLite Backend** (local files, no internet needed)
+→ Use **SQLite Backend** (zero config, no dependencies)
+
+**For production with self-hosted infrastructure:**
+→ Use **Prometheus Backend** (real-time monitoring + alerting)
+
+**For production with managed cloud:**
+→ Use **OTLP Backend** (Grafana Cloud, zero maintenance)
 
 Set in `.env`:
 ```bash
-ANALYTICS_BACKEND=otlp    # Grafana Cloud (recommended)
+ANALYTICS_BACKEND=sqlite      # Local development
 # OR
-ANALYTICS_BACKEND=sqlite  # Local database
+ANALYTICS_BACKEND=prometheus  # Self-hosted production
+# OR
+ANALYTICS_BACKEND=otlp        # Grafana Cloud
 ```
 
 ---
@@ -113,6 +121,67 @@ OTLP pushes these metrics automatically:
 - `toolweaver_skill_latency_milliseconds` - Execution time histogram
 - `toolweaver_skill_rating` - User ratings (1-5 stars)
 - `toolweaver_skill_health_score` - Health score (0-100)
+
+---
+
+## Prometheus Backend (Self-Hosted Production)
+
+### Why Prometheus?
+
+- ✅ **Real-time monitoring** - HTTP /metrics endpoint for scraping
+- ✅ **Production-grade** - Industry standard for operations monitoring
+- ✅ **Alerting** - Built-in alert manager
+- ✅ **Self-hosted** - Full control, no external dependencies
+- ✅ **Cost-effective** - Open source, runs on your infrastructure
+
+### Architecture:
+```
+ToolWeaver (Python)
+  ↓ exposes HTTP /metrics endpoint
+  ↓
+Prometheus Server (scrapes endpoint)
+  ↓ stores time-series data
+  ↓
+Grafana Dashboards
+  ↓ queries and visualizes
+  ↓
+Real-time charts + alerts
+```
+
+### Setup Steps
+
+1. **Install prometheus-client**:
+```bash
+pip install prometheus-client
+```
+
+2. **Configure in `.env`**:
+```bash
+ANALYTICS_BACKEND=prometheus
+PROMETHEUS_ENABLED=true
+PROMETHEUS_PORT=8000
+PROMETHEUS_HOST=0.0.0.0
+```
+
+3. **Run your application** - metrics automatically exposed at `http://localhost:8000/metrics`
+
+4. **Configure Prometheus to scrape**:
+```yaml
+# prometheus.yml
+scrape_configs:
+  - job_name: 'toolweaver'
+    static_configs:
+      - targets: ['localhost:8000']
+```
+
+5. **Start Prometheus**:
+```bash
+docker run -d -p 9090:9090 -v ./prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+```
+
+6. **Add to Grafana** as data source and create dashboards
+
+See [ANALYTICS_BACKENDS.md](../reference/ANALYTICS_BACKENDS.md) for detailed configuration.
 
 ---
 
