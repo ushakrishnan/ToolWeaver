@@ -94,11 +94,12 @@ sqlite3 ~/.toolweaver/analytics.db
    - Create account (free tier included)
    - Verify email
 
-2. **Create API Key**:
+2. **Create API Key or Service Account**:
    - Login to https://grafana.cloud
-   - Go to **Configuration → API Keys** (or Org Settings)
-   - Create new API key with Editor role
-   - Copy the key (save it safely)
+   - Navigate to **Organization Settings → API Keys** (top navigation → Org Settings)
+   - Or use **Service Accounts** (Organization → Service Accounts) - newer recommended approach
+   - Create new API key or service account with Editor role
+   - Copy the key/token (save it safely)
 
 3. **Get Grafana URL**:
    - From dashboard, note your stack URL
@@ -134,10 +135,10 @@ sqlite3 ~/.toolweaver/analytics.db
    - Login with: admin / admin
    - Change password when prompted
 
-3. **Create API Key**:
-   - Click gear icon (Settings) → API Keys
-   - New API Key → Editor role
-   - Copy the key
+3. **Create API Key or Service Account**:
+   - Click gear icon (Settings) → API Keys (or Service Accounts)
+   - New API Key → Editor role (or create Service Account with Editor role)
+   - Copy the key/token
 
 4. **Configure ToolWeaver**:
    ```bash
@@ -451,10 +452,12 @@ sqlite3 ~/.toolweaver/analytics.db \
 
 ### Grafana Security
 
-- **API Key**: Treated like password, store securely
+- **API Key / Service Account Token**: Treated like password, store securely
   - Not in version control
   - Not in logs
-  - Rotate periodically
+  - Rotate periodically (Grafana recommends monthly)
+  - **Service Accounts** are the newer recommended approach for programmatic API access
+  - API Keys still work fine for this integration
 - **Data source**: Connections use authentication
 - **Access control**: Grafana has user/org permissions
 - **SSL/TLS**: Grafana Cloud uses HTTPS by default
