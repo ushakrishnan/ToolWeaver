@@ -37,6 +37,17 @@ from .skill_library import (
     update_skill,
     rollback_skill,
 )
+from .workflows import (
+    Workflow,
+    WorkflowStep,
+    create_workflow,
+    add_step,
+    save_workflow,
+    load_workflow,
+    execute_workflow,
+    list_workflows,
+    delete_workflow,
+)
 from .skill_metrics import (
     SkillMetrics,
     record_skill_execution,
@@ -46,6 +57,19 @@ from .skill_metrics import (
     get_top_skills,
     print_metrics_report,
     SkillExecutionTimer,
+)
+from .skill_registry import (
+    RegistrySkill,
+    RegistryConfig,
+    SkillRegistry,
+    configure_registry,
+    publish_skill,
+    search_registry,
+    get_registry_skill,
+    download_registry_skill,
+    rate_registry_skill,
+    get_registry_ratings,
+    trending_skills,
 )
 
 __all__ = [
@@ -76,6 +100,16 @@ __all__ = [
     "get_skill_version",
     "update_skill",
     "rollback_skill",
+    # skill workflows (Phase 4.2)
+    "Workflow",
+    "WorkflowStep",
+    "create_workflow",
+    "add_step",
+    "save_workflow",
+    "load_workflow",
+    "execute_workflow",
+    "list_workflows",
+    "delete_workflow",
     # skill metrics
     "SkillMetrics",
     "record_skill_execution",
@@ -85,4 +119,16 @@ __all__ = [
     "get_top_skills",
     "print_metrics_report",
     "SkillExecutionTimer",
+    # skill registry (Phase 4.3)
+    "RegistrySkill",
+    "RegistryConfig",
+    "SkillRegistry",
+    "configure_registry",
+    "publish_skill",
+    "search_registry",
+    "get_registry_skill",
+    "download_registry_skill",
+    "rate_registry_skill",
+    "get_registry_ratings",
+    "trending_skills",
 ]
