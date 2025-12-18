@@ -199,6 +199,150 @@ python usage_examples.py
    Cost: $0.002 (99.98% cheaper than GPT-4o only)
 ```
 
+## Tool & Agent Discovery Examples
+
+### Discover MCP Tools
+
+```python
+from orchestrator.tool_search import discover_tools
+from orchestrator.mcp_client import MCPClient
+
+# Initialize MCP client
+mcp = MCPClient(env_file=".env")
+
+# Discover all available MCP tools
+tools = await discover_tools(mcp_client=mcp, use_cache=True)
+
+# Browse tools
+for tool_name, tool_def in tools.items():
+    print(f"{tool_name}: {tool_def.description}")
+    print(f"  Input: {tool_def.input_schema}")
+    print(f"  Streaming: {tool_def.metadata.get('supports_streaming')}")
+```
+
+### Discover A2A Agents
+
+```python
+from orchestrator.tool_search import discover_tools
+from orchestrator.infra.a2a_client import A2AClient
+
+# Initialize A2A client
+a2a = A2AClient(registry_url="https://agents.example.com")
+
+# Discover agents
+tools = await discover_tools(a2a_client=a2a, use_cache=True)
+
+# Filter for agents only
+agents = [t for t in tools.values() if t.type == "agent"]
+for agent in agents:
+    print(f"{agent.name}: {agent.description}")
+    print(f"  Cost: ${agent.metadata.get('cost_per_call_usd')}")
+    print(f"  Latency: {agent.metadata.get('execution_time_ms')}ms")
+```
+
+### Unified Discovery (MCP + A2A)
+
+```python
+# Single call discovers both tools and agents
+tools_and_agents = await discover_tools(
+    mcp_client=mcp,
+    a2a_client=a2a,
+    use_cache=True
+)
+
+# Semantic search across both
+from orchestrator.tool_search import find_relevant_tools
+
+results = await find_relevant_tools(
+    query="analyze customer data",
+    catalog=tools_and_agents,
+    limit=5
+)
+
+for tool in results:
+    tool_type = "Agent" if tool.type == "agent" else "Tool"
+    print(f"[{tool_type}] {tool.name}: {tool.description}")
+```
+
+### Call MCP Tools
+
+```python
+from orchestrator.orchestrator import Orchestrator
+
+orchestrator = Orchestrator(tools_and_agents)
+
+# Call a tool
+result = await orchestrator.run_step({
+    "tool_name": "extract_text",
+    "inputs": {"image_url": "https://example.com/receipt.jpg"}
+})
+
+print(result)  # {"text": "Extracted content..."}
+```
+
+### Delegate to A2A Agents
+
+```python
+# Delegate to an agent
+result = await orchestrator.run_step({
+    "type": "agent",
+    "agent_id": "analyzer",
+    "inputs": {"data": extracted_text},
+    "stream": False  # Set True for streaming response
+})
+
+print(result)  # {"insights": "Analysis result..."}
+```
+
+### Hybrid Workflow (Tool → Agent → Tool)
+
+```python
+# Step 1: MCP Tool - Fast extraction
+step1 = await orchestrator.run_step({
+    "tool_name": "fetch_api_data",
+    "inputs": {"endpoint": "/api/users"}
+})
+
+# Step 2: A2A Agent - Complex analysis
+step2 = await orchestrator.run_step({
+    "type": "agent",
+    "agent_id": "analyzer",
+    "inputs": {"data": step1["users"]},
+    "stream": True  # Stream analysis results
+})
+
+# Step 3: MCP Tool - Fast formatting
+step3 = await orchestrator.run_step({
+    "tool_name": "format_report",
+    "inputs": {"analysis": step2}
+})
+
+print(step3)  # Final formatted report
+```
+
+### Cost Tracking for Agents
+
+```python
+from orchestrator.monitoring import MonitoringBackend
+
+monitor = MonitoringBackend(backend="wandb")
+orchestrator = Orchestrator(tools_and_agents, monitoring=monitor)
+
+# Call agent (cost is tracked)
+result = await orchestrator.run_step({
+    "type": "agent",
+    "agent_id": "analyzer",
+    "inputs": {...}
+})
+
+# Later: retrieve cost metrics
+total_cost = sum(
+    call['cost'] for call in monitor.get_calls()
+    if call['success']
+)
+print(f"Total cost: ${total_cost:.4f}")
+```
+
 ## Next Steps
 
 1. ✅ Fill in `.env` with your provider credentials
