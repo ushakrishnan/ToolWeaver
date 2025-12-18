@@ -262,3 +262,109 @@ async def final_synthesis(plan, context):
     filled = template.replace("{{steps}}", json.dumps(context, indent=2))
     logger.info("Generated final synthesis")
     return { 'synthesis': f"SYNTHESIS_PLACEHOLDER\n{filled}" }
+
+
+class Orchestrator:
+    """
+    Simple facade for examples: provides discovery, tool calls, and agent delegation.
+
+    - Uses MCPClientShim for deterministic tool calls
+    - Uses A2AClient for agent delegation (reads agents.yaml by default)
+    - Logs via ToolUsageMonitor when available
+    """
+
+    def __init__(self, *, agents_config_path: str | None = None, registry_url: str | None = None):
+        self.mcp = MCPClientShim()
+        self.registry_url = registry_url or os.getenv("MCP_REGISTRY_URL")
+        cfg = agents_config_path or os.getenv("AGENTS_CONFIG")
+        if cfg is None and os.path.exists("agents.yaml"):
+            cfg = "agents.yaml"
+        self.a2a = A2AClient(config_path=cfg) if cfg else None
+        self._monitor = get_monitor()
+
+    async def discover_tools(self, *, use_cache: bool = True):
+        from ..tools.tool_discovery import discover_tools
+        function_modules = None
+        catalog = await discover_tools(
+            mcp_client=self.mcp,
+            function_modules=function_modules,
+            include_code_exec=True,
+            use_cache=use_cache,
+            a2a_client=self.a2a,
+            registry_url=self.registry_url,
+        )
+        return catalog.tools  # minimal for examples
+
+    async def execute_tool(self, name: str, params: Dict[str, Any]):
+        start = datetime.now()
+        try:
+            result = await self.mcp.call_tool(name, params)
+            if self._monitor:
+                self._monitor.log_tool_call(name, success=True, latency=(datetime.now() - start).total_seconds())
+            return result
+        except Exception as e:
+            if self._monitor:
+                self._monitor.log_tool_call(name, success=False, latency=(datetime.now() - start).total_seconds(), error=str(e))
+            raise
+
+    async def execute_agent_step(self, *, agent_name: str, request: Dict[str, Any], stream: bool = False):
+        if not self.a2a:
+            raise RuntimeError("A2A client not configured. Provide agents_config_path or AGENTS_CONFIG.")
+        req = AgentDelegationRequest(agent_id=agent_name, task=request.get("task", agent_name), context=request, timeout=request.get("timeout", 300))
+        if stream:
+            # Basic emulate by collecting streamed chunks if implemented in future
+            resp = await self.a2a.delegate_to_agent(req)
+            return resp.result
+        resp = await self.a2a.delegate_to_agent(req)
+        if not resp.success:
+            raise RuntimeError(resp.metadata.get("error", "Agent delegation failed"))
+        return resp.result
+    async def execute_skill(self, skill_name: str, *, inputs: Dict[str, Any] | None = None):
+        """
+        Execute a saved skill (code snippet or workflow).
+        
+        Args:
+            skill_name: Name of the skill (must be saved in library)
+            inputs: Optional input variables to pass to the skill
+        
+        Returns:
+            Result from executing the skill code
+        
+        Raises:
+            KeyError: If skill not found
+            RuntimeError: If skill execution fails
+        """
+        from ..execution.skill_library import get_skill
+        from ..execution.validation import validate_stub
+        from pathlib import Path
+        
+        start = datetime.now()
+        try:
+            skill = get_skill(skill_name)
+            if not skill:
+                raise KeyError(f"Skill not found: {skill_name}")
+            
+            code = Path(skill.code_path).read_text()
+            
+            # Validate syntax at minimum
+            validation = validate_stub(code, check_syntax=True)
+            if not validation["valid"]:
+                raise RuntimeError(f"Skill {skill_name} failed validation: {validation['syntax']['error']}")
+            
+            # Execute in sandbox with optional inputs
+            scope: Dict[str, Any] = {}
+            if inputs:
+                scope.update(inputs)
+            exec(code, scope)
+            
+            # Extract result (by convention, last non-private assignment or explicit return)
+            result = {k: v for k, v in scope.items() if not k.startswith("_")}
+            
+            if self._monitor:
+                self._monitor.log_tool_call(f"skill:{skill_name}", success=True, latency=(datetime.now() - start).total_seconds())
+            
+            return result
+        except Exception as e:
+            if self._monitor:
+                self._monitor.log_tool_call(f"skill:{skill_name}", success=False, latency=(datetime.now() - start).total_seconds(), error=str(e))
+            raise

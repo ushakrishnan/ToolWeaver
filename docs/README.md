@@ -41,6 +41,7 @@ Welcome to the ToolWeaver documentation! This guide is organized by audience and
 | [Implementation](developer-guide/IMPLEMENTATION.md) | Code structure and patterns | 20 min |
 | [Security](developer-guide/SECURITY.md) | Security model and sandboxing | 15 min |
 | [Code Validation](developer-guide/CODE_VALIDATION.md) | Optional validation for generated code | 10 min |
+| [Executing Skills](developer-guide/EXECUTING_SKILLS.md) | Run saved code snippets from Orchestrator | 10 min |
 | [Publishing](developer-guide/PUBLISHING.md) | Package release process | 10 min |
 
 **Prerequisites:**
