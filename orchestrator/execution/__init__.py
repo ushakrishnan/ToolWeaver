@@ -29,6 +29,9 @@ from .skill_library import (
     get_skill,
     list_skills,
     search_skills,
+    get_dependency_graph,
+    get_skill_dependents,
+    visualize_dependency_graph,
 )
 
 __all__ = [
@@ -51,4 +54,7 @@ __all__ = [
     "get_skill",
     "list_skills",
     "search_skills",
+    "get_dependency_graph",
+    "get_skill_dependents",
+    "visualize_dependency_graph",
 ]

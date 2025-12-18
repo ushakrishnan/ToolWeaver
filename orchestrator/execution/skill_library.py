@@ -75,6 +75,7 @@ class Skill:
     description: str = ""
     tags: List[str] = None
     metadata: Dict[str, Any] = None
+    dependencies: List[str] = None  # Names of skills this skill depends on
 
 
 def _load_manifest() -> Dict[str, Any]:
@@ -90,18 +91,95 @@ def _save_manifest(data: Dict[str, Any]) -> None:
     _MANIFEST.write_text(json.dumps(data, indent=2))
 
 
+def _detect_dependencies(code: str) -> List[str]:
+    """
+    Detect skill dependencies by looking for execute_skill() calls.
+    
+    Returns:
+        List of skill names referenced in the code
+    """
+    import re
+    
+    dependencies: List[str] = []
+    
+    # Pattern 1: orchestrator.execute_skill("skill_name")
+    pattern1 = r'execute_skill\s*\(\s*["\']([^"\']+)["\']\s*[,\)]'
+    dependencies.extend(re.findall(pattern1, code))
+    
+    # Pattern 2: get_skill("skill_name") or load_skill("skill_name")
+    pattern2 = r'(?:get|load)_skill\s*\(\s*["\']([^"\']+)["\']\s*\)'
+    dependencies.extend(re.findall(pattern2, code))
+    
+    return list(set(dependencies))  # Deduplicate
+
+
+def _check_circular_dependencies(skill_name: str, dependencies: List[str]) -> Optional[List[str]]:
+    """
+    Check for circular dependencies in skill graph.
+    
+    Returns:
+        Cycle path if found, None otherwise
+    """
+    def has_cycle(current: str, visited: set, path: List[str]) -> Optional[List[str]]:
+        if current in visited:
+            # Found cycle
+            cycle_start = path.index(current)
+            return path[cycle_start:] + [current]
+        
+        skill = get_skill(current)
+        if not skill or not skill.dependencies:
+            return None
+        
+        visited.add(current)
+        path.append(current)
+        
+        for dep in skill.dependencies:
+            cycle = has_cycle(dep, visited.copy(), path.copy())
+            if cycle:
+                return cycle
+        
+        return None
+    
+    # Check each dependency for cycles
+    for dep in dependencies:
+        cycle = has_cycle(dep, {skill_name}, [skill_name])
+        if cycle:
+            return cycle
+    
+    return None
+
+
 def save_skill(name: str, code: str, *, description: str = "", tags: Optional[List[str]] = None, metadata: Optional[Dict[str, Any]] = None) -> Skill:
     """
     Save a skill's code to disk and register in manifest.
     
+    Automatically detects dependencies and checks for circular references.
     Also caches in Redis if available for fast lookups.
     Indexes in Qdrant if available for semantic search.
     """
     safe_name = "".join(c for c in name if c.isalnum() or c in ("-", "_"))
     code_path = _ROOT / f"{safe_name}.py"
+    
+    # Detect dependencies
+    dependencies = _detect_dependencies(code)
+    
+    # Check for circular dependencies
+    if dependencies:
+        cycle = _check_circular_dependencies(safe_name, dependencies)
+        if cycle:
+            logger.warning(f"Circular dependency detected: {' -> '.join(cycle)}")
+            # Note: We still save but log the warning
+    
     code_path.write_text(code)
 
-    skill = Skill(name=safe_name, code_path=str(code_path), description=description, tags=tags or [], metadata=metadata or {})
+    skill = Skill(
+        name=safe_name,
+        code_path=str(code_path),
+        description=description,
+        tags=tags or [],
+        metadata=metadata or {},
+        dependencies=dependencies
+    )
     
     # Save to manifest (disk)
     data = _load_manifest()
@@ -253,6 +331,82 @@ def _index_skill_in_qdrant(skill: Skill) -> None:
         logger.debug(f"Indexed skill in Qdrant: {skill.name}")
     except Exception as e:
         logger.debug(f"Failed to index skill {skill.name}: {e}")
+
+
+def get_dependency_graph() -> Dict[str, List[str]]:
+    """
+    Build a dependency graph for all skills.
+    
+    Returns:
+        Dict mapping skill names to their dependencies
+    """
+    graph: Dict[str, List[str]] = {}
+    
+    for skill in list_skills():
+        graph[skill.name] = skill.dependencies or []
+    
+    return graph
+
+
+def get_skill_dependents(skill_name: str) -> List[str]:
+    """
+    Find all skills that depend on the given skill.
+    
+    Args:
+        skill_name: Name of skill to find dependents for
+    
+    Returns:
+        List of skill names that depend on this skill
+    """
+    dependents: List[str] = []
+    
+    for skill in list_skills():
+        if skill.dependencies and skill_name in skill.dependencies:
+            dependents.append(skill.name)
+    
+    return dependents
+
+
+def visualize_dependency_graph(output_format: str = "text") -> str:
+    """
+    Generate a visual representation of the skill dependency graph.
+    
+    Args:
+        output_format: "text" or "mermaid"
+    
+    Returns:
+        Graph representation as string
+    """
+    graph = get_dependency_graph()
+    
+    if output_format == "mermaid":
+        # Mermaid flowchart format
+        lines = ["```mermaid", "graph TD"]
+        
+        for skill, deps in graph.items():
+            if deps:
+                for dep in deps:
+                    lines.append(f"    {dep} --> {skill}")
+            else:
+                # Standalone skill
+                lines.append(f"    {skill}")
+        
+        lines.append("```")
+        return "\n".join(lines)
+    
+    else:
+        # Simple text format
+        lines = ["Skill Dependency Graph:", ""]
+        
+        for skill, deps in graph.items():
+            if deps:
+                lines.append(f"{skill}:")
+                for dep in deps:
+                    lines.append(f"  ← depends on: {dep}")
+            else:
+                lines.append(f"{skill}: (no dependencies)")
+        
+        return "\n".join(lines)
 
 
 def search_skills(query: str, top_k: int = 5) -> List[Tuple[Skill, float]]:
