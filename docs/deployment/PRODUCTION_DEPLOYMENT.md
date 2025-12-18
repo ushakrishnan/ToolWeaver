@@ -243,7 +243,7 @@ client = create_analytics_client()
 # - Health scores (aggregated performance)
 ```
 
-See [ANALYTICS_STRATEGY.md](../reference/ANALYTICS_STRATEGY.md) for detailed comparison and when to use each.
+See [ANALYTICS_GUIDE.md](../reference/ANALYTICS_GUIDE.md) for detailed comparison and when to use each.
 
 ### 2. Optional: Experiment Tracking with W&B
 

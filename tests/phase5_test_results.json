@@ -1,75 +1,75 @@
 {
-  "timestamp": "2025-12-18T16:50:19.878741",
+  "timestamp": "2025-12-18T17:09:37.435454",
   "tests": {
     "SQLite Schema Creation": {
       "passed": true,
       "message": "Database created at C:\\Users\\ushak\\.toolweaver\\analytics_test.db",
-      "timestamp": "2025-12-18T16:50:19.889021"
+      "timestamp": "2025-12-18T17:09:37.457649"
     },
     "SQLite Table Verification": {
       "passed": true,
       "message": "9 tables created: adoption_metrics, health_scores, leaderboard_cache...",
-      "timestamp": "2025-12-18T16:50:19.893625"
+      "timestamp": "2025-12-18T17:09:37.464434"
     },
     "SkillAnalytics Initialization": {
       "passed": true,
       "message": "Analytics engine ready at C:\\Users\\ushak\\.toolweaver\\analytics_test.db",
-      "timestamp": "2025-12-18T16:50:19.901247"
+      "timestamp": "2025-12-18T17:09:37.476244"
     },
     "Record Skill Usage": {
       "passed": true,
       "message": "Recorded: test-skill by test-user-1 (latency: 123.45ms)",
-      "timestamp": "2025-12-18T16:50:19.910594"
+      "timestamp": "2025-12-18T17:09:37.484322"
     },
     "Get Skill Usage": {
       "passed": true,
-      "message": "Retrieved metrics: 2 executions, 100.0% success rate",
-      "timestamp": "2025-12-18T16:50:19.917725"
+      "message": "Retrieved metrics: 1 executions, 100.0% success rate",
+      "timestamp": "2025-12-18T17:09:37.488523"
     },
     "Rate Skill": {
       "passed": true,
       "message": "Recorded 4 ratings, avg: 4.25/5",
-      "timestamp": "2025-12-18T16:50:19.961053"
+      "timestamp": "2025-12-18T17:09:37.525913"
     },
     "Leaderboard Computation": {
       "passed": true,
       "message": "Generated 4 rankings, top: skill-0",
-      "timestamp": "2025-12-18T16:50:20.007677"
+      "timestamp": "2025-12-18T17:09:37.553910"
     },
     "Recommendations": {
       "passed": true,
       "message": "Generated 3 recommendations: trending, trending",
-      "timestamp": "2025-12-18T16:50:20.071293"
+      "timestamp": "2025-12-18T17:09:37.616987"
     },
     "Health Scoring": {
       "passed": true,
-      "message": "Computed health score: 78.3/100",
-      "timestamp": "2025-12-18T16:50:20.083823"
+      "message": "Computed health score: 76.3/100",
+      "timestamp": "2025-12-18T17:09:37.629178"
     },
     "Trend Analysis": {
       "passed": true,
       "message": "Retrieved 1 data points",
-      "timestamp": "2025-12-18T16:50:20.091252"
+      "timestamp": "2025-12-18T17:09:37.634408"
     },
     "Database Stats": {
       "passed": true,
-      "message": "Database has 15 total rows across 7 tables",
-      "timestamp": "2025-12-18T16:50:20.096662"
+      "message": "Database has 8 total rows across 7 tables",
+      "timestamp": "2025-12-18T17:09:37.638645"
     },
     "Database Health": {
       "passed": true,
       "message": "Integrity check passed",
-      "timestamp": "2025-12-18T16:50:20.102800"
+      "timestamp": "2025-12-18T17:09:37.645785"
     },
     "Grafana Configuration": {
       "passed": true,
       "message": "URL: https://vaanararaaja.grafana.net | Key: glsa_kCr8j...0_21078877",
-      "timestamp": "2025-12-18T16:50:20.103519"
+      "timestamp": "2025-12-18T17:09:37.646200"
     },
     "Grafana Connection": {
       "passed": true,
       "message": "Successfully connected to Grafana API",
-      "timestamp": "2025-12-18T16:50:20.715777"
+      "timestamp": "2025-12-18T17:09:38.153384"
     }
   },
   "summary": {

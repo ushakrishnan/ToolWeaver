@@ -37,7 +37,7 @@ OTLP_PUSH_INTERVAL=60
 - **Prometheus**: Real-time dashboards, alerting, multi-environment monitoring
 - **OTLP**: Managed Grafana Cloud, zero infrastructure overhead
 
-See [ANALYTICS_STRATEGY.md](../reference/ANALYTICS_STRATEGY.md) for detailed comparison.
+See [ANALYTICS_GUIDE.md](../reference/ANALYTICS_GUIDE.md) for detailed comparison.
 
 ### 2. Experiment Tracking (Optional - Additive)
 

@@ -72,10 +72,9 @@ Welcome to the ToolWeaver documentation! This guide is organized by audience and
 
 | Document | Description | Audience |
 |----------|-------------|----------|
+| [Analytics Guide](reference/ANALYTICS_GUIDE.md) | Complete tri-backend guide (SQLite, OTLP, Prometheus) | All |
 | [Two-Model Architecture](reference/TWO_MODEL_ARCHITECTURE.md) | Large + small model design | Advanced |
 | [Workflow Architecture](reference/WORKFLOW_ARCHITECTURE.md) | Workflow engine internals | Advanced |
-| [Analytics Strategy](reference/ANALYTICS_STRATEGY.md) | W&B vs Prometheus/Grafana comparison | All |
-| [Analytics Backends](reference/ANALYTICS_BACKENDS.md) | SQLite, Prometheus, OTLP setup | All |
 | [Prompt Caching](reference/PROMPT_CACHING.md) | Cost optimization techniques | All |
 | [Search Tuning](reference/SEARCH_TUNING.md) | Optimize tool search | Advanced |
 | [Migration Guide](reference/MIGRATION_GUIDE.md) | Upgrade between versions | All |
@@ -137,6 +136,7 @@ docs/
 │   └── QDRANT_SETUP.md               # Vector DB
 │
 └── reference/                         # 📚 Technical details
+    ├── ANALYTICS_GUIDE.md            # Tri-backend analytics (SQLite, OTLP, Prometheus)
     ├── TWO_MODEL_ARCHITECTURE.md     # Design patterns
     ├── WORKFLOW_ARCHITECTURE.md      # Internals
     ├── PROMPT_CACHING.md             # Optimization
@@ -221,5 +221,5 @@ All documentation follows the standards in [DOCUMENTATION_BEST_PRACTICES.md](DOC
 
 ---
 
-**Last Updated:** December 17, 2024  
+**Last Updated:** December 18, 2025  
 **Version:** 0.1.3

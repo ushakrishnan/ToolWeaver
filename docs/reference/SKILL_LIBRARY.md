@@ -118,6 +118,6 @@ All features are optional and gracefully degrade:
 ## Related Documents
 
 - Architecture decision: [Skill Storage Architecture Decision](../architecture/skill-storage-decision.md)
-- Internal: Phase plan and roadmap (docs/internal/NEXT_STEPS.md)
+- Internal: Project roadmap (docs/internal/ROADMAP.md)
 - Internal: Anthropic comparison and gaps (docs/internal/ANTHROPIC_MCP_COMPARISON.md)
 - Internal: A2A integration plan (docs/internal/A2A_INTEGRATION_PLAN.md)

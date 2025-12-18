@@ -5,7 +5,7 @@ This guide covers setting up analytics for ToolWeaver with **three backend optio
 - **Prometheus**: Self-hosted metrics (real-time, production)
 - **OTLP**: Grafana Cloud push (managed, cloud-native)
 
-See [ANALYTICS_STRATEGY.md](../reference/ANALYTICS_STRATEGY.md) for detailed comparison.
+See [ANALYTICS_GUIDE.md](../reference/ANALYTICS_GUIDE.md) for detailed comparison.
 
 ---
 
@@ -181,7 +181,7 @@ docker run -d -p 9090:9090 -v ./prometheus.yml:/etc/prometheus/prometheus.yml pr
 
 6. **Add to Grafana** as data source and create dashboards
 
-See [ANALYTICS_BACKENDS.md](../reference/ANALYTICS_BACKENDS.md) for detailed configuration.
+See [ANALYTICS_GUIDE.md](../reference/ANALYTICS_GUIDE.md) for detailed configuration.
 
 ---
 
