@@ -11,12 +11,13 @@
 
 1. [Overview](#overview)
 2. [Core Capabilities](#core-capabilities)
-3. [Architecture](#architecture)
-4. [Key Features](#key-features)
-5. [Performance Metrics](#performance-metrics)
-6. [Production Features](#production-features)
-7. [Advanced Capabilities](#advanced-capabilities)
-8. [Limitations & Considerations](#limitations--considerations)
+3. [Discovery Systems](#discovery-systems)
+4. [Execution Paradigms](#execution-paradigms)
+5. [Architecture](#architecture)
+6. [Performance Metrics](#performance-metrics)
+7. [Production Features](#production-features)
+8. [Advanced Capabilities](#advanced-capabilities)
+9. [Limitations & Considerations](#limitations--considerations)
 
 ---
 
@@ -26,12 +27,12 @@ ToolWeaver is a production-ready **Adaptive Tool Discovery and Orchestration Sys
 
 ### What It Does
 
-- **Dynamic Tool Discovery**: Automatically discover MCP servers, functions, and code execution capabilities
-- **Intelligent Tool Selection**: Use semantic search to find relevant tools (3-5 from 100+)
-- **Programmatic Orchestration**: Execute complex workflows in code, keeping intermediate results out of LLM context
-- **Smart Caching**: Optimize for repeated operations and common patterns
+- **Unified Tool & Agent Discovery**: Automatically discover MCP servers (deterministic tools), A2A agents (agentic reasoning), functions, and code execution capabilities
+- **Intelligent Tool Selection**: Use semantic search to find relevant tools/agents (3-5 from 100+)
+- **Programmatic Orchestration**: Execute complex workflows in code with tool delegation and agent coordination
+- **Smart Caching**: Optimize for repeated operations and common patterns across tools and agents
 - **Tool Usage Examples**: Learn from demonstrations for accurate parameter usage
-- **Workflow Composition**: Chain tools automatically with dependency resolution
+- **Workflow Composition**: Chain tools and agents automatically with dependency resolution and context passing
 
 ### Provider Support
 
@@ -207,7 +208,199 @@ LLMs can dynamically discover tools during conversation:
 
 ---
 
-## Performance Metrics
+## Discovery Systems
+
+ToolWeaver provides **unified discovery** of both deterministic tools and agentic capabilities from multiple sources:
+
+### Model Context Protocol (MCP) - Deterministic Tools
+
+MCP servers expose structured, fast tools ideal for well-defined operations.
+
+**Characteristics:**
+- Strict input/output schemas
+- Synchronous or async-generator (streaming) implementations
+- Fast execution (typically <1s)
+- Cost-efficient
+- Best for: API calls, calculations, deterministic transformations
+
+**Supported MCP Features:**
+- HTTP/SSE streaming for long-running operations
+- Request/response validation
+- Tool usage examples
+- Built-in error handling
+
+**Discovery Example:**
+```python
+from orchestrator.tool_search import discover_tools
+
+# Discover all available MCP tools
+tools = await discover_tools(use_cache=True)
+# Returns ~5-10ms for cached lookup of 100+ tools
+```
+
+### Agent-to-Agent (A2A) Protocol - Agentic Capabilities
+
+External agents provide flexible, reasoning-capable services for complex analysis.
+
+**Characteristics:**
+- Flexible input/output (JSON-schema based)
+- Async/streaming support with context passing
+- Moderate execution time (1-30s)
+- Cost per delegation varies
+- Best for: Analysis, validation, complex reasoning, multi-step tasks
+
+**A2A Capabilities:**
+- Automatic agent discovery from registry
+- HTTP/SSE/WebSocket streaming
+- Idempotency caching (same request → cached response)
+- Retry logic with circuit breaker
+- Cost & latency tracking
+
+**Discovery & Delegation Example:**
+```python
+from orchestrator.infra.a2a_client import A2AClient
+from orchestrator.tool_search import discover_tools
+
+# Configure A2A client
+a2a = A2AClient(registry_url="https://agents.example.com")
+
+# Unified discovery includes both MCP tools and A2A agents
+tools = await discover_tools(a2a_client=a2a, use_cache=True)
+
+# Seamlessly delegate to agents
+response = await a2a.delegate_to_agent(
+    agent_id="analyzer",
+    input={"data": tool_result}
+)
+```
+
+### Unified Discovery
+
+Both MCP tools and A2A agents are discovered through a single interface:
+
+| Aspect | MCP Tools | A2A Agents | Usage |
+|--------|-----------|-----------|-------|
+| **When to use** | Fast, deterministic | Complex, reasoning-based | Choose by capability |
+| **Input/output** | Strict schema | Flexible schema | Both normalized |
+| **Execution time** | <1s typically | 1-30s | Plan accordingly |
+| **Cost** | Cheap | Varies | Track with monitoring |
+| **Streaming** | async-generator | HTTP/SSE/WebSocket | Transparent to caller |
+| **Discovery** | `discover_tools(mcp_client)` | `discover_tools(a2a_client)` | Use both together |
+
+**Unified Discovery Workflow:**
+```python
+from orchestrator.tool_search import discover_tools
+from orchestrator.infra.a2a_client import A2AClient
+from orchestrator.mcp_client import MCPClient
+
+# Set up both discovery sources
+mcp = MCPClient(env_file=".env")
+a2a = A2AClient(registry_url="https://agents.example.com")
+
+# Single unified call discovers both tools and agents
+tools_and_agents = await discover_tools(
+    mcp_client=mcp,
+    a2a_client=a2a,
+    use_cache=True
+)
+
+# Semantic search works across both
+fast_tools = [t for t in tools_and_agents if t.type == "tool"]
+reasoning_agents = [t for t in tools_and_agents if t.type == "agent"]
+```
+
+---
+
+## Execution Paradigms
+
+ToolWeaver supports multiple execution modes, each with trade-offs:
+
+### 1. Programmatic Execution (Recommended)
+
+Execute workflows directly in code with full control and context management.
+
+```python
+from orchestrator.orchestrator import Orchestrator
+
+orchestrator = Orchestrator(catalog, monitoring=monitor)
+
+# Execute a single tool
+result = await orchestrator.run_step({
+    "tool_name": "extract_text",
+    "inputs": {"image_url": url}
+})
+
+# Execute a workflow with context passing
+context = {"extracted": result["text"]}
+next_result = await orchestrator.run_step({
+    "tool_name": "parse_structure",
+    "inputs": {"text": result["text"]},
+    "context": context
+})
+```
+
+**Benefits:**
+- Full control over context
+- Intermediate results stay out of LLM
+- Better cost management
+- Easier debugging
+
+### 2. LLM-Driven Tool Calling
+
+Let the LLM decide which tools to call (traditional approach).
+
+```python
+# LLM sees tool_search_tool + small initial tool set
+tools_for_llm = [tool_search_tool, extract_tool]
+
+# During conversation, LLM can discover more tools
+response = llm.chat(
+    messages=[...],
+    tools=tools_for_llm,
+    tool_choice="auto"
+)
+```
+
+**Benefits:**
+- Flexible exploration
+- Works with existing LLM integrations
+- Good for conversational flows
+
+### 3. Hybrid Approach (Tools + Agents)
+
+Combine MCP tools for deterministic operations with A2A agents for reasoning.
+
+```python
+# Tool workflow
+tool_result = await orchestrator.run_step({
+    "tool_name": "fetch_data",
+    "inputs": {...}
+})
+
+# Agent-based analysis
+agent_result = await orchestrator.run_step({
+    "type": "agent",
+    "agent_id": "analyzer",
+    "inputs": {"data": tool_result},
+    "stream": True  # Optional: stream agent reasoning
+})
+
+# Another tool to format
+final_result = await orchestrator.run_step({
+    "tool_name": "format_report",
+    "inputs": {"analysis": agent_result}
+})
+```
+
+**Benefits:**
+- Leverage tool speed for deterministic tasks
+- Use agent reasoning where needed
+- Optimal cost/accuracy balance
+- Streaming support for both
+
+---
+
+## Architecture
 
 ### Token Usage & Cost
 

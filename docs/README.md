@@ -20,6 +20,8 @@ Welcome to the ToolWeaver documentation! This guide is organized by audience and
 | [Getting Started](user-guide/GETTING_STARTED.md) | Step-by-step tutorial for new users | 10 min |
 | [Configuration](user-guide/CONFIGURATION.md) | Configure API providers and settings | 15 min |
 | [Features Guide](user-guide/FEATURES_GUIDE.md) | Complete feature reference | 30 min |
+| [MCP Tools Guide](user-guide/MCP_SETUP_GUIDE.md) | Set up and use MCP tools | 15 min |
+| [A2A Agents Guide](user-guide/A2A_SETUP_GUIDE.md) | Configure Agent-to-Agent delegation | 20 min |
 | [Workflow Usage](user-guide/WORKFLOW_USAGE_GUIDE.md) | Build and compose workflows | 20 min |
 | [Quick Reference](user-guide/QUICK_REFERENCE.md) | Common commands and patterns | 5 min |
 | [Free Tier Setup](user-guide/FREE_TIER_SETUP.md) | Use free services (Qdrant, Redis) | 10 min |
@@ -137,11 +139,29 @@ docs/
 ### Path 1: Quick Start (New User)
 1. [Getting Started](user-guide/GETTING_STARTED.md) - 10 min
 2. [Configuration](user-guide/CONFIGURATION.md) - 15 min
-3. Try [samples/01-basic-receipt-processing](../samples/01-basic-receipt-processing/)
-4. Browse [Features Guide](user-guide/FEATURES_GUIDE.md)
+3. [Features Guide](user-guide/FEATURES_GUIDE.md) - Overview - 10 min
+4. Try [examples/01-basic-receipt-processing](../examples/01-basic-receipt-processing/)
 
-### Path 2: Deep Understanding (Advanced User)
-1. [Features Guide](user-guide/FEATURES_GUIDE.md) - 30 min
+### Path 2: Tools Deep Dive (Deterministic Operations)
+1. [Features Guide](user-guide/FEATURES_GUIDE.md) - Read "Discovery Systems" section
+2. [MCP Tools Guide](user-guide/MCP_SETUP_GUIDE.md) - 15 min
+3. [Features Guide](user-guide/FEATURES_GUIDE.md) - Read "Execution Paradigms" section
+4. Try [examples/02-receipt-with-categorization](../examples/02-receipt-with-categorization/)
+
+### Path 3: Agents Deep Dive (Complex Reasoning)
+1. [Features Guide](user-guide/FEATURES_GUIDE.md) - Read "Discovery Systems" section
+2. [A2A Agents Guide](user-guide/A2A_SETUP_GUIDE.md) - 20 min
+3. [Features Guide](user-guide/FEATURES_GUIDE.md) - Read "Execution Paradigms" section
+4. Try [examples/16-agent-delegation](../examples/16-agent-delegation/)
+
+### Path 4: Hybrid Workflows (Tools + Agents)
+1. Complete Path 2 + Path 3
+2. [Workflow Usage Guide](user-guide/WORKFLOW_USAGE_GUIDE.md) - 20 min
+3. Try [examples/17-multi-agent-coordination](../examples/17-multi-agent-coordination/)
+4. Try [examples/18-tool-agent-hybrid](../examples/18-tool-agent-hybrid/)
+
+### Path 5: Deep Understanding (Architecture)
+1. [Features Guide](user-guide/FEATURES_GUIDE.md) - Full read - 30 min
 2. [Two-Model Architecture](reference/TWO_MODEL_ARCHITECTURE.md) - 20 min
 3. [Workflow Architecture](reference/WORKFLOW_ARCHITECTURE.md) - 20 min
 4. [Prompt Caching](reference/PROMPT_CACHING.md) - 15 min
