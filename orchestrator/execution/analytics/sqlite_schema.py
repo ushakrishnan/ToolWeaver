@@ -357,8 +357,10 @@ class SQLiteSchema:
                 "tables": {},
             }
 
-            # Get row counts for each table
+            # Get row counts for each table (skip schema_version)
             for table_name in self.TABLES.keys():
+                if table_name == "version":  # Skip internal schema version table
+                    continue
                 cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
                 count = cursor.fetchone()[0]
                 stats["tables"][table_name] = count
