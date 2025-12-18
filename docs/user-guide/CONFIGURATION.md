@@ -4,27 +4,68 @@
 
 This system supports flexible configuration for both **large planner models** and **small worker models**, allowing you to use different providers based on your needs.
 
-## Monitoring Configuration
+## Analytics Configuration
 
-Configure observability backends via `.env`:
+ToolWeaver offers **three complementary analytics backends** for different use cases:
+
+### 1. Analytics Backend (Primary - Choose One)
+
+Controls where skill execution metrics are stored:
 
 ```bash
-# Monitoring backends (comma-separated)
-MONITORING_BACKENDS=local,wandb  # Options: local, wandb, prometheus
+# Choose backend: sqlite | prometheus | otlp
+ANALYTICS_BACKEND=prometheus  # Default: production-grade real-time monitoring
 
-# Local backend (file-based logging)
-TOOL_LOGS_DIR=.tool_logs
+# SQLite (local development)
+ANALYTICS_DB_PATH=~/.toolweaver/analytics.db
+ANALYTICS_DB_RETENTION_DAYS=90
 
-# Weights & Biases (optional)
+# Prometheus (real-time metrics & alerting)
+PROMETHEUS_ENABLED=true
+PROMETHEUS_PORT=8000
+PROMETHEUS_HOST=0.0.0.0
+
+# OTLP (Grafana Cloud alternative)
+OTLP_ENDPOINT=https://otlp-gateway-prod-us-east-2.grafana.net/otlp
+OTLP_INSTANCE_ID=1472140
+OTLP_TOKEN=glc_...
+OTLP_PUSH_INTERVAL=60
+```
+
+**Why three backends?**
+- **SQLite**: Zero-config local development, no external dependencies
+- **Prometheus**: Real-time dashboards, alerting, multi-environment monitoring
+- **OTLP**: Managed Grafana Cloud, zero infrastructure overhead
+
+See [ANALYTICS_STRATEGY.md](../reference/ANALYTICS_STRATEGY.md) for detailed comparison.
+
+### 2. Experiment Tracking (Optional - Additive)
+
+Separate from analytics backend. Use W&B for experiment comparison and reproducibility:
+
+```bash
+# Weights & Biases (optional - for experiment tracking)
 WANDB_API_KEY=your-api-key
 WANDB_PROJECT=ToolWeaver
 WANDB_ENTITY=your-username
-
-# Prometheus (optional)
-PROMETHEUS_PORT=8000
 ```
 
-**Monitoring is automatic** - all plan executions are logged to enabled backends.
+**Note:** W&B and analytics backends are independent:
+- Analytics backend = skill execution metrics
+- W&B = experiment comparison and artifact versioning
+- You can use both simultaneously
+
+### 3. Execution Logging (Optional - Legacy)
+
+File-based logging for plan execution (separate from metrics):
+
+```bash
+# Local file logging
+MONITORING_BACKENDS=local,wandb  # Options: local, wandb
+TOOL_LOGS_DIR=.tool_logs
+```
+
+**Recommendation:** Use analytics backends (sqlite/prometheus) instead for modern metrics collection.
 
 ## GitHub MCP Server Configuration
 

@@ -177,7 +177,7 @@ def compute_item_statistics(items: List[Dict[str, Any]]) -> Dict[str, Any]:
 # Phase 6: Tool Search Tool
 # Import and register the tool search function
 try:
-    from .tool_search_tool import tool_search_tool
+    from orchestrator.tools.tool_search_tool import tool_search_tool
     register_function("tool_search_tool")(tool_search_tool)
 except ImportError as e:
     import logging

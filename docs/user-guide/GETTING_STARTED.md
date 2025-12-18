@@ -26,11 +26,19 @@ pip install toolweaver
 
 **With optional features:**
 ```bash
-pip install toolweaver[monitoring]  # W&B monitoring
+pip install toolweaver[prometheus]  # Prometheus/Grafana monitoring (recommended)
+pip install toolweaver[otlp]        # Grafana Cloud monitoring
+pip install toolweaver[monitoring]  # W&B experiment tracking + all backends
 pip install toolweaver[redis]       # Redis caching
-pip install toolweaver[vector]      # Vector search
+pip install toolweaver[qdrant]      # Vector search
 pip install toolweaver[all]         # Everything
 ```
+
+**Choose Your Analytics Backend:**
+- **Development:** Built-in SQLite (no install needed)
+- **Production:** Prometheus/Grafana (`pip install toolweaver[prometheus]`)
+- **Cloud:** Grafana Cloud OTLP (`pip install toolweaver[otlp]`)
+- **Experiments:** W&B `pip install wandb`
 
 ### Step 2: Try Your First Sample
 

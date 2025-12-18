@@ -204,60 +204,86 @@ async def execute_tools_parallel(tools):
     return results
 ```
 
-## Monitoring Setup
+## Analytics & Monitoring Setup
 
-### 1. Automatic Monitoring (Built-in)
+### 1. Choose Your Analytics Backend
 
-**Monitoring is enabled by default** and configured via environment variables:
+ToolWeaver supports **three analytics backends** for skill execution metrics (choose one):
 
 ```bash
 # .env
-MONITORING_BACKENDS=local,wandb,prometheus  # Comma-separated list
 
-# Local backend (always available, zero dependencies)
-TOOL_LOGS_DIR=.tool_logs
+# Production Recommended: Prometheus (real-time dashboards + alerting)
+ANALYTICS_BACKEND=prometheus
+PROMETHEUS_ENABLED=true
+PROMETHEUS_PORT=8000
+PROMETHEUS_HOST=0.0.0.0
 
-# Weights & Biases (optional - pip install wandb)
+# Alternative: Grafana Cloud OTLP (managed, zero infrastructure)
+ANALYTICS_BACKEND=otlp
+OTLP_ENDPOINT=https://otlp-gateway-prod-us-east-2.grafana.net/otlp
+OTLP_INSTANCE_ID=1472140
+OTLP_TOKEN=glc_...
+
+# Development: SQLite (local storage, no external deps)
+ANALYTICS_BACKEND=sqlite
+ANALYTICS_DB_PATH=~/.toolweaver/analytics.db
+```
+
+**Automatic metric recording:**
+```python
+from orchestrator.execution.analytics import create_analytics_client
+
+# Auto-selects backend from ANALYTICS_BACKEND env var
+client = create_analytics_client()
+
+# Metrics recorded automatically:
+# - Skill execution (success/failure, latency)
+# - Skill ratings (user feedback)
+# - Health scores (aggregated performance)
+```
+
+See [ANALYTICS_STRATEGY.md](../reference/ANALYTICS_STRATEGY.md) for detailed comparison and when to use each.
+
+### 2. Optional: Experiment Tracking with W&B
+
+Separate from analytics backend. Use W&B for experiment comparison and reproducibility:
+
+```bash
+# .env
 WANDB_API_KEY=your-wandb-api-key
 WANDB_PROJECT=ToolWeaver
 WANDB_ENTITY=your-username
 WANDB_RUN_NAME=production-run-1
-
-# Prometheus (optional - pip install prometheus-client)
-PROMETHEUS_PORT=8000
 ```
 
-**All plan executions are automatically logged:**
-
+**Combine both systems:**
 ```python
-from orchestrator import execute_plan
+from orchestrator.execution.analytics import create_analytics_client
+import wandb
 
-# No manual monitoring setup needed
-context = await execute_plan(plan)
+# Real-time monitoring
+metrics = create_analytics_client()
 
-# Metrics automatically logged to all enabled backends:
-# - Tool calls (name, success, latency, errors)
-# - Step execution (id, duration)
-# - Plan start/completion
+# Experiment tracking
+run = wandb.init(project="toolweaver")
+
+# Log to both
+metrics.record_skill_execution(skill_id="parse", success=True, latency_ms=145)
+wandb.log({"skill_execution": True})
 ```
 
-### 2. Manual Monitoring (Advanced)
+### 3. Legacy: Execution Logging (Deprecated)
 
-For custom monitoring or standalone tool calls:
+For tool execution logging (separate from metrics, not recommended for new deployments):
 
-```python
-from orchestrator.monitoring import ToolUsageMonitor
-
-# Create monitor with specific backends
-monitor = ToolUsageMonitor(
-    backends=["local", "wandb"],
-    log_dir="/var/log/toolweaver"
-)
-
-# Manual logging
-monitor.log_tool_call("my_tool", success=True, latency=0.5)
-monitor.flush()  # Ensure logs sent to backends
+```bash
+# .env
+MONITORING_BACKENDS=local,wandb  # Legacy option
+TOOL_LOGS_DIR=.tool_logs
 ```
+
+**Recommendation:** Use analytics backends for metrics instead of legacy logging.
 
 ### 2. Export Metrics
 
