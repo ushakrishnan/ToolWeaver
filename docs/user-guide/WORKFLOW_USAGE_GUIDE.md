@@ -12,7 +12,8 @@ Complete guide to using ToolWeaver's workflow composition system.
 6. [Workflow Library](#workflow-library)
 7. [Advanced Features](#advanced-features)
 8. [Best Practices](#best-practices)
-9. [API Reference](#api-reference)
+9. [Troubleshooting](#troubleshooting)
+10. [API Reference](#api-reference)
 
 ---
 
@@ -574,6 +575,19 @@ for pattern in patterns[:5]:  # Top 5 patterns
 # Save for future use
 library.save_to_disk("learned_workflows.json")
 ```
+
+---
+
+## Troubleshooting
+
+- **Workflow fails to start**: Confirm required environment variables are set (`OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `REDIS_URL`, `QDRANT_URL`) and matching providers are installed from `requirements.txt`.
+- **Tool not found**: Run tool discovery to refresh the registry and ensure the tool name in the workflow matches the registry entry; check `orchestrator/tool_search.py` logging at DEBUG for resolution hints.
+- **Parameter substitution errors**: Validate placeholders like `{{step_id.field}}` exist in previous step outputs; use `context.set_result` in custom steps to store structured results before downstream substitution.
+- **Timeouts or slow runs**: Lower parallelism or add `max_retries`/`retry_delay` per step; for long-running tools, enable streaming and ensure your transport supports partial responses.
+- **Stateful backends unavailable**: If Redis or Qdrant are optional in your setup, disable their usage in configuration or provide fallbacks; monitor connection errors in orchestrator logs.
+- **Approval or human-in-the-loop blocking**: For workflows that expect approvals, confirm the callback URL or queue is reachable and that the approval step writes back to the workflow context before resuming.
+- **Retries not triggering**: Set `max_retries` and `retry_delay` on the step, and make sure the tool surfaces exceptions rather than swallowing errors.
+- **Diagnostics**: Run with `LOG_LEVEL=DEBUG` to capture step inputs/outputs, enable monitoring backends, and persist `WorkflowContext` snapshots when iterating on new templates.
 
 ---
 

@@ -24,6 +24,7 @@ Welcome to the ToolWeaver documentation! This guide is organized by audience and
 | [A2A Agents Guide](user-guide/A2A_SETUP_GUIDE.md) | Configure Agent-to-Agent delegation | 20 min |
 | [Workflow Usage](user-guide/WORKFLOW_USAGE_GUIDE.md) | Build and compose workflows | 20 min |
 | [Quick Reference](user-guide/QUICK_REFERENCE.md) | Common commands and patterns | 5 min |
+| [Troubleshooting](user-guide/TROUBLESHOOTING.md) | Timeouts, streaming, costs | 5 min |
 | [Free Tier Setup](user-guide/FREE_TIER_SETUP.md) | Use free services (Qdrant, Redis) | 10 min |
 
 **Start here:** [Getting Started](user-guide/GETTING_STARTED.md)
@@ -75,6 +76,8 @@ Welcome to the ToolWeaver documentation! This guide is organized by audience and
 | [Search Tuning](reference/SEARCH_TUNING.md) | Optimize tool search | Advanced |
 | [Migration Guide](reference/MIGRATION_GUIDE.md) | Upgrade between versions | All |
 | [Small Model Improvements](reference/SMALL_MODEL_IMPROVEMENTS.md) | Enhance small models | Advanced |
+| [Skill Library](reference/SKILL_LIBRARY.md) | Save and reuse generated code | Advanced |
+| [Registry Discovery](reference/REGISTRY_DISCOVERY.md) | External MCP registry integration | Advanced |
 
 ---
 
@@ -83,6 +86,12 @@ Welcome to the ToolWeaver documentation! This guide is organized by audience and
 ### Samples & Examples
 - [samples/](../samples/) - Ready-to-run examples using installed package
 - [examples/](../examples/) - Development examples using source code
+- [examples/README.md](../examples/README.md) - Index including new advanced flows 19–21 (hybrid tool↔agent, approval gate, error recovery); 19–21 use stubbed smoke tests.
+
+### Performance Benchmarks (Scope)
+- We run a regression-focused benchmark suite to ensure discovery, search, and orchestration stay within our targets.
+- It is **not** a vendor or “vanilla vs optimized” comparison; results are environment-specific.
+- For A/B baselines, run the suite on both builds (same hardware/load) and compare p50/p95 and resource usage.
 
 ### Project Documentation
 - [../README.md](../README.md) - Main project overview
@@ -129,7 +138,9 @@ docs/
     ├── PROMPT_CACHING.md             # Optimization
     ├── SEARCH_TUNING.md              # Tuning guide
     ├── MIGRATION_GUIDE.md            # Upgrades
-    └── SMALL_MODEL_IMPROVEMENTS.md   # Enhancements
+    ├── SMALL_MODEL_IMPROVEMENTS.md   # Enhancements
+    ├── SKILL_LIBRARY.md              # Reusable code skills
+    └── REGISTRY_DISCOVERY.md         # External registry integration
 ```
 
 ---

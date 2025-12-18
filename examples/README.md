@@ -5,7 +5,7 @@
 > **\ud83d\udccc Current status:** PyPI package refresh is in progress; treat `examples/` as the canonical, up-to-date source. We'll regenerate `samples/` after the package is finalized.
 
 Complete showcase of ToolWeaver capabilities through real-world examples using local source code.
-✅ **All 13 examples tested and validated** - See [TESTING_REPORT.md](TESTING_REPORT.md)
+➡️ **Status:** 01–18 validated; 19–21 ship with stubbed smoke tests (no external services required). See [TESTING_REPORT.md](TESTING_REPORT.md) for validated runs.
 
 ## \ud83d\udd04 Examples vs Samples
 
@@ -137,6 +137,24 @@ Keep intermediate results out of LLM context for large-scale processing.
 **Demonstrates:** Sharded catalogs, sub-linear scaling, 1000+ tools
 
 Scale to thousands of tools with constant search performance.
+
+### New Advanced Scenarios
+
+#### [19-fetch-analyze-store](19-fetch-analyze-store/)
+**Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
+**Demonstrates:** Tool → agent → tool hybrid flow with streaming analysis and cost logging.
+
+#### [20-approval-workflow](20-approval-workflow/)
+**Complexity:** ⭐⭐⭐ Advanced | **Time:** 10 minutes  
+**Demonstrates:** Multi-agent draft/validate, human approval gate, deterministic finalize.
+
+#### [21-error-recovery](21-error-recovery/)
+**Complexity:** ⭐⭐⭐ Advanced | **Time:** 10 minutes  
+**Demonstrates:** Self-healing flow: fail → diagnose agent → remediate → retry.
+
+#### [22-end-to-end-showcase](22-end-to-end-showcase/)
+**Complexity:** ⭐⭐⭐ Advanced | **Time:** 10 minutes  
+**Demonstrates:** Complete pipeline combining tools, agents, and skill library reuse.
 
 ## 🚀 Quick Start
 

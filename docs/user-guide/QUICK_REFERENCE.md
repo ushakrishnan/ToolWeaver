@@ -1,118 +1,36 @@
-# Quick Reference - Two-Model Orchestrator
+# Quick Reference
 
-## Architecture Overview
+One-page cheat sheet for running ToolWeaver. For explanations and architecture, see [FEATURES_GUIDE](FEATURES_GUIDE.md) and [WORKFLOW_USAGE_GUIDE](WORKFLOW_USAGE_GUIDE.md).
 
-```
-Natural Language → Large Model → JSON Plan → Orchestrator → Workers
-                   (Planning)                              ↓
-                                                    Small Model
-                                                    (Execution)
-```
+## Core Toggles
 
-## When Small Models Are Used
+### Planner (large model)
 
-| Worker | Without Small Model | With Small Model |
-|--------|---------------------|------------------|
-| `receipt_ocr` | Azure Computer Vision | Azure Computer Vision *(no change)* |
-| `line_item_parser` | Keyword matching (coffee, bagel) | **Phi-3 intelligently parses ANY receipt** |
-| `expense_categorizer` | Simple rules (coffee→beverage) | **Phi-3 intelligently categorizes** |
+| Provider | Variable | Use When |
+|----------|----------|----------|
+| Azure OpenAI | `PLANNER_PROVIDER=azure-openai` | Enterprise / Azure defaults |
+| OpenAI | `PLANNER_PROVIDER=openai` | Fast start, latest models |
+| Anthropic | `PLANNER_PROVIDER=anthropic` | Prefer Claude |
+| Gemini | `PLANNER_PROVIDER=gemini` | Google stack |
 
-**Enable:** `USE_SMALL_MODEL=true` in `.env`
+### Small Model (execution)
 
-## Configuration Matrix
+| Backend | Variable | Use When |
+|---------|----------|----------|
+| Ollama | `SMALL_MODEL_BACKEND=ollama` | Local / free / dev |
+| Azure AI Foundry | `SMALL_MODEL_BACKEND=azure` | Managed small model |
+| Transformers | `SMALL_MODEL_BACKEND=transformers` | Custom models |
+| None | `USE_SMALL_MODEL=false` | Basic prototyping |
 
-### Large Model (Planning)
+## Minimal Commands
 
-| Provider | Variable | When to Use |
-|----------|----------|-------------|
-| **Azure OpenAI** ⭐ | `PLANNER_PROVIDER=azure-openai` | Enterprise, existing Azure |
-| OpenAI | `PLANNER_PROVIDER=openai` | Quick start, latest models |
-| Anthropic | `PLANNER_PROVIDER=anthropic` | Claude preference |
-| Gemini | `PLANNER_PROVIDER=gemini` | Google ecosystem |
+- **No LLM**: `pip install -r requirements.txt` → `python examples/run_demo.py`
+- **Planner**: set `PLANNER_PROVIDER` + keys → `python examples/run_planner_demo.py "<request>"`
+- **Hybrid (planner + small model)**: set planner vars + `USE_SMALL_MODEL=true`, `WORKER_MODEL=phi3`, run `python examples/run_planner_demo.py "<request>"`
 
-### Small Model (Execution)
-
-| Backend | Variable | When to Use |
-|---------|----------|-------------|
-| **Ollama** ⭐ | `SMALL_MODEL_BACKEND=ollama` | Local, free, development |
-| Azure AI Foundry | `SMALL_MODEL_BACKEND=azure` | Enterprise, managed |
-| Transformers | `SMALL_MODEL_BACKEND=transformers` | Custom models, full control |
-| **None** | `USE_SMALL_MODEL=false` | Simple testing, prototyping |
-
-## Quick Setup
-
-### Minimal (No LLM)
-```bash
-pip install -r requirements.txt
-python run_demo.py  # Uses pre-defined plans
-```
-
-### With Azure OpenAI Planner
-```bash
-# .env
-PLANNER_PROVIDER=azure-openai
-AZURE_OPENAI_API_KEY=...
-AZURE_OPENAI_ENDPOINT=...
-
-python run_planner_demo.py "Your request"
-```
-
-### With Ollama Small Model
-```bash
-ollama pull phi3
-
-# .env
-USE_SMALL_MODEL=true
-SMALL_MODEL_BACKEND=ollama
-WORKER_MODEL=phi3
-
-python run_demo.py
-```
-
-### Full Stack (Azure + Ollama)
-```bash
-# .env
-PLANNER_PROVIDER=azure-openai
-AZURE_OPENAI_API_KEY=...
-AZURE_OPENAI_ENDPOINT=...
-
-USE_SMALL_MODEL=true
-SMALL_MODEL_BACKEND=ollama
-WORKER_MODEL=phi3
-
-python run_planner_demo.py "Process receipt and categorize"
-```
-
-## Cost Comparison (1000 receipts)
-
-| Configuration | Cost | Speed |
-|---------------|------|-------|
-| GPT-4o only | **$15.00** | 5-10s each |
-| GPT-4o + Phi-3 (Ollama) | **$0.002** | 2-4s each |
-| GPT-4o + Phi-3 (Azure) | **$0.50** | 2-4s each |
-
-**Savings: 96-99%**
-
-## File Structure
+## Env Vars (essentials)
 
 ```
-orchestrator/
-├── planning/planner.py              # Large model → generates plans
-├── execution/small_model_worker.py  # Small model → parses/categorizes
-├── dispatch/
-│   ├── workers.py                   # MCP workers with small model integration
-│   ├── hybrid_dispatcher.py         # Routes to correct tool type
-│   └── functions.py                 # Registered functions
-├── execution/code_exec_worker.py    # Sandboxed Python execution
-└── runtime/orchestrator.py          # Main execution engine
-```
-
-**Note:** Top-level imports (`from orchestrator.planner import ...`) remain backward-compatible via shims. See [PACKAGE_STRUCTURE.md](../developer-guide/PACKAGE_STRUCTURE.md) for full subpackage layout.
-
-## Environment Variables Cheatsheet
-
-### Required for Planning
-```bash
 PLANNER_PROVIDER=azure-openai|openai|anthropic|gemini
 PLANNER_MODEL=gpt-4o
 
@@ -121,83 +39,37 @@ AZURE_OPENAI_API_KEY=...
 AZURE_OPENAI_ENDPOINT=https://...
 AZURE_OPENAI_API_VERSION=2024-08-01-preview
 
-# Or OpenAI
-OPENAI_API_KEY=sk-...
+# OpenAI / Anthropic / Gemini
+OPENAI_API_KEY=...
+ANTHROPIC_API_KEY=...
+GOOGLE_API_KEY=...
 
-# Or Anthropic
-ANTHROPIC_API_KEY=sk-ant-...
-
-# Or Gemini
-GOOGLE_API_KEY=AIza...
-```
-
-### Optional for Small Models
-```bash
+# Small model
 USE_SMALL_MODEL=true|false
 SMALL_MODEL_BACKEND=ollama|azure|transformers
 WORKER_MODEL=phi3
-
-# Ollama
 OLLAMA_API_URL=http://localhost:11434
-
-# Azure AI Foundry
 AZURE_SMALL_MODEL_ENDPOINT=...
 AZURE_SMALL_MODEL_KEY=...
 ```
 
-## Common Commands
+## Quick Troubleshooting
 
-```bash
-# Test planner (generates plan from natural language)
-python run_planner_demo.py "Your request here"
+| Issue | Fix |
+|-------|-----|
+| Planner fails to start | Check `PLANNER_PROVIDER` matches your keys; enable DEBUG to see provider init logs |
+| API key missing | Ensure env vars align with provider (Azure vs OpenAI vs Anthropic vs Gemini) |
+| Small model not responding | Verify Ollama is running (`ollama list`) or Azure endpoint/key are set |
+| Slow runs / timeouts | Reduce concurrent steps, enable streaming, set `max_retries`/`retry_delay` on steps |
+| Tool not found | Refresh discovery and confirm tool name matches registry entry |
 
-# Run predefined plans
-python run_demo.py
+## Pointers
 
-# Run specific plan
-python run_demo.py example_plan_hybrid.json
-
-# Test cost calculation examples
-python usage_examples.py
-```
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| "Failed to initialize planner" | Check `PLANNER_PROVIDER` matches: `azure-openai`, `openai`, `anthropic`, or `gemini` |
-| "OPENAI_API_KEY not set" | Wrong provider? Set `PLANNER_PROVIDER=azure-openai` and use `AZURE_OPENAI_*` variables |
-| Small model not responding | Check Ollama is running: `ollama list` |
-| "No text detected" from Azure CV | Check OCR_MODE=azure and credentials are correct |
-| Items not parsed | Enable small model: `USE_SMALL_MODEL=true` |
-
-## Example Workflow
-
-```
-1. User Request:
-   "Process this Walmart receipt and tell me food vs beverage spending"
-
-2. GPT-4o (Large Model):
-   Generates 4-step plan:
-   - receipt_ocr → Azure CV
-   - line_item_parser → Phi-3
-   - expense_categorizer → Phi-3
-   - compute_statistics → function
-
-3. Orchestrator:
-   Executes plan with dependency resolution
-
-4. Phi-3 (Small Model):
-   - Parses 15 items from Walmart receipt
-   - Categorizes: 10 food, 5 beverage
-
-5. Function Call:
-   Computes totals: Food $42, Beverage $18
-
-6. Result:
-   Structured JSON with categories and totals
-   Cost: $0.002 (99.98% cheaper than GPT-4o only)
-```
+- Setup & install: [GETTING_STARTED](GETTING_STARTED.md)
+- Configuration flags: [CONFIGURATION](CONFIGURATION.md)
+- Feature explanations: [FEATURES_GUIDE](FEATURES_GUIDE.md)
+- Building workflows: [WORKFLOW_USAGE_GUIDE](WORKFLOW_USAGE_GUIDE.md)
+- Examples catalog: [../examples/README.md](../examples/README.md)
 
 ## Tool & Agent Discovery Examples
 
