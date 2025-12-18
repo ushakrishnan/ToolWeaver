@@ -323,6 +323,8 @@ class Orchestrator:
         """
         Execute a saved skill (code snippet or workflow).
         
+        Automatically tracks metrics (usage, latency, success rate).
+        
         Args:
             skill_name: Name of the skill (must be saved in library)
             inputs: Optional input variables to pass to the skill
@@ -336,34 +338,38 @@ class Orchestrator:
         """
         from ..execution.skill_library import get_skill
         from ..execution.validation import validate_stub
+        from ..execution.skill_metrics import SkillExecutionTimer
         from pathlib import Path
         
         start = datetime.now()
+        
         try:
-            skill = get_skill(skill_name)
-            if not skill:
-                raise KeyError(f"Skill not found: {skill_name}")
-            
-            code = Path(skill.code_path).read_text()
-            
-            # Validate syntax at minimum
-            validation = validate_stub(code, check_syntax=True)
-            if not validation["valid"]:
-                raise RuntimeError(f"Skill {skill_name} failed validation: {validation['syntax']['error']}")
-            
-            # Execute in sandbox with optional inputs
-            scope: Dict[str, Any] = {}
-            if inputs:
-                scope.update(inputs)
-            exec(code, scope)
-            
-            # Extract result (by convention, last non-private assignment or explicit return)
-            result = {k: v for k, v in scope.items() if not k.startswith("_")}
-            
-            if self._monitor:
-                self._monitor.log_tool_call(f"skill:{skill_name}", success=True, latency=(datetime.now() - start).total_seconds())
-            
-            return result
+            # Use timer context manager for automatic metrics tracking
+            with SkillExecutionTimer(skill_name):
+                skill = get_skill(skill_name)
+                if not skill:
+                    raise KeyError(f"Skill not found: {skill_name}")
+                
+                code = Path(skill.code_path).read_text()
+                
+                # Validate syntax at minimum
+                validation = validate_stub(code, check_syntax=True)
+                if not validation["valid"]:
+                    raise RuntimeError(f"Skill {skill_name} failed validation: {validation['syntax']['error']}")
+                
+                # Execute in sandbox with optional inputs
+                scope: Dict[str, Any] = {}
+                if inputs:
+                    scope.update(inputs)
+                exec(code, scope)
+                
+                # Extract result (by convention, last non-private assignment or explicit return)
+                result = {k: v for k, v in scope.items() if not k.startswith("_")}
+                
+                if self._monitor:
+                    self._monitor.log_tool_call(f"skill:{skill_name}", success=True, latency=(datetime.now() - start).total_seconds())
+                
+                return result
         except Exception as e:
             if self._monitor:
                 self._monitor.log_tool_call(f"skill:{skill_name}", success=False, latency=(datetime.now() - start).total_seconds(), error=str(e))

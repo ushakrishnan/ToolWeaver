@@ -33,6 +33,16 @@ from .skill_library import (
     get_skill_dependents,
     visualize_dependency_graph,
 )
+from .skill_metrics import (
+    SkillMetrics,
+    record_skill_execution,
+    rate_skill,
+    get_skill_metrics,
+    get_all_metrics,
+    get_top_skills,
+    print_metrics_report,
+    SkillExecutionTimer,
+)
 
 __all__ = [
     # sandbox
@@ -57,4 +67,13 @@ __all__ = [
     "get_dependency_graph",
     "get_skill_dependents",
     "visualize_dependency_graph",
+    # skill metrics
+    "SkillMetrics",
+    "record_skill_execution",
+    "rate_skill",
+    "get_skill_metrics",
+    "get_all_metrics",
+    "get_top_skills",
+    "print_metrics_report",
+    "SkillExecutionTimer",
 ]
