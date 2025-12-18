@@ -129,8 +129,18 @@ class OTLPMetrics:
             metric_readers=[reader]
         )
         
-        # Set global meter provider
-        metrics.set_meter_provider(provider)
+        # Set global meter provider (only if not already set)
+        # Check if a provider is already set by checking the current provider
+        current_provider = metrics.get_meter_provider()
+        from opentelemetry.metrics import NoOpMeterProvider
+        
+        if isinstance(current_provider, NoOpMeterProvider):
+            # No provider set yet, set ours
+            metrics.set_meter_provider(provider)
+            logger.info("Set new OTLP MeterProvider")
+        else:
+            # Provider already set, just use the existing one
+            logger.debug("MeterProvider already set, reusing existing")
         
         # Get meter for this service
         self.meter = metrics.get_meter(__name__)

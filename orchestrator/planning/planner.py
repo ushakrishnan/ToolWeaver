@@ -15,27 +15,24 @@ from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParamete
 logger = logging.getLogger(__name__)
 load_dotenv()
 
-# Optional imports - only loaded if API keys are available
+# Optional imports - only loaded if needed (warnings shown when actually used)
 try:
     from openai import AsyncOpenAI, AsyncAzureOpenAI
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
-    logger.warning("OpenAI package not installed. Install with: pip install openai")
 
 try:
     from anthropic import AsyncAnthropic
     ANTHROPIC_AVAILABLE = True
 except ImportError:
     ANTHROPIC_AVAILABLE = False
-    logger.warning("Anthropic package not installed. Install with: pip install anthropic")
 
 try:
     import google.generativeai as genai
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
-    logger.warning("Google Gemini package not installed. Install with: pip install google-generativeai")
 
 
 class LargePlanner:
@@ -100,7 +97,7 @@ class LargePlanner:
         
         if self.provider == "openai":
             if not OPENAI_AVAILABLE:
-                raise RuntimeError("OpenAI package not installed")
+                raise RuntimeError("OpenAI package not installed. Install with: pip install openai")
             api_key = os.getenv("OPENAI_API_KEY")
             if not api_key:
                 raise ValueError("OPENAI_API_KEY environment variable not set")
@@ -109,7 +106,7 @@ class LargePlanner:
             
         elif self.provider == "azure-openai":
             if not OPENAI_AVAILABLE:
-                raise RuntimeError("OpenAI package not installed")
+                raise RuntimeError("OpenAI package not installed. Install with: pip install openai")
             
             endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
             api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-08-01-preview")
@@ -153,7 +150,7 @@ class LargePlanner:
             
         elif self.provider == "anthropic":
             if not ANTHROPIC_AVAILABLE:
-                raise RuntimeError("Anthropic package not installed")
+                raise RuntimeError("Anthropic package not installed. Install with: pip install anthropic")
             api_key = os.getenv("ANTHROPIC_API_KEY")
             if not api_key:
                 raise ValueError("ANTHROPIC_API_KEY environment variable not set")
@@ -162,7 +159,7 @@ class LargePlanner:
             
         elif self.provider == "gemini":
             if not GEMINI_AVAILABLE:
-                raise RuntimeError("Google Gemini package not installed")
+                raise RuntimeError("Google Gemini package not installed. Install with: pip install google-generativeai")
             api_key = os.getenv("GOOGLE_API_KEY")
             if not api_key:
                 raise ValueError("GOOGLE_API_KEY environment variable not set")
