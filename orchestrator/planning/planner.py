@@ -10,7 +10,7 @@ import json
 import logging
 from typing import Dict, Any, List, Optional
 from dotenv import load_dotenv
-from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
+from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 
 logger = logging.getLogger(__name__)
 load_dotenv()

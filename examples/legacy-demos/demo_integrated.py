@@ -10,9 +10,9 @@ Shows the complete Phase 2 + Phase 3 pipeline:
 
 import asyncio
 from orchestrator.mcp_client import MCPClientShim
-from orchestrator import workers, functions
+from orchestrator.dispatch import functions
 from orchestrator.tool_discovery import discover_tools
-from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
+from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 from orchestrator.planner import LargePlanner
 
 

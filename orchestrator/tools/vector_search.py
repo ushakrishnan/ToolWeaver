@@ -22,7 +22,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 import torch
 
-from ..models import ToolCatalog, ToolDefinition
+from ..shared.models import ToolCatalog, ToolDefinition
 
 logger = logging.getLogger(__name__)
 

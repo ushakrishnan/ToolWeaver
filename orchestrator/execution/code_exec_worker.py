@@ -1,6 +1,6 @@
 import multiprocessing
 from typing import Dict, Any
-from orchestrator.models import CodeExecInput, CodeExecOutput
+from orchestrator.shared.models import CodeExecInput, CodeExecOutput
 
 def _exec_code(queue, code_str: str, input_data: Dict[str, Any]):
     # Safe builtins for common operations

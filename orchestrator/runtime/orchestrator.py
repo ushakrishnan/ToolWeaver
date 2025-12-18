@@ -1,6 +1,6 @@
 import asyncio, json, logging, os
 from functools import partial
-from ..models import PlanModel
+from ..shared.models import PlanModel
 from ..infra.mcp_client import MCPClientShim
 from ..dispatch.hybrid_dispatcher import dispatch_step
 from ..observability.monitoring import ToolUsageMonitor

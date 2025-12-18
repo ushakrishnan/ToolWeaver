@@ -21,7 +21,7 @@ async def main():
     print("   (Finding MCP, functions, and code execution capabilities)")
     
     from orchestrator.mcp_client import MCPClientShim
-    from orchestrator import workers, functions
+    from orchestrator.dispatch import functions
     from orchestrator.tool_discovery import discover_tools
     
     mcp_client = MCPClientShim()

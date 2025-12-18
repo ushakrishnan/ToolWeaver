@@ -10,7 +10,7 @@ Tests cover:
 import pytest
 from datetime import datetime
 from pydantic import ValidationError
-from orchestrator.models import ToolParameter, ToolDefinition, ToolCatalog
+from orchestrator.shared.models import ToolParameter, ToolDefinition, ToolCatalog
 
 
 class TestToolParameter:
@@ -401,7 +401,7 @@ class TestToolExamples:
     
     def test_tool_example_creation(self):
         """Test creating a tool example."""
-        from orchestrator.models import ToolExample
+        from orchestrator.shared.models import ToolExample
         
         example = ToolExample(
             scenario="Critical production bug requiring urgent attention",
@@ -422,7 +422,7 @@ class TestToolExamples:
     
     def test_tool_definition_with_examples(self):
         """Test ToolDefinition with examples."""
-        from orchestrator.models import ToolExample
+        from orchestrator.shared.models import ToolExample
         
         tool = ToolDefinition(
             name="create_ticket",
@@ -453,7 +453,7 @@ class TestToolExamples:
     
     def test_llm_format_with_examples(self):
         """Test to_llm_format includes examples in description."""
-        from orchestrator.models import ToolExample
+        from orchestrator.shared.models import ToolExample
         
         tool = ToolDefinition(
             name="create_ticket",
@@ -481,7 +481,7 @@ class TestToolExamples:
     
     def test_llm_format_without_examples(self):
         """Test to_llm_format excludes examples when requested."""
-        from orchestrator.models import ToolExample
+        from orchestrator.shared.models import ToolExample
         
         tool = ToolDefinition(
             name="create_ticket",
@@ -507,7 +507,7 @@ class TestToolExamples:
     
     def test_catalog_with_examples(self):
         """Test ToolCatalog propagates include_examples parameter."""
-        from orchestrator.models import ToolExample
+        from orchestrator.shared.models import ToolExample
         
         catalog = ToolCatalog(source="test")
         

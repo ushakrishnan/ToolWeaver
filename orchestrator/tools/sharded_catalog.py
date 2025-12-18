@@ -8,7 +8,7 @@ global search when domain-specific search yields insufficient results.
 
 import logging
 from typing import Dict, List, Optional, Tuple, Set
-from orchestrator.models import ToolDefinition, ToolCatalog
+from orchestrator.shared.models import ToolDefinition, ToolCatalog
 
 logger = logging.getLogger(__name__)
 

@@ -19,7 +19,7 @@ import random
 from typing import List
 import numpy as np
 
-from orchestrator.models import (
+from orchestrator.shared.models import (
     ToolCatalog,
     ToolDefinition,
     ToolParameter,

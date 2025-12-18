@@ -76,7 +76,7 @@ async def _execute_function(
     timeout: int
 ) -> Any:
     """Execute a programmatic Python function"""
-    from orchestrator import functions
+    from orchestrator.dispatch import functions
     
     # Get function by name
     if not hasattr(functions, tool_name):

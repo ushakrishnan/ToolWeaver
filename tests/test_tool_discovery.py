@@ -7,7 +7,7 @@ import asyncio
 from orchestrator.infra.mcp_client import MCPClientShim
 from orchestrator.tools.tool_discovery import discover_tools, ToolDiscoveryOrchestrator
 from orchestrator.dispatch import workers
-from orchestrator import functions
+from orchestrator.dispatch import functions
 
 
 @pytest.mark.asyncio

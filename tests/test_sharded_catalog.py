@@ -1,7 +1,7 @@
 """Tests for ShardedCatalog domain-based tool organization"""
 
 import pytest
-from orchestrator.models import ToolDefinition, ToolParameter, ToolCatalog
+from orchestrator.shared.models import ToolDefinition, ToolParameter, ToolCatalog
 from orchestrator.tools.sharded_catalog import ShardedCatalog, DOMAIN_KEYWORDS
 
 

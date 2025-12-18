@@ -1,4 +1,4 @@
-﻿"""
+"""
 Observability subpackage.
 
 Consolidates monitoring, metrics collection, and observability backends.

@@ -7,7 +7,7 @@ Tests backward compatibility and new tool catalog features.
 import pytest
 import os
 from unittest.mock import Mock, patch, MagicMock
-from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
+from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 from orchestrator.planning.planner import LargePlanner
 
 

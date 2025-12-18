@@ -22,7 +22,7 @@ from typing import Dict, List, Optional, Any
 from pathlib import Path
 from dataclasses import dataclass
 
-from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
+from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 from orchestrator.workflows.control_flow_patterns import (
     ControlFlowPatterns,
     PatternType,

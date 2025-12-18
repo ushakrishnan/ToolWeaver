@@ -10,7 +10,7 @@ from orchestrator.tools.tool_search_tool import (
     initialize_tool_search,
     get_tool_search_definition
 )
-from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
+from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 
 
 @pytest.fixture

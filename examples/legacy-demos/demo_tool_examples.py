@@ -9,7 +9,7 @@ Shows how adding usage examples to tool definitions improves LLM understanding:
 Result: 72% → 90%+ parameter accuracy
 """
 
-from orchestrator.models import ToolDefinition, ToolParameter, ToolExample, ToolCatalog
+from orchestrator.shared.models import ToolDefinition, ToolParameter, ToolExample, ToolCatalog
 
 def create_receipt_ocr_tool_with_examples():
     """Receipt OCR tool with detailed usage examples."""

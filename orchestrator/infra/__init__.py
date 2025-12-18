@@ -1,4 +1,4 @@
-﻿"""
+"""
 Infrastructure subpackage.
 
 Consolidates caching, MCP client, and other infrastructure utilities.

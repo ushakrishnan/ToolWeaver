@@ -6,7 +6,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from orchestrator.sharded_catalog import ShardedCatalog
-from orchestrator.models import Tool, ToolCatalog
+from orchestrator.shared.models import Tool, ToolCatalog
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent / ".env")

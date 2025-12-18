@@ -9,7 +9,7 @@ Reference: https://www.anthropic.com/engineering/advanced-tool-use
 
 import logging
 from typing import Dict, Any, List, Optional
-from ..models import ToolCatalog, ToolDefinition
+from ..shared.models import ToolCatalog, ToolDefinition
 from .tool_search import ToolSearchEngine
 
 logger = logging.getLogger(__name__)
@@ -113,7 +113,7 @@ def get_tool_search_definition() -> ToolDefinition:
     
     This tool should always be loaded in the initial context.
     """
-    from ..models import ToolParameter, ToolExample
+    from ..shared.models import ToolParameter, ToolExample
     
     return ToolDefinition(
         name="tool_search_tool",

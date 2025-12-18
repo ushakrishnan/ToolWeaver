@@ -1,4 +1,4 @@
-﻿"""
+"""
 Tools and Search subpackage.
 
 Consolidates tool discovery, execution, filesystem management, and semantic search.

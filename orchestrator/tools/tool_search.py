@@ -21,7 +21,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from rank_bm25 import BM25Okapi
 
-from ..models import ToolCatalog, ToolDefinition
+from ..shared.models import ToolCatalog, ToolDefinition
 
 logger = logging.getLogger(__name__)
 

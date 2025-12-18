@@ -31,7 +31,7 @@ from pathlib import Path
 import orchestrator.tools.tool_executor as tool_executor
 import importlib
 
-from orchestrator.models import ToolCatalog, ToolDefinition
+from orchestrator.shared.models import ToolCatalog, ToolDefinition
 from .code_generator import StubGenerator
 from orchestrator.tools.tool_filesystem import ToolFileSystem
 from .sandbox import SandboxEnvironment, ExecutionResult, ResourceLimits, create_sandbox
@@ -201,9 +201,26 @@ class ProgrammaticToolExecutor:
                 prelude_lines = []
                 try:
                     if self.stub_dir is not None:
+                        # Ensure both the stub root and the tools package are importable
                         prelude_lines.append(f"sys.path.insert(0, r'{str(self.stub_dir)}')")
+                        prelude_lines.append(f"sys.path.insert(0, r'{str(self.stub_dir / 'tools')}')")
                         prelude_lines.append("import importlib")
                         prelude_lines.append("importlib.invalidate_caches()")
+                        # Evict any pre-existing 'tools' modules not coming from our stub_dir
+                        prelude_lines.append("try:")
+                        prelude_lines.append("    _sd = r'" + str(self.stub_dir).replace("\\", "\\\\") + "'")
+                        prelude_lines.append("    if 'tools' in sys.modules:")
+                        prelude_lines.append("        _m = sys.modules['tools']")
+                        prelude_lines.append("        _p = getattr(_m, '__file__', None)")
+                        prelude_lines.append("        _pp = getattr(_m, '__path__', None)")
+                        prelude_lines.append("        _loc = str(_p or (_pp[0] if _pp else ''))")
+                        prelude_lines.append("        if _sd not in _loc:")
+                        prelude_lines.append("            del sys.modules['tools']")
+                        prelude_lines.append("    for _k in list(sys.modules.keys()):")
+                        prelude_lines.append("        if _k.startswith('tools.'):")
+                        prelude_lines.append("            del sys.modules[_k]")
+                        prelude_lines.append("except Exception:")
+                        prelude_lines.append("    pass")
                 except Exception:
                     pass
                 user_body = "\n".join(
@@ -625,6 +642,11 @@ class ProgrammaticToolExecutor:
             # Eagerly import generated stub modules so sandbox imports resolve from sys.modules
             try:
                 importlib.invalidate_caches()
+                # Ensure top-level 'tools' package is loaded
+                try:
+                    importlib.import_module("tools")
+                except Exception:
+                    pass
                 for tool_def in self.tool_catalog.tools.values():
                     server = tool_def.domain or "general"
                     modname = f"tools.{server}.{tool_def.name}"

@@ -9,7 +9,7 @@ from pathlib import Path
 import shutil
 
 from orchestrator.execution.code_generator import StubGenerator, GeneratedStub
-from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
+from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 
 
 @pytest.fixture

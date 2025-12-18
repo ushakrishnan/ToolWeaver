@@ -7,13 +7,13 @@ Architecture:
 - Hybrid Dispatcher supporting MCP workers, function calls, and code execution
 """
 
-from .models import *
+from .shared.models import *
 from .runtime.orchestrator import execute_plan, final_synthesis
 from .infra.mcp_client import MCPClientShim
 from .dispatch.workers import *
 from .execution.code_exec_worker import code_exec_worker
 from .dispatch.hybrid_dispatcher import dispatch_step, register_function, get_registered_functions
-from . import functions  # Import to register functions
+from .dispatch import functions  # Import to register functions
 
 # Optional imports (only if packages installed)
 try:

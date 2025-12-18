@@ -109,7 +109,7 @@ async def phase3_comparison():
     print("="*60)
     
     # Create sample tools for comparison
-    from orchestrator.models import Tool
+    from orchestrator.shared.models import Tool
     
     tools = [
         Tool(name="receipt_ocr", description="Extract text from receipt images using OCR", type="mcp"),
@@ -124,7 +124,7 @@ async def phase3_comparison():
         Tool(name="file_converter", description="Convert files between formats", type="function"),
     ]
     
-    from orchestrator.models import ToolCatalog
+    from orchestrator.shared.models import ToolCatalog
     test_catalog = ToolCatalog(tools=tools)
     
     query = "process receipt image"

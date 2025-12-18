@@ -13,7 +13,7 @@ import asyncio
 import json
 from pathlib import Path
 
-from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
+from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 from orchestrator.programmatic_executor import ProgrammaticToolExecutor
 
 

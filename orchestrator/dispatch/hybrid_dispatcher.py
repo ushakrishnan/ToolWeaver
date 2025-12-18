@@ -11,7 +11,7 @@ import asyncio
 import logging
 from typing import Dict, Any, Callable, Optional
 from ..execution.code_exec_worker import code_exec_worker
-from ..models import FunctionCallInput, FunctionCallOutput
+from ..shared.models import FunctionCallInput, FunctionCallOutput
 
 logger = logging.getLogger(__name__)
 

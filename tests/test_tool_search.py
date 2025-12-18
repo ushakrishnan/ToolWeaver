@@ -10,7 +10,7 @@ from pathlib import Path
 import tempfile
 import shutil
 
-from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
+from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 from orchestrator.tools.tool_search import ToolSearchEngine, search_tools
 
 

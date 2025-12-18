@@ -15,7 +15,7 @@ import torch
 from unittest.mock import Mock, patch, MagicMock
 
 from orchestrator.tools.vector_search import VectorToolSearchEngine
-from orchestrator.models import (
+from orchestrator.shared.models import (
     ToolCatalog,
     ToolDefinition,
     ToolParameter,

@@ -21,7 +21,7 @@ from orchestrator.execution.programmatic_executor import (
     SecurityError,
     execute_programmatic_code
 )
-from orchestrator.models import ToolCatalog, ToolDefinition, ToolParameter
+from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 
 
 @pytest.fixture

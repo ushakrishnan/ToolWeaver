@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any, Set
 from pydantic import BaseModel
 
-from ..models import ToolDefinition, ToolParameter, ToolCatalog
+from ..shared.models import ToolDefinition, ToolParameter, ToolCatalog
 
 
 class DiscoveryMetrics(BaseModel):
@@ -447,7 +447,7 @@ async def discover_tools(
     
     Example:
         from orchestrator.dispatch import workers
-        from orchestrator import functions
+        from orchestrator.dispatch import functions
         catalog = await discover_tools(
             mcp_client=mcp_client,
             function_modules=[workers, functions],
