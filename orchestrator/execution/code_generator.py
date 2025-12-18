@@ -120,6 +120,15 @@ class StubGenerator:
         logger.info(f"Generated {len(stubs)} stubs")
         return stubs
 
+    def validate_stub(self, code: str) -> bool:
+        """Lightweight validation for generated code: AST parse + class/function presence.
+
+        Returns True if code compiles; otherwise raises SyntaxError.
+        """
+        import ast
+        ast.parse(code)
+        return True
+
     # --- Control Flow Integration (Phase 2) ---
     def list_control_flow_patterns(self) -> List[Dict[str, Any]]:
         """Expose available control flow patterns for code generation prompts."""

@@ -6,6 +6,10 @@ from ..dispatch.workers import (
     receipt_ocr_worker,
     line_item_parser_worker,
     expense_categorizer_worker,
+    fetch_data_worker,
+    store_data_worker,
+    apply_changes_worker,
+    process_resource_worker,
 )
 from ..execution.code_exec_worker import code_exec_worker
 
@@ -13,7 +17,12 @@ _tool_map = {
     "receipt_ocr": receipt_ocr_worker,
     "line_item_parser": line_item_parser_worker,
     "expense_categorizer": expense_categorizer_worker,
-    "code_exec": code_exec_worker
+    "code_exec": code_exec_worker,
+    # Advanced example utilities
+    "fetch_data": fetch_data_worker,
+    "store_data": store_data_worker,
+    "apply_changes": apply_changes_worker,
+    "process_resource": process_resource_worker,
 }
 
 _idempotency_store: "OrderedDict[str, tuple[float, Any]]" = OrderedDict()

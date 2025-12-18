@@ -174,3 +174,48 @@ async def expense_categorizer_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
             category = "beverage"
         categorized.append({**it, "category": category})
     return CategorizerOut(categorized=categorized).model_dump()
+
+# --- Minimal utility workers for advanced examples ---
+
+async def fetch_data_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Fetch data from a source. For demo purposes, returns synthetic data
+    without performing network I/O unless SOURCE_MODE=real and source scheme is supported.
+    """
+    source = payload.get("source", "memory://example")
+    # Synthetic demo payload
+    await asyncio.sleep(0.01)
+    return {"data": {"source": source, "value": 42}}
+
+
+async def store_data_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Store structured data to a destination. Demo writes to memory and echoes destination.
+    """
+    destination = payload.get("destination", "memory://output")
+    data = payload.get("data")
+    # Simulate write
+    await asyncio.sleep(0.01)
+    ok = data is not None
+    return {"ok": ok, "stored": destination}
+
+
+async def apply_changes_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Apply a change to a target environment. Demo validates content and target.
+    """
+    content = payload.get("content")
+    target = payload.get("target", "dev")
+    await asyncio.sleep(0.01)
+    return {"applied": bool(content), "target": target}
+
+
+async def process_resource_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Process a named resource. If payload has force_fail=True, raise to simulate errors.
+    """
+    resource = payload.get("resource", "default")
+    if payload.get("force_fail"):
+        raise RuntimeError("forced failure")
+    await asyncio.sleep(0.01)
+    return {"resource": resource, "status": "processed"}

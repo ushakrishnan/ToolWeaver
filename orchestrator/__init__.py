@@ -8,7 +8,7 @@ Architecture:
 """
 
 from .shared.models import *
-from .runtime.orchestrator import execute_plan, final_synthesis
+from .runtime.orchestrator import execute_plan, final_synthesis, Orchestrator
 from .infra.mcp_client import MCPClientShim
 from .dispatch.workers import *
 from .execution.code_exec_worker import code_exec_worker
@@ -32,6 +32,7 @@ __all__ = [
     # Core orchestration
     'execute_plan',
     'final_synthesis',
+    'Orchestrator',
     'MCPClientShim',
     'dispatch_step',
     'register_function',

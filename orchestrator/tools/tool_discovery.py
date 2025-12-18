@@ -19,6 +19,8 @@ from typing import Dict, List, Optional, Any, Set
 from pydantic import BaseModel
 
 from ..shared.models import ToolDefinition, ToolParameter, ToolCatalog
+import os
+import aiohttp
 
 
 class DiscoveryMetrics(BaseModel):
@@ -302,6 +304,60 @@ class CodeExecToolDiscoverer(ToolDiscoveryService):
         return {"code_exec": code_exec_tool}
 
 
+class MCPRegistryDiscoverer(ToolDiscoveryService):
+    """Discovers MCP servers and tools from an external registry endpoint.
+
+    The registry returns servers and (optionally) tool metadata. This discoverer
+    advertises tools as suggestions requiring install/enablement, enabling
+    progressive disclosure with user approval.
+    """
+
+    def __init__(self, registry_url: str):
+        super().__init__("mcp_registry")
+        self.registry_url = registry_url
+
+    async def discover(self) -> Dict[str, ToolDefinition]:
+        discovered: Dict[str, ToolDefinition] = {}
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self.registry_url, timeout=10) as resp:
+                    resp.raise_for_status()
+                    data = await resp.json()
+        except Exception:
+            return discovered
+
+        servers = data.get("servers", []) if isinstance(data, dict) else []
+        for srv in servers:
+            server_name = srv.get("name") or srv.get("id") or "server"
+            domain = srv.get("domain") or server_name
+            for tool in srv.get("tools", []):
+                tname = tool.get("name") or f"{server_name}_tool"
+                desc = tool.get("description", f"Tool from {server_name} (registry)")
+                params = []
+                for p in tool.get("parameters", []):
+                    params.append(ToolParameter(
+                        name=p.get("name", "arg"),
+                        type=p.get("type", "string"),
+                        description=p.get("description", ""),
+                        required=bool(p.get("required", False)),
+                    ))
+                td = ToolDefinition(
+                    name=tname,
+                    type="mcp",
+                    description=desc,
+                    parameters=params,
+                    source=self.source_name,
+                    metadata={
+                        "server": server_name,
+                        "requires_install": True,
+                        "registry_url": self.registry_url,
+                    },
+                    domain=domain,
+                )
+                discovered[td.name] = td
+        return discovered
+
+
 class ToolDiscoveryOrchestrator:
     """
     Orchestrates multiple discovery services and manages caching.
@@ -439,6 +495,7 @@ async def discover_tools(
     include_code_exec: bool = True,
     use_cache: bool = True,
     a2a_client=None,
+    registry_url: Optional[str] = None,
 ) -> ToolCatalog:
     """
     Convenience function to discover tools from common sources.
@@ -472,6 +529,11 @@ async def discover_tools(
         from .agent_discovery import AgentDiscoverer  # Lazy import to avoid circular dependency
 
         orchestrator.register_discoverer(AgentDiscoverer(a2a_client))
+
+    # Register external MCP registry discoverer
+    reg = registry_url or os.getenv("MCP_REGISTRY_URL")
+    if reg:
+        orchestrator.register_discoverer(MCPRegistryDiscoverer(reg))
     
     # Register function discoverers
     if function_modules:
