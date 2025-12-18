@@ -69,6 +69,8 @@ class AgentDiscoverer(ToolDiscoveryService):
             description=agent.description or agent.name,
             parameters=parameters,
             source=self.source_name,
+            input_schema=agent.input_schema,
+            output_schema=agent.output_schema,
             metadata={
                 "agent_id": agent.agent_id,
                 "capabilities": agent.capabilities,
@@ -76,7 +78,15 @@ class AgentDiscoverer(ToolDiscoveryService):
                 "endpoint": agent.endpoint,
                 "cost_estimate": agent.cost_estimate,
                 "latency_estimate": agent.latency_estimate,
+                # Streaming metadata
                 "supports_streaming": bool(agent.metadata.get("supports_streaming", False)),
+                "supports_http_streaming": bool(agent.metadata.get("supports_http_streaming", False)),
+                "supports_sse": bool(agent.metadata.get("supports_sse", False)),
+                "supports_websocket": bool(agent.metadata.get("supports_websocket", False)),
+                # Execution characteristics
+                "execution_time_ms": agent.metadata.get("execution_time_ms", 3000),
+                "cost_per_call_usd": agent.metadata.get("cost_per_call_usd", 0.05),
+                # Merge additional metadata
                 **agent.metadata,
             },
         )
