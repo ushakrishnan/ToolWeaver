@@ -5,7 +5,7 @@
 > **\ud83d\udccc Current status:** PyPI package refresh is in progress; treat `examples/` as the canonical, up-to-date source. We'll regenerate `samples/` after the package is finalized.
 
 Complete showcase of ToolWeaver capabilities through real-world examples using local source code.
-➡️ **Status:** 01–18 validated; 19–21 ship with stubbed smoke tests (no external services required). See [TESTING_REPORT.md](TESTING_REPORT.md) for validated runs.
+➡️ **Status:** 01–18 validated; 19–21 ship with stubbed smoke tests (no external services required). See [EXAMPLES_TESTING_REPORT.md](../docs/internal/EXAMPLES_TESTING_REPORT.md) for validated runs.
 
 ## \ud83d\udd04 Examples vs Samples
 
@@ -311,7 +311,7 @@ cd examples
 python test_all_examples.py
 ```
 
-See [TESTING_REPORT.md](TESTING_REPORT.md) for detailed test results.
+See [EXAMPLES_TESTING_REPORT.md](../docs/internal/EXAMPLES_TESTING_REPORT.md) for detailed test results.
 
 ## Requirements
 
