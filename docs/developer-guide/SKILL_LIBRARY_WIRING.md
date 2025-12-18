@@ -4,21 +4,32 @@ This guide shows how to wire the Skill Library MVP to Redis (cache) and Qdrant (
 
 ## Prerequisites
 - Python deps installed from repo (`pip install -e .`)
-- Redis running locally (default: `localhost:6379`)
-- Qdrant running locally (default: `localhost:6333`)
+- Redis running locally (default: `localhost:6379`) - **Optional**
+- Qdrant running locally (default: `localhost:6333`) - **Optional**
 
 ## Environment
 
 Windows PowerShell:
 
 ```powershell
-# Redis
+# Redis (optional, enables hot skill caching)
 $env:REDIS_URL = "redis://localhost:6379/0"
 
-# Qdrant (HTTP API)
+# Qdrant (optional, enables semantic search - not yet implemented)
 $env:QDRANT_URL = "http://localhost:6333"
 $env:QDRANT_COLLECTION = "toolweaver-skills"
 ```
+
+## Redis Cache (✅ Implemented)
+
+**Status**: Automatic opt-in when `REDIS_URL` is set.
+
+The skill library now automatically uses Redis for caching if available:
+- **save_skill()**: Writes to disk + Redis cache (7-day TTL)
+- **get_skill()**: Checks Redis first, falls back to disk
+- **Graceful degradation**: Works without Redis (disk-only mode)
+
+No code changes needed - just set `REDIS_URL` to enable caching.
 
 ## Minimal Wiring Pattern
 
