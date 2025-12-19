@@ -48,6 +48,14 @@ from .workflows import (
     list_workflows,
     delete_workflow,
 )
+from .sandbox_filters import (
+    DataFilter,
+    PIITokenizer,
+    FilterConfig,
+    TokenizationConfig,
+    PIIType,
+    filter_and_tokenize,
+)
 from .skill_metrics import (
     SkillMetrics,
     record_skill_execution,
@@ -134,6 +142,13 @@ __all__ = [
     "execute_workflow",
     "list_workflows",
     "delete_workflow",
+    # sandbox filters (Phase 1.9)
+    "DataFilter",
+    "PIITokenizer",
+    "FilterConfig",
+    "TokenizationConfig",
+    "PIIType",
+    "filter_and_tokenize",
     # skill metrics
     "SkillMetrics",
     "record_skill_execution",
