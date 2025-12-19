@@ -36,7 +36,8 @@ def test_cli_search_tools(capsys):
     def process_order(params: Dict[str, Any]) -> Dict[str, Any]:
         return params
 
-    args = Mock(query="order", domain=None, type=None)
+    # Explicitly set all attributes for Mock to avoid auto-creation
+    args = Mock(query="order", domain=None, type=None, spec=['query', 'domain', 'type'])
     result = search_cmd(args)
     
     captured = capsys.readouterr()

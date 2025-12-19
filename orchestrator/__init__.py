@@ -130,6 +130,7 @@ from .tools.discovery_api import (
     get_tool_info,
     list_tools_by_domain,
     semantic_search_tools,
+    browse_tools,
 )
 
 # === Template Base Classes (Phase 1) ===
@@ -206,6 +207,7 @@ __all__ = [
     "get_tool_info",
     "list_tools_by_domain",
     "semantic_search_tools",
+    "browse_tools",
     # Templates
     "ToolTemplate",
     "MCPToolTemplate",

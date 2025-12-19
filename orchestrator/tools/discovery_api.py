@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from ..plugins.registry import get_registry
 from ..shared.models import ToolDefinition, ToolCatalog
@@ -25,6 +25,49 @@ def _collect_all_tool_defs() -> List[ToolDefinition]:
                 # Skip invalid entries rather than failing discovery
                 continue
     return all_tools
+
+
+DETAIL_LEVELS = {"name", "summary", "full"}
+
+
+def _format_tool_view(
+    tool: ToolDefinition,
+    *,
+    detail_level: str = "summary",
+    include_examples: bool = False,
+) -> Union[ToolDefinition, Dict[str, Any]]:
+    """Project a tool definition to a lightweight view for progressive loading."""
+    if detail_level is not None and detail_level not in DETAIL_LEVELS:
+        raise ValueError(f"detail_level must be one of {sorted(DETAIL_LEVELS)}")
+
+    if detail_level == "full" or detail_level is None:
+        return tool
+
+    base_view: Dict[str, Any] = {
+        "name": tool.name,
+        "type": tool.type,
+        "domain": tool.domain,
+        "source": tool.source,
+        "version": tool.version,
+        "defer_loading": tool.defer_loading,
+    }
+
+    if detail_level == "name":
+        return base_view
+
+    summary: Dict[str, Any] = {
+        **base_view,
+        "description": tool.description,
+        "provider": tool.provider,
+        "parameter_count": len(tool.parameters),
+        "example_count": len(tool.examples),
+        "metadata": tool.metadata,
+    }
+
+    if include_examples and tool.examples:
+        summary["examples"] = [ex.model_dump() for ex in tool.examples]
+
+    return summary
 
 
 def get_available_tools(
@@ -54,6 +97,34 @@ def get_available_tools(
     return out
 
 
+def browse_tools(
+    *,
+    plugin: Optional[str] = None,
+    type_filter: Optional[str] = None,
+    domain: Optional[str] = None,
+    detail_level: str = "summary",
+    offset: int = 0,
+    limit: Optional[int] = 50,
+    include_examples: bool = False,
+) -> List[Union[ToolDefinition, Dict[str, Any]]]:
+    """Browse tools with pagination and progressive detail levels.
+
+    Uses lightweight projections to avoid loading full schemas when not needed.
+    """
+    if offset < 0 or (limit is not None and limit < 0):
+        raise ValueError("offset and limit must be non-negative")
+
+    tools = get_available_tools(plugin=plugin, type_filter=type_filter, domain=domain)
+    tools = sorted(tools, key=lambda t: t.name)
+    end = offset + limit if limit is not None else None
+    window = tools[offset:end]
+
+    return [
+        _format_tool_view(tool, detail_level=detail_level, include_examples=include_examples)
+        for tool in window
+    ]
+
+
 def search_tools(
     *,
     query: Optional[str] = None,
@@ -62,65 +133,65 @@ def search_tools(
     use_semantic: bool = False,
     top_k: int = 10,
     min_score: float = 0.3,
-) -> List[ToolDefinition]:
-    """Keyword search across name and description with optional filters.
+    detail_level: Optional[str] = None,
+    include_examples: bool = False,
+) -> List[Union[ToolDefinition, Dict[str, Any]]]:
+    """Keyword or semantic search with optional progressive detail levels."""
+    results: List[ToolDefinition] = []
+    semantic_attempted = False
 
-    By default uses simple substring search. Set use_semantic=True to enable
-    vector-backed semantic search (requires Qdrant).
-    
-    Args:
-        query: Search query
-        domain: Optional domain filter
-        type_filter: Optional type filter
-        use_semantic: Use semantic search instead of substring (requires Qdrant)
-        top_k: Number of results for semantic search
-        min_score: Minimum score for semantic search (0-1)
-    
-    Returns:
-        List of ToolDefinition objects
-    """
-    # Semantic search path
     if use_semantic and query:
+        semantic_attempted = True
         try:
             results_with_scores = semantic_search_tools(
                 query=query,
                 top_k=top_k,
                 domain=domain,
                 min_score=min_score,
-                fallback_to_substring=True
+                fallback_to_substring=True,
             )
-            # Filter by type if specified
             if type_filter:
                 results_with_scores = [
-                    (tool, score) for tool, score in results_with_scores 
-                    if tool.type == type_filter
+                    (tool, score) for tool, score in results_with_scores if tool.type == type_filter
                 ]
-            return [tool for tool, _ in results_with_scores]
+            results = [tool for tool, _ in results_with_scores]
         except Exception as e:
             logger.warning(f"Semantic search failed, falling back to substring: {e}")
-    
-    # Substring search (original implementation)
-    query_norm = (query or "").strip().lower()
-    results: List[ToolDefinition] = []
-    for td in _collect_all_tool_defs():
-        if type_filter and td.type != type_filter:
-            continue
-        if domain and td.domain != domain:
-            continue
-        if not query_norm:
-            results.append(td)
-            continue
-        hay = f"{td.name} {td.description}".lower()
-        if query_norm in hay:
-            results.append(td)
+            results = []
+
+    if not semantic_attempted or not results:
+        query_norm = (query or "").strip().lower()
+        for td in _collect_all_tool_defs():
+            if type_filter and td.type != type_filter:
+                continue
+            if domain and td.domain != domain:
+                continue
+            if not query_norm:
+                results.append(td)
+                continue
+            hay = f"{td.name} {td.description}".lower()
+            if query_norm in hay:
+                results.append(td)
+
+    if detail_level:
+        return [
+            _format_tool_view(tool, detail_level=detail_level, include_examples=include_examples)
+            for tool in results
+        ]
+
     return results
 
 
-def get_tool_info(name: str) -> Optional[ToolDefinition]:
-    """Get full tool definition by name across all plugins."""
+def get_tool_info(
+    name: str,
+    *,
+    detail_level: str = "full",
+    include_examples: bool = True,
+) -> Optional[Union[ToolDefinition, Dict[str, Any]]]:
+    """Get tool definition by name with optional projection."""
     for td in _collect_all_tool_defs():
         if td.name == name:
-            return td
+            return _format_tool_view(td, detail_level=detail_level, include_examples=include_examples)
     return None
 
 
