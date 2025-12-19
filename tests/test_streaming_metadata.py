@@ -107,7 +107,7 @@ class TestStreamingMetadataSurface:
         tools = await discoverer.discover()
 
         assert len(tools) == 1
-        tool = tools[0]
+        tool = list(tools.values())[0]
         
         # Verify streaming metadata is surfaced
         assert tool.type == "agent"

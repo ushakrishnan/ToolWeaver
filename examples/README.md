@@ -156,6 +156,20 @@ Scale to thousands of tools with constant search performance.
 **Complexity:** ⭐⭐⭐ Advanced | **Time:** 10 minutes  
 **Demonstrates:** Complete pipeline combining tools, agents, and skill library reuse.
 
+#### [23-adding-new-tools](23-adding-new-tools/) ⭐ NEW
+**Complexity:** ⭐⭐⭐ Advanced | **Time:** 15 minutes  
+**Demonstrates:** End-to-end guide for adding new custom tools (MCP and A2A) to the catalog and discovering them.
+
+Complete demonstration of:
+- Creating custom MCP tools with proper schemas
+- Implementing tool workers (weather, stock price)
+- Registering tools with MCPClientShim
+- Defining A2A agent capabilities
+- Unified discovery (MCP tools + A2A agents in one catalog)
+- Tool metadata and LLM format conversion
+
+See [docs/how-it-works/programmatic-tool-calling/](../docs/how-it-works/programmatic-tool-calling/) for deep dive on how tools work programmatically.
+
 ## 🚀 Quick Start
 
 Each example is self-contained with:

@@ -19,16 +19,21 @@ import yaml
 class AgentCapability:
     """Describes an external agent's capabilities."""
 
-    agent_id: str
     name: str
     description: str
-    endpoint: str
+    agent_id: Optional[str] = None
+    endpoint: Optional[str] = None
     protocol: str = "http"
     capabilities: List[str] = field(default_factory=list)
     input_schema: Dict[str, Any] = field(default_factory=dict)
     output_schema: Dict[str, Any] = field(default_factory=dict)
     cost_estimate: Optional[float] = None
     latency_estimate: Optional[int] = None
+    # Streaming capability flags used by tests and discovery metadata
+    supports_streaming: bool = False
+    supports_http_streaming: bool = False
+    supports_sse: bool = False
+    supports_websocket: bool = False
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 

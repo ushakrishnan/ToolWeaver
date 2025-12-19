@@ -14,9 +14,9 @@ Automatically discovers, searches, and chains tools while reducing costs by 80-9
 
 ## 🚀 Quick Navigation
 
-**New User?** → [Installation](#installation) • [Quick Start](#quick-start) • [Samples](samples/)
+**Package users (start here):** [Quickstart](docs/for-package-users/quickstart.md) • [Registering tools](docs/for-package-users/registering-tools.md) • [Discovering tools](docs/for-package-users/discovering-tools.md) • [Extending via plugins](docs/for-package-users/extending.md)
 
-**Developer?** → [Development Setup](#development-setup) • [Examples](examples/) • [Contributing](#contributing)
+**Contributors:** [Development guide](docs/for-contributors/development.md) • [Architecture](docs/for-contributors/architecture.md) • [Plugins](docs/for-contributors/plugins.md) • [Testing](docs/for-contributors/testing.md) • [Security](docs/for-contributors/security.md)
 
 **Documentation:** [User Guide](docs/user-guide/) • [Developer Guide](docs/developer-guide/) • [Deployment](docs/deployment/) • [Reference](docs/reference/)
 

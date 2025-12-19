@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-test:
+    name: Test (${{ matrix.os }} / py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Lint (ruff)
+        run: |
+          ruff --version
+          ruff check .
+      - name: Type check (mypy)
+        run: |
+          mypy orchestrator
+      - name: Run tests (pytest)
+        env:
+          PYTHONWARNINGS: default
+        run: |
+          pytest -q
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          fail_ci_if_error: false
+          verbose: true
+      - name: Check no public imports from _internal (examples only)
+        run: |
+          python scripts/check_no_internal_imports.py examples
+
+  public-api-smoke:
+    name: Public API Smoke (no optionals)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install package only (ignore deps)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e . --no-deps
+      - name: Import orchestrator and print version
+        run: |
+          python - << 'PY'
+          import orchestrator
+          print("orchestrator", orchestrator.__version__)
+          PY
+      - name: Validate config warnings do not hard-fail
+        run: |
+          python - << 'PY'
+          from orchestrator.config import validate_config
+          issues = validate_config()
+          print("config issues:", issues)
+          PY

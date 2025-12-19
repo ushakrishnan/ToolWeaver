@@ -1,222 +1,85 @@
 # Contributing to ToolWeaver
 
-Thank you for considering contributing to ToolWeaver! This document provides guidelines and instructions for contributing.
+ToolWeaver is **package-first**: most users should consume the PyPI package and extend via decorators or plugins, not fork the repo. This guide keeps contributors and plugin authors aligned.
 
-## \ud83d\udc4b Getting Started
+## Who should do what?
+- **Package users (default):** Install from PyPI, register tools via decorators (Phase 2) or plugins; do **not** fork/patch core.
+- **Plugin authors:** Publish separate packages; register via the plugin registry.
+- **Core contributors:** Open PRs to improve the public API, templates, docs, and tests.
 
-### Prerequisites
-- Python 3.8+
-- Git
-- Basic understanding of async Python
-- Familiarity with AI/LLM concepts
-
-### Development Setup
-
-1. **Fork and Clone**
-   ```bash
-   git clone https://github.com/ushakrishnan/ToolWeaver.git
-   cd ToolWeaver
-   ```
-
-2. **Create Virtual Environment**
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate          # Windows
-   # source .venv/bin/activate     # Linux/Mac
-   ```
-
-3. **Install in Development Mode**
-   ```bash
-   pip install -e ".[dev]"         # With dev tools
-   # pip install -e ".[all]"       # With all features
-   ```
-
-4. **Configure Environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your API keys (see docs/CONFIGURATION.md)
-   ```
-
-5. **Run Tests**
-   ```bash
-   pytest                          # All tests
-   pytest -v                       # Verbose output
-   pytest tests/test_tool_search.py # Specific test
-   ```
-
-## \ud83d\udcdd Code Structure
-
-### Key Directories
-
+## Quick setup (core contributors)
+1) Python 3.10+ and Git installed.
+2) Clone:
+```bash
+git clone https://github.com/ushakrishnan/ToolWeaver.git
+cd ToolWeaver
 ```
-orchestrator/
-├── orchestrator.py              # Main orchestration engine
-├── planner.py                   # LLM planning (GPT-4/Claude)
-├── workers.py                   # MCP worker execution
-├── small_model_worker.py        # Small model (Phi-3/Llama)
-├── tool_search.py               # Hybrid tool search
-├── tool_discovery.py            # Auto-discovery
-├── workflow.py                  # Workflow engine
-├── monitoring.py                # Monitoring system
-└── functions.py                 # Function registry
-
-examples/                        # Development examples (use local source)
-samples/                         # User examples (use PyPI package)
-tests/                           # Test suite
-docs/                            # Documentation
+3) Create venv and install dev extras:
+```bash
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+# source .venv/bin/activate  # Linux/Mac
+pip install -e "./[dev]"
+```
+4) Run tests fast:
+```bash
+pytest --maxfail=1 --disable-warnings
 ```
 
-### Import Conventions
+## Expectations
+- **Public vs internal:** Import only from `orchestrator` (public). Anything in `orchestrator._internal` can change without notice.
+- **Type hints required:** New/modified code must be type hinted; mypy config lives in pyproject.
+- **Logging:** Use the built-in logger from `orchestrator._internal.logger` (no extra deps).
+- **Optional deps:** Guard optional features with the error helpers in `orchestrator._internal.errors`.
+- **Docs & tests:** Every new public surface ships with docs and tests. Target 80%+ coverage.
 
-**In examples/ (development):**
+## Workflow
+1) **Discuss**: For large changes, open an Issue/Discussion first.
+2) **Branch**: `git checkout -b feature/short-name`.
+3) **Code**: Keep changes small and focused. Use type hints, add docstrings, and prefer `_internal` for implementation details.
+4) **Test**: `pytest` (unit), add integration tests where relevant.
+5) **Lint/Typecheck**: `ruff` and `mypy` per pyproject settings.
+6) **Docs**: Update the relevant doc set:
+    - `docs/for-package-users/` for user-facing guides
+    - `docs/for-contributors/` for dev/architecture
+7) **Commit**: Conventional, clear messages; include a brief bullet list of changes.
+8) **PR**: Describe scope, risks, tests run, and any optional dependencies.
+
+## Style & quality
+- Formatting: black; Imports: isort/ruff; Lint: ruff per config.
+- Types: mypy (strict overrides for config/_internal/plugins per pyproject).
+- Logging: use `get_logger(__name__)`; avoid print.
+- Security: validate and sanitize inputs using `_internal.validation` helpers.
+
+## Tests
+- Unit tests under `tests/` mirroring module paths.
+- Mark slow/integration with `@pytest.mark.slow` or `@pytest.mark.integration`.
+- Aim for <2 minute local run for unit/fast tests.
+
+## Plugin authors
+- Create a separate package and use the plugin registry:
 ```python
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from orchestrator import execute_plan  # Local source
+from orchestrator.plugins import register_plugin
+from my_package.tools import MyPlugin
+
+register_plugin("my-tools", MyPlugin())
 ```
-
-**In samples/ (users):**
-```python
-from orchestrator import execute_plan  # Installed package
+- Declare entry points (optional) so plugins can auto-discover:
+```toml
+[project.entry-points."toolweaver.plugins"]
+my_tools = "my_package.tools:MyPlugin"
 ```
+- Keep optional deps out of core; document your extras.
 
-## \ud83d\udd27 Contributing Guidelines
+## Security
+- Never trust input from models or users; use validation and sanitization helpers.
+- Avoid adding new optional deps to core installs; gate them with extras and runtime checks.
 
-### 1. Choose What to Work On
+## Release notes
+- Add a changelog entry under `.changelog/` (template provided) for user-facing changes.
 
-- **Bug Fixes**: Check [Issues](https://github.com/ushakrishnan/ToolWeaver/issues)
-- **Features**: Discuss in Issues first
-- **Documentation**: Always welcome
-- **Examples**: Add new examples to `examples/`
-
-### 2. Create a Branch
-
-```bash
-git checkout -b feature/your-feature-name
-# or
-git checkout -b fix/bug-description
-```
-
-### 3. Make Your Changes
-
-#### Code Quality
-- Follow PEP 8 style guidelines
-- Use type hints where possible
-- Add docstrings to functions/classes
-- Keep functions focused and small
-
-#### Testing
-- Add tests for new functionality
-- Ensure all existing tests pass
-- Aim for >80% code coverage
-
-```bash
-pytest                           # Run tests
-pytest --cov=orchestrator       # Check coverage
-```
-
-#### Documentation
-- Update relevant docs in appropriate `docs/` subdirectory:
-  - `docs/user-guide/` - User-facing features
-  - `docs/developer-guide/` - Architecture/implementation
-  - `docs/deployment/` - Production setup
-  - `docs/reference/` - Technical details
-- Add docstrings to new functions
-- Update README.md if adding major features
-- Add example if introducing new capability
-
-### 4. Commit Your Changes
-
-Use clear, descriptive commit messages:
-
-```bash
-git add .
-git commit -m "Add semantic search for tool discovery
-
-- Implement hybrid BM25 + embedding search
-- Add caching for embeddings (24h TTL)
-- Reduce token usage by 90%
-- Add tests for search accuracy"
-```
-
-**Commit Message Format:**
-- First line: Brief summary (50 chars max)
-- Blank line
-- Detailed description with bullet points
-- Reference issues: "Fixes #123" or "Relates to #456"
-
-### 5. Push and Create Pull Request
-
-```bash
-git push origin feature/your-feature-name
-```
-
-Then create a Pull Request on GitHub with:
-- Clear title describing the change
-- Description of what changed and why
-- Reference to related issues
-- Screenshots/examples if UI/output changes
-
-## \ud83e\uddea Testing Guidelines
-
-### Writing Tests
-
-Place tests in `tests/` directory:
-
-```python
-# tests/test_your_feature.py
-import pytest
-from orchestrator.your_module import your_function
-
-def test_your_feature():
-    """Test that your feature works correctly."""
-    result = your_function(input_data)
-    assert result == expected_output
-
-@pytest.mark.asyncio
-async def test_async_feature():
-    """Test async functionality."""
-    result = await async_function()
-    assert result.status == "success"
-```
-
-### Running Tests
-
-```bash
-# All tests
-pytest
-
-# Specific test file
-pytest tests/test_tool_search.py
-
-# Specific test function
-pytest tests/test_tool_search.py::test_hybrid_search
-
-# With coverage
-pytest --cov=orchestrator --cov-report=html
-
-# Verbose output
-pytest -v -s
-```
-
-## \ud83d\udcda Adding Examples
-
-### For Development (examples/)
-
-Add to `examples/` when demonstrating:
-- New features requiring source code modifications
-- Advanced usage patterns
-- Integration testing
-- Development workflows
-
-### For Users (samples/)
-
-Add to `samples/` when providing:
-- Standalone usage examples
-- Getting started tutorials
-- Production use cases
-- Best practices demonstrations
+## Getting help
+- Issues for bugs, Discussions for ideas; include repro steps and environment details.
 
 **Sample Template:**
 ```

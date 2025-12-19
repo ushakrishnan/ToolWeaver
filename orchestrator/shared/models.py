@@ -42,9 +42,17 @@ class ToolDefinition(BaseModel):
     Supports MCP tools, Python functions, code execution, and agents (A2A).
     """
     name: str
-    type: Literal["mcp", "function", "code_exec", "agent"]
+    # Allow broader type taxonomy used in tests and discovery
+    type: Literal["mcp", "function", "code_exec", "agent", "tool"]
     description: str
-    parameters: List[ToolParameter]
+    # Optional provider (e.g., "mcp", "a2a", "custom")
+    provider: Optional[str] = None
+    # Parameters default to empty list for backward compatibility
+    parameters: List[ToolParameter] = Field(default_factory=list)
+    # Optional JSON Schema-style IO definitions used by streaming tests
+    input_schema: Optional[Dict[str, Any]] = None
+    output_schema: Optional[Dict[str, Any]] = None
+    # Alternative return schema
     returns: Optional[Dict[str, Any]] = None  # Return type schema
     metadata: Dict[str, Any] = Field(default_factory=dict)  # Usage stats, etc.
     source: str = "unknown"  # Where tool was discovered from

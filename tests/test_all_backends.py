@@ -8,6 +8,7 @@ import os
 import sys
 import time
 import logging
+import pytest
 
 # Setup logging
 logging.basicConfig(
@@ -16,6 +17,7 @@ logging.basicConfig(
 )
 
 
+@pytest.mark.skip(reason="helper function used by other tests")
 def test_backend(backend_name: str) -> bool:
     """Test a specific analytics backend"""
     print(f"\n{'='*70}")

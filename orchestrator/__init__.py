@@ -1,47 +1,215 @@
 """
-Orchestrator module for hybrid execution plans with two-model architecture.
+ToolWeaver - Package-first tool orchestration library.
 
-Architecture:
-- Large Model Planner (GPT-4o, Claude) for generating execution plans
-- Small Model Workers (Phi-3, Llama) for efficient task execution
-- Hybrid Dispatcher supporting MCP workers, function calls, and code execution
+A lightweight, composable package for registering and managing tools
+that can be called by LLMs, APIs, CLI, or any Python application.
+
+Philosophy: Users pip install toolweaver and use it in their own apps.
+Not a framework—you control your architecture.
+
+Package Users:
+    from orchestrator import mcp_tool, search_tools
+    
+    @mcp_tool(domain="finance")
+    async def get_balance(account: str) -> dict: ...
+
+Contributors:
+    Modify source via PR to add core features.
+    Everything else is in orchestrator._internal (not part of public API).
 """
 
-from .shared.models import *
-from .runtime.orchestrator import execute_plan, final_synthesis, Orchestrator
-from .infra.mcp_client import MCPClientShim
-from .dispatch.workers import *
-from .execution.code_exec_worker import code_exec_worker
-from .dispatch.hybrid_dispatcher import dispatch_step, register_function, get_registered_functions
-from .dispatch import functions  # Import to register functions
+from typing import Any, Awaitable, Callable, Dict, Iterable, List, Optional, Protocol, Tuple, Union
 
-# Optional imports (only if packages installed)
-try:
-    from .planning.planner import LargePlanner
-    _PLANNER_AVAILABLE = True
-except ImportError:
-    _PLANNER_AVAILABLE = False
+__version__ = "0.3.0"
+
+# ---------------------------------------------------------------------------
+# Public API placeholders (Phase 0 readiness)
+# These stubs avoid import errors while the new surfaces are built in later
+# phases. They deliberately raise NotImplementedError to signal planned work.
+# ---------------------------------------------------------------------------
+
+def mcp_tool(*args: Any, **kwargs: Any) -> Callable[[Callable[..., Awaitable[Dict[str, Any]]]], Callable[..., Awaitable[Dict[str, Any]]]]:
+    """Placeholder decorator for MCP tools (Phase 2)."""
+    raise NotImplementedError("mcp_tool decorator will ship in Phase 2")
+
+
+def a2a_agent(*args: Any, **kwargs: Any) -> Callable[[Callable[..., Awaitable[Dict[str, Any]]]], Callable[..., Awaitable[Dict[str, Any]]]]:
+    """Placeholder decorator for agent-to-agent tools (Phase 2)."""
+    raise NotImplementedError("a2a_agent decorator will ship in Phase 2")
+
+
+class ToolTemplate:
+    """Abstract base placeholder for tool templates (Phase 1)."""
+
+    def execute(self, *args: Any, **kwargs: Any) -> Any:  # pragma: no cover - placeholder
+        raise NotImplementedError("ToolTemplate.execute will ship in Phase 1")
+
+
+class MCPToolTemplate(ToolTemplate):
+    """Placeholder MCP tool template (Phase 1)."""
+
+
+class A2AAgentTemplate(ToolTemplate):
+    """Placeholder agent template (Phase 1)."""
+
+
+def get_available_tools(*args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
+    """Placeholder discovery API (Phase 1.6)."""
+    raise NotImplementedError("Discovery API will ship in Phase 1.6")
+
+
+def search_tools(*args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
+    """Placeholder discovery API (Phase 1.6)."""
+    raise NotImplementedError("Discovery API will ship in Phase 1.6")
+
+
+def get_tool_info(*args: Any, **kwargs: Any) -> Dict[str, Any]:
+    """Placeholder discovery API (Phase 1.6)."""
+    raise NotImplementedError("Discovery API will ship in Phase 1.6")
+
+
+def save_as_skill(*args: Any, **kwargs: Any) -> str:
+    """Placeholder skill bridge (Phase 1.5)."""
+    raise NotImplementedError("Skill bridge will ship in Phase 1.5")
+
+
+def load_from_skill(*args: Any, **kwargs: Any) -> Any:
+    """Placeholder skill bridge (Phase 1.5)."""
+    raise NotImplementedError("Skill bridge will ship in Phase 1.5")
+
+
+class ToolError(Exception):
+    """Base placeholder for tool-related errors (Phase 1.b)."""
+
+
+class ToolNotFoundError(ToolError):
+    """Placeholder for missing tool error (Phase 1.b)."""
+
+
+class InvalidParametersError(ToolError):
+    """Placeholder for invalid params error (Phase 1.b)."""
+
+
+class ToolTimeoutError(ToolError):
+    """Placeholder for timeout error (Phase 1.b)."""
+
+
+class ToolExecutionError(ToolError):
+    """Placeholder for execution error (Phase 1.b)."""
+
+
+def get_tool_health(*args: Any, **kwargs: Any) -> Dict[str, Any]:
+    """Placeholder diagnostics (Phase 1.c)."""
+    raise NotImplementedError("Diagnostics will ship in Phase 1.c")
+
+
+def get_execution_stats(*args: Any, **kwargs: Any) -> Dict[str, Any]:
+    """Placeholder diagnostics (Phase 1.c)."""
+    raise NotImplementedError("Diagnostics will ship in Phase 1.c")
+
+# ============================================================
+# Phase 0 (Package Infrastructure) - Clean Public API
+# ============================================================
+# Only export what users should use. Everything else lives in _internal.
+# This makes it clear what's safe to import and what might change.
+
+# === Core Tool Registration (Phase 2) ===
+# TODO: These will be imported from .tools.decorators after Phase 2
+# from .tools import mcp_tool, a2a_agent
+
+# === Template Base Classes (Phase 1) ===
+# TODO: These will be imported from .tools.templates after Phase 1
+# from .tools.templates import ToolTemplate, MCPToolTemplate, A2AAgentTemplate
+
+# === Tool Discovery (Phase 1.6) ===
+# TODO: These will be imported from .tools.discovery_api after Phase 1.6
+# from .tools import get_available_tools, search_tools, get_tool_info
+
+# === Skill Bridge (Phase 1.5) ===
+# TODO: These will be imported from .tools.skill_bridge after Phase 1.5
+# from .tools import save_as_skill, load_from_skill
+
+# === Plugin Registry (Phase 0.e) ===
+# ✅ DONE: Phase 0.e complete - Plugin system for 3rd-party extensions
+from orchestrator.plugins import register_plugin, unregister_plugin, get_plugin, list_plugins, discover_plugins
+
+# === Configuration (Phase 0.c) ===
+# ✅ DONE: Phase 0.c complete - Environment variable configuration
+from orchestrator.config import get_config, reset_config, validate_config
+# from .config import get_config, config
+
+# === Logging (Phase 0.l) ===
+# ✅ DONE: Phase 0.l complete
+from ._internal.logger import get_logger, set_log_level, enable_debug_mode
+
+# === Error Types (Phase 1.b) ===
+# TODO: These will be imported from ._internal.exceptions after Phase 1.b
+# ToolError, ToolNotFoundError, InvalidParametersError, etc.
+
+# === Diagnostics (Phase 1.c) ===
+# TODO: This will be imported from .diagnostics after Phase 1.c
+# from .diagnostics import get_tool_health, get_execution_stats
+
+# ============================================================
+# Temporary: Legacy surfaces via internal shim (compatibility only)
+# (These will be phased out as new APIs land.)
+# ============================================================
 
 try:
-    from .execution.small_model_worker import SmallModelWorker
-    _SMALL_MODEL_AVAILABLE = True
-except ImportError:
-    _SMALL_MODEL_AVAILABLE = False
+    from ._internal.public_legacy import *  # noqa: F401, F403
+except Exception:
+    # Optional legacy features not available
+    pass
+
+# ============================================================
+# Public API Definition
+# ============================================================
+# This is what users can safely import.
+# Anything not listed here might change between versions.
 
 __all__ = [
-    # Core orchestration
-    'execute_plan',
-    'final_synthesis',
-    'Orchestrator',
-    'MCPClientShim',
-    'dispatch_step',
-    'register_function',
-    'get_registered_functions',
-    'code_exec_worker',
-    # Two-model architecture (optional)
-    'LargePlanner' if _PLANNER_AVAILABLE else None,
-    'SmallModelWorker' if _SMALL_MODEL_AVAILABLE else None,
+    # TODO Phase 0: Add these as phases complete
+    # Tool registration
+    "mcp_tool",
+    "a2a_agent",
+    # Templates
+    "ToolTemplate",
+    "MCPToolTemplate",
+    "A2AAgentTemplate",
+    # Discovery & querying
+    "get_available_tools",
+    "search_tools",
+    "get_tool_info",
+    # Skill bridge
+    "save_as_skill",
+    "load_from_skill",
+    # Plugins
+    "register_plugin",
+    "unregister_plugin",
+    "get_plugin",
+    "list_plugins",
+    "discover_plugins",
+    # Configuration
+    "get_config",
+    "reset_config",
+    "validate_config",
+    # Logging
+    "get_logger",
+    "set_log_level",
+    "enable_debug_mode",
+    # Diagnostics
+    "get_tool_health",
+    "get_execution_stats",
+    # Error types
+    "ToolError",
+    "ToolNotFoundError",
+    "InvalidParametersError",
+    "ToolTimeoutError",
+    "ToolExecutionError",
 ]
 
-# Remove None values from __all__
-__all__ = [x for x in __all__ if x is not None]
+# ============================================================
+# Important: Do not import from orchestrator._internal
+# ============================================================
+# Users: These are internal implementation details that might change.
+# Contributors: Put helper code in _internal, not in public API.

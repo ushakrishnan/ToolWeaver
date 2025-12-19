@@ -1,0 +1,53 @@
+# agents.yaml - Agent Configuration for Example 23
+#
+# This file defines the A2A agents used in Example 23.
+# In production, these would point to actual running agent services.
+#
+# For the example, these are mock configurations that demonstrate
+# how agents are registered and discovered.
+
+agents:
+  - id: data_analyst
+    name: Data Analyst
+    description: Analyzes data and provides insights, trends, and recommendations
+    endpoint: http://localhost:8001/agents/data_analyst
+    capabilities:
+      - analyze_trends
+      - generate_insights
+      - identify_outliers
+    metadata:
+      version: "1.0"
+      language: python
+      tags:
+        - analysis
+        - insights
+        - statistics
+
+  - id: report_generator
+    name: Report Generator
+    description: Generates professional reports and summaries from data and analysis
+    endpoint: http://localhost:8001/agents/report_generator
+    capabilities:
+      - format_report
+      - create_summary
+      - generate_charts
+    metadata:
+      version: "1.0"
+      language: python
+      tags:
+        - reporting
+        - documentation
+        - formatting
+
+# Configuration for agent discovery
+discovery:
+  timeout_seconds: 30
+  retry_attempts: 3
+  cache_ttl_seconds: 300
+
+# Optional: Agent routing policies
+routing:
+  default_timeout: 30
+  stream_timeout: 5
+  fallback_enabled: true
+  fallback_agent: null  # No fallback by default
