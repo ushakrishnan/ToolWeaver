@@ -56,6 +56,13 @@ from .sandbox_filters import (
     PIIType,
     filter_and_tokenize,
 )
+from .workspace import (
+    WorkspaceManager,
+    WorkspaceSkill,
+    WorkspaceQuota,
+    WorkspaceQuotaExceeded,
+    SkillNotFound,
+)
 from .skill_metrics import (
     SkillMetrics,
     record_skill_execution,
@@ -149,6 +156,12 @@ __all__ = [
     "TokenizationConfig",
     "PIIType",
     "filter_and_tokenize",
+    # workspace skill persistence (Phase 1.10)
+    "WorkspaceManager",
+    "WorkspaceSkill",
+    "WorkspaceQuota",
+    "WorkspaceQuotaExceeded",
+    "SkillNotFound",
     # skill metrics
     "SkillMetrics",
     "record_skill_execution",
