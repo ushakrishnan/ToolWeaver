@@ -19,19 +19,19 @@ create_app = module.create_app
 
 @pytest.mark.asyncio
 async def test_mcp_http_adapter_discover_and_execute():
-    # Start mock server
+    # Start mock server on localhost (not 127.0.0.1) to ensure binding works
     app = create_app()
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, "localhost", 0)
     await site.start()
 
-    # Figure out bound port robustly across IPv4/IPv6
+    # Figure out bound port from socket
     assert site._server and site._server.sockets, "server sockets not available"
     sock = site._server.sockets[0]
     addr = sock.getsockname()
     port = addr[1]
-    base_url = f"http://127.0.0.1:{port}"
+    base_url = f"http://localhost:{port}"
     plugin = register_mcp_http_adapter("external_mcp_http", base_url)
 
     # Discover tools
