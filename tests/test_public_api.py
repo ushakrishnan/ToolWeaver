@@ -10,13 +10,11 @@ def test_public_api_placeholders_raise_not_implemented():
     with pytest.raises(NotImplementedError):
         tw.a2a_agent()
 
-    # Discovery placeholders
-    with pytest.raises(NotImplementedError):
-        tw.get_available_tools()
-    with pytest.raises(NotImplementedError):
-        tw.search_tools()
-    with pytest.raises(NotImplementedError):
-        tw.get_tool_info()
+    # Discovery is now implemented (Phase 1.6), so remove these assertions
+    # get_available_tools(), search_tools(), get_tool_info() are available
+    assert callable(tw.get_available_tools)
+    assert callable(tw.search_tools)
+    assert callable(tw.get_tool_info)
 
     # Skill bridge placeholders
     with pytest.raises(NotImplementedError):
