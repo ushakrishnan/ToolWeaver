@@ -231,26 +231,29 @@ def test_skill_versioning():
     def version_test(x: int) -> int:
         return x * 2
     
+    # Use timestamp in name to ensure uniqueness across test runs
+    import time
+    unique_name = f"version_test_{int(time.time() * 1000)}"
+    
     template = FunctionToolTemplate(
-        name="version_test_unique",  # Use unique name to avoid conflicts
+        name=unique_name,
         description="Test versioning",
         function=version_test
     )
     
-    # Save initial version
+    # First save creates initial version
     skill_v1 = template.save_as_skill()
-    # First save might be 0.1.0 or later if it existed before
-    first_version = skill_v1.version
+    v1 = skill_v1.version
     
-    # Save again with patch bump
+    # Patch bump should increment
     skill_v2 = template.save_as_skill(bump_type="patch")
-    # Version should have changed
-    assert skill_v2.version != first_version
+    v2 = skill_v2.version
+    assert v2 != v1, f"Patch bump should change version: {v1} -> {v2}"
     
-    # Save with minor bump
+    # Minor bump should increment
     skill_v3 = template.save_as_skill(bump_type="minor")
-    # Version should have changed again
-    assert skill_v3.version != skill_v2.version
+    v3 = skill_v3.version
+    assert v3 != v2, f"Minor bump should change version: {v2} -> {v3}"
 
 
 def test_nested_schema_preservation():
