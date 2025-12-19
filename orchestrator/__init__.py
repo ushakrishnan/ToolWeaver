@@ -124,6 +124,12 @@ from .tools.templates import (
     AgentTemplate,
     register_template,
 )
+from .tools.discovery_api import (
+    get_available_tools,
+    search_tools,
+    get_tool_info,
+    list_tools_by_domain,
+)
 
 # === Template Base Classes (Phase 1) ===
 # TODO: These will be imported from .tools.templates after Phase 1
@@ -187,6 +193,11 @@ __all__ = [
     "CodeExecToolTemplate",
     "AgentTemplate",
     "register_template",
+    # Discovery API
+    "get_available_tools",
+    "search_tools",
+    "get_tool_info",
+    "list_tools_by_domain",
     # Templates
     "ToolTemplate",
     "MCPToolTemplate",
