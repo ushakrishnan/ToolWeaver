@@ -62,17 +62,24 @@ def search_cmd(args) -> int:
         print("Error: query is required for search")
         return 1
     
+    # Get search parameters
+    use_semantic = getattr(args, 'semantic', False)
+    top_k = getattr(args, 'top_k', 10)
+    
     results = search_tools(
         query=args.query,
         domain=args.domain,
         type_filter=args.type,
+        use_semantic=use_semantic,
+        top_k=top_k,
     )
     
     if not results:
         print(f"No tools found matching '{args.query}'")
         return 0
     
-    print(f"Found {len(results)} tool(s):\n")
+    search_mode = "semantic" if use_semantic else "keyword"
+    print(f"Found {len(results)} tool(s) using {search_mode} search:\n")
     for tool in results:
         print(f"  {tool.name:30} | {tool.description}")
     
@@ -111,6 +118,8 @@ def main(argv: List[str] = None) -> int:
     search_parser.add_argument("query", nargs="?", help="Search query")
     search_parser.add_argument("--domain", help="Filter by domain")
     search_parser.add_argument("--type", help="Filter by tool type")
+    search_parser.add_argument("--semantic", action="store_true", help="Use semantic search with vector embeddings (requires Qdrant)")
+    search_parser.add_argument("--top-k", type=int, default=10, help="Number of results to return (default: 10)")
     search_parser.set_defaults(func=search_cmd)
     
     # Info command

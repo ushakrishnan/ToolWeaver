@@ -129,6 +129,7 @@ from .tools.discovery_api import (
     search_tools,
     get_tool_info,
     list_tools_by_domain,
+    semantic_search_tools,
 )
 
 # === Template Base Classes (Phase 1) ===
@@ -204,6 +205,7 @@ __all__ = [
     "search_tools",
     "get_tool_info",
     "list_tools_by_domain",
+    "semantic_search_tools",
     # Templates
     "ToolTemplate",
     "MCPToolTemplate",
@@ -212,6 +214,7 @@ __all__ = [
     "get_available_tools",
     "search_tools",
     "get_tool_info",
+    "semantic_search_tools",
     # Skill bridge
     "save_tool_as_skill",
     "load_tool_from_skill",

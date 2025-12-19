@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+import logging
+from typing import Any, Dict, List, Optional, Tuple
 
 from ..plugins.registry import get_registry
-from ..shared.models import ToolDefinition
+from ..shared.models import ToolDefinition, ToolCatalog
+
+logger = logging.getLogger(__name__)
 
 
 def _collect_all_tool_defs() -> List[ToolDefinition]:
@@ -56,11 +59,47 @@ def search_tools(
     query: Optional[str] = None,
     domain: Optional[str] = None,
     type_filter: Optional[str] = None,
+    use_semantic: bool = False,
+    top_k: int = 10,
+    min_score: float = 0.3,
 ) -> List[ToolDefinition]:
     """Keyword search across name and description with optional filters.
 
-    This is a simple substring search; semantic search can be added later.
+    By default uses simple substring search. Set use_semantic=True to enable
+    vector-backed semantic search (requires Qdrant).
+    
+    Args:
+        query: Search query
+        domain: Optional domain filter
+        type_filter: Optional type filter
+        use_semantic: Use semantic search instead of substring (requires Qdrant)
+        top_k: Number of results for semantic search
+        min_score: Minimum score for semantic search (0-1)
+    
+    Returns:
+        List of ToolDefinition objects
     """
+    # Semantic search path
+    if use_semantic and query:
+        try:
+            results_with_scores = semantic_search_tools(
+                query=query,
+                top_k=top_k,
+                domain=domain,
+                min_score=min_score,
+                fallback_to_substring=True
+            )
+            # Filter by type if specified
+            if type_filter:
+                results_with_scores = [
+                    (tool, score) for tool, score in results_with_scores 
+                    if tool.type == type_filter
+                ]
+            return [tool for tool, _ in results_with_scores]
+        except Exception as e:
+            logger.warning(f"Semantic search failed, falling back to substring: {e}")
+    
+    # Substring search (original implementation)
     query_norm = (query or "").strip().lower()
     results: List[ToolDefinition] = []
     for td in _collect_all_tool_defs():
@@ -87,3 +126,85 @@ def get_tool_info(name: str) -> Optional[ToolDefinition]:
 
 def list_tools_by_domain(domain: str) -> List[ToolDefinition]:
     return [td for td in _collect_all_tool_defs() if td.domain == domain]
+
+
+def semantic_search_tools(
+    query: str,
+    *,
+    top_k: int = 5,
+    domain: Optional[str] = None,
+    min_score: float = 0.3,
+    fallback_to_substring: bool = True
+) -> List[Tuple[ToolDefinition, float]]:
+    """
+    Semantic search across tools using vector similarity.
+    
+    Uses VectorToolSearchEngine with Qdrant for semantic search. Falls back to
+    substring search if Qdrant is unavailable and fallback_to_substring=True.
+    
+    Args:
+        query: Natural language query
+        top_k: Number of results to return
+        domain: Optional domain filter (e.g., "github", "slack")
+        min_score: Minimum similarity score (0-1)
+        fallback_to_substring: Use substring search if vector search unavailable
+    
+    Returns:
+        List of (ToolDefinition, score) tuples sorted by relevance
+    
+    Example:
+        results = semantic_search_tools("create github pull request", top_k=3)
+        for tool, score in results:
+            print(f"{tool.name}: {score:.2f}")
+    """
+    try:
+        from .vector_search import VectorToolSearchEngine
+    except ImportError:
+        logger.warning("Vector search dependencies not available (qdrant-client, sentence-transformers)")
+        if fallback_to_substring:
+            logger.info("Falling back to substring search")
+            substring_results = search_tools(query=query, domain=domain)
+            return [(tool, 1.0) for tool in substring_results[:top_k]]
+        return []
+    
+    # Build catalog from all tools
+    all_tools = _collect_all_tool_defs()
+    if domain:
+        all_tools = [t for t in all_tools if t.domain == domain]
+    
+    catalog = ToolCatalog(tools={t.name: t for t in all_tools})
+    
+    # Initialize search engine with fallback enabled
+    search_engine = VectorToolSearchEngine(
+        fallback_to_memory=True
+    )
+    
+    # Index catalog (lazy, cached in Qdrant)
+    try:
+        search_engine.index_catalog(catalog, batch_size=32)
+    except Exception as e:
+        logger.warning(f"Failed to index catalog: {e}")
+        if fallback_to_substring:
+            logger.info("Falling back to substring search")
+            substring_results = search_tools(query=query, domain=domain)
+            return [(tool, 1.0) for tool in substring_results[:top_k]]
+        return []
+    
+    # Perform semantic search
+    try:
+        results = search_engine.search(
+            query=query,
+            catalog=catalog,
+            top_k=top_k,
+            domain=domain,
+            min_score=min_score
+        )
+        return results
+    except Exception as e:
+        logger.error(f"Semantic search failed: {e}")
+        if fallback_to_substring:
+            logger.info("Falling back to substring search")
+            substring_results = search_tools(query=query, domain=domain)
+            return [(tool, 1.0) for tool in substring_results[:top_k]]
+        return []
+
