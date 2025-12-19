@@ -1,14 +1,30 @@
 # Using External MCP Servers
 
-ToolWeaver can integrate with external MCP servers (e.g., sap-bdc-mcp-server) via an adapter.
+ToolWeaver can integrate with external MCP servers (e.g., sap-bdc-mcp-server) via an HTTP adapter or future WS adapter.
 
-Planned options:
-- Template-based adapter (Phase 1) in `MCPToolTemplate` that connects to ws/http endpoints
-- Plugin wrapper to register third-party MCP servers as ToolWeaver tools
+## HTTP Adapter (Available)
+Use `register_mcp_http_adapter()` to register a plugin backed by a remote server:
+```python
+from orchestrator.tools.mcp_adapter import register_mcp_http_adapter
+import asyncio
 
-Basic steps:
-1) Set endpoint via env (e.g., `EXTERNAL_MCP_ENDPOINT=ws://localhost:3000/ws`).
-2) Use the adapter to discover tools (handshake → tool schema normalization).
-3) Execute tools via adapter with timeout/retry; map errors to ToolWeaver error types.
+plugin = register_mcp_http_adapter("external_mcp_http", "http://localhost:9876")
 
-See example: `examples/24-external-mcp-adapter/`.
+async def demo():
+	tools = await plugin.discover()  # Dict[str, ToolDefinition]
+	result = await plugin.execute("process_user", {"user": {"id": "u1"}})
+	print(result)
+
+asyncio.run(demo())
+```
+
+Server contract:
+- `GET /tools` → returns list of ToolDefinition-like dicts (supports nested `input_schema`/`output_schema`)
+- `POST /execute` with JSON `{ name: str, params: dict }` → returns result JSON
+
+See the mock example: `examples/24-external-mcp-adapter/server.py`.
+
+## Roadmap
+- WS/SSE adapter variants
+- Template-based MCP integration (`MCPToolTemplate`)
+- Error mapping and retry policies
