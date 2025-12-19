@@ -114,8 +114,16 @@ def get_execution_stats(*args: Any, **kwargs: Any) -> Dict[str, Any]:
 # This makes it clear what's safe to import and what might change.
 
 # === Core Tool Registration (Phase 2) ===
-# TODO: These will be imported from .tools.decorators after Phase 2
-# from .tools import mcp_tool, a2a_agent
+# Phase 1: Minimal decorator available now
+from .tools.decorators import tool
+from .tools.templates import (
+    BaseTemplate,
+    FunctionToolTemplate,
+    MCPToolTemplate,
+    CodeExecToolTemplate,
+    AgentTemplate,
+    register_template,
+)
 
 # === Template Base Classes (Phase 1) ===
 # TODO: These will be imported from .tools.templates after Phase 1
@@ -172,6 +180,13 @@ __all__ = [
     # Tool registration
     "mcp_tool",
     "a2a_agent",
+    "tool",
+    "BaseTemplate",
+    "FunctionToolTemplate",
+    "MCPToolTemplate",
+    "CodeExecToolTemplate",
+    "AgentTemplate",
+    "register_template",
     # Templates
     "ToolTemplate",
     "MCPToolTemplate",
