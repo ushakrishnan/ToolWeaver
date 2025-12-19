@@ -78,6 +78,10 @@ def tool(
         def bound(params: Dict[str, Any]) -> Any:
             return fn(params)
 
+        # Store original function reference for skill bridge
+        bound.__wrapped__ = fn  # type: ignore
+        bound.__tool_definition__ = td  # type: ignore
+
         plugin.add(tool_name, bound, td)
         return bound
 

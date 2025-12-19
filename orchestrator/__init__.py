@@ -140,8 +140,14 @@ from .tools.discovery_api import (
 # from .tools import get_available_tools, search_tools, get_tool_info
 
 # === Skill Bridge (Phase 1.5) ===
-# TODO: These will be imported from .tools.skill_bridge after Phase 1.5
-# from .tools import save_as_skill, load_from_skill
+# ✅ DONE: Phase 1.5 complete - Connect tools to skill library
+from .tools.skill_bridge import (
+    save_tool_as_skill,
+    load_tool_from_skill,
+    get_tool_skill,
+    sync_tool_with_skill,
+    get_skill_backed_tools,
+)
 
 # === Plugin Registry (Phase 0.e) ===
 # ✅ DONE: Phase 0.e complete - Plugin system for 3rd-party extensions
@@ -207,8 +213,11 @@ __all__ = [
     "search_tools",
     "get_tool_info",
     # Skill bridge
-    "save_as_skill",
-    "load_from_skill",
+    "save_tool_as_skill",
+    "load_tool_from_skill",
+    "get_tool_skill",
+    "sync_tool_with_skill",
+    "get_skill_backed_tools",
     # Plugins
     "register_plugin",
     "unregister_plugin",

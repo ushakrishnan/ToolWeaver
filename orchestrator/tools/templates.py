@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Callable
+import logging
 
 from ..shared.models import ToolDefinition, ToolParameter
 from ..plugins.registry import PluginProtocol, register_plugin, get_registry
+
+logger = logging.getLogger(__name__)
 
 
 class BaseTemplate:
@@ -63,11 +66,101 @@ class BaseTemplate:
     def execute(self, params: Dict[str, Any]) -> Any:  # pragma: no cover - abstract
         raise NotImplementedError("Subclasses must implement execute()")
 
+    def save_as_skill(self, *, tags: Optional[List[str]] = None, bump_type: str = "patch") -> Any:
+        """
+        Save this tool's implementation as a skill in the skill library.
+        
+        Args:
+            tags: Optional tags for skill categorization
+            bump_type: Version bump type if updating ("major", "minor", "patch")
+        
+        Returns:
+            Skill object
+        
+        Raises:
+            NotImplementedError: If template doesn't have a callable function to save
+        """
+        # Import here to avoid circular dependency
+        from .skill_bridge import save_tool_as_skill
+        
+        # Get the execute function or override in subclass
+        if hasattr(self, '_function') and callable(self._function):
+            func = self._function
+        else:
+            raise NotImplementedError(
+                f"Template '{self.name}' does not have a callable function to save as skill. "
+                "Subclasses should store their function in self._function or override this method."
+            )
+        
+        tool_def = self.build_definition()
+        return save_tool_as_skill(tool_def, func, tags=tags, bump_type=bump_type)
+
+    @classmethod
+    def load_from_skill(
+        cls,
+        skill_name: str,
+        *,
+        version: Optional[str] = None,
+        **template_kwargs: Any
+    ) -> tuple[BaseTemplate, Callable]:
+        """
+        Create a template instance from a skill in the skill library.
+        
+        Args:
+            skill_name: Name of the skill to load
+            version: Optional specific version (defaults to latest)
+            **template_kwargs: Additional kwargs to pass to template __init__
+        
+        Returns:
+            Tuple of (template instance, callable function)
+        
+        Example:
+            >>> template, func = FunctionToolTemplate.load_from_skill("process_data")
+            >>> result = func({"input": "test"})
+        """
+        from .skill_bridge import load_tool_from_skill
+        
+        tool_def, func = load_tool_from_skill(
+            skill_name,
+            version=version,
+            tool_type=template_kwargs.get('type', 'function')
+        )
+        
+        # Create template instance with tool definition fields
+        template = cls(
+            name=tool_def.name,
+            description=tool_def.description,
+            type=tool_def.type,
+            provider=tool_def.provider,
+            parameters=tool_def.parameters,
+            input_schema=tool_def.input_schema,
+            output_schema=tool_def.output_schema,
+            metadata=tool_def.metadata,
+            **template_kwargs
+        )
+        
+        # Store function for later save_as_skill calls
+        template._function = func  # type: ignore
+        
+        return template, func
+
 
 class FunctionToolTemplate(BaseTemplate):
-    def __init__(self, **kwargs: Any) -> None:
+    """Template for simple function-based tools.
+    
+    Stores the function for skill bridge integration.
+    """
+    
+    def __init__(self, *, function: Optional[Callable] = None, **kwargs: Any) -> None:
         kwargs.setdefault("type", "function")
         super().__init__(**kwargs)
+        self._function = function
+
+    def execute(self, params: Dict[str, Any]) -> Any:
+        """Execute the function with given parameters."""
+        if self._function is None:
+            raise NotImplementedError("No function set for this template")
+        return self._function(**params)
 
 
 class MCPToolTemplate(BaseTemplate):
