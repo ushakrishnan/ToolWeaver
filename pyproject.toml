@@ -119,8 +119,8 @@ Issues = "https://github.com/ushakrishnan/ToolWeaver/issues"
 Changelog = "https://github.com/ushakrishnan/ToolWeaver/releases"
 
 [project.scripts]
-# CLI entry points (future)
-# toolweaver = "orchestrator.cli:main"
+# CLI entry points
+toolweaver = "orchestrator.cli:main"
 
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
