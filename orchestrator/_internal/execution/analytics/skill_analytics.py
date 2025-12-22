@@ -587,7 +587,7 @@ class SkillAnalytics:
 
     def _log_recommendation(
         self, recommendation: SkillRecommendation, org_id: Optional[str] = None
-    ):
+    ) -> None:
         """Log a recommendation to the database.
 
         Args:
@@ -659,7 +659,7 @@ class SkillAnalytics:
                 + latency_score * 0.10
             )
 
-            return max(0, min(100, health))
+            return float(max(0, min(100, health)))
 
         except Exception as e:
             logger.error(f"Error computing health score: {e}")
@@ -701,7 +701,7 @@ class SkillAnalytics:
             logger.error(f"Error updating health scores: {e}")
             return 0
 
-    def update_health_score(self, skill_id: str, score: float):
+    def update_health_score(self, skill_id: str, score: float) -> None:
         """Adapter method for interface compatibility with OTLP and Prometheus backends.
         
         Sets health score for a specific skill (SQLite-specific).

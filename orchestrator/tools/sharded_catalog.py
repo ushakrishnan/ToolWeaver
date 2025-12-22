@@ -7,13 +7,18 @@ global search when domain-specific search yields insufficient results.
 """
 
 import logging
-from typing import Dict, List, Optional, Tuple, Set
+from typing import Dict, List, Optional, Tuple, Set, TypedDict
 from orchestrator.shared.models import ToolDefinition, ToolCatalog
 
 logger = logging.getLogger(__name__)
 
 # Domain keywords for automatic detection
-DOMAIN_KEYWORDS = {
+class DomainConfig(TypedDict):
+    keywords: List[str]
+    tools: List[str]
+
+
+DOMAIN_KEYWORDS: Dict[str, DomainConfig] = {
     "github": {
         "keywords": ["github", "repository", "repo", "pull request", "pr", "issue", 
                     "commit", "branch", "fork", "star", "clone", "push", "merge"],
@@ -200,7 +205,7 @@ class ShardedCatalog:
         domain: str,
         min_results: int = 3,
         top_k: Optional[int] = None  # top_k kept for compatibility; not used currently
-    ) -> Tuple[List, Optional[str]]:
+    ) -> Tuple[ToolCatalog, Optional[str]]:
         """
         Search within specific domain with fallback to global.
         

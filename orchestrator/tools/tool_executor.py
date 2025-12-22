@@ -108,7 +108,7 @@ async def _execute_mcp_tool(
     timeout: int
 ) -> Any:
     """Execute an MCP server tool"""
-    from orchestrator.mcp_client import MCPClient
+    from orchestrator.mcp_client import MCPClient  # type: ignore[import-not-found]
     
     # Get or create MCP client for server
     client = MCPClient(server_name=server)

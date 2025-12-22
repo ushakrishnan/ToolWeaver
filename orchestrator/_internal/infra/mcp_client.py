@@ -1,7 +1,7 @@
 import asyncio
 import time
 from collections import OrderedDict
-from typing import Dict, Any, Optional
+from typing import Callable, Dict, Any, Optional, AsyncGenerator
 from ..dispatch.workers import (
     receipt_ocr_worker,
     line_item_parser_worker,
@@ -37,8 +37,8 @@ class MCPClientShim:
         retry_backoff_s: float = 0.1,
         circuit_breaker_threshold: int = 3,
         circuit_reset_s: int = 30,
-        observer: Optional[callable] = None,
-    ):
+        observer: Optional[Callable[..., Any]] = None,
+    ) -> None:
         self.tool_map = _tool_map
         self._max_retries = max_retries
         self._retry_backoff_s = retry_backoff_s
@@ -48,7 +48,7 @@ class MCPClientShim:
         self._circuit_open_until: Optional[float] = None
         self._observer = observer
 
-    async def call_tool(self, tool_name: str, payload: Dict[str, Any], idempotency_key: Optional[str] = None, timeout: int = 30):
+    async def call_tool(self, tool_name: str, payload: Dict[str, Any], idempotency_key: Optional[str] = None, timeout: int = 30) -> Any:
         if idempotency_key:
             cached = self._get_cached(idempotency_key)
             if cached is not None:
@@ -105,7 +105,7 @@ class MCPClientShim:
         *,
         timeout: int = 30,
         chunk_timeout: Optional[float] = None,
-    ):
+    ) -> AsyncGenerator[str, None]:
         """Stream tool output as an async generator.
 
         Notes:
@@ -155,7 +155,7 @@ class MCPClientShim:
             raise last_exc
         raise RuntimeError("Tool stream failed for unknown reasons")
 
-    def _get_cached(self, key: str):
+    def _get_cached(self, key: str) -> Optional[Any]:
         entry = _idempotency_store.get(key)
         if not entry:
             return None
@@ -166,7 +166,7 @@ class MCPClientShim:
         _idempotency_store.move_to_end(key)
         return val
 
-    def _store(self, key: str, val: Any):
+    def _store(self, key: str, val: Any) -> None:
         _idempotency_store[key] = (time.time(), val)
         _idempotency_store.move_to_end(key)
         if len(_idempotency_store) > _IDEMPOTENCY_MAX:
@@ -194,7 +194,7 @@ class MCPClientShim:
             except Exception:
                 pass
 
-    async def _iterate_stream(self, stream_coro, overall_timeout: int, chunk_timeout: Optional[float]):
+    async def _iterate_stream(self, stream_coro: Any, overall_timeout: int, chunk_timeout: Optional[float]) -> AsyncGenerator[str, None]:
         """Iterate an async generator with optional per-chunk timeout."""
         iterator = stream_coro.__aiter__()
         while True:

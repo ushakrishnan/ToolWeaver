@@ -1,11 +1,11 @@
 import asyncio, json, logging, os
 from functools import partial
-from typing import Dict, Any
+from typing import Dict, Any, Optional, Callable, Awaitable
 from ...shared.models import PlanModel
 from ..infra.mcp_client import MCPClientShim
 from ..infra.a2a_client import A2AClient, AgentDelegationRequest
-from .dispatch.hybrid_dispatcher import dispatch_step
-from .observability.monitoring import ToolUsageMonitor
+from ..dispatch.hybrid_dispatcher import dispatch_step
+from ..observability.monitoring import ToolUsageMonitor
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 # Global monitor instance (initialized on first use)
 _monitor = None
 
-def get_monitor():
+def get_monitor() -> ToolUsageMonitor:
     """Get or create the global monitoring instance."""
     global _monitor
     if _monitor is None:
@@ -24,7 +24,7 @@ def get_monitor():
         logger.info(f"Monitoring initialized with backends: {backends}")
     return _monitor
 
-async def retry(coro_func, retries=1, backoff_s=1):
+async def retry(coro_func: Callable[[], Awaitable[Any]], retries: int = 1, backoff_s: float = 1) -> Any:
     """
     Retry a coroutine function with exponential backoff.
     
@@ -39,7 +39,7 @@ async def retry(coro_func, retries=1, backoff_s=1):
     Raises:
         Last exception if all retries fail
     """
-    last_exc = None
+    last_exc: Optional[Exception] = None
     for attempt in range(1, retries+1):
         try:
             return await coro_func()
@@ -48,10 +48,12 @@ async def retry(coro_func, retries=1, backoff_s=1):
             logger.warning("Attempt %s failed: %s", attempt, e)
             if attempt < retries:
                 await asyncio.sleep(backoff_s * attempt)
-    raise last_exc
+    if last_exc:
+        raise last_exc
+    raise RuntimeError("All retry attempts failed")
 
 
-async def execute_agent_step(step: Dict[str, Any], step_outputs: Dict[str, Any], a2a_client: A2AClient, monitor=None):
+async def execute_agent_step(step: Dict[str, Any], step_outputs: Dict[str, Any], a2a_client: Optional[A2AClient], monitor: Optional[ToolUsageMonitor] = None) -> Any:
     """Execute an agent delegation step with optional streaming."""
     if not a2a_client:
         raise ValueError("A2A client is required for agent steps")
@@ -67,7 +69,7 @@ async def execute_agent_step(step: Dict[str, Any], step_outputs: Dict[str, Any],
         if key in step_outputs
     }
     inline_ctx = step.get("context") if isinstance(step.get("context"), dict) else {}
-    merged_context = {**context_from_inputs, **inline_ctx}
+    merged_context: Dict[str, Any] = {**context_from_inputs, **(inline_ctx if inline_ctx else {})}
 
     request = AgentDelegationRequest(
         agent_id=agent_id,
@@ -108,7 +110,7 @@ def _normalize_step_for_dispatch(step: Dict[str, Any], step_outputs: Dict[str, A
         if key in step_outputs
     }
     inline_ctx = step.get("context") if isinstance(step.get("context"), dict) else {}
-    merged_context = {**context_from_inputs, **inline_ctx}
+    merged_context: Dict[str, Any] = {**context_from_inputs, **(inline_ctx if inline_ctx else {})}
 
     # Preserve any explicit input payload while filling task/context defaults
     input_payload = dict(step.get("input", {}))
@@ -122,7 +124,7 @@ def _normalize_step_for_dispatch(step: Dict[str, Any], step_outputs: Dict[str, A
     return normalized
 
 
-async def run_step(step, step_outputs, mcp_client, monitor=None, a2a_client=None):
+async def run_step(step: Dict[str, Any], step_outputs: Dict[str, Any], mcp_client: MCPClientShim, monitor: Optional[ToolUsageMonitor] = None, a2a_client: Optional[A2AClient] = None) -> Any:
     """
     Execute a single step using the hybrid dispatcher.
     
@@ -133,6 +135,7 @@ async def run_step(step, step_outputs, mcp_client, monitor=None, a2a_client=None
         step_outputs: Dict of previous step outputs
         mcp_client: MCP client for deterministic tools
         monitor: Optional ToolUsageMonitor for observability
+        a2a_client: Optional A2A client for agent delegation
         
     Returns:
         Result from the executed step
@@ -143,7 +146,7 @@ async def run_step(step, step_outputs, mcp_client, monitor=None, a2a_client=None
         step_id = step.get('id', 'unknown')
         tool_name = f"agent_{step.get('agent_id', 'unknown')}"
 
-        async def call_agent():
+        async def call_agent() -> Any:
             return await execute_agent_step(step, step_outputs, a2a_client, monitor)
 
         retries = step.get('retry_policy', {}).get('retries', 1) if step.get('retry_policy') else 1
@@ -165,7 +168,7 @@ async def run_step(step, step_outputs, mcp_client, monitor=None, a2a_client=None
     step_id = normalized_step.get('id', 'unknown')
     tool_name = normalized_step.get('tool', 'unknown')
     
-    async def call():
+    async def call() -> Any:
         return await dispatch_step(normalized_step, step_outputs, mcp_client, monitor, a2a_client)
     
     try:
@@ -186,7 +189,7 @@ async def run_step(step, step_outputs, mcp_client, monitor=None, a2a_client=None
             monitor.log_tool_call(tool_name, success=False, latency=latency, error=str(e), execution_id=step_id)
         raise
 
-async def execute_plan(plan, *, a2a_client: A2AClient | None = None):
+async def execute_plan(plan: Dict[str, Any], *, a2a_client: Optional[A2AClient] = None) -> Dict[str, Any]:
     """
     Execute a multi-step execution plan with dependency resolution.
     
@@ -197,6 +200,7 @@ async def execute_plan(plan, *, a2a_client: A2AClient | None = None):
     
     Args:
         plan: Plan dictionary with steps and final_synthesis config
+        a2a_client: Optional A2A client for agent delegation
         
     Returns:
         Context dictionary with all step outputs
@@ -207,12 +211,12 @@ async def execute_plan(plan, *, a2a_client: A2AClient | None = None):
     PlanModel(**plan)  # validate
     steps = {s['id']: s for s in plan['steps']}
     pending = set(steps.keys())
-    completed = {}
+    completed: Dict[str, Any] = {}
     mcp_client = MCPClientShim()
     a2a_client = a2a_client or None
     monitor = get_monitor()
 
-    def ready_steps():
+    def ready_steps() -> list[str]:
         """Find steps whose dependencies are all completed."""
         return [sid for sid in pending if all(dep in completed for dep in steps[sid].get('depends_on', []))]
 
@@ -247,7 +251,7 @@ async def execute_plan(plan, *, a2a_client: A2AClient | None = None):
     
     return context
 
-async def final_synthesis(plan, context):
+async def final_synthesis(plan: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, str]:
     """
     Generate final synthesis from execution context.
     
@@ -282,8 +286,8 @@ class Orchestrator:
         self.a2a = A2AClient(config_path=cfg) if cfg else None
         self._monitor = get_monitor()
 
-    async def discover_tools(self, *, use_cache: bool = True):
-        from ..tools.tool_discovery import discover_tools
+    async def discover_tools(self, *, use_cache: bool = True) -> list[Any]:
+        from ..tools.tool_discovery import discover_tools  # type: ignore[import-not-found]
         function_modules = None
         catalog = await discover_tools(
             mcp_client=self.mcp,
@@ -293,9 +297,9 @@ class Orchestrator:
             a2a_client=self.a2a,
             registry_url=self.registry_url,
         )
-        return catalog.tools  # minimal for examples
+        return list(catalog.tools) if isinstance(catalog.tools, list) else []
 
-    async def execute_tool(self, name: str, params: Dict[str, Any]):
+    async def execute_tool(self, name: str, params: Dict[str, Any]) -> Any:
         start = datetime.now()
         try:
             result = await self.mcp.call_tool(name, params)
@@ -307,7 +311,7 @@ class Orchestrator:
                 self._monitor.log_tool_call(name, success=False, latency=(datetime.now() - start).total_seconds(), error=str(e))
             raise
 
-    async def execute_agent_step(self, *, agent_name: str, request: Dict[str, Any], stream: bool = False):
+    async def execute_agent_step(self, *, agent_name: str, request: Dict[str, Any], stream: bool = False) -> Any:
         if not self.a2a:
             raise RuntimeError("A2A client not configured. Provide agents_config_path or AGENTS_CONFIG.")
         req = AgentDelegationRequest(agent_id=agent_name, task=request.get("task", agent_name), context=request, timeout=request.get("timeout", 300))
@@ -319,7 +323,7 @@ class Orchestrator:
         if not resp.success:
             raise RuntimeError(resp.metadata.get("error", "Agent delegation failed"))
         return resp.result
-    async def execute_skill(self, skill_name: str, *, inputs: Dict[str, Any] | None = None):
+    async def execute_skill(self, skill_name: str, *, inputs: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Execute a saved skill (code snippet or workflow).
         
@@ -336,9 +340,9 @@ class Orchestrator:
             KeyError: If skill not found
             RuntimeError: If skill execution fails
         """
-        from .execution.skill_library import get_skill
-        from .execution.validation import validate_stub
-        from .execution.skill_metrics import SkillExecutionTimer
+        from .execution.skill_library import get_skill  # type: ignore[import-not-found]
+        from .execution.validation import validate_stub  # type: ignore[import-not-found]
+        from .execution.skill_metrics import SkillExecutionTimer  # type: ignore[import-not-found]
         from pathlib import Path
         
         start = datetime.now()

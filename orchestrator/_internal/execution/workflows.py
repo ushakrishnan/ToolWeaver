@@ -183,7 +183,7 @@ async def execute_workflow(workflow: Workflow, inputs: Optional[Dict[str, Any]] 
     
     # Group steps by parallel flag
     sequential_groups: List[List[WorkflowStep]] = []
-    current_group = []
+    current_group: List[WorkflowStep] = []
     
     for step in workflow.steps:
         if step.parallel and current_group:
@@ -209,16 +209,18 @@ async def execute_workflow(workflow: Workflow, inputs: Optional[Dict[str, Any]] 
         else:
             # Parallel execution
             tasks = [_execute_step(step, context, retry_count=0) for step in group]
-            step_results = await asyncio.gather(*tasks, return_exceptions=True)
+            step_results: List[Any] = await asyncio.gather(*tasks, return_exceptions=True)
             
             for step, result in zip(group, step_results):
-                if isinstance(result, Exception):
-                    results[step.name] = {"error": str(result)}
+                result_dict: Dict[str, Any]
+                if isinstance(result, BaseException):
+                    result_dict = {"error": str(result)}
                     if step.on_error == "stop":
                         raise result
                 else:
-                    results[step.name] = result
-                    _update_context(context, step.name, result)
+                    result_dict = result if isinstance(result, dict) else {"result": result}
+                results[step.name] = result_dict
+                _update_context(context, step.name, result_dict)
     
     return results
 
@@ -298,13 +300,13 @@ def _interpolate_inputs(inputs: Dict[str, Any], context: Dict[str, Any]) -> Dict
     """
     import re
     
-    def replace_var(match):
+    def replace_var(match: Any) -> str:
         var_name = match.group(1)
         if var_name in context:
             return str(context[var_name])
-        return match.group(0)
+        return str(match.group(0))
     
-    result = {}
+    result: Dict[str, Any] = {}
     for key, value in inputs.items():
         if isinstance(value, str):
             result[key] = re.sub(r"\$\{(\w+)\}", replace_var, value)

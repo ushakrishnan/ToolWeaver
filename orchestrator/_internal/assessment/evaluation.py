@@ -15,7 +15,7 @@ import time
 import json
 import logging
 from dataclasses import dataclass, asdict
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, cast
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class AgentEvaluator:
     - Compare against previous runs
     """
     
-    def __init__(self, orchestrator, context_tracker):
+    def __init__(self, orchestrator: Any, context_tracker: Any) -> None:
         """
         Initialize evaluator.
         
@@ -187,7 +187,8 @@ class AgentEvaluator:
                 logger.debug(f"Loading tasks from {path}")
                 with open(path, 'r') as f:
                     data = json.load(f)
-                    return data.get("tasks", [])
+                    tasks = data.get("tasks", [])
+                    return list(tasks) if isinstance(tasks, list) else []
         
         logger.error(f"Task suite not found: {task_suite}")
         return []
@@ -277,7 +278,7 @@ class AgentEvaluator:
             results=results
         )
         
-    def save_baseline(self, results: BenchmarkResults, name: str):
+    def save_baseline(self, results: BenchmarkResults, name: str) -> None:
         """
         Save results as baseline for regression testing.
         
@@ -303,7 +304,7 @@ class AgentEvaluator:
         
         logger.info(f"Saved baseline to {baseline_path}")
         
-    def load_baseline(self, name: str) -> Optional[Dict]:
+    def load_baseline(self, name: str) -> Optional[Dict[str, Any]]:
         """
         Load previously saved baseline.
         
@@ -320,7 +321,8 @@ class AgentEvaluator:
             return None
         
         with open(baseline_path, 'r') as f:
-            return json.load(f)
+            data = json.load(f)
+            return cast(Optional[Dict[str, Any]], data if isinstance(data, dict) else None)
             
     def compare_to_baseline(
         self, 
@@ -378,7 +380,7 @@ class AgentEvaluator:
         
         return comparison
         
-    def print_comparison(self, comparison: Dict[str, Any]):
+    def print_comparison(self, comparison: Dict[str, Any]) -> None:
         """
         Pretty print comparison results.
         

@@ -9,7 +9,7 @@ are overkill. Supports both local inference and cloud endpoints.
 import os
 import json
 import logging
-from typing import Dict, Any, List, Optional, Literal
+from typing import Dict, Any, List, Optional, Literal, cast, no_type_check
 from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ class SmallModelWorker:
     def __init__(
         self,
         backend: Literal["transformers", "ollama", "azure"] = "ollama",
-        model_name: str = None
+            model_name: Optional[str] = None
     ):
         """
         Initialize the small model worker.
@@ -81,7 +81,7 @@ class SmallModelWorker:
         
         logger.info(f"Initialized SmallModelWorker with {backend} backend ({self.model_name})")
     
-    def _init_transformers(self):
+    def _init_transformers(self) -> None:
         """Initialize local transformers model."""
         if not TRANSFORMERS_AVAILABLE:
             raise RuntimeError("transformers package not installed")
@@ -95,7 +95,8 @@ class SmallModelWorker:
             "llama3.2": "meta-llama/Llama-3.2-3B-Instruct"
         }
         
-        hf_model = model_map.get(self.model_name, self.model_name)
+        model_key = self.model_name or "phi3"
+        hf_model = model_map.get(model_key, model_key)
         
         self.tokenizer = AutoTokenizer.from_pretrained(hf_model, trust_remote_code=True)
         self.model = AutoModelForCausalLM.from_pretrained(
@@ -107,7 +108,7 @@ class SmallModelWorker:
         
         logger.info(f"Model loaded on {'GPU' if torch.cuda.is_available() else 'CPU'}")
     
-    def _init_ollama(self):
+    def _init_ollama(self) -> None:
         """Initialize Ollama API client."""
         if not REQUESTS_AVAILABLE:
             raise RuntimeError("requests package not installed")
@@ -122,7 +123,7 @@ class SmallModelWorker:
         except Exception as e:
             logger.warning(f"Could not connect to Ollama: {e}")
     
-    def _init_azure(self):
+    def _init_azure(self) -> None:
         """Initialize Azure AI endpoint (Azure AI Foundry or Azure OpenAI)."""
         if not REQUESTS_AVAILABLE:
             raise RuntimeError("requests package not installed")
@@ -160,12 +161,13 @@ class SmallModelWorker:
             Generated text
         """
         if self.backend == "transformers":
-            return await self._generate_transformers(prompt, system_prompt, max_tokens, temperature)
+            return cast(str, await self._generate_transformers(prompt, system_prompt, max_tokens, temperature))
         elif self.backend == "ollama":
-            return await self._generate_ollama(prompt, system_prompt, max_tokens, temperature)
+            return cast(str, await self._generate_ollama(prompt, system_prompt, max_tokens, temperature))
         elif self.backend == "azure":
-            return await self._generate_azure(prompt, system_prompt, max_tokens, temperature)
+            return cast(str, await self._generate_azure(prompt, system_prompt, max_tokens, temperature))
     
+    @no_type_check
     async def _generate_transformers(
         self,
         prompt: str,
@@ -190,7 +192,7 @@ class SmallModelWorker:
         )
         
         # Run inference in thread pool
-        def _infer():
+        def _infer() -> str:
             inputs = self.tokenizer(input_text, return_tensors="pt").to(self.model.device)
             
             with torch.no_grad():
@@ -215,8 +217,8 @@ class SmallModelWorker:
                         break
             
             return response
-        
-        return await asyncio.to_thread(_infer)
+
+        return str(await asyncio.to_thread(_infer))
     
     async def _generate_ollama(
         self,
@@ -241,14 +243,14 @@ class SmallModelWorker:
         if system_prompt:
             payload["system"] = system_prompt
         
-        def _request():
+        def _request() -> str:
             response = requests.post(
                 f"{self.ollama_url}/api/generate",
                 json=payload,
                 timeout=60
             )
             response.raise_for_status()
-            return response.json()["response"]
+            return str(response.json()["response"])
         
         return await asyncio.to_thread(_request)
     
@@ -279,18 +281,21 @@ class SmallModelWorker:
         if self.use_azure_ad:
             # Use Azure AD token
             from azure.identity import DefaultAzureCredential
-            from azure.core.credentials import AccessToken
+            from azure.core.credentials import AccessToken  # type: ignore[import-not-found]
             
             credential = DefaultAzureCredential()
             token = credential.get_token("https://cognitiveservices.azure.com/.default")
             headers["Authorization"] = f"Bearer {token.token}"
         else:
             # Use API key
+            if self.azure_key is None:
+                raise ValueError("Azure API key is required when not using Azure AD")
             headers["api-key"] = self.azure_key
         
-        def _request():
+        def _request() -> str:
             # Try chat/completions endpoint (OpenAI format)
-            endpoint = self.azure_endpoint.rstrip('/')
+            azure_ep = self.azure_endpoint or ""
+            endpoint = azure_ep.rstrip('/')
             if not endpoint.endswith('/chat/completions'):
                 endpoint = f"{endpoint}/chat/completions"
             
@@ -301,7 +306,8 @@ class SmallModelWorker:
                 timeout=60
             )
             response.raise_for_status()
-            return response.json()["choices"][0]["message"]["content"]
+            result = response.json()["choices"][0]["message"]["content"]
+            return str(result)  # Ensure string return
         
         return await asyncio.to_thread(_request)
     
@@ -442,7 +448,9 @@ JSON array with category added:"""
                 if start >= 0 and end > start:
                     json_str = response[start:end]
                     json_str = _repair_json(json_str)
-                    categorized = json.loads(json_str)
+                    categorized_raw = json.loads(json_str)
+                    # Cast to expected type
+                    categorized: List[Dict[str, Any]] = categorized_raw if isinstance(categorized_raw, list) else []
                     logger.info(f"Categorized {len(categorized)} items with small model (attempt {attempt + 1})")
                     return categorized
                 else:

@@ -12,8 +12,11 @@ Usage:
 """
 
 import logging
-from typing import Dict
+from typing import Dict, Any, Callable, TYPE_CHECKING
 from dataclasses import dataclass, asdict
+
+if TYPE_CHECKING:
+    from typing import Any as AnyType
 
 logger = logging.getLogger(__name__)
 
@@ -48,11 +51,11 @@ class ContextTracker:
     - Detailed breakdown reporting
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize tracker with zero counts"""
         self.reset()
         
-    def reset(self):
+    def reset(self) -> None:
         """Reset all counters to zero"""
         self.tool_definitions = 0
         self.tool_results = 0
@@ -62,7 +65,7 @@ class ContextTracker:
         
         logger.debug("Context tracker reset")
         
-    def add_tool_definitions(self, tokens: int):
+    def add_tool_definitions(self, tokens: int) -> None:
         """
         Add tokens from tool definitions/catalog.
         
@@ -74,7 +77,7 @@ class ContextTracker:
         
         logger.debug(f"Added {tokens} tool definition tokens")
         
-    def add_tool_result(self, tokens: int):
+    def add_tool_result(self, tokens: int) -> None:
         """
         Add tokens from tool execution results.
         
@@ -86,7 +89,7 @@ class ContextTracker:
         
         logger.debug(f"Added {tokens} tool result tokens")
         
-    def add_user_input(self, tokens: int):
+    def add_user_input(self, tokens: int) -> None:
         """
         Add tokens from user input.
         
@@ -98,7 +101,7 @@ class ContextTracker:
         
         logger.debug(f"Added {tokens} user input tokens")
         
-    def add_model_output(self, tokens: int):
+    def add_model_output(self, tokens: int) -> None:
         """
         Add tokens from model output.
         
@@ -110,7 +113,7 @@ class ContextTracker:
         
         logger.debug(f"Added {tokens} model output tokens")
         
-    def add_text(self, text: str, category: str = "model_output"):
+    def add_text(self, text: str, category: str = "model_output") -> None:
         """
         Add text and estimate token count.
         
@@ -186,7 +189,7 @@ class ContextTracker:
             "model_output": (self.model_output / self.total_tokens) * 100
         }
         
-    def print_summary(self):
+    def print_summary(self) -> None:
         """Print formatted summary of context usage"""
         breakdown = self.get_breakdown()
         percentages = self.get_percentage_breakdown()
@@ -206,7 +209,7 @@ class ContextTracker:
               f"({percentages['model_output']:.1f}%)")
         print("="*50 + "\n")
         
-    def get_metrics(self) -> Dict[str, any]:
+    def get_metrics(self) -> Dict[str, Any]:
         """
         Get metrics for monitoring/logging.
         

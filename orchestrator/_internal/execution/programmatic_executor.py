@@ -23,7 +23,7 @@ import uuid
 import sys
 import tempfile
 import shutil
-from typing import Dict, Any, List, Optional, Callable
+from typing import Dict, Any, List, Optional, Callable, Awaitable
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
@@ -98,7 +98,7 @@ class ProgrammaticToolExecutor:
         # Phase 1: Stub generation for progressive disclosure
         self.stub_dir = stub_dir
         self.stubs_generated = False
-        self._temp_dir = None
+        self._temp_dir: Optional[str] = None
         
         if self.enable_stubs:
             self._prepare_stub_environment()
@@ -132,13 +132,13 @@ class ProgrammaticToolExecutor:
         self.tool_call_log = []
 
         # Patch call_tool so generated stubs route back through this executor
-        original_call_tool = None
+        original_call_tool: Optional[Callable[[str, str, Dict[str, Any], int], Awaitable[Any]]] = None
         patched_call_tool = False
         if self.enable_stubs:
             try:
                 original_call_tool = getattr(tool_executor, "call_tool", None)
 
-                async def _call_tool_proxy(server: str, tool_name: str, parameters: Dict[str, Any], **kwargs):
+                async def _call_tool_proxy(server: str, tool_name: str, parameters: Dict[str, Any], timeout: int = 30) -> Any:
                     tool_def = self.tool_catalog.tools.get(tool_name)
                     if not tool_def:
                         raise ValueError(f"Tool not found: {tool_name}")
@@ -152,11 +152,12 @@ class ProgrammaticToolExecutor:
 
                     # Track call
                     self.tool_call_count += 1
+                    start_ts: float = time.time()
                     call_record = {
                         "tool": tool_def.name,
                         "type": tool_def.type,
                         "parameters": parameters,
-                        "timestamp": time.time(),
+                        "timestamp": start_ts,
                         "caller": {
                             "type": "stub_import",
                             "execution_id": self.execution_id,
@@ -168,17 +169,19 @@ class ProgrammaticToolExecutor:
                     try:
                         result = await self._execute_tool(tool_def, parameters)
                         call_record["result_size"] = len(str(result))
-                        call_record["completed_at"] = time.time()
-                        call_record["duration"] = call_record["completed_at"] - call_record["timestamp"]
+                        completed_at: float = time.time()
+                        call_record["completed_at"] = completed_at
+                        call_record["duration"] = completed_at - start_ts  # Use local start_ts, not dict access
                         call_record["error"] = None
                         return result
                     except Exception as e:
                         call_record["error"] = str(e)
-                        call_record["completed_at"] = time.time()
-                        call_record["duration"] = call_record["completed_at"] - call_record["timestamp"]
+                        completed_at = time.time()
+                        call_record["completed_at"] = completed_at
+                        call_record["duration"] = completed_at - start_ts  # Use local start_ts, not dict access
                         raise
 
-                tool_executor.call_tool = _call_tool_proxy
+                tool_executor.call_tool = _call_tool_proxy  # type: ignore[assignment]
                 patched_call_tool = True
             except Exception as patch_exc:
                 self.logger.warning(f"{self.execution_id}: Failed to patch call_tool for stubs: {patch_exc}")
@@ -295,7 +298,7 @@ class ProgrammaticToolExecutor:
                     f"{self.tool_call_count} tools called in {execution_time:.2f}s"
                 )
                 return {
-                    "output": stdout_buffer.getvalue(),
+                    "output": stdout_buffer.getvalue() if 'stdout_buffer' in locals() else "",
                     "result": result,
                     "tool_calls": self.tool_call_log,
                     "execution_time": execution_time,
@@ -323,7 +326,7 @@ class ProgrammaticToolExecutor:
             self.logger.error(f"{self.execution_id}: {error_msg}")
             
             return {
-                "output": stdout_buffer.getvalue(),
+                "output": stdout_buffer.getvalue() if 'stdout_buffer' in locals() else "",
                 "result": None,
                 "tool_calls": self.tool_call_log,
                 "execution_time": execution_time,
@@ -337,7 +340,7 @@ class ProgrammaticToolExecutor:
             self.logger.error(f"{self.execution_id}: {error_msg}")
             
             return {
-                "output": stdout_buffer.getvalue(),
+                "output": stdout_buffer.getvalue() if 'stdout_buffer' in locals() else "",
                 "result": None,
                 "tool_calls": self.tool_call_log,
                 "execution_time": execution_time,
@@ -348,11 +351,12 @@ class ProgrammaticToolExecutor:
         finally:
             if self.enable_stubs and patched_call_tool:
                 try:
-                    tool_executor.call_tool = original_call_tool
+                    if original_call_tool is not None:
+                        tool_executor.call_tool = original_call_tool  # type: ignore[assignment]
                 except Exception as restore_exc:
                     self.logger.warning(f"{self.execution_id}: Failed to restore call_tool: {restore_exc}")
     
-    def _create_tool_wrapper(self, tool_def: ToolDefinition) -> Callable:
+    def _create_tool_wrapper(self, tool_def: ToolDefinition) -> Callable[..., Awaitable[Any]]:
         """
         Create async function that wraps tool execution
         
@@ -367,7 +371,7 @@ class ProgrammaticToolExecutor:
         - Executes the actual tool
         - Returns result directly
         """
-        async def tool_wrapper(**kwargs):
+        async def tool_wrapper(**kwargs: Any) -> Any:
             # Validate parameters
             required_params = [p.name for p in tool_def.parameters if p.required]
             missing = set(required_params) - set(kwargs.keys())
@@ -384,11 +388,12 @@ class ProgrammaticToolExecutor:
             self.tool_call_count += 1
             
             # Log the call with caller information (Anthropic pattern)
+            start_ts: float = time.time()
             call_record = {
                 "tool": tool_def.name,
                 "type": tool_def.type,
                 "parameters": kwargs,
-                "timestamp": time.time(),
+                "timestamp": start_ts,
                 "caller": {
                     "type": "code_execution",
                     "execution_id": self.execution_id,
@@ -402,16 +407,18 @@ class ProgrammaticToolExecutor:
                 result = await self._execute_tool(tool_def, kwargs)
                 
                 call_record["result_size"] = len(str(result))
-                call_record["completed_at"] = time.time()
-                call_record["duration"] = call_record["completed_at"] - call_record["timestamp"]
+                end_ts: float = time.time()
+                call_record["completed_at"] = end_ts
+                call_record["duration"] = end_ts - start_ts
                 call_record["error"] = None
                 
                 return result
                 
             except Exception as e:
                 call_record["error"] = str(e)
-                call_record["completed_at"] = time.time()
-                call_record["duration"] = call_record["completed_at"] - call_record["timestamp"]
+                end_ts = time.time()
+                call_record["completed_at"] = end_ts
+                call_record["duration"] = end_ts - start_ts
                 raise
         
         # Set function name for better debugging
@@ -441,17 +448,13 @@ class ProgrammaticToolExecutor:
             return result
         
         elif tool_def.type == "function":
-            # Call function from hybrid dispatcher
-            from orchestrator.hybrid_dispatcher import dispatch_tool_call
-            
-            result = await dispatch_tool_call({
-                "tool": "function_call",
-                "input": {
-                    "name": tool_def.name,
-                    "args": parameters
-                }
-            }, {})
-            
+            # Call structured function via hybrid dispatcher worker
+            from orchestrator._internal.dispatch.hybrid_dispatcher import function_call_worker
+            payload = {
+                "name": tool_def.name,
+                "args": parameters,
+            }
+            result = await function_call_worker(payload)
             return result
         
         elif tool_def.type == "code_exec":
@@ -480,7 +483,7 @@ class ProgrammaticToolExecutor:
         # Call the async function
         return await exec_globals["__exec_func"]()
     
-    def _validate_code_safety(self, parsed: ast.AST):
+    def _validate_code_safety(self, parsed: ast.AST) -> None:
         """
         AST-based code validation for security
         
@@ -604,7 +607,7 @@ class ProgrammaticToolExecutor:
         else:
             return {k: getattr(__builtins__, k) for k in safe if hasattr(__builtins__, k)}
     
-    def _prepare_stub_environment(self):
+    def _prepare_stub_environment(self) -> None:
         """
         Generate tool stubs and prepare for progressive disclosure.
         
@@ -617,10 +620,13 @@ class ProgrammaticToolExecutor:
         try:
             # Create stub directory
             if self.stub_dir is None:
-                self._temp_dir = tempfile.mkdtemp(prefix="toolweaver_stubs_")
-                self.stub_dir = Path(self._temp_dir)
+                temp_path = tempfile.mkdtemp(prefix="toolweaver_stubs_")
+                self._temp_dir = temp_path
+                self.stub_dir = Path(temp_path)
             else:
-                self.stub_dir = Path(self.stub_dir)
+                # stub_dir provided by caller, ensure it's a Path object
+                stub_path = self.stub_dir if isinstance(self.stub_dir, Path) else Path(self.stub_dir)
+                self.stub_dir = stub_path
                 self.stub_dir.mkdir(parents=True, exist_ok=True)
             
             # Generate stubs
@@ -703,7 +709,7 @@ class ProgrammaticToolExecutor:
         
         return self.tool_filesystem.search_tools(query)
     
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Clean up temporary stub directory"""
         if self._temp_dir:
             try:
@@ -728,7 +734,7 @@ class ProgrammaticToolExecutor:
                 except Exception:
                     pass
     
-    def __del__(self):
+    def __del__(self) -> None:
         """Cleanup on deletion"""
         self.cleanup()
 

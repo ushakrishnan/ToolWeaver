@@ -171,7 +171,7 @@ class AuditLogEntry:
 class ApprovalManager:
     """Manage skill approval workflows."""
     
-    def __init__(self, min_approvals: int = 1, approver_roles: List[str] = None):
+    def __init__(self, min_approvals: int = 1, approver_roles: Optional[List[str]] = None):
         """Initialize approval manager."""
         self.min_approvals = min_approvals
         self.approver_roles = approver_roles or ["reviewer", "admin"]
@@ -390,7 +390,7 @@ class ApprovalManager:
         
         return True
     
-    def _save_approval(self, request: ApprovalRequest):
+    def _save_approval(self, request: ApprovalRequest) -> None:
         """Save approval request to disk."""
         path = _APPROVAL_DIR / f"{request.id}.json"
         data = asdict(request)
@@ -442,7 +442,7 @@ class ApprovalManager:
             return None
     
     def _audit_log(self, action: AuditAction, actor_id: str, actor_name: str,
-                  resource_type: str, resource_id: str, details: Dict[str, Any] = None):
+                  resource_type: str, resource_id: str, details: Optional[Dict[str, Any]] = None) -> None:
         """Create audit log entry."""
         import uuid
         
@@ -549,7 +549,8 @@ class ChangeTracker:
         
         # Return the diff from version1 to version2
         if data2.get('version_from') == version1:
-            return data2.get('code_diff', '')
+            value = data2.get('code_diff', '')
+            return value if isinstance(value, str) else ""
         
         return ""
 
@@ -558,8 +559,8 @@ class AuditLog:
     """Query and report audit logs."""
     
     @staticmethod
-    def get_logs(resource_type: str = None, action: AuditAction = None,
-                actor_id: str = None, days: int = 30) -> List[AuditLogEntry]:
+    def get_logs(resource_type: Optional[str] = None, action: Optional[AuditAction] = None,
+                actor_id: Optional[str] = None, days: int = 30) -> List[AuditLogEntry]:
         """
         Query audit logs with filters.
         
@@ -620,13 +621,13 @@ class AuditLog:
         entries = AuditLog.get_logs(days=days)
         
         # Count by action
-        action_counts = {}
+        action_counts: Dict[str, int] = {}
         for entry in entries:
             action = entry.action.value
             action_counts[action] = action_counts.get(action, 0) + 1
         
         # Count by actor
-        actor_counts = {}
+        actor_counts: Dict[str, int] = {}
         for entry in entries:
             actor_counts[entry.actor_name] = actor_counts.get(entry.actor_name, 0) + 1
         
@@ -708,8 +709,8 @@ def get_code_diff(skill_id: str, version1: str, version2: str) -> str:
     return ChangeTracker.get_code_diff(skill_id, version1, version2)
 
 
-def get_audit_logs(resource_type: str = None, action: AuditAction = None,
-                  actor_id: str = None, days: int = 30) -> List[AuditLogEntry]:
+def get_audit_logs(resource_type: Optional[str] = None, action: Optional[AuditAction] = None,
+                  actor_id: Optional[str] = None, days: int = 30) -> List[AuditLogEntry]:
     """Get audit logs."""
     return AuditLog.get_logs(resource_type, action, actor_id, days)
 

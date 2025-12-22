@@ -83,7 +83,7 @@ class MCPToolDiscoverer(ToolDiscoveryService):
         Since MCPClientShim has a tool_map dict, we can introspect
         the registered workers to build ToolDefinitions.
         """
-        discovered = {}
+        discovered: Dict[str, ToolDefinition] = {}
         
         if not hasattr(self.mcp_client, 'tool_map'):
             return discovered
@@ -425,11 +425,12 @@ class ToolDiscoveryOrchestrator:
                 continue
             
             # Add tools to catalog
-            for tool_name, tool_def in result.items():
-                catalog.add_tool(tool_def)
-                metrics.total_tools_found += 1
-                metrics.sources[discoverer.source_name] = \
-                    metrics.sources.get(discoverer.source_name, 0) + 1
+            if isinstance(result, dict):
+                for tool_name, tool_def in result.items():
+                    catalog.add_tool(tool_def)
+                    metrics.total_tools_found += 1
+                    metrics.sources[discoverer.source_name] = \
+                        metrics.sources.get(discoverer.source_name, 0) + 1
         
         # Record metrics
         end_time = datetime.now(timezone.utc)

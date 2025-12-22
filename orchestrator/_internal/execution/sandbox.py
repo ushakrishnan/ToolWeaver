@@ -174,7 +174,7 @@ class SandboxEnvironment:
             Safe globals dictionary
         """
         # Start with empty builtins
-        safe_globals = {'__builtins__': {}}
+        safe_globals: Dict[str, Any] = {'__builtins__': {}}
         
         # Add safe builtins
         import builtins
@@ -235,7 +235,7 @@ class SandboxEnvironment:
         
         # Create safe execution environment
         safe_globals = self._create_safe_globals(context)
-        local_vars = {}
+        local_vars: Dict[str, Any] = {}
         
         # Capture stdout/stderr
         from io import StringIO
@@ -246,7 +246,7 @@ class SandboxEnvironment:
         
         try:
             # Execute with timeout
-            async def execute_with_timeout():
+            async def execute_with_timeout() -> Any:
                 # Compile code
                 try:
                     compiled = compile(code, '<sandbox>', 'exec')

@@ -8,7 +8,8 @@ to convert natural language requests into structured execution plans.
 import os
 import json
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Type, cast
+from types import TracebackType
 from dotenv import load_dotenv
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 
@@ -29,7 +30,7 @@ except ImportError:
     ANTHROPIC_AVAILABLE = False
 
 try:
-    import google.generativeai as genai
+    import google.generativeai as genai  # type: ignore[import-not-found]
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
@@ -48,8 +49,8 @@ class LargePlanner:
     
     def __init__(
         self, 
-        provider: str = None, 
-        model: str = None,
+            provider: Optional[str] = None, 
+            model: Optional[str] = None,
         tool_catalog: Optional[ToolCatalog] = None,
         use_tool_search: bool = True,
         search_threshold: int = 20,
@@ -81,8 +82,10 @@ class LargePlanner:
             When enabled, LLM can generate code that orchestrates tool calls in parallel,
             reducing latency by 60-80% and saving 37% additional tokens.
         """
-        # Get provider from env if not specified
-        self.provider = (provider or os.getenv("PLANNER_PROVIDER", "openai")).lower()
+        # Get provider from env if not specified (avoid Optional[str] .lower())
+        env_provider = os.getenv("PLANNER_PROVIDER", "openai")
+        prov = provider if provider is not None else env_provider
+        self.provider = prov.lower()
         
         # Store tool catalog (will use default if None)
         self.tool_catalog = tool_catalog
@@ -90,7 +93,7 @@ class LargePlanner:
         # Phase 3: Semantic search configuration
         self.use_tool_search = use_tool_search
         self.search_threshold = search_threshold
-        self.search_engine = None  # Lazy init
+        self.search_engine: Optional[Any] = None  # Lazy init, initialized on first use
         
         # Phase 4: Programmatic calling configuration
         self.use_programmatic_calling = use_programmatic_calling
@@ -122,9 +125,9 @@ class LargePlanner:
                     self.credential = DefaultAzureCredential()
                     
                     # Token provider must be async and return just the token string
-                    async def get_azure_token():
+                    async def get_azure_token() -> str:
                         token = await self.credential.get_token("https://cognitiveservices.azure.com/.default")
-                        return token.token
+                        return str(token.token)
                     
                     self.client = AsyncAzureOpenAI(
                         azure_ad_token_provider=get_azure_token,
@@ -172,7 +175,7 @@ class LargePlanner:
         
         logger.info(f"Initialized LargePlanner with {self.provider} ({self.model})")
     
-    async def close(self):
+    async def close(self) -> None:
         """Clean up resources (Azure AD credential, HTTP clients)."""
         if hasattr(self, 'client') and hasattr(self.client, 'close'):
             await self.client.close()
@@ -180,11 +183,16 @@ class LargePlanner:
         if hasattr(self, 'credential') and self.credential is not None:
             await self.credential.close()
     
-    async def __aenter__(self):
+    async def __aenter__(self) -> "LargePlanner":
         """Async context manager entry."""
         return self
     
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType]
+    ) -> None:
         """Async context manager exit."""
         await self.close()
     
@@ -515,7 +523,7 @@ Respond with only the JSON execution plan."""
             if self.use_tool_search and total_tools > self.search_threshold:
                 # Lazy init search engine
                 if self.search_engine is None:
-                    from orchestrator.tool_search import ToolSearchEngine
+                    from orchestrator.tools.tool_search import ToolSearchEngine
                     self.search_engine = ToolSearchEngine()
                     logger.info("Initialized semantic search engine")
                 
@@ -591,7 +599,7 @@ Respond with only the JSON execution plan."""
                 plan_json = response.text
             
             # Parse and validate JSON
-            plan = json.loads(plan_json)
+            plan = cast(Dict[str, Any], json.loads(plan_json))
             logger.info(f"Generated plan with {len(plan.get('steps', []))} steps")
             
             return plan
@@ -663,7 +671,7 @@ Please generate an improved plan that addresses the feedback."""
                 )
                 plan_json = response.text
             
-            refined_plan = json.loads(plan_json)
+            refined_plan = cast(Dict[str, Any], json.loads(plan_json))
             logger.info("Plan refinement completed")
             
             return refined_plan

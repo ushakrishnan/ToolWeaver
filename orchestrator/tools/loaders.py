@@ -293,7 +293,8 @@ def _resolve_worker(import_path: str) -> Callable[..., Any]:
             f"'{import_path}' is not callable"
         )
     
-    return worker
+    # Cast worker to Callable to satisfy mypy
+    return worker  # type: ignore[no-any-return]
 
 
 def load_tools_from_directory(directory: str | Path, pattern: str = "*.yaml") -> int:

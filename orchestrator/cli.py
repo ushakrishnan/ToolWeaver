@@ -3,7 +3,7 @@
 import argparse
 import sys
 import asyncio
-from typing import List
+from typing import List, Optional
 
 from orchestrator import (
     get_available_tools,
@@ -93,10 +93,10 @@ def browse_cmd(args) -> int:
             else:
                 print(f"  {item.name:30} | {item.description[:50]}")
         else:  # full
-            if hasattr(item, 'name'):
-                print(f"  {item.name:30} | {item.type:12} | {item.description[:50]}")
-            else:
+            if isinstance(item, dict):
                 print(f"  {item['name']:30} | {item['type']:12} | {item.get('description', '')[:50]}")
+            else:
+                print(f"  {item.name:30} | {item.type:12} | {item.description[:50]}")
     
     return 0
 
@@ -159,10 +159,10 @@ def search_cmd(args) -> int:
             else:
                 print(f"  {item.name:30} | {item.description}")
         else:  # full or None (returns ToolDefinition)
-            if hasattr(item, 'name'):
-                print(f"  {item.name:30} | {item.description}")
-            else:
+            if isinstance(item, dict):
                 print(f"  {item['name']:30} | {item.get('description', '')}")
+            else:
+                print(f"  {item.name:30} | {item.description}")
     
     return 0
 
@@ -179,7 +179,7 @@ def info_cmd(args) -> int:
     return 0
 
 
-def main(argv: List[str] = None) -> int:
+def main(argv: Optional[List[str]] = None) -> int:
     """Main entry point for CLI."""
     parser = argparse.ArgumentParser(
         prog="toolweaver",
@@ -230,7 +230,8 @@ def main(argv: List[str] = None) -> int:
         parser.print_help()
         return 0
     
-    return args.func(args)
+    result = args.func(args)
+    return int(result)
 
 
 if __name__ == "__main__":

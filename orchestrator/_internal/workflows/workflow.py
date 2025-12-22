@@ -45,7 +45,7 @@ class WorkflowStep:
     retry_count: int = 0
     timeout_seconds: Optional[int] = None
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate step configuration"""
         if not self.step_id:
             raise ValueError("step_id is required")
@@ -88,7 +88,7 @@ class WorkflowTemplate:
     metadata: Dict[str, Any] = field(default_factory=dict)
     parallel_groups: Optional[List[List[str]]] = None
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate workflow configuration"""
         if not self.name:
             raise ValueError("name is required")
@@ -132,12 +132,12 @@ class WorkflowContext:
         self.variables: Dict[str, Any] = initial_variables or {}
         self.errors: Dict[str, Exception] = {}
     
-    def set_result(self, step_id: str, result: Any, status: StepStatus = StepStatus.SUCCESS):
+    def set_result(self, step_id: str, result: Any, status: StepStatus = StepStatus.SUCCESS) -> None:
         """Store result from a step execution"""
         self.step_results[step_id] = result
         self.step_status[step_id] = status
     
-    def set_error(self, step_id: str, error: Exception):
+    def set_error(self, step_id: str, error: Exception) -> None:
         """Store error from a failed step"""
         self.errors[step_id] = error
         self.step_status[step_id] = StepStatus.FAILED
@@ -182,14 +182,14 @@ class WorkflowContext:
         """Substitute variables in a string template"""
         pattern = r"\{\{([^}]+)\}\}"
         
-        def replacer(match):
+        def replacer(match: Any) -> str:
             expression = match.group(1).strip()
             try:
                 value = self._evaluate_expression(expression)
                 return str(value) if value is not None else ""
             except Exception as e:
                 logger.warning(f"Failed to substitute '{expression}': {e}")
-                return match.group(0)  # Return original if substitution fails
+                return str(match.group(0))  # Return original if substitution fails
         
         return re.sub(pattern, replacer, template)
     
@@ -387,7 +387,7 @@ class WorkflowExecutor:
             logger.error(f"Failed to evaluate condition for '{step.step_id}': {e}")
             return False
     
-    async def _execute_step(self, step: WorkflowStep, context: WorkflowContext):
+    async def _execute_step(self, step: WorkflowStep, context: WorkflowContext) -> None:
         """
         Execute a single workflow step with retry logic.
         
@@ -432,8 +432,9 @@ class WorkflowExecutor:
                     # Exponential backoff
                     await asyncio.sleep(2 ** attempt)
         
-        # All retries failed
-        context.set_error(step.step_id, last_error)
+        # All retries failed - ensure last_error is not None
+        error = last_error if last_error is not None else Exception(f"Step '{step.step_id}' failed")
+        context.set_error(step.step_id, error)
         logger.error(f"Step '{step.step_id}' failed after {step.retry_count + 1} attempts")
     
     async def _call_tool(self, tool_name: str, parameters: Dict[str, Any], timeout: Optional[int]) -> Any:
@@ -463,7 +464,7 @@ class WorkflowExecutor:
 
 if __name__ == "__main__":
     # Example usage
-    async def main():
+    async def main() -> None:
         # Define a simple workflow
         workflow = WorkflowTemplate(
             name="example_workflow",

@@ -21,17 +21,17 @@ Environment Variables:
 
 import os
 import time
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any
 from dataclasses import dataclass
 from datetime import datetime
 import logging
 
 try:
-    from opentelemetry import metrics
-    from opentelemetry.sdk.metrics import MeterProvider
-    from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-    from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
-    from opentelemetry.sdk.resources import Resource, SERVICE_NAME, SERVICE_VERSION
+    from opentelemetry import metrics  # type: ignore[import-not-found]
+    from opentelemetry.sdk.metrics import MeterProvider  # type: ignore[import-not-found]
+    from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader  # type: ignore[import-not-found]
+    from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter  # type: ignore[import-not-found]
+    from opentelemetry.sdk.resources import Resource, SERVICE_NAME, SERVICE_VERSION  # type: ignore[import-not-found]
     OTLP_AVAILABLE = True
 except ImportError:
     OTLP_AVAILABLE = False
@@ -84,6 +84,11 @@ class OTLPMetrics:
                 "Missing OTLP configuration. Set: OTLP_ENDPOINT, OTLP_INSTANCE_ID, OTLP_TOKEN"
             )
         
+        # Type assertion since we checked they are not None
+        assert endpoint is not None
+        assert instance_id is not None
+        assert token is not None
+        
         return MetricConfig(
             endpoint=endpoint,
             instance_id=instance_id,
@@ -93,7 +98,7 @@ class OTLPMetrics:
             service_version=os.getenv("OTLP_SERVICE_VERSION", "1.0.0")
         )
     
-    def _setup_meter(self):
+    def _setup_meter(self) -> None:
         """Initialize OpenTelemetry meter with Grafana Cloud exporter"""
         import base64
         
@@ -132,7 +137,7 @@ class OTLPMetrics:
         # Set global meter provider (only if not already set)
         # Check if a provider is already set by checking the current provider
         current_provider = metrics.get_meter_provider()
-        from opentelemetry.metrics import NoOpMeterProvider
+        from opentelemetry.metrics import NoOpMeterProvider  # type: ignore[import-not-found]
         
         if isinstance(current_provider, NoOpMeterProvider):
             # No provider set yet, set ours
@@ -147,7 +152,7 @@ class OTLPMetrics:
         
         logger.info(f"OTLP metrics initialized: {self.config.endpoint}")
     
-    def _create_instruments(self):
+    def _create_instruments(self) -> None:
         """Create metric instruments (counters, gauges, histograms)"""
         # Counters (monotonically increasing)
         self.skill_executions = self.meter.create_counter(
@@ -201,7 +206,7 @@ class OTLPMetrics:
         latency_ms: float,
         user_id: Optional[str] = None,
         org_id: Optional[str] = None
-    ):
+    ) -> None:
         """
         Record a skill execution event.
         
@@ -236,7 +241,7 @@ class OTLPMetrics:
         skill_id: str,
         rating: int,
         user_id: Optional[str] = None
-    ):
+    ) -> None:
         """
         Record a skill rating (1-5 stars).
         
@@ -256,7 +261,7 @@ class OTLPMetrics:
         
         logger.debug(f"Recorded rating: {skill_id} = {rating} stars")
     
-    def update_health_score(self, skill_id: str, score: float):
+    def update_health_score(self, skill_id: str, score: float) -> None:
         """
         Update health score for a skill (0-100).
         
@@ -270,7 +275,7 @@ class OTLPMetrics:
         self._health_scores[skill_id] = score
         logger.debug(f"Updated health score: {skill_id} = {score}/100")
     
-    def _observe_health_scores(self, options):
+    def _observe_health_scores(self, options: Any) -> Any:
         """Callback for observable gauge - yields current health scores"""
         for skill_id, score in self._health_scores.items():
             yield metrics.Observation(
@@ -278,7 +283,7 @@ class OTLPMetrics:
                 attributes={"skill_id": skill_id}
             )
     
-    def push(self):
+    def push(self) -> None:
         """
         Force immediate push of metrics to Grafana Cloud.
         
@@ -340,6 +345,10 @@ def create_otlp_client(
         OTLPMetrics instance
     """
     if all([endpoint, instance_id, token]):
+        # Type assertion since we checked they are not None
+        assert endpoint is not None
+        assert instance_id is not None
+        assert token is not None
         config = MetricConfig(
             endpoint=endpoint,
             instance_id=instance_id,

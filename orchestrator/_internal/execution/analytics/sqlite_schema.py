@@ -185,11 +185,11 @@ class SQLiteSchema:
         """
         if db_path is None:
             home = Path.home()
-            db_path = home / ".toolweaver" / "analytics.db"
+            path = home / ".toolweaver" / "analytics.db"
         else:
-            db_path = Path(db_path).expanduser()
+            path = Path(db_path).expanduser()
 
-        self.db_path = db_path
+        self.db_path = path
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Enable WAL mode for better concurrency
@@ -352,9 +352,10 @@ class SQLiteSchema:
             conn = self.connect()
             cursor = conn.cursor()
 
+            tables: dict[str, int] = {}
             stats = {
                 "timestamp": datetime.now().isoformat(),
-                "tables": {},
+                "tables": tables,
             }
 
             # Get row counts for each table (skip schema_version)
@@ -363,7 +364,7 @@ class SQLiteSchema:
                     continue
                 cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
                 count = cursor.fetchone()[0]
-                stats["tables"][table_name] = count
+                tables[table_name] = count
 
             conn.close()
             return stats

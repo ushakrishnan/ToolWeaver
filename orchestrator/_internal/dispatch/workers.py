@@ -1,15 +1,22 @@
 import asyncio
 import os
 import logging
-from typing import Dict, Any
+from typing import Any, Dict, TYPE_CHECKING
 from ...shared.models import ReceiptOCROut, LineItemParserOut, LineItem, CategorizerOut
+
+if TYPE_CHECKING:
+    from ..small_model_worker import SmallModelWorker  # type: ignore[import-not-found]
+    from azure.ai.vision.imageanalysis import ImageAnalysisClient  # type: ignore[import-not-found]
+    from azure.ai.vision.imageanalysis.models import VisualFeatures  # type: ignore[import-not-found]
+    from azure.core.credentials import AzureKeyCredential  # type: ignore[import-not-found]
+    from azure.identity import DefaultAzureCredential  # type: ignore[import-not-found]
 
 logger = logging.getLogger(__name__)
 
 # Optional small model worker import
 _small_model_worker = None
 
-def _get_small_model_worker():
+def _get_small_model_worker() -> Any:  # type: ignore[no-untyped-def]
     """Lazy initialization of small model worker."""
     global _small_model_worker
     if _small_model_worker is None:
@@ -30,10 +37,10 @@ def _get_small_model_worker():
 
 # Try to import Azure CV, fall back to mock mode if not available
 try:
-    from azure.ai.vision.imageanalysis import ImageAnalysisClient
-    from azure.ai.vision.imageanalysis.models import VisualFeatures
-    from azure.core.credentials import AzureKeyCredential
-    from azure.identity import DefaultAzureCredential
+    from azure.ai.vision.imageanalysis import ImageAnalysisClient  # type: ignore[import-not-found]
+    from azure.ai.vision.imageanalysis.models import VisualFeatures  # type: ignore[import-not-found]
+    from azure.core.credentials import AzureKeyCredential  # type: ignore[import-not-found]
+    from azure.identity import DefaultAzureCredential  # type: ignore[import-not-found]
     from dotenv import load_dotenv
     load_dotenv()
     AZURE_CV_AVAILABLE = True
@@ -58,7 +65,7 @@ async def receipt_ocr_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
             
             if not endpoint:
                 logger.warning("Azure CV endpoint not configured. Using mock data.")
-                return _mock_ocr(image_uri)
+                return _mock_ocr(image_uri if image_uri else "unknown")
             
             logger.info(f"Processing image with Azure Computer Vision: {image_uri}")
             
@@ -100,10 +107,10 @@ async def receipt_ocr_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
             
         except Exception as e:
             logger.error(f"Azure Computer Vision error: {e}. Falling back to mock data.")
-            return _mock_ocr(image_uri)
+            return _mock_ocr(image_uri if image_uri else "unknown")
     else:
         # Mock mode
-        return _mock_ocr(image_uri)
+        return _mock_ocr(image_uri if image_uri else "unknown")
 
 def _mock_ocr(image_uri: str) -> Dict[str, Any]:
     """Generate mock OCR data for testing."""

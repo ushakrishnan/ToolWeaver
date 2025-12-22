@@ -29,8 +29,8 @@ import logging
 import hashlib
 import hmac
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
+from typing import Dict, List, Any, Optional, Tuple, cast
+from dataclasses import dataclass, asdict, field
 from datetime import datetime
 from urllib.parse import urljoin
 import asyncio
@@ -56,7 +56,7 @@ class RegistrySkill:
     description: str = ""
     code_hash: str = ""  # SHA256 of code for verification
     signature: str = ""  # Optional HMAC-SHA256 signature
-    tags: List[str] = None
+    tags: List[str] = field(default_factory=list)
     rating: float = 0.0  # Average rating 0-5
     rating_count: int = 0
     install_count: int = 0
@@ -67,11 +67,6 @@ class RegistrySkill:
     homepage: Optional[str] = None
     repository: Optional[str] = None
     
-    def __post_init__(self):
-        if self.tags is None:
-            self.tags = []
-
-
 @dataclass
 class RegistryConfig:
     """Registry connection configuration."""
@@ -101,14 +96,14 @@ def _load_registry_config() -> RegistryConfig:
     )
 
 
-def _save_registry_config(config: RegistryConfig):
+def _save_registry_config(config: RegistryConfig) -> None:
     """Save registry configuration to disk."""
     REGISTRY_URL.parent.mkdir(parents=True, exist_ok=True)
     REGISTRY_URL.write_text(json.dumps(asdict(config), indent=2))
 
 
-def configure_registry(url: str = None, token: str = None, org: str = None, 
-                       verify_signature: bool = None) -> RegistryConfig:
+def configure_registry(url: Optional[str] = None, token: Optional[str] = None, org: Optional[str] = None, 
+                       verify_signature: Optional[bool] = None) -> RegistryConfig:
     """
     Configure registry connection.
     
@@ -167,7 +162,7 @@ class SkillRegistry:
         return hmac.compare_digest(signature, expected)
     
     def publish_skill(self, skill: Skill, org: Optional[str] = None, 
-                     tags: List[str] = None, license: str = "MIT",
+                     tags: Optional[List[str]] = None, license: str = "MIT",
                      homepage: Optional[str] = None,
                      repository: Optional[str] = None,
                      secret: Optional[str] = None) -> RegistrySkill:
@@ -208,6 +203,8 @@ class SkillRegistry:
         signature = self._sign_skill(skill_id, code_hash, secret) if secret else ""
         
         # Build payload
+        resolved_tags: List[str] = tags or skill.tags or []
+
         payload = {
             'id': skill_id,
             'name': skill.name,
@@ -216,7 +213,7 @@ class SkillRegistry:
             'description': skill.description,
             'code_hash': code_hash,
             'signature': signature,
-            'tags': tags or skill.tags or [],
+            'tags': resolved_tags,
             'license': license,
             'homepage': homepage,
             'repository': repository,
@@ -242,7 +239,7 @@ class SkillRegistry:
                 description=skill.description,
                 code_hash=code_hash,
                 signature=signature,
-                tags=payload['tags'],
+                tags=resolved_tags,
                 created_at=result.get('created_at', datetime.utcnow().isoformat()),
                 updated_at=result.get('updated_at', datetime.utcnow().isoformat()),
             )
@@ -251,7 +248,7 @@ class SkillRegistry:
             logger.error(f"Failed to publish skill {skill_id}: {e}")
             raise ConnectionError(f"Registry error: {e}")
     
-    def search(self, query: str = "", tags: List[str] = None, 
+    def search(self, query: str = "", tags: Optional[List[str]] = None, 
               org: Optional[str] = None, min_rating: float = 0.0,
               limit: int = 50, offset: int = 0) -> List[RegistrySkill]:
         """
@@ -268,7 +265,7 @@ class SkillRegistry:
         Returns:
             List of matching RegistrySkill objects
         """
-        params = {
+        params: Dict[str, str | int | float] = {
             'q': query,
             'limit': limit,
             'offset': offset,
@@ -344,7 +341,7 @@ class SkillRegistry:
                 raise ValueError(f"Skill {skill_id} not found in registry")
             
             # Download skill package
-            params = {}
+            params: Dict[str, str] = {}
             if version:
                 params['version'] = version
             
@@ -381,7 +378,12 @@ class SkillRegistry:
             skill_file.write_text(code)
             
             # Save to library
-            save_skill(skill)
+            save_skill(
+                skill.name,
+                code,
+                description=skill.description,
+                tags=skill.tags,
+            )
             
             logger.info(f"Downloaded and installed skill {skill_id} v{registry_skill.version}")
             return skill
@@ -407,7 +409,7 @@ class SkillRegistry:
             raise ValueError("Rating must be between 1 and 5")
         
         try:
-            payload = {'rating': rating}
+            payload: Dict[str, Any] = {'rating': rating}
             if review:
                 payload['review'] = review
             
@@ -441,7 +443,7 @@ class SkillRegistry:
                 timeout=self.config.timeout
             )
             response.raise_for_status()
-            return response.json()
+            return cast(Dict[str, Any], response.json())
         
         except requests.RequestException as e:
             logger.error(f"Failed to get ratings for {skill_id}: {e}")
@@ -464,14 +466,14 @@ def _get_registry(config: Optional[RegistryConfig] = None) -> SkillRegistry:
     return _registry_instance
 
 
-def publish_skill(skill: Skill, org: Optional[str] = None, tags: List[str] = None,
+def publish_skill(skill: Skill, org: Optional[str] = None, tags: Optional[List[str]] = None,
                  license: str = "MIT", homepage: Optional[str] = None,
                  repository: Optional[str] = None) -> RegistrySkill:
     """Publish skill to registry."""
     return _get_registry().publish_skill(skill, org, tags, license, homepage, repository)
 
 
-def search_registry(query: str = "", tags: List[str] = None, 
+def search_registry(query: str = "", tags: Optional[List[str]] = None, 
                    org: Optional[str] = None, min_rating: float = 0.0) -> List[RegistrySkill]:
     """Search registry for skills."""
     return _get_registry().search(query, tags, org, min_rating)

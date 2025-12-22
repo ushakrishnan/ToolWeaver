@@ -8,7 +8,7 @@ import time
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, AsyncGenerator
 
 import aiohttp
 from aiohttp import ClientResponseError, ClientError, WSMsgType
@@ -75,7 +75,7 @@ class A2AClient:
         retry_backoff_s: float = 0.1,
         circuit_breaker_threshold: int = 3,
         circuit_reset_s: int = 30,
-        observer: Optional[callable] = None,
+        observer: Optional[Callable[..., Any]] = None,
     ) -> None:
         self.config_path = Path(config_path) if config_path else None
         self.registry_url = registry_url
@@ -97,7 +97,7 @@ class A2AClient:
         await self.load()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         return None
 
     async def load(self) -> None:
@@ -127,7 +127,9 @@ class A2AClient:
                 latency_estimate=agent_cfg.get("latency_estimate"),
                 metadata=agent_cfg.get("metadata", {}),
             )
-            self.agent_map[capability.agent_id] = capability
+            agent_id = capability.agent_id
+            if agent_id:  # Guard against None
+                self.agent_map[agent_id] = capability
 
     def _validate_agent_cfg(self, agent_cfg: Dict[str, Any]) -> None:
         required = ["agent_id", "name", "endpoint"]
@@ -163,7 +165,8 @@ class A2AClient:
         )
 
         if cache_valid:
-            agents = list(self._discovery_cache_agents)
+            # Guard against None - should be a list if cache is valid
+            agents = list(self._discovery_cache_agents) if self._discovery_cache_agents else []
         else:
             agents = list(self.agent_map.values())
             self._discovery_cache_agents = agents
@@ -287,7 +290,7 @@ class A2AClient:
         request: AgentDelegationRequest,
         *,
         chunk_timeout: Optional[float] = None,
-    ):
+    ) -> Any:
         """Stream agent responses as an async generator.
 
         Notes:
@@ -438,9 +441,13 @@ class A2AClient:
             "metadata": request.metadata,
         }
 
+        endpoint = agent.endpoint
+        if not endpoint:
+            raise ValueError(f"Agent {agent.name} has no endpoint configured")
+
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                agent.endpoint,
+                endpoint,
                 json=payload,
                 headers=headers,
             ) as response:
@@ -455,7 +462,7 @@ class A2AClient:
         agent: AgentCapability,
         request: AgentDelegationRequest,
         chunk_timeout: Optional[float],
-    ):
+    ) -> Any:
         if agent.protocol == "http":
             async for chunk in self._delegate_http_stream(agent, request, chunk_timeout):
                 yield chunk
@@ -473,7 +480,7 @@ class A2AClient:
         agent: AgentCapability,
         request: AgentDelegationRequest,
         chunk_timeout: Optional[float],
-    ):
+    ) -> AsyncGenerator[Dict[str, Any], None]:
         headers = {"Content-Type": "application/json"}
         auth_cfg = agent.metadata.get("auth") if agent.metadata else None
         if auth_cfg and auth_cfg.get("type") in {"bearer", "api_key"}:
@@ -492,10 +499,14 @@ class A2AClient:
             "metadata": request.metadata,
         }
 
+        endpoint = agent.endpoint
+        if not endpoint:
+            raise ValueError(f"Agent {agent.name} has no endpoint configured")
+
         session = aiohttp.ClientSession()
         try:
             async with session.post(
-                agent.endpoint,
+                endpoint,
                 json=payload,
                 headers=headers,
             ) as response:
@@ -510,7 +521,7 @@ class A2AClient:
                         if response.content.at_eof():
                             break
                         continue
-                    yield chunk.decode()
+                    yield {"chunk": chunk.decode()}
         finally:
             await session.close()
 
@@ -519,11 +530,15 @@ class A2AClient:
         agent: AgentCapability,
         request: AgentDelegationRequest,
         chunk_timeout: Optional[float],
-    ):
+    ) -> Any:
         headers = {"Accept": "text/event-stream"}
 
+        endpoint = agent.endpoint
+        if not endpoint:
+            raise ValueError(f"Agent {agent.name} has no endpoint configured")
+
         async with aiohttp.ClientSession() as session:
-            async with session.get(agent.endpoint, headers=headers) as response:
+            async with session.get(endpoint, headers=headers) as response:
                 response.raise_for_status()
                 buffer = ""
                 while True:
@@ -551,9 +566,13 @@ class A2AClient:
         agent: AgentCapability,
         request: AgentDelegationRequest,
         chunk_timeout: Optional[float],
-    ):
+    ) -> Any:
+        endpoint = agent.endpoint
+        if not endpoint:
+            raise ValueError(f"Agent {agent.name} has no endpoint configured")
+
         async with aiohttp.ClientSession() as session:
-            ws = await session.ws_connect(agent.endpoint)
+            ws = await session.ws_connect(endpoint)
             try:
                 while True:
                     recv = ws.receive()
@@ -572,8 +591,9 @@ class A2AClient:
                 await ws.close()
 
     def register_agent(self, capability: AgentCapability) -> None:
-        self.agent_map[capability.agent_id] = capability
-        self.invalidate_discovery_cache()
+        if capability.agent_id:
+            self.agent_map[capability.agent_id] = capability
+            self.invalidate_discovery_cache()
 
     def unregister_agent(self, agent_id: str) -> None:
         if agent_id in self.agent_map:

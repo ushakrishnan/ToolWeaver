@@ -17,9 +17,21 @@ import logging
 from typing import List, Optional, Tuple, Dict, Any
 from pathlib import Path
 
-import numpy as np
-from sentence_transformers import SentenceTransformer
-from rank_bm25 import BM25Okapi
+from typing import cast
+import numpy as np  # type: ignore[import-not-found]
+
+try:
+    from sentence_transformers import SentenceTransformer  # type: ignore[import-not-found]
+    SENTENCE_AVAILABLE = True
+except Exception:  # ImportError or runtime env issues
+    SentenceTransformer = None  # type: ignore[assignment]
+    SENTENCE_AVAILABLE = False
+
+try:
+    from rank_bm25 import BM25Okapi  # type: ignore[import-not-found]
+    BM25_AVAILABLE = True
+except Exception:
+    BM25_AVAILABLE = False
 
 from ..shared.models import ToolCatalog, ToolDefinition
 
@@ -58,7 +70,7 @@ class ToolSearchEngine:
             cache_dir: Directory for caching embeddings and results
         """
         self.embedding_model_name = embedding_model
-        self.embedding_model = None  # Lazy load
+        self.embedding_model: Optional[Any] = None  # Lazy load
         self.bm25_weight = bm25_weight
         self.embedding_weight = embedding_weight
         
@@ -71,12 +83,17 @@ class ToolSearchEngine:
             f"Embedding: {embedding_weight:.1f})"
         )
     
-    def _init_embedding_model(self):
-        """Lazy initialization of embedding model"""
+    def _init_embedding_model(self) -> None:
+        """Lazy initialization of embedding model if available."""
         if self.embedding_model is None:
+            if not SENTENCE_AVAILABLE:
+                logger.warning("SentenceTransformer not installed; embedding search disabled.")
+                return
             logger.info(f"Loading embedding model: {self.embedding_model_name}")
-            self.embedding_model = SentenceTransformer(self.embedding_model_name)
-            logger.info(f"Embedding model loaded (dim={self.embedding_model.get_sentence_embedding_dimension()})")
+            self.embedding_model = SentenceTransformer(self.embedding_model_name)  # type: ignore[misc]
+            logger.info(
+                f"Embedding model loaded (dim={self.embedding_model.get_sentence_embedding_dimension()})"
+            )
     
     def search(
         self,
@@ -174,8 +191,10 @@ class ToolSearchEngine:
         # Tokenize corpus (simple whitespace split + lowercase)
         tokenized_corpus = [doc.lower().split() for doc in corpus]
         
-        # Build BM25 index
-        bm25 = BM25Okapi(tokenized_corpus)
+        # Build BM25 index (fallback to zeros if unavailable)
+        if not BM25_AVAILABLE:
+            return np.zeros(len(tokenized_corpus), dtype=float)
+        bm25 = BM25Okapi(tokenized_corpus)  # type: ignore[misc]
         
         # Search
         tokenized_query = query.lower().split()
@@ -195,9 +214,11 @@ class ToolSearchEngine:
         vectors, then computes cosine similarity.
         """
         self._init_embedding_model()
+        if self.embedding_model is None:
+            return np.zeros(len(tools), dtype=float)
         
         # Get query embedding
-        query_embedding = self.embedding_model.encode(query, convert_to_tensor=False)
+        query_embedding = self.embedding_model.encode(query, convert_to_tensor=False)  # type: ignore[union-attr]
         
         # Get tool embeddings (with caching)
         tool_embeddings = []
@@ -233,7 +254,10 @@ class ToolSearchEngine:
             return np.load(cache_file)
         
         # Compute embedding
-        embedding = self.embedding_model.encode(text, convert_to_tensor=False)
+        if self.embedding_model is None:
+            # Should not happen due to guards; return zeros for safety
+            return np.zeros(0, dtype=float)
+        embedding = self.embedding_model.encode(text, convert_to_tensor=False)  # type: ignore[union-attr]
         
         # Save to cache
         np.save(cache_file, embedding)
@@ -262,13 +286,14 @@ class ToolSearchEngine:
             if age_seconds < 3600:  # 1 hour TTL
                 try:
                     with open(cache_file, "rb") as f:
-                        return pickle.load(f)
+                            loaded = pickle.load(f)
+                            return cast(List[Tuple[ToolDefinition, float]], loaded)
                 except Exception as e:
                     logger.warning(f"Failed to load cache {cache_key}: {e}")
         
         return None
     
-    def _save_to_cache(self, cache_key: str, results: List[Tuple[ToolDefinition, float]]):
+    def _save_to_cache(self, cache_key: str, results: List[Tuple[ToolDefinition, float]]) -> None:
         """Save search results to cache"""
         cache_file = self.cache_dir / f"search_{cache_key}.pkl"
         
@@ -308,7 +333,7 @@ class ToolSearchEngine:
         
         return "\n".join(lines)
     
-    def clear_cache(self):
+    def clear_cache(self) -> None:
         """Clear all cached embeddings and search results"""
         if self.cache_dir.exists():
             import shutil

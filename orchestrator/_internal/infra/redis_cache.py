@@ -19,6 +19,7 @@ import os
 import json
 import pickle
 import hashlib
+import ssl
 import logging
 import time
 from typing import Any, Optional, Dict
@@ -51,10 +52,10 @@ class CircuitBreaker:
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.failures = 0
-        self.last_failure_time = 0
+        self.last_failure_time: float = 0.0
         self.state = "CLOSED"
     
-    def call(self, func, *args, **kwargs):
+    def call(self, func: Any, *args: Any, **kwargs: Any) -> Any:
         """Execute function with circuit breaker protection"""
         if self.state == "OPEN":
             # Check if we should try recovery
@@ -73,10 +74,10 @@ class CircuitBreaker:
             self.record_failure()
             raise e
     
-    def record_failure(self):
+    def record_failure(self) -> None:
         """Record a failure and potentially open circuit"""
         self.failures += 1
-        self.last_failure_time = time.time()
+        self.last_failure_time = float(time.time())
         
         if self.failures >= self.failure_threshold:
             self.state = "OPEN"
@@ -85,7 +86,7 @@ class CircuitBreaker:
                 f"Will retry in {self.recovery_timeout}s"
             )
     
-    def reset(self):
+    def reset(self) -> None:
         """Reset circuit breaker to CLOSED state"""
         self.failures = 0
         self.state = "CLOSED"
@@ -137,7 +138,8 @@ class RedisCache:
             enable_fallback: Enable fallback to file cache on Redis failure
             pool_size: Connection pool size
         """
-        self.redis_url = redis_url or os.getenv("REDIS_URL", "redis://localhost:6379")
+        env_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+        self.redis_url: str = redis_url if redis_url is not None else env_url
         self.password = password or os.getenv("REDIS_PASSWORD")
         self.ssl = ssl or self.redis_url.startswith("rediss://")
         self.enable_fallback = enable_fallback
@@ -162,7 +164,7 @@ class RedisCache:
         else:
             logger.warning("redis package not installed, using file cache only")
     
-    def _init_redis_client(self, pool_size: int):
+    def _init_redis_client(self, pool_size: int) -> None:
         """Initialize Redis client with connection pooling"""
         try:
             # Build connection kwargs
@@ -177,7 +179,7 @@ class RedisCache:
             # Add SSL/TLS for Azure Redis
             if self.ssl:
                 connection_kwargs["ssl"] = True
-                connection_kwargs["ssl_cert_reqs"] = None  # Don't verify cert for development
+                connection_kwargs["ssl_cert_reqs"] = ssl.CERT_NONE  # Don't verify cert for development
             
             # Create connection pool
             self.pool = ConnectionPool.from_url(
@@ -214,7 +216,7 @@ class RedisCache:
             Cached value or None if not found
         """
         # Try Redis first
-        if self.redis_available:
+        if self.redis_available and self.client is not None:
             try:
                 value = self.circuit_breaker.call(self.client.get, key)
                 if value is not None:
@@ -244,7 +246,7 @@ class RedisCache:
             True if successful
         """
         # Try Redis first
-        if self.redis_available:
+        if self.redis_available and self.client is not None:
             try:
                 serialized = pickle.dumps(value)
                 self.circuit_breaker.call(
@@ -275,7 +277,7 @@ class RedisCache:
         success = False
         
         # Delete from Redis
-        if self.redis_available:
+        if self.redis_available and self.client is not None:
             try:
                 self.circuit_breaker.call(self.client.delete, key)
                 success = True
@@ -294,7 +296,7 @@ class RedisCache:
         success = False
         
         # Clear Redis
-        if self.redis_available:
+        if self.redis_available and self.client is not None:
             try:
                 self.circuit_breaker.call(self.client.flushdb)
                 logger.info("Redis cache cleared")
@@ -350,7 +352,7 @@ class RedisCache:
             logger.warning(f"File cache write failed: {e}")
             return False
     
-    def _file_delete(self, key: str):
+    def _file_delete(self, key: str) -> None:
         """Delete from file cache"""
         cache_file = self.cache_dir / f"{self._hash_key(key)}.cache"
         if cache_file.exists():
@@ -376,7 +378,7 @@ class RedisCache:
         }
         
         # Try ping if Redis available
-        if self.redis_available:
+        if self.redis_available and self.client is not None:
             try:
                 self.circuit_breaker.call(self.client.ping)
                 status["redis_ping"] = "OK"
@@ -427,12 +429,12 @@ class ToolCache:
         key = f"search:{query_hash}:{catalog_version}:{top_k}"
         return self.cache.set(key, results, ttl=self.SEARCH_TTL)
     
-    def get_embedding(self, text_hash: str, model_name: str):
+    def get_embedding(self, text_hash: str, model_name: str) -> Any:
         """Get cached embedding"""
         key = f"embedding:{text_hash}:{model_name}"
         return self.cache.get(key)
     
-    def set_embedding(self, text_hash: str, model_name: str, embedding) -> bool:
+    def set_embedding(self, text_hash: str, model_name: str, embedding: Any) -> bool:
         """Cache embedding"""
         key = f"embedding:{text_hash}:{model_name}"
         return self.cache.set(key, embedding, ttl=self.EMBEDDING_TTL)

@@ -84,11 +84,13 @@ def review_pending_skills() -> None:
         
         # Run validation
         code = Path(skill.code_path).read_text()
-        validation = validate_stub(code, level="syntax")  # Quick syntax check
+        validation = validate_stub(code, check_syntax=True)  # Quick syntax check
         
-        print(f"\nValidation: {'✓ PASS' if validation['passed'] else '✗ FAIL'}")
-        if not validation['passed']:
-            print(f"  Error: {validation.get('syntax_error', 'Unknown error')}")
+        is_valid = bool(validation.get('valid', False))
+        print(f"\nValidation: {'✓ PASS' if is_valid else '✗ FAIL'}")
+        if not is_valid:
+            syntax = validation.get('syntax') or {}
+            print(f"  Error: {syntax.get('error', 'Unknown error')}")
         
         # Preview code (first 10 lines)
         lines = code.split("\n")[:10]
@@ -148,17 +150,14 @@ def promote_skill_to_git(skill_name: str, git_repo_path: Optional[str] = None) -
         return False
     
     # Determine Git repo path
-    if git_repo_path is None:
-        git_repo_path = Path.cwd()
-    else:
-        git_repo_path = Path(git_repo_path)
+    git_repo: Path = Path.cwd() if git_repo_path is None else Path(git_repo_path)
     
-    if not (git_repo_path / ".git").exists():
-        print(f"✗ Not a Git repository: {git_repo_path}")
+    if not (git_repo / ".git").exists():
+        print(f"✗ Not a Git repository: {git_repo}")
         return False
     
     # Copy skill to Git repo
-    dest_dir = git_repo_path / "skills"
+    dest_dir = git_repo / "skills"
     dest_dir.mkdir(exist_ok=True)
     
     dest_file = dest_dir / f"{skill.name}.py"
@@ -178,7 +177,7 @@ def promote_skill_to_git(skill_name: str, git_repo_path: Optional[str] = None) -
     try:
         subprocess.run(
             ["git", "add", str(dest_file)],
-            cwd=git_repo_path,
+            cwd=git_repo,
             check=True,
             capture_output=True
         )
@@ -186,7 +185,7 @@ def promote_skill_to_git(skill_name: str, git_repo_path: Optional[str] = None) -
         commit_msg = f"Add approved skill: {skill.name}\n\n{skill.description or ''}"
         result = subprocess.run(
             ["git", "commit", "-m", commit_msg],
-            cwd=git_repo_path,
+            cwd=git_repo,
             check=True,
             capture_output=True,
             text=True
@@ -195,7 +194,7 @@ def promote_skill_to_git(skill_name: str, git_repo_path: Optional[str] = None) -
         # Extract commit hash
         git_ref = subprocess.run(
             ["git", "rev-parse", "HEAD"],
-            cwd=git_repo_path,
+            cwd=git_repo,
             check=True,
             capture_output=True,
             text=True
@@ -207,7 +206,7 @@ def promote_skill_to_git(skill_name: str, git_repo_path: Optional[str] = None) -
         
         print(f"✓ Promoted '{skill.name}' to Git")
         print(f"  Commit: {git_ref[:8]}")
-        print(f"  File: {dest_file.relative_to(git_repo_path)}")
+        print(f"  File: {dest_file.relative_to(git_repo)}")
         return True
         
     except subprocess.CalledProcessError as e:
@@ -215,7 +214,7 @@ def promote_skill_to_git(skill_name: str, git_repo_path: Optional[str] = None) -
         return False
 
 
-def main():
+def main() -> None:
     """CLI entrypoint."""
     if len(sys.argv) < 2:
         print("Usage:")

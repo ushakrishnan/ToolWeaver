@@ -9,7 +9,7 @@ This module provides a unified interface for dispatching to:
 
 import asyncio
 import logging
-from typing import Dict, Any, Callable, Optional
+from typing import Any, Callable, Dict, Optional, cast
 from ..execution.code_exec_worker import code_exec_worker
 from ...shared.models import FunctionCallInput, FunctionCallOutput
 from ..infra.a2a_client import AgentDelegationRequest
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 _function_map: Dict[str, Callable] = {}
 
 
-def register_function(name: str):
+def register_function(name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Decorator to register a function for structured function calls.
     
@@ -29,7 +29,7 @@ def register_function(name: str):
         def my_function(arg1: str, arg2: int) -> dict:
             return {"result": arg1 * arg2}
     """
-    def decorator(func):
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         _function_map[name] = func
         logger.info(f"Registered function: {name}")
         return func
@@ -129,12 +129,13 @@ async def dispatch_step(
             ):
                 chunks.append(chunk)
             return {"chunks": chunks}
-        return await mcp_client.call_tool(
+        result = await mcp_client.call_tool(
             tool_type,
             resolved_input,
             idempotency_key=step.get('idempotency_key'),
             timeout=step.get('timeout_s', 30)
         )
+        return cast(Dict[str, Any], result) if isinstance(result, dict) else {}
     elif tool_type.startswith("agent_") and a2a_client:
         agent_id = tool_type[len("agent_"):]
         task = resolved_input.get("task") or step.get("task") or tool_type
@@ -157,7 +158,7 @@ async def dispatch_step(
                 chunks.append(chunk)
             return {"chunks": chunks}
         resp = await a2a_client.delegate_to_agent(req)
-        return resp.result
+        return cast(Dict[str, Any], resp.result) if isinstance(resp.result, dict) else {}
     elif tool_type == "function_call":
         # Structured function call
         return await function_call_worker(resolved_input)

@@ -9,18 +9,38 @@ import logging
 from typing import List, Tuple, Optional, Dict, Any
 from pathlib import Path
 
-from qdrant_client import QdrantClient
-from qdrant_client.models import (
-    Distance,
-    VectorParams,
-    PointStruct,
-    Filter,
-    FieldCondition,
-    MatchValue
-)
-from sentence_transformers import SentenceTransformer
-import numpy as np
-import torch
+from typing import Any
+
+try:
+    from qdrant_client import QdrantClient  # type: ignore[import-not-found]
+    from qdrant_client.models import (  # type: ignore[import-not-found]
+        Distance,
+        VectorParams,
+        PointStruct,
+        Filter,
+        FieldCondition,
+        MatchValue
+    )
+    QDRANT_IMPORTED = True
+except Exception:
+    QdrantClient = None  # type: ignore[assignment]
+    Distance = VectorParams = PointStruct = Filter = FieldCondition = MatchValue = None  # type: ignore[assignment]
+    QDRANT_IMPORTED = False
+
+try:
+    from sentence_transformers import SentenceTransformer  # type: ignore[import-not-found]
+    SENTENCE_AVAILABLE = True
+except Exception:
+    SentenceTransformer = None  # type: ignore[assignment]
+    SENTENCE_AVAILABLE = False
+
+import numpy as np  # type: ignore[import-not-found]
+
+try:
+    import torch  # type: ignore[import-not-found]
+    TORCH_AVAILABLE = True
+except Exception:
+    TORCH_AVAILABLE = False
 
 from ..shared.models import ToolCatalog, ToolDefinition
 
@@ -86,8 +106,8 @@ class VectorToolSearchEngine:
         self.device = self._detect_device()
         
         # Lazy initialization
-        self.client: Optional[QdrantClient] = None
-        self.embedding_model: Optional[SentenceTransformer] = None
+        self.client: Optional[Any] = None
+        self.embedding_model: Optional[Any] = None
         self.qdrant_available = False
         
         # Fallback in-memory search (if Qdrant unavailable)
@@ -111,25 +131,29 @@ class VectorToolSearchEngine:
             return "cpu"
         
         # Check for NVIDIA CUDA
-        if torch.cuda.is_available():
+        if TORCH_AVAILABLE and hasattr(torch, "cuda") and torch.cuda.is_available():
             gpu_name = torch.cuda.get_device_name(0)
             gpu_memory = torch.cuda.get_device_properties(0).total_memory / (1024**3)  # GB
             logger.info(f"GPU detected: {gpu_name} ({gpu_memory:.1f} GB)")
             return "cuda"
         
         # Check for Apple Silicon MPS (Metal Performance Shaders)
-        if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        if TORCH_AVAILABLE and hasattr(torch, "backends") and hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
             logger.info("Apple Silicon GPU detected (MPS)")
             return "mps"
         
         logger.info("No GPU available, using CPU")
         return "cpu"
     
-    def _init_qdrant_client(self):
+    def _init_qdrant_client(self) -> None:
         """Initialize Qdrant client with connection pooling"""
         if self.client is None:
+            if not QDRANT_IMPORTED:
+                self.qdrant_available = False
+                logger.warning("qdrant-client not installed; using in-memory fallback if enabled")
+                return
             try:
-                self.client = QdrantClient(
+                self.client = QdrantClient(  # type: ignore[misc]
                     url=self.qdrant_url,
                     timeout=10.0,
                     prefer_grpc=False  # Use REST API for simplicity
@@ -145,14 +169,17 @@ class VectorToolSearchEngine:
                     raise
                 logger.info("Will use in-memory fallback for vector search")
     
-    def _init_embedding_model(self):
+    def _init_embedding_model(self) -> None:
         """Lazy initialization of embedding model with GPU support"""
         if self.embedding_model is None:
+            if not SENTENCE_AVAILABLE:
+                logger.warning("SentenceTransformer not installed; embeddings disabled.")
+                return
             logger.info(f"Loading embedding model: {self.embedding_model_name}")
-            self.embedding_model = SentenceTransformer(self.embedding_model_name)
+            self.embedding_model = SentenceTransformer(self.embedding_model_name)  # type: ignore[misc]
             
             # Move model to GPU if available
-            if self.device in ["cuda", "mps"]:
+            if self.device in ["cuda", "mps"] and self.embedding_model is not None:
                 try:
                     self.embedding_model.to(self.device)
                     logger.info(f"Embedding model moved to {self.device.upper()}")
@@ -162,22 +189,22 @@ class VectorToolSearchEngine:
             
             logger.info(f"Embedding model loaded (dim={self.embedding_dim}, device={self.device})")
     
-    def _ensure_collection_exists(self):
+    def _ensure_collection_exists(self) -> None:
         """Create collection if it doesn't exist"""
         if not self.qdrant_available:
             return
         
         try:
-            collections = self.client.get_collections()
+            collections = self.client.get_collections()  # type: ignore[union-attr]
             collection_names = [c.name for c in collections.collections]
             
             if self.collection_name not in collection_names:
                 logger.info(f"Creating collection: {self.collection_name}")
-                self.client.create_collection(
+                self.client.create_collection(  # type: ignore[union-attr]
                     collection_name=self.collection_name,
-                    vectors_config=VectorParams(
+                    vectors_config=VectorParams(  # type: ignore[misc]
                         size=self.embedding_dim,
-                        distance=Distance.COSINE
+                        distance=Distance.COSINE  # type: ignore[misc]
                     )
                 )
                 logger.info(f"Collection '{self.collection_name}' created")
@@ -236,7 +263,7 @@ class VectorToolSearchEngine:
                     )
                 
                 # Batch upsert to Qdrant
-                self.client.upsert(
+                self.client.upsert(  # type: ignore[union-attr]
                     collection_name=self.collection_name,
                     points=points
                 )
@@ -337,7 +364,7 @@ class VectorToolSearchEngine:
             )
         
         # Search in Qdrant
-        search_results = self.client.search(
+        search_results = self.client.search(  # type: ignore[union-attr]
             collection_name=self.collection_name,
             query_vector=query_embedding.tolist(),
             query_filter=search_filter,
@@ -437,14 +464,18 @@ class VectorToolSearchEngine:
             logger.debug(f"Using GPU batch size: {batch_size}")
         
         # Generate embeddings
-        new_embeddings = self.embedding_model.encode(
-            texts_to_encode,
-            batch_size=batch_size,
-            show_progress_bar=show_progress,
-            convert_to_numpy=True,
-            normalize_embeddings=True,
-            device=self.device
-        )
+        if self.embedding_model is None:
+            # Embeddings unavailable; return zeros
+            new_embeddings = np.zeros((len(texts_to_encode), self.embedding_dim))
+        else:
+            new_embeddings = self.embedding_model.encode(  # type: ignore[union-attr]
+                texts_to_encode,
+                batch_size=batch_size,
+                show_progress_bar=show_progress,
+                convert_to_numpy=True,
+                normalize_embeddings=True,
+                device=self.device
+            )
         
         # Cache new embeddings
         for i, text in enumerate(texts_to_encode):
@@ -486,8 +517,8 @@ class VectorToolSearchEngine:
         descriptions = [self._get_searchable_text(tool) for tool in tools]
         
         # Generate and cache embeddings
-        start_time = torch.cuda.Event(enable_timing=True) if self.device == "cuda" else None
-        end_time = torch.cuda.Event(enable_timing=True) if self.device == "cuda" else None
+        start_time = torch.cuda.Event(enable_timing=True) if (TORCH_AVAILABLE and self.device == "cuda") else None
+        end_time = torch.cuda.Event(enable_timing=True) if (TORCH_AVAILABLE and self.device == "cuda") else None
         
         if start_time:
             start_time.record()
@@ -498,10 +529,13 @@ class VectorToolSearchEngine:
             show_progress=False
         )
         
-        if end_time:
+        if end_time and start_time:
             end_time.record()
-            torch.cuda.synchronize()
-            elapsed_ms = start_time.elapsed_time(end_time)
+            if TORCH_AVAILABLE:
+                torch.cuda.synchronize()
+                elapsed_ms = start_time.elapsed_time(end_time)  # type: ignore[assignment]
+            else:
+                elapsed_ms = 0.0
             logger.info(f"Pre-computed {len(tools)} embeddings in {elapsed_ms:.1f}ms on {self.device.upper()}")
         else:
             logger.info(f"Pre-computed {len(tools)} embeddings on {self.device.upper()}")
@@ -540,10 +574,10 @@ class VectorToolSearchEngine:
         Returns:
             True if deletion succeeded
         """
-        if self.qdrant_available:
+        if self.qdrant_available and self.client is not None:
             try:
                 # Find point ID by tool_name
-                search_results = self.client.scroll(
+                search_results = self.client.scroll(  # type: ignore[union-attr]
                     collection_name=self.collection_name,
                     scroll_filter=Filter(
                         must=[
@@ -558,7 +592,7 @@ class VectorToolSearchEngine:
                 
                 if search_results[0]:
                     point_id = search_results[0][0].id
-                    self.client.delete(
+                    self.client.delete(  # type: ignore[union-attr]
                         collection_name=self.collection_name,
                         points_selector=[point_id]
                     )
@@ -577,9 +611,9 @@ class VectorToolSearchEngine:
     
     def clear_index(self) -> bool:
         """Clear all tools from the index"""
-        if self.qdrant_available:
+        if self.qdrant_available and self.client is not None:
             try:
-                self.client.delete_collection(self.collection_name)
+                self.client.delete_collection(self.collection_name)  # type: ignore[union-attr]
                 logger.info(f"Cleared collection: {self.collection_name}")
                 return True
             except Exception as e:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple, Type
+from typing import Any, Dict, Tuple, Type, cast
 
 from pydantic import BaseModel, create_model
 
@@ -28,7 +28,7 @@ ALLOWED_PARAM_TYPES = {
 
 
 def _build_schema_from_tool(tool: ToolDefinition) -> Type[BaseModel]:
-    fields: Dict[str, Tuple[Tuple[type, ...], Any]] = {}
+    fields: Dict[str, Tuple[type, Any]] = {}
 
     for p in tool.parameters:
         if p.type not in ALLOWED_PARAM_TYPES:
@@ -45,7 +45,7 @@ def _build_schema_from_tool(tool: ToolDefinition) -> Type[BaseModel]:
     model = create_model(
         f"ToolInput__{tool.name}",
         __base__=BaseModel,
-        **fields,
+        **cast(Dict[str, Any], fields),
     )
     return model
 

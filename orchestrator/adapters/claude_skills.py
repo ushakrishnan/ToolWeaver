@@ -94,14 +94,15 @@ class ClaudeSkillsAdapter:
     
     def _build_properties(self, parameters: List[ToolParameter]) -> Dict[str, Any]:
         """Build JSON schema properties from parameters."""
-        properties = {}
+        properties: Dict[str, Any] = {}
         for param in parameters:
-            properties[param.name] = {
+            param_schema: Dict[str, Any] = {
                 "type": self._map_type(param.type),
                 "description": param.description or f"Parameter: {param.name}",
             }
             if param.enum:
-                properties[param.name]["enum"] = param.enum
+                param_schema["enum"] = param.enum
+            properties[param.name] = param_schema
         return properties
     
     def _map_type(self, toolweaver_type: str) -> str:

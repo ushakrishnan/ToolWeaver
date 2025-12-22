@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from ..plugins.registry import get_registry
 from ..shared.models import ToolDefinition, ToolCatalog
@@ -106,7 +106,7 @@ def browse_tools(
     offset: int = 0,
     limit: Optional[int] = 50,
     include_examples: bool = False,
-) -> List[Union[ToolDefinition, Dict[str, Any]]]:
+) -> Sequence[Union[ToolDefinition, Dict[str, Any]]]:
     """Browse tools with pagination and progressive detail levels.
 
     Uses lightweight projections to avoid loading full schemas when not needed.
@@ -135,7 +135,7 @@ def search_tools(
     min_score: float = 0.3,
     detail_level: Optional[str] = None,
     include_examples: bool = False,
-) -> List[Union[ToolDefinition, Dict[str, Any]]]:
+) -> Sequence[Union[ToolDefinition, Dict[str, Any]]]:
     """Keyword or semantic search with optional progressive detail levels."""
     logger.debug(
         f"Searching tools",
@@ -259,8 +259,10 @@ def semantic_search_tools(
         logger.warning("Vector search dependencies not available (qdrant-client, sentence-transformers)")
         if fallback_to_substring:
             logger.info("Falling back to substring search")
-            substring_results = search_tools(query=query, domain=domain)
-            return [(tool, 1.0) for tool in substring_results[:top_k]]
+            # Call search_tools without detail_level to get List[ToolDefinition]
+            substring_results = search_tools(query=query, domain=domain, detail_level=None)
+            # Cast to list of tuples with ToolDefinition type
+            return [(tool, 1.0) for tool in substring_results if isinstance(tool, ToolDefinition)][:top_k]
         return []
     
     # Build catalog from all tools
@@ -282,8 +284,8 @@ def semantic_search_tools(
         logger.warning(f"Failed to index catalog: {e}")
         if fallback_to_substring:
             logger.info("Falling back to substring search")
-            substring_results = search_tools(query=query, domain=domain)
-            return [(tool, 1.0) for tool in substring_results[:top_k]]
+            substring_results = search_tools(query=query, domain=domain, detail_level=None)
+            return [(tool, 1.0) for tool in substring_results if isinstance(tool, ToolDefinition)][:top_k]
         return []
     
     # Perform semantic search
@@ -300,7 +302,7 @@ def semantic_search_tools(
         logger.error(f"Semantic search failed: {e}")
         if fallback_to_substring:
             logger.info("Falling back to substring search")
-            substring_results = search_tools(query=query, domain=domain)
-            return [(tool, 1.0) for tool in substring_results[:top_k]]
+            substring_results = search_tools(query=query, domain=domain, detail_level=None)
+            return [(tool, 1.0) for tool in substring_results if isinstance(tool, ToolDefinition)][:top_k]
         return []
 

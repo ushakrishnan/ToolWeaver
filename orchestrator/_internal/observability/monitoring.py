@@ -14,7 +14,7 @@ import os
 import json
 import pickle
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Optional, Union, DefaultDict
 from datetime import datetime, timezone
 from collections import defaultdict
 from dataclasses import dataclass, asdict
@@ -89,7 +89,7 @@ class ToolUsageMonitor:
         elif isinstance(backends, str):
             backends = [backends]
         
-        self.backends = []
+        self.backends: List[Any] = []
         backend_config = backend_config or {}
         
         # Initialize backends
@@ -122,7 +122,7 @@ class ToolUsageMonitor:
         self.log_dir = log_dir
         
         # In-memory metrics (for get_summary, etc.)
-        self.metrics = {
+        self.metrics: Dict[str, Any] = {
             "tool_calls": defaultdict(int),
             "tool_errors": defaultdict(int),
             "tool_latency": defaultdict(list),
@@ -143,7 +143,7 @@ class ToolUsageMonitor:
         latency: float,
         error: Optional[str] = None,
         execution_id: Optional[str] = None
-    ):
+    ) -> None:
         """
         Log individual tool call.
         
@@ -187,7 +187,7 @@ class ToolUsageMonitor:
         num_results: int,
         latency: float,
         cache_hit: bool = False
-    ):
+    ) -> None:
         """
         Log tool search query.
         
@@ -226,7 +226,7 @@ class ToolUsageMonitor:
         input_tokens: int,
         output_tokens: int,
         cached_tokens: int = 0
-    ):
+    ) -> None:
         """
         Log LLM token usage.
         
@@ -332,7 +332,7 @@ class ToolUsageMonitor:
         ]
         return errors[-limit:]
     
-    def export_metrics(self, filepath: str):
+    def export_metrics(self, filepath: str) -> None:
         """
         Export all metrics to JSON file.
         
@@ -353,7 +353,7 @@ class ToolUsageMonitor:
         with open(filepath, 'w') as f:
             json.dump(export_data, f, indent=2)
     
-    def flush(self):
+    def flush(self) -> None:
         """
         Flush all backends (useful for W&B, graceful shutdown).
         Call this at the end of your program.
@@ -380,7 +380,7 @@ def create_monitor(log_dir: str = ".tool_logs") -> ToolUsageMonitor:
     return ToolUsageMonitor(log_to_file=True, log_dir=log_dir)
 
 
-def print_metrics_report(monitor: ToolUsageMonitor):
+def print_metrics_report(monitor: ToolUsageMonitor) -> None:
     """Print formatted metrics report."""
     summary = monitor.get_summary()
     

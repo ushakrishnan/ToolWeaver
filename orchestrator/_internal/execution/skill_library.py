@@ -11,9 +11,9 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional, Tuple, TYPE_CHECKING
 import logging
 
 try:
@@ -23,13 +23,16 @@ except ImportError:
     REDIS_AVAILABLE = False
 
 try:
-    from qdrant_client import QdrantClient
-    from qdrant_client.models import Distance, VectorParams, PointStruct
-    from sentence_transformers import SentenceTransformer
-    import numpy as np
+    from qdrant_client import QdrantClient  # type: ignore[import-not-found]
+    from qdrant_client.models import Distance, VectorParams, PointStruct  # type: ignore[import-not-found]
+    from sentence_transformers import SentenceTransformer  # type: ignore[import-not-found]
+    import numpy as np  # type: ignore[import-not-found]
     QDRANT_AVAILABLE = True
 except ImportError:
     QDRANT_AVAILABLE = False
+
+if TYPE_CHECKING:
+    import numpy as np  # type: ignore[import-not-found]
 
 logger = logging.getLogger(__name__)
 
@@ -105,9 +108,9 @@ class Skill:
     name: str
     code_path: str
     description: str = ""
-    tags: List[str] = None
-    metadata: Dict[str, Any] = None
-    dependencies: List[str] = None  # Names of skills this skill depends on
+    tags: List[str] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    dependencies: List[str] = field(default_factory=list)  # Names of skills this skill depends on
     version: str = "0.1.0"  # Semantic version
     created_at: Optional[str] = None  # ISO timestamp
     updated_at: Optional[str] = None  # ISO timestamp
@@ -117,7 +120,10 @@ def _load_manifest() -> Dict[str, Any]:
     if not _MANIFEST.exists():
         return {"skills": []}
     try:
-        return json.loads(_MANIFEST.read_text())
+        data = json.loads(_MANIFEST.read_text())
+        if isinstance(data, dict):
+            return data
+        return {"skills": []}
     except Exception:
         return {"skills": []}
 
@@ -614,7 +620,7 @@ def get_skill_version(name: str, version: str) -> Optional[Skill]:
     return None
 
 
-def update_skill(name: str, code: str, *, description: str = None, tags: Optional[List[str]] = None, bump_type: str = "patch") -> Skill:
+def update_skill(name: str, code: str, *, description: Optional[str] = None, tags: Optional[List[str]] = None, bump_type: str = "patch") -> Skill:
     """
     Update an existing skill with new code.
     

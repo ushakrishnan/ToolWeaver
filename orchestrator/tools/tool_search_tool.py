@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 _search_engine: Optional[ToolSearchEngine] = None
 _full_catalog: Optional[ToolCatalog] = None
 
-def initialize_tool_search(catalog: ToolCatalog):
+def initialize_tool_search(catalog: ToolCatalog) -> None:
     """
     Initialize the tool search engine with the full tool catalog.
     

@@ -157,7 +157,7 @@ class StubGenerator:
         
     def _group_by_server(self) -> Dict[str, List[ToolDefinition]]:
         """Group tools by server/domain"""
-        grouped = {}
+        grouped: Dict[str, List[ToolDefinition]] = {}
         
         for tool in self.catalog.tools.values():
             # Default to a general bucket when no explicit domain is provided
@@ -374,7 +374,7 @@ async def {tool.name}(input_data: {input_class}) -> {output_class}:
                     classes.append(match.group(1))
         return classes
         
-    def _generate_server_init(self, server_dir: Path, tools: List[ToolDefinition]):
+    def _generate_server_init(self, server_dir: Path, tools: List[ToolDefinition]) -> None:
         """Generate __init__.py for a server directory"""
         init_path = server_dir / "__init__.py"
         
@@ -408,7 +408,7 @@ __all__ = {all_exports}
         init_path.write_text(content)
         logger.debug(f"Generated {init_path}")
         
-    def _generate_top_init(self):
+    def _generate_top_init(self) -> None:
         """Generate top-level __init__.py"""
         tools_dir = self.output_dir / "tools"
         init_path = tools_dir / "__init__.py"

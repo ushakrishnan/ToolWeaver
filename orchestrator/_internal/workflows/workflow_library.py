@@ -25,10 +25,10 @@ class ToolSequence:
     success_rate: float
     avg_duration_ms: float
     
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(tuple(self.tools))
     
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, ToolSequence) and tuple(self.tools) == tuple(other.tools)
 
 
@@ -168,7 +168,7 @@ class PatternDetector:
         logs: List[ToolCallMetric]
     ) -> List[ToolSequence]:
         """Calculate statistics for each pattern"""
-        pattern_data = defaultdict(lambda: {
+        pattern_data: Dict[Tuple[str, ...], Dict[str, Any]] = defaultdict(lambda: {
             'count': 0,
             'successes': 0,
             'durations': []
@@ -182,12 +182,13 @@ class PatternDetector:
             pattern_data[key]['durations'].append(duration)
         
         patterns = []
-        for tools, data in pattern_data.items():
+        for tools_tuple, data in pattern_data.items():
             success_rate = data['successes'] / data['count'] if data['count'] > 0 else 0
             avg_duration = sum(data['durations']) / len(data['durations']) if data['durations'] else 0
             
+            # Normalize tools to list for ToolSequence
             patterns.append(ToolSequence(
-                tools=list(tools),
+                tools=list(tools_tuple),
                 frequency=data['count'],
                 success_rate=success_rate,
                 avg_duration_ms=avg_duration
@@ -298,7 +299,7 @@ class WorkflowLibrary:
         if storage_path and storage_path.exists():
             self._load_from_disk()
     
-    def _load_builtin_workflows(self):
+    def _load_builtin_workflows(self) -> None:
         """Load pre-built workflow templates"""
         
         # GitHub PR workflow
@@ -369,7 +370,7 @@ class WorkflowLibrary:
         
         logger.info(f"Loaded {len(self.workflows)} built-in workflows")
     
-    def register(self, workflow: WorkflowTemplate):
+    def register(self, workflow: WorkflowTemplate) -> None:
         """
         Register a workflow template in the library.
         
@@ -397,9 +398,9 @@ class WorkflowLibrary:
     
     def search(
         self,
-        query: str = None,
-        category: str = None,
-        tool_name: str = None
+        query: Optional[str] = None,
+        category: Optional[str] = None,
+        tool_name: Optional[str] = None
     ) -> List[WorkflowTemplate]:
         """
         Search for workflows.
@@ -412,7 +413,7 @@ class WorkflowLibrary:
         Returns:
             List of matching workflows
         """
-        results = self.workflows.values()
+        results: List[WorkflowTemplate] = list(self.workflows.values())
         
         # Filter by query
         if query:
@@ -437,7 +438,7 @@ class WorkflowLibrary:
                 if any(step.tool_name == tool_name for step in w.steps)
             ]
         
-        return list(results)
+        return results
     
     def suggest_for_tools(self, tool_names: List[str]) -> List[WorkflowTemplate]:
         """
@@ -466,7 +467,7 @@ class WorkflowLibrary:
         
         return suggestions
     
-    def _load_from_disk(self):
+    def _load_from_disk(self) -> None:
         """Load workflows from disk storage"""
         if not self.storage_path or not self.storage_path.exists():
             return
@@ -483,7 +484,7 @@ class WorkflowLibrary:
         except Exception as e:
             logger.error(f"Failed to load workflows from disk: {e}")
     
-    def save_to_disk(self):
+    def save_to_disk(self) -> None:
         """Save workflows to disk storage"""
         if not self.storage_path:
             return

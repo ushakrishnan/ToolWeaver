@@ -18,7 +18,7 @@ import time
 from dataclasses import dataclass, asdict, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Literal
 import logging
 
 logger = logging.getLogger(__name__)
@@ -283,7 +283,7 @@ class SkillExecutionTimer:
         self.start_time = time.perf_counter()
         return self
     
-    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> bool:
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> Literal[False]:
         elapsed_ms = (time.perf_counter() - self.start_time) * 1000
         self.success = (exc_type is None)
         record_skill_execution(self.skill_name, self.success, elapsed_ms)

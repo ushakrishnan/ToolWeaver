@@ -120,7 +120,7 @@ class ToolCatalog(BaseModel):
     version: str = "1.0"
     metadata: Dict[str, Any] = Field(default_factory=dict)
     
-    def add_tool(self, tool: ToolDefinition):
+    def add_tool(self, tool: ToolDefinition) -> None:
         """Register a new tool in the catalog."""
         self.tools[tool.name] = tool
     

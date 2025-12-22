@@ -47,6 +47,7 @@ Usage (OTLP/Grafana Cloud):
 
 import os
 import logging
+from typing import Optional, Any
 
 from .sqlite_schema import SQLiteSchema, initialize_analytics_db
 from .skill_analytics import (
@@ -64,9 +65,9 @@ try:
     from .otlp_metrics import OTLPMetrics, MetricConfig, create_otlp_client
     OTLP_AVAILABLE = True
 except ImportError:
-    OTLPMetrics = None
-    MetricConfig = None
-    create_otlp_client = None
+    OTLPMetrics = None  # type: ignore[assignment,misc]
+    MetricConfig = None  # type: ignore[assignment,misc]
+    create_otlp_client = None  # type: ignore[assignment]
     OTLP_AVAILABLE = False
     logging.warning("OTLP metrics not available. Install: pip install opentelemetry-api opentelemetry-sdk opentelemetry-exporter-otlp-proto-http")
 
@@ -75,9 +76,9 @@ try:
     from .prometheus_metrics import PrometheusMetrics, PrometheusConfig, create_prometheus_exporter
     PROMETHEUS_AVAILABLE = True
 except ImportError:
-    PrometheusMetrics = None
-    PrometheusConfig = None
-    create_prometheus_exporter = None
+    PrometheusMetrics = None  # type: ignore[assignment,misc]
+    PrometheusConfig = None  # type: ignore[assignment,misc]
+    create_prometheus_exporter = None  # type: ignore[assignment]
     PROMETHEUS_AVAILABLE = False
     logging.warning("Prometheus client not available. Install: pip install prometheus-client")
 
@@ -114,7 +115,7 @@ __version__ = "1.0.0"
 __phase__ = "5"
 
 
-def create_analytics_client(backend: str = None):
+def create_analytics_client(backend: Optional[str] = None) -> Any:
     """
     Factory function to create analytics client based on backend selection.
     
@@ -141,7 +142,7 @@ def create_analytics_client(backend: str = None):
                 "Run: pip install opentelemetry-api opentelemetry-sdk opentelemetry-exporter-otlp-proto-http"
             )
         logging.info("Creating OTLP metrics client (Grafana Cloud)")
-        return OTLPMetrics()
+        return OTLPMetrics()  # type: ignore[misc]
     
     elif backend == "prometheus":
         if not PROMETHEUS_AVAILABLE:
@@ -150,7 +151,7 @@ def create_analytics_client(backend: str = None):
                 "Run: pip install prometheus-client"
             )
         logging.info("Creating Prometheus metrics exporter (HTTP scraping)")
-        return PrometheusMetrics()
+        return PrometheusMetrics()  # type: ignore[misc]
     
     elif backend == "sqlite":
         logging.info("Creating SQLite analytics client (local database)")

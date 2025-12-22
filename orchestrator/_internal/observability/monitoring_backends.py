@@ -25,7 +25,7 @@ class MonitoringBackend(Protocol):
         latency: float,
         error: Optional[str] = None,
         execution_id: Optional[str] = None
-    ):
+    ) -> None:
         """Log individual tool call."""
         ...
     
@@ -35,7 +35,7 @@ class MonitoringBackend(Protocol):
         num_results: int,
         latency: float,
         cache_hit: bool = False
-    ):
+    ) -> None:
         """Log tool search query."""
         ...
     
@@ -44,11 +44,11 @@ class MonitoringBackend(Protocol):
         input_tokens: int,
         output_tokens: int,
         cached_tokens: int = 0
-    ):
+    ) -> None:
         """Log LLM token usage."""
         ...
     
-    def flush(self):
+    def flush(self) -> None:
         """Flush any buffered data."""
         ...
 
@@ -72,7 +72,7 @@ class LocalBackend:
         latency: float,
         error: Optional[str] = None,
         execution_id: Optional[str] = None
-    ):
+     ) -> None:
         entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "tool_name": tool_name,
@@ -89,7 +89,7 @@ class LocalBackend:
         num_results: int,
         latency: float,
         cache_hit: bool = False
-    ):
+     ) -> None:
         entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "query": query,
@@ -104,7 +104,7 @@ class LocalBackend:
         input_tokens: int,
         output_tokens: int,
         cached_tokens: int = 0
-    ):
+     ) -> None:
         entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "input": input_tokens,
@@ -113,11 +113,11 @@ class LocalBackend:
         }
         self._write_log("token_usage", entry)
     
-    def flush(self):
+    def flush(self) -> None:
         """No buffering for local backend."""
         pass
     
-    def _write_log(self, log_type: str, entry: Dict[str, Any]):
+    def _write_log(self, log_type: str, entry: Dict[str, Any]) -> None:
         """Write log entry to daily JSONL file."""
         date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         log_file = Path(self.log_dir) / f"{log_type}_{date_str}.jsonl"
@@ -175,7 +175,7 @@ class WandbBackend:
         latency: float,
         error: Optional[str] = None,
         execution_id: Optional[str] = None
-    ):
+     ) -> None:
         self.wandb.log({
             f"tool/{tool_name}/latency": latency,
             f"tool/{tool_name}/success": 1 if success else 0,
@@ -198,7 +198,7 @@ class WandbBackend:
         num_results: int,
         latency: float,
         cache_hit: bool = False
-    ):
+     ) -> None:
         self.wandb.log({
             "search/latency": latency,
             "search/results": num_results,
@@ -212,7 +212,7 @@ class WandbBackend:
         input_tokens: int,
         output_tokens: int,
         cached_tokens: int = 0
-    ):
+     ) -> None:
         total = input_tokens + output_tokens
         
         self.wandb.log({
@@ -225,7 +225,7 @@ class WandbBackend:
         })
         self.step += 1
     
-    def flush(self):
+    def flush(self) -> None:
         """Flush W&B logs."""
         if self.run:
             self.run.finish()
@@ -312,7 +312,7 @@ class PrometheusBackend:
         latency: float,
         error: Optional[str] = None,
         execution_id: Optional[str] = None
-    ):
+    ) -> None:
         self.tool_calls.labels(
             tool_name=tool_name,
             success=str(success)
@@ -329,7 +329,7 @@ class PrometheusBackend:
         num_results: int,
         latency: float,
         cache_hit: bool = False
-    ):
+    ) -> None:
         self.search_queries.labels(
             cache_hit=str(cache_hit)
         ).inc()
@@ -342,17 +342,17 @@ class PrometheusBackend:
         input_tokens: int,
         output_tokens: int,
         cached_tokens: int = 0
-    ):
+    ) -> None:
         self.tokens.labels(type="input").inc(input_tokens)
         self.tokens.labels(type="output").inc(output_tokens)
         self.tokens.labels(type="cached").inc(cached_tokens)
     
-    def flush(self):
+    def flush(self) -> None:
         """Prometheus metrics are always available via HTTP."""
         pass
 
 
-def create_backend(backend_type: str, **kwargs) -> MonitoringBackend:
+def create_backend(backend_type: str, **kwargs: Any) -> MonitoringBackend:
     """
     Factory function to create monitoring backends.
     

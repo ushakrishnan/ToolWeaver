@@ -76,7 +76,7 @@ class PrometheusMetrics:
             enabled=os.getenv("PROMETHEUS_ENABLED", "true").lower() == "true"
         )
     
-    def _start_server(self):
+    def _start_server(self) -> None:
         """Start HTTP server for metrics endpoint"""
         try:
             start_http_server(self.config.port, addr=self.config.host, registry=REGISTRY)
@@ -87,7 +87,7 @@ class PrometheusMetrics:
             else:
                 raise
     
-    def _create_metrics(self):
+    def _create_metrics(self) -> None:
         """Create Prometheus metric instruments"""
         # Check if metrics already registered (avoid duplicates in tests)
         try:
@@ -154,7 +154,7 @@ class PrometheusMetrics:
         latency_ms: float,
         user_id: Optional[str] = None,
         org_id: Optional[str] = None
-    ):
+    ) -> None:
         """
         Record a skill execution event.
         
@@ -189,7 +189,7 @@ class PrometheusMetrics:
         skill_id: str,
         rating: int,
         user_id: Optional[str] = None
-    ):
+    ) -> None:
         """
         Record a skill rating (1-5 stars).
         
@@ -210,7 +210,7 @@ class PrometheusMetrics:
         
         logger.debug(f"Recorded rating: {skill_id} = {rating} stars")
     
-    def update_health_score(self, skill_id: str, score: float):
+    def update_health_score(self, skill_id: str, score: float) -> None:
         """
         Update health score for a skill (0-100).
         

@@ -52,7 +52,7 @@ class GrafanaClient:
         endpoint: str,
         data: Optional[Dict] = None,
         params: Optional[Dict] = None,
-    ) -> Optional[Dict]:
+    ) -> Optional[Any]:
         """Make HTTP request to Grafana API.
 
         Args:
@@ -105,16 +105,16 @@ class GrafanaClient:
     # Data Source Management
     # ========================================================================
 
-    def get_datasources(self) -> List[Dict]:
+    def get_datasources(self) -> List[Dict[Any, Any]]:
         """Get list of data sources.
 
         Returns:
             List of data source configurations.
         """
         result = self._make_request("GET", "datasources")
-        return result if result else []
+        return result if isinstance(result, list) else []
 
-    def get_datasource(self, name: str) -> Optional[Dict]:
+    def get_datasource(self, name: str) -> Optional[Dict[str, Any]]:
         """Get data source by name.
 
         Args:
@@ -124,14 +124,14 @@ class GrafanaClient:
             Data source configuration or None.
         """
         result = self._make_request("GET", f"datasources/name/{name}")
-        return result if result else None
+        return result if isinstance(result, dict) else None
 
     def create_datasource(
         self,
         name: str,
         db_path: str,
         datasource_type: str = "sqlite",
-    ) -> Optional[Dict]:
+    ) -> Optional[Dict[str, Any]]:
         """Create new data source.
 
         Args:
@@ -160,7 +160,7 @@ class GrafanaClient:
             return existing
 
         result = self._make_request("POST", "datasources", payload)
-        if result:
+        if isinstance(result, dict):
             logger.info(f"Created data source: {name}")
             return result
         return None
@@ -169,7 +169,7 @@ class GrafanaClient:
         self,
         name: str,
         db_path: str,
-    ) -> Optional[Dict]:
+    ) -> Optional[Dict[str, Any]]:
         """Update existing data source.
 
         Args:
@@ -198,7 +198,7 @@ class GrafanaClient:
         result = self._make_request(
             "PUT", f"datasources/{existing['id']}", payload
         )
-        if result:
+        if isinstance(result, dict):
             logger.info(f"Updated data source: {name}")
             return result
         return None
@@ -207,16 +207,16 @@ class GrafanaClient:
     # Dashboard Management
     # ========================================================================
 
-    def get_dashboards(self) -> List[Dict]:
+    def get_dashboards(self) -> List[Dict[Any, Any]]:
         """Get list of dashboards.
 
         Returns:
             List of dashboard summaries.
         """
         result = self._make_request("GET", "search", params={"type": "dash-db"})
-        return result if result else []
+        return result if isinstance(result, list) else []
 
-    def get_dashboard(self, uid: str) -> Optional[Dict]:
+    def get_dashboard(self, uid: str) -> Optional[Dict[str, Any]]:
         """Get dashboard by UID.
 
         Args:
@@ -226,14 +226,14 @@ class GrafanaClient:
             Dashboard configuration or None.
         """
         result = self._make_request("GET", f"dashboards/uid/{uid}")
-        return result.get("dashboard") if result else None
+        return result.get("dashboard") if isinstance(result, dict) else None
 
     def create_dashboard(
         self,
         title: str,
         panels: List[Dict],
         uid: Optional[str] = None,
-    ) -> Optional[Dict]:
+    ) -> Optional[Dict[str, Any]]:
         """Create new dashboard.
 
         Args:
@@ -263,7 +263,7 @@ class GrafanaClient:
         }
 
         result = self._make_request("POST", "dashboards/db", payload)
-        if result:
+        if isinstance(result, dict):
             logger.info(f"Created dashboard: {title}")
             return result
         return None
