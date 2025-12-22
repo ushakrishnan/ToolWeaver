@@ -1,0 +1,93 @@
+name: Type Checking (mypy)
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "orchestrator/**"
+      - "tests/**"
+      - "pyproject.toml"
+      - ".github/workflows/type-check.yml"
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - "orchestrator/**"
+      - "tests/**"
+      - "pyproject.toml"
+
+jobs:
+  mypy-strict:
+    name: mypy strict check (critical modules)
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      
+      - name: Run mypy on CRITICAL modules (strict)
+        run: |
+          python -m mypy \
+            orchestrator/tools/decorators.py \
+            orchestrator/tools/loaders.py \
+            orchestrator/tools/templates.py \
+            orchestrator/tools/skill_bridge.py \
+            orchestrator/shared/models.py \
+            orchestrator/shared/validation.py \
+            orchestrator/shared/logging.py \
+            orchestrator/plugins/base.py \
+            orchestrator/config.py \
+            orchestrator/__init__.py \
+            --strict \
+            --show-error-codes \
+            --no-incremental \
+            --warn-unused-ignores
+        continue-on-error: false
+  
+  mypy-standard:
+    name: mypy standard check (public API)
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      
+      - name: Run mypy on remaining modules
+        run: |
+          python -m mypy orchestrator --config-file=mypy.ini --no-incremental
+        continue-on-error: true
+      
+      - name: Report
+        run: |
+          echo "Standard type checking complete (warnings allowed in non-critical modules)"

@@ -149,6 +149,42 @@ Then explore development examples:
 - **[examples/](examples/)** - Examples using local source code
 - See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines
 
+## 🛠️ Support Matrix
+
+### Python & Platform Support
+
+| Python Version | Ubuntu | Windows | macOS | Status |
+|---|---|---|---|---|
+| **3.13** | ✅ | ✅ | ✅ | Fully Supported (Latest) |
+| **3.12** | ✅ | ✅ | ✅ | Fully Supported |
+| **3.11** | ✅ | ✅ | ✅ | Fully Supported |
+| **3.10** | ✅ | ✅ | ✅ | Fully Supported (Minimum) |
+| **3.9** | ❌ | ❌ | ❌ | Not Supported |
+
+### Features by Platform
+
+- **Windows**: Full support including sandboxed code execution
+- **Linux**: Full support; recommended for production deployments
+- **macOS**: Full support; may have slower sandbox performance on Apple Silicon (M1/M2/M3)
+
+### Known Issues
+
+- **Apple Silicon (M1/M2/M3)**: Sandbox timeouts may be slower due to virtualization overhead (~2x). Use native Python or Rosetta 2 translation.
+- **Windows Defender**: May flag sandboxed code execution as suspicious; add ToolWeaver to exclusions if needed.
+- **Network in Sandbox**: Code execution sandbox has no network access by design. Use tool callbacks for external APIs.
+
+### Continuous Integration
+
+All tests run on:
+- **Python 3.10, 3.11, 3.12, 3.13**
+- **Platforms: Ubuntu, Windows, macOS**
+- **Test Coverage**: 85%+ (unit + integration tests)
+- **Type Checking**: mypy strict mode on critical modules
+
+See [.github/workflows/test-matrix.yml](.github/workflows/test-matrix.yml) for CI details.
+
+---
+
 ## Core Features
 
 ### 🤖 Tool Management

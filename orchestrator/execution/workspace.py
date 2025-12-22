@@ -36,9 +36,9 @@ import json
 import logging
 import hashlib
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field, asdict
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from enum import Enum
 
 logger = logging.getLogger(__name__)
@@ -70,14 +70,14 @@ class WorkspaceSkill:
     code: str
     description: str
     version: int = 1
-    created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
-    updated_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     dependencies: List[str] = field(default_factory=list)
     tags: List[str] = field(default_factory=list)
     examples: List[str] = field(default_factory=list)
     hash: str = ""  # Code hash for integrity
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Calculate code hash after initialization."""
         if not self.hash:
             self.hash = hashlib.sha256(self.code.encode()).hexdigest()[:16]
@@ -168,10 +168,10 @@ class WorkspaceSkill:
         version = int(version_match.group(1)) if version_match else 1
         
         created_match = re.search(r'- Created: (.+)', md)
-        created_at = created_match.group(1) if created_match else datetime.utcnow().isoformat()
+        created_at = created_match.group(1) if created_match else datetime.now(timezone.utc).isoformat()
         
         updated_match = re.search(r'- Updated: (.+)', md)
-        updated_at = updated_match.group(1) if updated_match else datetime.utcnow().isoformat()
+        updated_at = updated_match.group(1) if updated_match else datetime.now(timezone.utc).isoformat()
         
         hash_match = re.search(r'- Hash: `(.+)`', md)
         hash_val = hash_match.group(1) if hash_match else ""
@@ -218,7 +218,7 @@ class WorkspaceManager:
         session_id: str,
         workspace_root: Optional[Path] = None,
         quota: Optional[WorkspaceQuota] = None
-    ):
+    ) -> None:
         """Initialize workspace manager.
         
         Args:
@@ -241,15 +241,16 @@ class WorkspaceManager:
         self.intermediate_dir = self.workspace_dir / "intermediate"
         self.metadata_file = self.workspace_dir / "metadata.json"
         
+        self.metadata: Dict[str, Any] = {}
         self._ensure_directories()
         self._load_metadata()
     
-    def _ensure_directories(self):
+    def _ensure_directories(self) -> None:
         """Create workspace directories if they don't exist."""
         self.skills_dir.mkdir(parents=True, exist_ok=True)
         self.intermediate_dir.mkdir(parents=True, exist_ok=True)
     
-    def _load_metadata(self):
+    def _load_metadata(self) -> None:
         """Load workspace metadata."""
         if self.metadata_file.exists():
             with open(self.metadata_file, 'r') as f:
@@ -257,19 +258,19 @@ class WorkspaceManager:
         else:
             self.metadata = {
                 "session_id": self.session_id,
-                "created_at": datetime.now(UTC).isoformat(),
+                "created_at": datetime.now(timezone.utc).isoformat(),
                 "skill_count": 0,
                 "intermediate_count": 0,
                 "total_size": 0,
             }
             self._save_metadata()
     
-    def _save_metadata(self):
+    def _save_metadata(self) -> None:
         """Save workspace metadata."""
         with open(self.metadata_file, 'w') as f:
             json.dump(self.metadata, f, indent=2)
     
-    def _check_quota(self, size: int, is_skill: bool = True):
+    def _check_quota(self, size: int, is_skill: bool = True) -> None:
         """Check if adding a file would exceed quota.
         
         Args:
@@ -411,7 +412,7 @@ class WorkspaceManager:
         
         return sorted(skills, key=lambda s: s.updated_at, reverse=True)
     
-    def delete_skill(self, name: str):
+    def delete_skill(self, name: str) -> None:
         """Delete a skill from workspace.
         
         Args:
@@ -441,7 +442,7 @@ class WorkspaceManager:
         
         logger.info(f"Deleted skill: {name}")
     
-    def save_intermediate(self, name: str, data: Any):
+    def save_intermediate(self, name: str, data: Any) -> None:
         """Save intermediate output to workspace.
         
         Args:
@@ -520,7 +521,7 @@ class WorkspaceManager:
             "created_at": self.metadata["created_at"],
         }
     
-    def clear_workspace(self):
+    def clear_workspace(self) -> None:
         """Clear all files from workspace (keeps metadata)."""
         # Delete all skills
         for skill_file in self.skills_dir.glob("*"):
