@@ -2,7 +2,7 @@ import asyncio
 import time
 from collections import OrderedDict
 from typing import Dict, Any, Optional
-from .dispatch.workers import (
+from ..dispatch.workers import (
     receipt_ocr_worker,
     line_item_parser_worker,
     expense_categorizer_worker,
@@ -11,7 +11,7 @@ from .dispatch.workers import (
     apply_changes_worker,
     process_resource_worker,
 )
-from .execution.code_exec_worker import code_exec_worker
+from ..execution.code_exec_worker import code_exec_worker
 
 _tool_map = {
     "receipt_ocr": receipt_ocr_worker,

@@ -1,9 +1,9 @@
 import asyncio, json, logging, os
 from functools import partial
 from typing import Dict, Any
-from ..shared.models import PlanModel
-from .infra.mcp_client import MCPClientShim
-from .infra.a2a_client import A2AClient, AgentDelegationRequest
+from ...shared.models import PlanModel
+from ..infra.mcp_client import MCPClientShim
+from ..infra.a2a_client import A2AClient, AgentDelegationRequest
 from .dispatch.hybrid_dispatcher import dispatch_step
 from .observability.monitoring import ToolUsageMonitor
 from datetime import datetime

@@ -2,7 +2,7 @@ import asyncio
 import os
 import logging
 from typing import Dict, Any
-from ..shared.models import ReceiptOCROut, LineItemParserOut, LineItem, CategorizerOut
+from ...shared.models import ReceiptOCROut, LineItemParserOut, LineItem, CategorizerOut
 
 logger = logging.getLogger(__name__)
 
