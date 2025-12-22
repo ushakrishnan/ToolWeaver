@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from orchestrator.shared.models import ToolDefinition, ToolParameter
 from orchestrator.tools.agent_discovery import AgentDiscoverer
-from orchestrator.infra.a2a_client import A2AClient, AgentCapability
+from orchestrator._internal.infra.a2a_client import A2AClient, AgentCapability
 
 
 class TestStreamingMetadataSurface:

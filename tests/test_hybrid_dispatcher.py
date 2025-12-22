@@ -1,7 +1,7 @@
 import asyncio
 import pytest
 
-from orchestrator.dispatch.hybrid_dispatcher import dispatch_step
+from orchestrator._internal.dispatch.hybrid_dispatcher import dispatch_step
 
 
 class DummyMCP:

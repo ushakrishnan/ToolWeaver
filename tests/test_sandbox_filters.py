@@ -1,7 +1,7 @@
 """Tests for sandbox data filtering and PII tokenization."""
 
 import pytest
-from orchestrator.execution.sandbox_filters import (
+from orchestrator._internal.execution.sandbox_filters import (
     DataFilter,
     PIITokenizer,
     FilterConfig,

@@ -27,10 +27,10 @@ from orchestrator.shared.models import (
     ToolExample,
     ToolCatalog,
 )
-from orchestrator.infra.mcp_client import MCPClientShim
-from orchestrator.infra.a2a_client import A2AClient, AgentCapability
+from orchestrator._internal.infra.mcp_client import MCPClientShim
+from orchestrator._internal.infra.a2a_client import A2AClient, AgentCapability
 from orchestrator.tools.tool_discovery import discover_tools
-from orchestrator.runtime.orchestrator import Orchestrator
+from orchestrator._internal.runtime.orchestrator import Orchestrator
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

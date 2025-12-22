@@ -510,8 +510,8 @@ async def discover_tools(
         ToolCatalog with all discovered tools
     
     Example:
-        from orchestrator.dispatch import workers
-        from orchestrator.dispatch import functions
+        from orchestrator._internal.dispatch import workers
+        from orchestrator._internal.dispatch import functions
         catalog = await discover_tools(
             mcp_client=mcp_client,
             function_modules=[workers, functions],

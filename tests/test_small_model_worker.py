@@ -8,7 +8,7 @@ Skips if Ollama is not available.
 import pytest
 import os
 import asyncio
-from orchestrator.execution.small_model_worker import SmallModelWorker
+from orchestrator._internal.execution.small_model_worker import SmallModelWorker
 
 
 @pytest.fixture

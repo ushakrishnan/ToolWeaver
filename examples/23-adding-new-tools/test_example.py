@@ -9,8 +9,8 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from orchestrator.shared.models import ToolDefinition, ToolParameter, ToolCatalog
-from orchestrator.infra.mcp_client import MCPClientShim
-from orchestrator.infra.a2a_client import A2AClient
+from orchestrator._internal.infra.mcp_client import MCPClientShim
+from orchestrator._internal.infra.a2a_client import A2AClient
 
 
 class TestToolDefinition:

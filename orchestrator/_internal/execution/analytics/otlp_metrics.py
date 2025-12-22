@@ -5,7 +5,7 @@ Pushes metrics directly to Grafana Cloud Prometheus using OpenTelemetry Protocol
 Simpler than SQLite - no local storage, automatic retention, cloud-native.
 
 Usage:
-    from orchestrator.execution.analytics import OTLPMetrics
+    from orchestrator._internal.execution.analytics import OTLPMetrics
     
     metrics = OTLPMetrics()
     metrics.record_skill_execution("skill_123", success=True, latency_ms=150)

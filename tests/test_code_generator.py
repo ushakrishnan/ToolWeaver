@@ -8,7 +8,7 @@ import pytest
 from pathlib import Path
 import shutil
 
-from orchestrator.execution.code_generator import StubGenerator, GeneratedStub
+from orchestrator._internal.execution.code_generator import StubGenerator, GeneratedStub
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 
 

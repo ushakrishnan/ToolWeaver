@@ -4,11 +4,11 @@ Test the tool discovery system
 
 import pytest
 import asyncio
-from orchestrator.infra.mcp_client import MCPClientShim
-from orchestrator.infra.a2a_client import A2AClient, AgentCapability
+from orchestrator._internal.infra.mcp_client import MCPClientShim
+from orchestrator._internal.infra.a2a_client import A2AClient, AgentCapability
 from orchestrator.tools.tool_discovery import discover_tools, ToolDiscoveryOrchestrator
-from orchestrator.dispatch import workers
-from orchestrator.dispatch import functions
+from orchestrator._internal.dispatch import workers
+from orchestrator._internal.dispatch import functions
 
 
 @pytest.mark.asyncio

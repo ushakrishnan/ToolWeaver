@@ -18,7 +18,7 @@ import json
 # Add orchestrator to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from orchestrator.execution.analytics import (
+from orchestrator._internal.execution.analytics import (
     SkillAnalytics,
     SQLiteSchema,
     initialize_analytics_db,
@@ -383,7 +383,7 @@ class Phase5TestRunner:
     def test_grafana_connection(self) -> bool:
         """Test Grafana API connectivity."""
         try:
-            from orchestrator.execution.analytics.grafana_client import GrafanaClient, GrafanaConfig
+            from orchestrator._internal.execution.analytics.grafana_client import GrafanaClient, GrafanaConfig
 
             config = GrafanaConfig(
                 url=os.getenv("GRAFANA_URL", ""),

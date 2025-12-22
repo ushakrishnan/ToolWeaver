@@ -10,9 +10,17 @@ If you need something from here, please file an issue on GitHub.
 Public API is in orchestrator/__init__.py
 """
 
-# Phase 0: Placeholder for internal modules
-# These will be populated as phases progress:
-# - logger.py (Phase 0.l)
-# - errors.py (Phase 0.d)
-# - validation.py (Phase 0.m)
-# - And other internal helpers
+# Internal modules (not for public use):
+# - logger.py - Structured logging
+# - errors.py - Custom exceptions
+# - validation.py - Runtime validation
+# - runtime_validation.py - Type/parameter validation
+# - public_legacy.py - Legacy compatibility shims
+# - assessment/ - Evaluation framework
+# - dispatch/ - Tool/agent dispatching
+# - execution/ - Code execution, sandboxing, workspace
+# - infra/ - MCP/A2A clients, Redis cache
+# - observability/ - Monitoring, tracing
+# - planning/ - Multi-step planning
+# - runtime/ - Orchestrator runtime
+# - workflows/ - Workflow engine

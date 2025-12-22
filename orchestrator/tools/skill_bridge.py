@@ -13,7 +13,7 @@ import inspect
 import logging
 from pathlib import Path
 
-from ..execution.skill_library import (
+from .._internal.execution.skill_library import (
     save_skill, 
     get_skill, 
     update_skill,
@@ -184,7 +184,7 @@ def load_tool_from_skill(
     
     # Get skill (specific version or latest)
     if version:
-        from ..execution.skill_library import get_skill_version
+        from .._internal.execution.skill_library import get_skill_version
         skill = get_skill_version(skill_name, version)
         if not skill:
             raise KeyError(f"Skill '{skill_name}' version {version} not found")
@@ -313,7 +313,7 @@ def get_skill_backed_tools() -> list[str]:
     Returns:
         List of tool names that have corresponding skills
     """
-    from ..execution.skill_library import list_skills
+    from .._internal.execution.skill_library import list_skills
     
     skills = list_skills()
     return [s.name for s in skills if s.metadata and s.metadata.get("tool_name")]

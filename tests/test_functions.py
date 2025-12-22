@@ -5,7 +5,7 @@ Tests utility functions like compute_tax, apply_discount, filter_items, etc.
 """
 
 import pytest
-from orchestrator.dispatch.functions import (
+from orchestrator._internal.dispatch.functions import (
     compute_tax,
     apply_discount,
     merge_items,

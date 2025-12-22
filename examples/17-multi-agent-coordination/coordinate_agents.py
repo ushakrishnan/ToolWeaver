@@ -5,7 +5,7 @@ Coordinates multiple agents sequentially to complete a complex task.
 """
 
 import asyncio
-from orchestrator.infra.a2a_client import A2AClient, AgentDelegationRequest
+from orchestrator._internal.infra.a2a_client import A2AClient, AgentDelegationRequest
 
 
 async def main():

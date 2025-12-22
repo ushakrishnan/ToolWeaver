@@ -11,7 +11,7 @@ import pytest
 import time
 import os
 from pathlib import Path
-from orchestrator.infra.redis_cache import RedisCache, ToolCache, CircuitBreaker
+from orchestrator._internal.infra.redis_cache import RedisCache, ToolCache, CircuitBreaker
 
 
 @pytest.fixture

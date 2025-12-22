@@ -44,7 +44,7 @@ def test_otlp_import():
     print("\n=== Test 2: OTLP Module Import ===")
     
     try:
-        from orchestrator.execution.analytics import OTLPMetrics, OTLP_AVAILABLE
+        from orchestrator._internal.execution.analytics import OTLPMetrics, OTLP_AVAILABLE
         
         if not OTLP_AVAILABLE:
             print("[FAIL] OTLP not available (missing dependencies)")
@@ -65,7 +65,7 @@ def test_otlp_client_creation():
     print("\n=== Test 3: OTLP Client Creation ===")
     
     try:
-        from orchestrator.execution.analytics import OTLPMetrics
+        from orchestrator._internal.execution.analytics import OTLPMetrics
         
         client = OTLPMetrics()
         
@@ -93,7 +93,7 @@ def test_record_metrics():
     print("\n=== Test 4: Record Metrics ===")
     
     try:
-        from orchestrator.execution.analytics import OTLPMetrics
+        from orchestrator._internal.execution.analytics import OTLPMetrics
         
         client = OTLPMetrics()
         
@@ -147,7 +147,7 @@ def test_factory_function():
     print("\n=== Test 5: Factory Function ===")
     
     try:
-        from orchestrator.execution.analytics import create_analytics_client
+        from orchestrator._internal.execution.analytics import create_analytics_client
         
         # Test explicit OTLP backend
         print("[INFO] Creating OTLP client via factory...")
@@ -174,7 +174,7 @@ def test_wait_for_export():
     print("\n=== Test 6: Wait for Export ===")
     
     try:
-        from orchestrator.execution.analytics import OTLPMetrics
+        from orchestrator._internal.execution.analytics import OTLPMetrics
         
         client = OTLPMetrics()
         push_interval = client.config.push_interval

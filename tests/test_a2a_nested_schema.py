@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 import asyncio
 
-from orchestrator.infra.a2a_client import A2AClient, AgentCapability
+from orchestrator._internal.infra.a2a_client import A2AClient, AgentCapability
 
 
 def test_a2a_capability_nested_schema_roundtrip():

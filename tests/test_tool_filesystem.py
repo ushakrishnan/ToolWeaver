@@ -7,7 +7,7 @@ from pathlib import Path
 import tempfile
 
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
-from orchestrator.execution.code_generator import StubGenerator
+from orchestrator._internal.execution.code_generator import StubGenerator
 from orchestrator.tools.tool_filesystem import ToolFileSystem, ToolInfo
 
 

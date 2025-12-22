@@ -1,7 +1,7 @@
 import asyncio
 import pytest
 
-from orchestrator.infra.mcp_client import MCPClientShim
+from orchestrator._internal.infra.mcp_client import MCPClientShim
 
 
 @pytest.mark.asyncio

@@ -5,7 +5,7 @@ import json
 import tempfile
 import shutil
 from pathlib import Path
-from orchestrator.execution.workspace import (
+from orchestrator._internal.execution.workspace import (
     WorkspaceManager,
     WorkspaceSkill,
     WorkspaceQuota,

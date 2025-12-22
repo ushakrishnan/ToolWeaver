@@ -14,7 +14,7 @@ Backends:
 - OTLP: Push to Grafana Cloud Prometheus (cloud-native, auto-retention)
 
 Usage (SQLite):
-    from orchestrator.execution.analytics import SkillAnalytics, setup_grafana
+    from orchestrator._internal.execution.analytics import SkillAnalytics, setup_grafana
     
     # Initialize analytics with SQLite
     analytics = SkillAnalytics(db_path="~/.toolweaver/analytics.db")
@@ -35,7 +35,7 @@ Usage (SQLite):
     )
 
 Usage (OTLP/Grafana Cloud):
-    from orchestrator.execution.analytics import OTLPMetrics
+    from orchestrator._internal.execution.analytics import OTLPMetrics
     
     # Initialize OTLP client (reads from env: OTLP_ENDPOINT, OTLP_INSTANCE_ID, OTLP_TOKEN)
     metrics = OTLPMetrics()

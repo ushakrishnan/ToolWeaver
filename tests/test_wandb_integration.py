@@ -8,7 +8,7 @@ import sys
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from orchestrator.observability.monitoring import ToolUsageMonitor
+from orchestrator._internal.observability.monitoring import ToolUsageMonitor
 
 def test_wandb():
     """Test W&B integration with configured credentials."""

@@ -25,7 +25,7 @@ def test_backend(backend_name: str) -> bool:
     print(f"{'='*70}")
     
     try:
-        from orchestrator.execution.analytics import create_analytics_client
+        from orchestrator._internal.execution.analytics import create_analytics_client
         
         # Set backend
         os.environ["ANALYTICS_BACKEND"] = backend_name
@@ -170,7 +170,7 @@ def test_factory_function() -> bool:
     print(f"{'='*70}")
     
     try:
-        from orchestrator.execution.analytics import create_analytics_client
+        from orchestrator._internal.execution.analytics import create_analytics_client
         
         backends = ["sqlite", "prometheus"]
         if all([os.getenv("OTLP_ENDPOINT"), os.getenv("OTLP_INSTANCE_ID"), os.getenv("OTLP_TOKEN")]):

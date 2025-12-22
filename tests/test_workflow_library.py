@@ -11,13 +11,13 @@ Tests cover:
 import pytest
 import time
 from pathlib import Path
-from orchestrator.workflows.workflow_library import (
+from orchestrator._internal.workflows.workflow_library import (
     PatternDetector,
     WorkflowLibrary,
     ToolSequence
 )
-from orchestrator.workflows.workflow import WorkflowTemplate, WorkflowStep
-from orchestrator.observability.monitoring import ToolCallMetric
+from orchestrator._internal.workflows.workflow import WorkflowTemplate, WorkflowStep
+from orchestrator._internal.observability.monitoring import ToolCallMetric
 
 
 @pytest.fixture

@@ -5,7 +5,7 @@ import pytest
 from aiohttp import web
 import os
 
-from orchestrator.infra.a2a_client import (
+from orchestrator._internal.infra.a2a_client import (
     A2AClient,
     AgentDelegationRequest,
     AgentCapability,

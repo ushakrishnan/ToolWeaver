@@ -2,10 +2,10 @@ import asyncio, json, logging, os
 from functools import partial
 from typing import Dict, Any
 from ..shared.models import PlanModel
-from ..infra.mcp_client import MCPClientShim
-from ..infra.a2a_client import A2AClient, AgentDelegationRequest
-from ..dispatch.hybrid_dispatcher import dispatch_step
-from ..observability.monitoring import ToolUsageMonitor
+from .infra.mcp_client import MCPClientShim
+from .infra.a2a_client import A2AClient, AgentDelegationRequest
+from .dispatch.hybrid_dispatcher import dispatch_step
+from .observability.monitoring import ToolUsageMonitor
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -336,9 +336,9 @@ class Orchestrator:
             KeyError: If skill not found
             RuntimeError: If skill execution fails
         """
-        from ..execution.skill_library import get_skill
-        from ..execution.validation import validate_stub
-        from ..execution.skill_metrics import SkillExecutionTimer
+        from .execution.skill_library import get_skill
+        from .execution.validation import validate_stub
+        from .execution.skill_metrics import SkillExecutionTimer
         from pathlib import Path
         
         start = datetime.now()

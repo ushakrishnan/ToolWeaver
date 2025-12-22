@@ -12,7 +12,7 @@ from orchestrator import (
     sync_tool_with_skill,
     get_skill_backed_tools,
 )
-from orchestrator.execution.skill_library import (
+from orchestrator._internal.execution.skill_library import (
     save_skill,
     get_skill,
     update_skill,

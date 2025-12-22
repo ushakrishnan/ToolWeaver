@@ -10,9 +10,9 @@ This module provides a unified interface for dispatching to:
 import asyncio
 import logging
 from typing import Dict, Any, Callable, Optional
-from ..execution.code_exec_worker import code_exec_worker
+from .execution.code_exec_worker import code_exec_worker
 from ..shared.models import FunctionCallInput, FunctionCallOutput
-from ..infra.a2a_client import AgentDelegationRequest
+from .infra.a2a_client import AgentDelegationRequest
 
 logger = logging.getLogger(__name__)
 

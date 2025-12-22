@@ -23,7 +23,7 @@ from pathlib import Path
 from dataclasses import dataclass
 
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
-from orchestrator.workflows.control_flow_patterns import (
+from orchestrator._internal.workflows.control_flow_patterns import (
     ControlFlowPatterns,
     PatternType,
     create_polling_code,

@@ -11,7 +11,7 @@ Features:
 - Configurable filtering rules
 
 Usage:
-    from orchestrator.execution import DataFilter, PIITokenizer
+    from orchestrator._internal.execution import DataFilter, PIITokenizer
     
     # Filter large output
     filter = DataFilter(max_bytes=10000, max_rows=100)

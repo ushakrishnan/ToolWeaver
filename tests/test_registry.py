@@ -4,7 +4,7 @@
 import logging
 logging.basicConfig(level=logging.INFO)
 
-from orchestrator.execution import (
+from orchestrator._internal.execution import (
     configure_registry,
     RegistryConfig,
     SkillRegistry,
@@ -59,7 +59,7 @@ print(f"[OK] Invalid signature rejected: {not is_invalid}")
 
 # Test 6: RegistrySkill metadata
 print("\n[TEST 6] Registry Skill Metadata")
-from orchestrator.execution import RegistrySkill
+from orchestrator._internal.execution import RegistrySkill
 from datetime import datetime
 
 skill_meta = RegistrySkill(
@@ -86,7 +86,7 @@ print(f"  Tags: {skill_meta.tags}")
 
 # Test 7: RegistryConfig roundtrip
 print("\n[TEST 7] Registry Config Persistence")
-from orchestrator.execution.skill_registry import _save_registry_config, _load_registry_config
+from orchestrator._internal.execution.skill_registry import _save_registry_config, _load_registry_config
 
 save_config = RegistryConfig(
     url="https://custom.registry.com",
@@ -119,7 +119,7 @@ print(f"[OK] API URL construction working correctly")
 
 # Test 9: Convenience functions
 print("\n[TEST 9] Module-Level Functions")
-from orchestrator.execution import (
+from orchestrator._internal.execution import (
     search_registry,
     get_registry_skill,
     rate_registry_skill,
@@ -135,7 +135,7 @@ print(f"  - trending_skills()")
 
 # Test 10: Integration check
 print("\n[TEST 10] Integration with Skill Library")
-from orchestrator.execution import Skill
+from orchestrator._internal.execution import Skill
 test_skill = Skill(
     name="test_skill",
     code_path="/tmp/test.py",

@@ -7,7 +7,7 @@ from a large catalog.
 
 import asyncio
 from orchestrator.mcp_client import MCPClientShim
-from orchestrator.dispatch import functions
+from orchestrator._internal.dispatch import functions
 from orchestrator.tool_discovery import discover_tools
 from orchestrator.tool_search import ToolSearchEngine
 

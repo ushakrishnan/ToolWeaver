@@ -430,7 +430,7 @@ class ProgrammaticToolExecutor:
         """
         if tool_def.type == "mcp":
             # Call MCP worker
-            from orchestrator.infra.mcp_client import MCPClientShim
+            from orchestrator._internal.infra.mcp_client import MCPClientShim
             
             shim = MCPClientShim()
             if tool_def.name not in shim.tool_map:

@@ -13,7 +13,7 @@ Features:
 - Version control for skills
 
 Usage:
-    from orchestrator.execution import WorkspaceManager
+    from orchestrator._internal.execution import WorkspaceManager
     
     # Create workspace
     workspace = WorkspaceManager(session_id="agent-123")

@@ -12,9 +12,9 @@ In this example:
 
 import asyncio
 import json
-from orchestrator.infra.mcp_client import MCPClientShim
-from orchestrator.infra.a2a_client import A2AClient, AgentDelegationRequest
-from orchestrator.runtime.orchestrator import run_step
+from orchestrator._internal.infra.mcp_client import MCPClientShim
+from orchestrator._internal.infra.a2a_client import A2AClient, AgentDelegationRequest
+from orchestrator._internal.runtime.orchestrator import run_step
 
 
 async def main():

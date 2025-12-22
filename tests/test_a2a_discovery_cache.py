@@ -1,6 +1,6 @@
 import pytest
 
-from orchestrator.infra.a2a_client import A2AClient, AgentCapability
+from orchestrator._internal.infra.a2a_client import A2AClient, AgentCapability
 
 
 @pytest.mark.asyncio

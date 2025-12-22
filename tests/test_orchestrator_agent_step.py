@@ -1,6 +1,6 @@
 import pytest
 
-from orchestrator.runtime.orchestrator import run_step
+from orchestrator._internal.runtime.orchestrator import run_step
 
 
 class DummyMCP:

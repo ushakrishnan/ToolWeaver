@@ -5,7 +5,7 @@ Traditional pull-based Prometheus metrics exposition via HTTP /metrics endpoint.
 This is the classic Prometheus model where Prometheus scrapes your application.
 
 Usage:
-    from orchestrator.execution.analytics import PrometheusMetrics
+    from orchestrator._internal.execution.analytics import PrometheusMetrics
     
     # Start metrics server
     metrics = PrometheusMetrics(port=8000)

@@ -96,18 +96,18 @@ class ToolUsageMonitor:
         for backend_type in backends:
             try:
                 if backend_type == "local":
-                    from orchestrator.observability.monitoring_backends import LocalBackend
+                    from orchestrator._internal.observability.monitoring_backends import LocalBackend
                     config = backend_config.get("local", {"log_dir": log_dir})
                     self.backends.append(LocalBackend(**config))
                 
                 elif backend_type == "wandb":
-                    from orchestrator.observability.monitoring_backends import WandbBackend
+                    from orchestrator._internal.observability.monitoring_backends import WandbBackend
                     config = backend_config.get("wandb", {})
                     self.backends.append(WandbBackend(**config))
                     print("✅ W&B monitoring enabled")
                 
                 elif backend_type == "prometheus":
-                    from orchestrator.observability.monitoring_backends import PrometheusBackend
+                    from orchestrator._internal.observability.monitoring_backends import PrometheusBackend
                     config = backend_config.get("prometheus", {})
                     self.backends.append(PrometheusBackend(**config))
                 

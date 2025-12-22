@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 
 from .workflow import WorkflowTemplate, WorkflowStep
-from ..observability import ToolCallMetric
+from ..observability.monitoring import ToolCallMetric
 
 logger = logging.getLogger(__name__)
 

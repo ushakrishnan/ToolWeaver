@@ -16,7 +16,7 @@ import asyncio
 import time
 from unittest.mock import AsyncMock, MagicMock
 
-from orchestrator.execution.programmatic_executor import (
+from orchestrator._internal.execution.programmatic_executor import (
     ProgrammaticToolExecutor,
     SecurityError,
     execute_programmatic_code

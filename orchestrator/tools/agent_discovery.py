@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, cast
 
-from ..infra.a2a_client import A2AClient, AgentCapability
+from .._internal.infra.a2a_client import A2AClient, AgentCapability
 from ..shared.models import ToolDefinition, ToolParameter
 from .tool_discovery import ToolDiscoveryService
 
