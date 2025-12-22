@@ -164,6 +164,8 @@ def _register_bound_function(
 ) -> Callable[[Dict[str, Any]], Any]:
     plugin = _ensure_plugin()
 
+    _validate_tool_signature(fn=fn, tool_def=tool_def, expects_kwargs=expects_kwargs)
+
     async def bound(params: Dict[str, Any]) -> Any:
         call_params = params or {}
         try:
@@ -193,6 +195,43 @@ def _register_bound_function(
     )
     
     return bound
+
+
+def _validate_tool_signature(*, fn: Callable[..., Any], tool_def: ToolDefinition, expects_kwargs: bool) -> None:
+    """Validate decorator usage and surface helpful warnings/errors."""
+    sig = inspect.signature(fn)
+
+    # Missing docstring
+    if not (fn.__doc__ or "").strip():
+        logger.warning("Tool '%s' is missing a docstring", tool_def.name)
+
+    # Missing return annotation
+    if sig.return_annotation is inspect.Signature.empty:
+        logger.warning("Tool '%s' is missing a return type annotation", tool_def.name)
+
+    # Missing parameter annotations
+    missing_param_annotations = [p.name for p in sig.parameters.values() if p.annotation is inspect.Signature.empty]
+    if missing_param_annotations:
+        logger.warning(
+            "Tool '%s' parameters missing type hints: %s",
+            tool_def.name,
+            ", ".join(missing_param_annotations),
+        )
+
+    # Invalid parameter names (fail fast)
+    param_names = [p.name for p in sig.parameters.values()]
+    invalid = [name for name in param_names if not name.isidentifier()]
+    if invalid:
+        raise ValueError(f"Tool '{tool_def.name}' has invalid parameter names: {', '.join(invalid)}")
+
+    # Ensure provided ToolParameters align with function signature when using kwargs
+    if expects_kwargs and tool_def.parameters:
+        provided_names = {p.name for p in tool_def.parameters}
+        missing_in_params = [n for n in param_names if n not in provided_names]
+        if missing_in_params:
+            raise ValueError(
+                f"Tool '{tool_def.name}' parameter mismatch: signature has {missing_in_params}"
+            )
 
 
 def _infer_parameters_from_signature(fn: Callable[..., Any]) -> List[ToolParameter]:
