@@ -61,6 +61,11 @@ class InvalidPluginError(PluginError):
     pass
 
 
+class DuplicateToolNameError(PluginError):
+    """A plugin attempted to register tools with duplicate names."""
+    pass
+
+
 # ============================================================
 # Plugin Registry
 # ============================================================
@@ -123,6 +128,9 @@ class PluginRegistry:
                 f"Plugin '{name}' must implement execute() method"
             )
         
+        # Validate tool definitions for uniqueness and shape
+        self._validate_plugin_tools(name=name, plugin=plugin)
+
         with self._lock:
             if name in self._plugins and not replace:
                 raise PluginAlreadyRegisteredError(
@@ -132,6 +140,45 @@ class PluginRegistry:
             
             self._plugins[name] = plugin
             logger.info(f"Registered plugin: {name}")
+
+    def _validate_plugin_tools(self, name: str, plugin: PluginProtocol) -> None:
+        """Validate that a plugin's tools are well-formed and deduplicated across registry."""
+        try:
+            tools = plugin.get_tools()
+        except Exception as exc:  # noqa: BLE001
+            raise InvalidPluginError(f"Plugin '{name}' get_tools() failed: {exc}") from exc
+
+        if not isinstance(tools, list):
+            raise InvalidPluginError(f"Plugin '{name}' get_tools() must return a list, got {type(tools).__name__}")
+
+        seen_local: set[str] = set()
+        for tool in tools:
+            if not isinstance(tool, dict):
+                raise InvalidPluginError(
+                    f"Plugin '{name}' get_tools() entries must be dicts, got {type(tool).__name__}"
+                )
+            tool_name = tool.get("name")
+            if not tool_name or not isinstance(tool_name, str):
+                raise InvalidPluginError(f"Plugin '{name}' tool missing string 'name' field")
+            if tool_name in seen_local:
+                raise DuplicateToolNameError(
+                    f"Plugin '{name}' defines duplicate tool name '{tool_name}'"
+                )
+            seen_local.add(tool_name)
+
+        # Cross-plugin duplicate detection
+        with self._lock:
+            existing_names = {
+                t.get("name")
+                for p in self._plugins.values()
+                for t in (p.get_tools() or [])
+                if isinstance(t, dict) and t.get("name")
+            }
+        dup = seen_local.intersection(existing_names)
+        if dup:
+            raise DuplicateToolNameError(
+                f"Plugin '{name}' tool names collide with existing registry: {', '.join(sorted(dup))}"
+            )
     
     def unregister(self, name: str) -> None:
         """
