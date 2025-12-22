@@ -93,5 +93,3 @@ prometheus_multiproc_dir/
 .ruff_cache/
 .mypy_cache/
 
-# Internal documentation (business plans, strategy, private notes)
-docs/internal/
