@@ -182,7 +182,7 @@ class PIITokenizer:
         """Get mapping of tokens to original values."""
         return self._token_map.copy()
     
-    def clear_tokens(self):
+    def clear_tokens(self) -> None:
         """Clear all stored tokens."""
         self._token_map.clear()
         self._reverse_map.clear()

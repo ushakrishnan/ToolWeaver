@@ -293,7 +293,7 @@ class ToolFileSystem:
         Looks for Args section with format:
             param_name (type, required/optional): description
         """
-        parameters = []
+        parameters: List[ToolParameter] = []
         
         # Find Args section
         args_match = re.search(r'Args:(.*?)(?:Returns:|$)', docstring, re.DOTALL)

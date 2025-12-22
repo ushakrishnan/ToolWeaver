@@ -98,7 +98,7 @@ def check_package_available(package: str) -> bool:
         return False
 
 
-def require_package(package: str, extra: Optional[str] = None, suggestion: Optional[str] = None):
+def require_package(package: str, extra: Optional[str] = None, suggestion: Optional[str] = None) -> Callable[[Callable], Callable]:
     """
     Decorator to require an optional package for a function.
     
@@ -129,7 +129,7 @@ def require_package(package: str, extra: Optional[str] = None, suggestion: Optio
     return decorator
 
 
-def require_packages(*packages: str, extra: Optional[str] = None):
+def require_packages(*packages: str, extra: Optional[str] = None) -> Callable[[Callable], Callable]:
     """
     Decorator to require multiple optional packages.
     
@@ -194,7 +194,7 @@ class optional_feature:
         # If wandb not available, logs warning and continues
     """
     
-    def __init__(self, package: str, extra: Optional[str] = None, logger=None):
+    def __init__(self, package: str, extra: Optional[str] = None, logger: Any = None) -> None:
         """
         Args:
             package: Package name
@@ -206,7 +206,7 @@ class optional_feature:
         self.logger = logger
         self.available = False
     
-    def __enter__(self):
+    def __enter__(self) -> bool:
         self.available = check_package_available(self.package)
         if not self.available and self.logger:
             if self.extra:

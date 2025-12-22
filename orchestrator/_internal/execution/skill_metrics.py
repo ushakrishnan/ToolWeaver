@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
@@ -34,9 +34,9 @@ class SkillMetrics:
     usage_count: int = 0
     success_count: int = 0
     total_latency_ms: float = 0.0
-    ratings: List[int] = None  # User ratings (1-5)
+    ratings: List[int] = field(default_factory=list)  # User ratings (1-5)
     last_used: Optional[str] = None  # ISO timestamp
-    created_at: str = None
+    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
     
     @property
     def success_rate(self) -> float:
@@ -279,11 +279,11 @@ class SkillExecutionTimer:
         self.start_time = 0.0
         self.success = False
     
-    def __enter__(self):
+    def __enter__(self) -> "SkillExecutionTimer":
         self.start_time = time.perf_counter()
         return self
     
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> bool:
         elapsed_ms = (time.perf_counter() - self.start_time) * 1000
         self.success = (exc_type is None)
         record_skill_execution(self.skill_name, self.success, elapsed_ms)
