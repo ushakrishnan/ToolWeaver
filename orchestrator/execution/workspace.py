@@ -335,6 +335,8 @@ class WorkspaceManager:
             existing = self.load_skill(name)
             version = existing.version + 1
         
+        logger.debug(f"Saving skill '{name}' (version={version})")
+        
         # Create skill object
         skill = WorkspaceSkill(
             name=name,
@@ -365,7 +367,17 @@ class WorkspaceManager:
         self.metadata["total_size"] += len(skill_json.encode())
         self._save_metadata()
         
-        logger.info(f"Saved skill: {name} (v{version})")
+        logger.info(
+            f"Skill saved",
+            extra={
+                "skill_name": name,
+                "skill_version": version,
+                "code_lines": len(code.split('\n')),
+                "dependencies": len(skill.dependencies),
+                "tags": skill.tags,
+                "session_id": self.session_id,
+            }
+        )
         return skill
     
     def load_skill(self, name: str) -> WorkspaceSkill:
@@ -382,13 +394,26 @@ class WorkspaceManager:
         """
         skill_file = self.skills_dir / f"{name}.json"
         
+        logger.debug(f"Loading skill '{name}' from workspace")
+        
         if not skill_file.exists():
+            logger.warning(f"Skill not found: {name}")
             raise SkillNotFound(f"Skill not found: {name}")
         
         with open(skill_file, 'r') as f:
             data = json.load(f)
         
-        return WorkspaceSkill.from_dict(data)
+        skill = WorkspaceSkill.from_dict(data)
+        logger.debug(
+            f"Skill loaded",
+            extra={
+                "skill_name": name,
+                "skill_version": skill.version,
+                "dependencies": len(skill.dependencies),
+                "session_id": self.session_id,
+            }
+        )
+        return skill
     
     def list_skills(self, tags: Optional[List[str]] = None) -> List[WorkspaceSkill]:
         """List all skills in workspace.
@@ -457,6 +482,8 @@ class WorkspaceManager:
         # Check if this is an update (file existed before)
         is_update = intermediate_file.exists()
         
+        logger.debug(f"Saving intermediate '{name}' (update={is_update})")
+        
         # Serialize data
         data_json = json.dumps(data, indent=2)
         
@@ -473,7 +500,15 @@ class WorkspaceManager:
         self.metadata["total_size"] += len(data_json.encode())
         self._save_metadata()
         
-        logger.info(f"Saved intermediate: {name}")
+        logger.info(
+            f"Intermediate saved",
+            extra={
+                "intermediate_name": name,
+                "is_update": is_update,
+                "size_bytes": len(data_json.encode()),
+                "session_id": self.session_id,
+            }
+        )
     
     def load_intermediate(self, name: str) -> Any:
         """Load intermediate output from workspace.
@@ -489,11 +524,24 @@ class WorkspaceManager:
         """
         intermediate_file = self.intermediate_dir / f"{name}.json"
         
+        logger.debug(f"Loading intermediate '{name}' from workspace")
+        
         if not intermediate_file.exists():
+            logger.warning(f"Intermediate not found: {name}")
             raise FileNotFoundError(f"Intermediate file not found: {name}")
         
         with open(intermediate_file, 'r') as f:
-            return json.load(f)
+            data = json.load(f)
+        
+        logger.debug(
+            f"Intermediate loaded",
+            extra={
+                "intermediate_name": name,
+                "data_type": type(data).__name__,
+                "session_id": self.session_id,
+            }
+        )
+        return data
     
     def list_intermediates(self) -> List[str]:
         """List all intermediate files in workspace.

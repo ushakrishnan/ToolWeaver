@@ -121,6 +121,8 @@ def load_tools_from_yaml(file_path: str | Path) -> int:
     """
     file_path = Path(file_path)
     
+    logger.debug(f"Loading YAML tool definitions from {file_path}")
+    
     if not file_path.exists():
         raise YAMLLoaderError(f"YAML file not found: {file_path}")
     
@@ -139,17 +141,36 @@ def load_tools_from_yaml(file_path: str | Path) -> int:
     
     plugin = _ensure_yaml_plugin()
     loaded = 0
+    failed = 0
     
     for tool_data in tools:
         try:
             tool_def, worker = _parse_tool_definition(tool_data)
             plugin.add(tool_def, worker)
+            logger.debug(
+                f"YAML tool loaded: {tool_def.name}",
+                extra={
+                    "tool_name": tool_def.name,
+                    "tool_type": tool_def.type,
+                    "provider": tool_def.provider,
+                    "domain": getattr(tool_def, "domain", "general"),
+                }
+            )
             loaded += 1
         except Exception as e:
+            failed += 1
             logger.error(f"Failed to load tool '{tool_data.get('name', 'unknown')}': {e}")
             # Continue loading other tools
     
-    logger.info(f"Loaded {loaded} tools from {file_path}")
+    logger.info(
+        f"YAML tools loaded",
+        extra={
+            "file_path": str(file_path),
+            "loaded_count": loaded,
+            "failed_count": failed,
+            "total_attempted": len(tools),
+        }
+    )
     return loaded
 
 
@@ -292,6 +313,8 @@ def load_tools_from_directory(directory: str | Path, pattern: str = "*.yaml") ->
     """
     directory = Path(directory)
     
+    logger.debug(f"Loading YAML tools from directory: {directory} with pattern: {pattern}")
+    
     if not directory.exists():
         raise YAMLLoaderError(f"Directory not found: {directory}")
     
@@ -299,13 +322,28 @@ def load_tools_from_directory(directory: str | Path, pattern: str = "*.yaml") ->
         raise YAMLLoaderError(f"Not a directory: {directory}")
     
     total_loaded = 0
+    failed_files = 0
+    yaml_files = list(directory.glob(pattern))
     
-    for yaml_file in directory.glob(pattern):
+    logger.debug(f"Found {len(yaml_files)} YAML files matching '{pattern}'")
+    
+    for yaml_file in yaml_files:
         try:
             count = load_tools_from_yaml(yaml_file)
             total_loaded += count
         except YAMLLoaderError as e:
+            failed_files += 1
             logger.error(f"Failed to load {yaml_file}: {e}")
             # Continue with other files
     
+    logger.info(
+        f"YAML tools directory loaded",
+        extra={
+            "directory": str(directory),
+            "pattern": pattern,
+            "total_loaded": total_loaded,
+            "files_processed": len(yaml_files),
+            "failed_files": failed_files,
+        }
+    )
     return total_loaded

@@ -137,6 +137,17 @@ def search_tools(
     include_examples: bool = False,
 ) -> List[Union[ToolDefinition, Dict[str, Any]]]:
     """Keyword or semantic search with optional progressive detail levels."""
+    logger.debug(
+        f"Searching tools",
+        extra={
+            "query": query,
+            "domain": domain,
+            "type_filter": type_filter,
+            "use_semantic": use_semantic,
+            "top_k": top_k,
+        }
+    )
+    
     results: List[ToolDefinition] = []
     semantic_attempted = False
 
@@ -155,6 +166,7 @@ def search_tools(
                     (tool, score) for tool, score in results_with_scores if tool.type == type_filter
                 ]
             results = [tool for tool, _ in results_with_scores]
+            logger.debug(f"Semantic search found {len(results)} results")
         except Exception as e:
             logger.warning(f"Semantic search failed, falling back to substring: {e}")
             results = []
@@ -172,6 +184,19 @@ def search_tools(
             hay = f"{td.name} {td.description}".lower()
             if query_norm in hay:
                 results.append(td)
+        
+        logger.debug(f"Keyword search found {len(results)} results")
+
+    logger.info(
+        f"Tool search completed",
+        extra={
+            "query": query,
+            "domain": domain,
+            "type_filter": type_filter,
+            "results_count": len(results),
+            "semantic_used": semantic_attempted and use_semantic,
+        }
+    )
 
     if detail_level:
         return [

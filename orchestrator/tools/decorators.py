@@ -179,6 +179,19 @@ def _register_bound_function(
     bound.__tool_definition__ = tool_def  # type: ignore
 
     plugin.add(tool_def.name, bound, tool_def)
+    
+    # Log tool registration
+    logger.info(
+        f"Tool registered: {tool_def.name}",
+        extra={
+            "tool_name": tool_def.name,
+            "tool_type": tool_def.type,
+            "provider": tool_def.provider,
+            "domain": getattr(tool_def, "domain", "general"),
+            "param_count": len(tool_def.parameters),
+        }
+    )
+    
     return bound
 
 

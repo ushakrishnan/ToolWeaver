@@ -105,7 +105,16 @@ def save_tool_as_skill(
     
     if existing_skill:
         # Update existing skill
-        logger.info(f"Updating skill '{tool_def.name}' with bump_type={bump_type}")
+        logger.info(
+            f"Updating skill '{tool_def.name}' with bump_type={bump_type}",
+            extra={
+                "skill_name": tool_def.name,
+                "action": "update",
+                "bump_type": bump_type,
+                "tool_type": tool_def.type,
+                "provider": tool_def.provider,
+            }
+        )
         skill = update_skill(
             tool_def.name,
             source_code,
@@ -115,7 +124,16 @@ def save_tool_as_skill(
         )
     else:
         # Create new skill
-        logger.info(f"Creating new skill '{tool_def.name}'")
+        logger.info(
+            f"Creating new skill '{tool_def.name}'",
+            extra={
+                "skill_name": tool_def.name,
+                "action": "create",
+                "tool_type": tool_def.type,
+                "provider": tool_def.provider,
+                "tags": skill_tags,
+            }
+        )
         skill = save_skill(
             tool_def.name,
             source_code,
@@ -124,6 +142,14 @@ def save_tool_as_skill(
             metadata=skill_metadata
         )
     
+    logger.debug(
+        f"Skill saved: {skill.name}",
+        extra={
+            "skill_name": skill.name,
+            "skill_version": skill.version,
+            "code_path": skill.code_path,
+        }
+    )
     return skill
 
 
@@ -154,6 +180,8 @@ def load_tool_from_skill(
         >>> tool_def, func = load_tool_from_skill("process_data")
         >>> result = func({"input": "test"})
     """
+    logger.debug(f"Loading tool from skill '{skill_name}' (version={version})")
+    
     # Get skill (specific version or latest)
     if version:
         from ..execution.skill_library import get_skill_version
@@ -164,6 +192,15 @@ def load_tool_from_skill(
         skill = get_skill(skill_name)
         if not skill:
             raise KeyError(f"Skill '{skill_name}' not found")
+    
+    logger.debug(
+        f"Skill loaded: {skill_name}",
+        extra={
+            "skill_name": skill_name,
+            "skill_version": skill.version,
+            "code_path": skill.code_path,
+        }
+    )
     
     # Load skill code
     skill_path = Path(skill.code_path)
@@ -177,7 +214,7 @@ def load_tool_from_skill(
     try:
         exec(code, namespace)
     except Exception as e:
-        logger.error(f"Failed to execute skill code: {e}")
+        logger.error(f"Failed to execute skill code for '{skill_name}': {e}")
         raise ValueError(f"Cannot execute skill code: {e}")
     
     # Find the main function (same name as skill or first callable)
