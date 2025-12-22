@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Dict, List, Optional, Callable, Literal
 import logging
 
 from ..shared.models import ToolDefinition, ToolParameter
@@ -17,7 +17,7 @@ class BaseTemplate:
 
     name: str
     description: str
-    type: str
+    type: Literal["mcp", "function", "code_exec", "agent", "tool"]
     provider: Optional[str]
     parameters: List[ToolParameter]
     metadata: Dict[str, Any]
@@ -30,7 +30,7 @@ class BaseTemplate:
         *,
         name: str,
         description: str = "",
-        type: str,
+        type: Literal["mcp", "function", "code_exec", "agent", "tool"],
         provider: Optional[str] = None,
         parameters: Optional[List[ToolParameter]] = None,
         metadata: Optional[Dict[str, Any]] = None,
@@ -102,7 +102,7 @@ class BaseTemplate:
         *,
         version: Optional[str] = None,
         **template_kwargs: Any
-    ) -> tuple[BaseTemplate, Callable]:
+    ) -> tuple[BaseTemplate, Callable[..., Any]]:
         """
         Create a template instance from a skill in the skill library.
         
@@ -151,7 +151,7 @@ class FunctionToolTemplate(BaseTemplate):
     Stores the function for skill bridge integration.
     """
     
-    def __init__(self, *, function: Optional[Callable] = None, **kwargs: Any) -> None:
+    def __init__(self, *, function: Optional[Callable[..., Any]] = None, **kwargs: Any) -> None:
         kwargs.setdefault("type", "function")
         super().__init__(**kwargs)
         self._function = function

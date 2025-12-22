@@ -8,7 +8,7 @@ Provides:
 - sync_tool_with_skill(): Update tool to match latest skill version
 """
 
-from typing import Optional, Dict, Any, Callable
+from typing import Optional, Dict, Any, Callable, Literal
 import inspect
 import logging
 from pathlib import Path
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 def save_tool_as_skill(
     tool_def: ToolDefinition,
-    function: Callable,
+    function: Callable[..., Any],
     *,
     tags: Optional[list[str]] = None,
     bump_type: str = "patch"
@@ -131,9 +131,9 @@ def load_tool_from_skill(
     skill_name: str,
     *,
     version: Optional[str] = None,
-    tool_type: str = "function",
+    tool_type: Literal["mcp", "function", "code_exec", "agent", "tool"] = "function",
     provider: str = "skill"
-) -> tuple[ToolDefinition, Callable]:
+) -> tuple[ToolDefinition, Callable[..., Any]]:
     """
     Load a tool from a skill in the skill library.
     
@@ -244,7 +244,7 @@ def get_tool_skill(tool_name: str) -> Optional[Skill]:
     return get_skill(tool_name)
 
 
-def sync_tool_with_skill(tool_name: str) -> Optional[tuple[ToolDefinition, Callable]]:
+def sync_tool_with_skill(tool_name: str) -> Optional[tuple[ToolDefinition, Callable[..., Any]]]:
     """
     Sync a tool with the latest version of its backing skill.
     
