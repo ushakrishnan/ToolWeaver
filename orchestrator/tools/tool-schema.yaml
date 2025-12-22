@@ -1,0 +1,169 @@
+# ToolWeaver YAML Schema
+# Version: 1.0
+# Schema for defining tools in YAML configuration files
+
+# Root structure
+tools:
+  type: array
+  description: List of tool definitions
+  items:
+    type: object
+    required:
+      - name
+      - worker
+    properties:
+      name:
+        type: string
+        description: Unique tool identifier (alphanumeric, underscores, hyphens)
+        pattern: "^[a-zA-Z0-9_-]+$"
+        examples:
+          - get_expenses
+          - create_pr
+          - send_slack_message
+      
+      type:
+        type: string
+        description: Tool type
+        enum:
+          - mcp
+          - function
+          - code_exec
+          - agent
+        default: function
+      
+      description:
+        type: string
+        description: Human-readable description of what the tool does
+        examples:
+          - "Fetch employee expenses from finance system"
+          - "Create a GitHub pull request"
+      
+      domain:
+        type: string
+        description: Tool domain for categorization
+        default: general
+        examples:
+          - finance
+          - github
+          - slack
+          - aws
+      
+      provider:
+        type: string
+        description: Optional provider identifier
+        examples:
+          - mcp
+          - a2a
+          - custom
+      
+      worker:
+        type: string
+        description: Python import path to worker function (module.function or module:function)
+        pattern: "^[a-zA-Z0-9_.]+:[a-zA-Z0-9_]+$|^[a-zA-Z0-9_.]+$"
+        examples:
+          - myapp.workers.get_expenses
+          - myapp.workers:get_expenses
+          - finance.tools.expense_fetcher
+      
+      parameters:
+        type: array
+        description: List of tool parameters
+        items:
+          type: object
+          required:
+            - name
+            - type
+          properties:
+            name:
+              type: string
+              description: Parameter name
+              pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$"
+            
+            type:
+              type: string
+              description: Parameter type (JSON Schema types)
+              enum:
+                - string
+                - integer
+                - number
+                - boolean
+                - object
+                - array
+            
+            description:
+              type: string
+              description: Parameter description
+            
+            required:
+              type: boolean
+              description: Whether parameter is required
+              default: false
+            
+            default:
+              description: Default value if parameter not provided
+            
+            enum:
+              type: array
+              description: List of allowed values
+              items:
+                type: string
+            
+            properties:
+              type: object
+              description: For object types, nested property definitions
+            
+            items:
+              type: object
+              description: For array types, item schema
+      
+      input_schema:
+        type: object
+        description: Optional JSON Schema for input validation
+      
+      output_schema:
+        type: object
+        description: Optional JSON Schema for output validation
+      
+      metadata:
+        type: object
+        description: Additional metadata (tags, version, etc.)
+        additionalProperties: true
+
+# Example YAML file:
+# tools:
+#   - name: get_expenses
+#     type: mcp
+#     domain: finance
+#     description: "Fetch employee expenses from finance system"
+#     worker: myapp.workers.get_expenses
+#     parameters:
+#       - name: employee_id
+#         type: string
+#         description: "Employee identifier"
+#         required: true
+#       - name: year
+#         type: integer
+#         description: "Fiscal year"
+#         required: false
+#         default: 2025
+#     metadata:
+#       version: "1.0"
+#       tags:
+#         - finance
+#         - expenses
+#
+#   - name: create_pr
+#     type: function
+#     domain: github
+#     description: "Create a GitHub pull request"
+#     worker: myapp.github:create_pull_request
+#     parameters:
+#       - name: repo
+#         type: string
+#         required: true
+#       - name: title
+#         type: string
+#         required: true
+#       - name: body
+#         type: string
+#         required: false

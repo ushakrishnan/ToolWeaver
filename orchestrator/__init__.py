@@ -114,8 +114,8 @@ def get_execution_stats(*args: Any, **kwargs: Any) -> Dict[str, Any]:
 # This makes it clear what's safe to import and what might change.
 
 # === Core Tool Registration (Phase 2) ===
-# Phase 1: Minimal decorator available now
-from .tools.decorators import tool
+# Phase 2: Decorators available for function, MCP, and agent tools
+from .tools.decorators import tool, mcp_tool, a2a_agent
 from .tools.templates import (
     BaseTemplate,
     FunctionToolTemplate,
@@ -141,7 +141,15 @@ from .tools.discovery_api import (
 # TODO: These will be imported from .tools.discovery_api after Phase 1.6
 # from .tools import get_available_tools, search_tools, get_tool_info
 
-# === Skill Bridge (Phase 1.5) ===
+# === YAML Loader (Phase 3) ===
+# ✅ DONE: Phase 3 complete - YAML-based tool registration
+from .tools.loaders import (
+    load_tools_from_yaml,
+    load_tools_from_directory,
+    YAMLLoaderError,
+    YAMLValidationError,
+    WorkerResolutionError,
+)
 # ✅ DONE: Phase 1.5 complete - Connect tools to skill library
 from .tools.skill_bridge import (
     save_tool_as_skill,
@@ -201,6 +209,12 @@ __all__ = [
     "CodeExecToolTemplate",
     "AgentTemplate",
     "register_template",
+    # YAML Loader (Phase 3)
+    "load_tools_from_yaml",
+    "load_tools_from_directory",
+    "YAMLLoaderError",
+    "YAMLValidationError",
+    "WorkerResolutionError",
     # Discovery API
     "get_available_tools",
     "search_tools",
