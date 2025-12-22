@@ -113,3 +113,23 @@ def test_a2a_agent_decorator_sync_function():
 
     result = asyncio.get_event_loop().run_until_complete(plugin.execute("route", {"task": "triage"}))
     assert result == {"task": "triage", "priority": 1}
+
+
+def test_decorator_rejects_invalid_param_name():
+    registry = get_registry()
+    registry.clear()
+
+    with pytest.raises(ValueError, match="invalid parameter names"):
+        @tool(parameters=[ToolParameter(name="bad-name", type="string", required=True)])
+        def bad(params: Dict[str, Any]) -> Dict[str, Any]:
+            return {"x": 1}
+
+
+def test_decorator_rejects_signature_mismatch_for_kwargs():
+    registry = get_registry()
+    registry.clear()
+
+    with pytest.raises(ValueError, match="parameter mismatch"):
+        @mcp_tool(parameters=[ToolParameter(name="only_one", type="string", required=True)])
+        def expect_two(a: str, b: str) -> Dict[str, Any]:
+            return {"a": a, "b": b}
