@@ -28,7 +28,7 @@ from __future__ import annotations
 import importlib
 import logging
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Literal, Optional
 
 import yaml
 from pydantic import ValidationError
@@ -59,7 +59,7 @@ class _YAMLToolPlugin:
 
     def __init__(self) -> None:
         self._tools: Dict[str, ToolDefinition] = {}
-        self._workers: Dict[str, Callable] = {}
+        self._workers: Dict[str, Callable[..., Any]] = {}
 
     def get_tools(self) -> List[Dict[str, Any]]:
         """Return all loaded tools as dicts."""
@@ -81,7 +81,7 @@ class _YAMLToolPlugin:
         
         return result
 
-    def add(self, tool_def: ToolDefinition, worker: Callable) -> None:
+    def add(self, tool_def: ToolDefinition, worker: Callable[..., Any]) -> None:
         """Add a tool and its worker function."""
         self._tools[tool_def.name] = tool_def
         self._workers[tool_def.name] = worker
@@ -153,7 +153,7 @@ def load_tools_from_yaml(file_path: str | Path) -> int:
     return loaded
 
 
-def _parse_tool_definition(tool_data: Dict[str, Any]) -> tuple[ToolDefinition, Callable]:
+def _parse_tool_definition(tool_data: Dict[str, Any]) -> tuple[ToolDefinition, Callable[..., Any]]:
     """
     Parse a single tool definition from YAML data.
     
@@ -218,7 +218,7 @@ def _parse_tool_definition(tool_data: Dict[str, Any]) -> tuple[ToolDefinition, C
     return tool_def, worker
 
 
-def _resolve_worker(import_path: str) -> Callable:
+def _resolve_worker(import_path: str) -> Callable[..., Any]:
     """
     Resolve a worker function from an import path.
     

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 import logging
-from typing import Any, Callable, Dict, List, Optional, get_args, get_origin
+from typing import Any, Callable, Dict, List, Literal, Optional, get_args, get_origin
 
 from ..shared.models import ToolDefinition, ToolParameter
 from ..plugins.registry import PluginProtocol, register_plugin, get_registry
@@ -55,7 +55,7 @@ def tool(
     name: Optional[str] = None,
     description: str = "",
     provider: Optional[str] = None,
-    type: str = "function",
+    type: Literal["mcp", "function", "code_exec", "agent", "tool"] = "function",
     parameters: Optional[List[ToolParameter]] = None,
     input_schema: Optional[Dict[str, Any]] = None,
     output_schema: Optional[Dict[str, Any]] = None,
@@ -71,12 +71,13 @@ def tool(
 
     def wrapper(fn: Callable[..., Any]) -> Callable[..., Any]:
         tool_name = name or fn.__name__
+        inferred_params = parameters or _infer_parameters_from_signature(fn)
         td = ToolDefinition(
             name=tool_name,
             description=description or (fn.__doc__ or tool_name),
             provider=provider,
-            type=type,
-            parameters=parameters or [],
+            type="function",
+            parameters=inferred_params,
             input_schema=input_schema,
             output_schema=output_schema,
             metadata=metadata or {},
