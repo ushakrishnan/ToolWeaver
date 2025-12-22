@@ -30,6 +30,7 @@ dependencies = [
     "pydantic>=2.0.0",       # Data validation
     "aiohttp>=3.9.0",        # Async HTTP
     "python-dotenv>=1.0.0",  # Env var loading
+    "pyyaml>=6.0.0",         # YAML parsing for Phase 3 loader
 ]
 
 [project.optional-dependencies]
