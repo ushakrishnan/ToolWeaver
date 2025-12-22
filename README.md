@@ -7,7 +7,7 @@ Automatically discovers, searches, and chains tools while reducing costs by 80-9
 [![PyPI version](https://badge.fury.io/py/toolweaver.svg)](https://pypi.org/project/toolweaver/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-488%20collected-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-711%20passing%20(97%25)-brightgreen.svg)]()
 [![Analytics](https://img.shields.io/badge/analytics-3%20backends-blue.svg)](docs/reference/ANALYTICS_STRATEGY.md)
 
 ---
