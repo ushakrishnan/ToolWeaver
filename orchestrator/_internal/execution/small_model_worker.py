@@ -9,7 +9,7 @@ are overkill. Supports both local inference and cloud endpoints.
 import os
 import json
 import logging
-from typing import Dict, Any, List, Optional, Literal, cast, no_type_check
+from typing import Dict, Any, List, Optional, Literal, cast, Callable
 from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
@@ -161,13 +161,12 @@ class SmallModelWorker:
             Generated text
         """
         if self.backend == "transformers":
-            return cast(str, await self._generate_transformers(prompt, system_prompt, max_tokens, temperature))
+            return await self._generate_transformers(prompt, system_prompt, max_tokens, temperature)
         elif self.backend == "ollama":
-            return cast(str, await self._generate_ollama(prompt, system_prompt, max_tokens, temperature))
+            return await self._generate_ollama(prompt, system_prompt, max_tokens, temperature)
         elif self.backend == "azure":
-            return cast(str, await self._generate_azure(prompt, system_prompt, max_tokens, temperature))
+            return await self._generate_azure(prompt, system_prompt, max_tokens, temperature)
     
-    @no_type_check
     async def _generate_transformers(
         self,
         prompt: str,
@@ -216,9 +215,10 @@ class SmallModelWorker:
                         response = "\n".join(parts[i+1:]).strip()
                         break
             
-            return response
+            return str(response)
 
-        return str(await asyncio.to_thread(_infer))
+        infer_fn: Callable[[], str] = _infer
+        return str(await asyncio.to_thread(infer_fn))
     
     async def _generate_ollama(
         self,
