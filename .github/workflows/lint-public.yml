@@ -1,0 +1,92 @@
+name: Public API Lint
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "orchestrator/**"
+      - "examples/**"
+      - ".github/workflows/lint-public.yml"
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  lint-internal-imports:
+    name: Check public code doesn't import _internal
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check examples for _internal imports
+        run: |
+          echo "=== Scanning examples/ for _internal imports ==="
+          if grep -r "from orchestrator._internal" examples/ 2>/dev/null; then
+            echo "❌ FAIL: Found _internal imports in examples/"
+            exit 1
+          else
+            echo "✅ PASS: No _internal imports in examples/"
+          fi
+      
+      - name: Check public API for _internal imports
+        run: |
+          echo "=== Scanning orchestrator/tools/decorators.py for _internal imports ==="
+          if grep -r "from orchestrator._internal" orchestrator/tools/decorators.py orchestrator/tools/templates.py orchestrator/tools/loaders.py 2>/dev/null | grep -v "from orchestrator._internal."; then
+            echo "⚠️  WARNING: _internal imports detected in public modules (check if intentional)"
+          fi
+      
+      - name: Verify __all__ completeness
+        run: |
+          echo "=== Verifying orchestrator/__init__.py __all__ ==="
+          python3 << 'EOF'
+          import ast
+          import sys
+          
+          with open('orchestrator/__init__.py', 'r') as f:
+              content = f.read()
+              tree = ast.parse(content)
+          
+          # Find __all__ definition
+          all_items = None
+          for node in ast.walk(tree):
+              if isinstance(node, ast.Assign):
+                  for target in node.targets:
+                      if isinstance(target, ast.Name) and target.id == '__all__':
+                          if isinstance(node.value, ast.List):
+                              all_items = [elt.s for elt in node.value.elts if isinstance(elt, ast.Constant)]
+          
+          if all_items is None:
+              print("⚠️  No __all__ defined")
+          else:
+              print(f"✅ __all__ defined with {len(all_items)} items")
+              if len(all_items) < 20:
+                  print("⚠️  __all__ seems small - verify it includes all public APIs")
+          
+          # Check for imports
+          imports = set()
+          for node in ast.walk(tree):
+              if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith('orchestrator'):
+                  if node.names:
+                      for alias in node.names:
+                          imports.add(alias.name if alias.asname is None else alias.asname)
+          
+          print(f"Found {len(imports)} imports from orchestrator modules")
+          
+          if all_items and imports:
+              missing = imports - set(all_items)
+              if missing and missing != {'Any', 'Awaitable', 'Callable', 'Dict', 'Iterable', 'List', 'Optional', 'Protocol', 'Tuple', 'Union'}:
+                  print(f"⚠️  Items imported but not in __all__: {missing}")
+          EOF
+      
+      - name: Check tests only import public API
+        run: |
+          echo "=== Scanning tests/ for problematic _internal usage ==="
+          if grep -r "from orchestrator._internal import" tests/*.py 2>/dev/null | grep -v "test_internal\|_internal.*error\|_internal.*validation"; then
+            echo "⚠️  WARNING: _internal imports in tests (OK if intentional for testing internals)"
+          else
+            echo "✅ PASS: Tests use public API or internal test modules only"
+          fi
