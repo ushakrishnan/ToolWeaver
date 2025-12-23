@@ -1,36 +1,55 @@
-"""
+﻿"""
 Example 1: Basic Receipt Processing
 
-Demonstrates the simplest use case - extracting text from a receipt image.
+Demonstrates registering and using a simple MCP tool for receipt OCR.
+This is the simplest example - shows tool registration and execution.
 """
 
 import asyncio
-import json
 from pathlib import Path
 import sys
 
-# Add parent directory to path to import orchestrator
+# Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from orchestrator import execute_plan, final_synthesis
+from orchestrator import mcp_tool, search_tools
 
 
-# Define execution plan
-receipt_plan = {
-    "request_id": "example-01-receipt",
-    "steps": [
-        {
-            "id": "extract_text",
-            "tool": "receipt_ocr",
-            "input": {
-                "image_uri": "https://example.com/receipts/sample-receipt.jpg"
-            }
-        }
-    ],
-    "final_synthesis": {
-        "prompt_template": "Receipt text extracted:\n{{steps}}"
+# Register a receipt OCR tool
+@mcp_tool(domain="receipts", description="Extract text from receipt images")
+async def receipt_ocr(image_uri: str) -> dict:
+    """
+    Extract text from a receipt image using OCR.
+    
+    Args:
+        image_uri: URL or path to receipt image
+        
+    Returns:
+        dict with 'text' and 'confidence' keys
+    """
+    # In production, this would call Azure CV API
+    # For this demo, return mock data
+    mock_receipt_text = """
+    RESTAURANT XYZ
+    Date: 2024-01-15
+    
+    Burger       $12.99
+    Fries        $ 4.50
+    Soda         $ 2.50
+    -------------
+    Subtotal:    $19.99
+    Tax (8%):    $ 1.60
+    -------------
+    TOTAL:       $21.59
+    
+    Thank you!
+    """
+    
+    return {
+        "text": mock_receipt_text.strip(),
+        "confidence": 0.95,
+        "line_count": 12
     }
-}
 
 
 async def main():
@@ -40,27 +59,35 @@ async def main():
     print("=" * 60)
     print()
     
-    print("📝 Plan:")
-    print(f"   - Step 1: Extract text from receipt image")
+    # Find the tool we just registered
+    print("🔍 Searching for receipt tools...")
+    tools = search_tools(query="receipt")
+    print(f"   Found {len(tools)} tool(s)")
     print()
     
-    # Execute plan
-    print("🚀 Executing plan...")
-    context = await execute_plan(receipt_plan)
+    if not tools:
+        print("❌ No receipt tools found")
+        return
     
-    # Display results
-    print()
-    print("✅ Execution complete!")
-    print()
-    print("📊 Results:")
-    print(json.dumps(context, indent=2))
+    # Use the first tool
+    tool_def = tools[0]
+    print(f"📝 Using tool: {tool_def.name}")
+    print(f"   Description: {tool_def.description}")
     print()
     
-    # Generate synthesis
-    synthesis = await final_synthesis(receipt_plan, context)
-    print("📋 Summary:")
-    print(synthesis['synthesis'])
+    # Execute the tool function directly
+    print("🚀 Processing receipt...")
+    result = await receipt_ocr({"image_uri": "https://example.com/receipts/sample-receipt.jpg"})
+    
     print()
+    print("✅ Result:")
+    print(f"   Confidence: {result['confidence']*100:.1f}%")
+    print(f"   Lines extracted: {result['line_count']}")
+    print()
+    print("📄 Extracted Text:")
+    print(result["text"])
+    print()
+    print("=" * 60)
 
 
 if __name__ == "__main__":
