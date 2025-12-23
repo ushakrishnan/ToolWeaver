@@ -56,3 +56,5 @@
 - Lint `ruff`, type-check `mypy`, test `pytest` with coverage and gates.
 - Upload coverage to Codecov.
 - Public API smoke job: install `--no-deps`, import `orchestrator`, run `validate_config()` without optional deps.
+- Dispatch suite: run `tests/test_sub_agent_dispatch.py` in the matrix to cover parallel dispatch limits/aggregation and logging redaction.
+	- Secrets redactor auto-installs on import. If a test needs to assert raw logs, remove the filter via `from orchestrator._internal.security.secrets_redactor import remove_secrets_redactor; remove_secrets_redactor()` and restore after.

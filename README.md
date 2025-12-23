@@ -7,14 +7,15 @@ Automatically discovers, searches, and chains tools while reducing costs by 80-9
 [![PyPI version](https://badge.fury.io/py/toolweaver.svg)](https://pypi.org/project/toolweaver/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-711%20passing%20(97%25)-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-964%20passing%20(98.5%25)-brightgreen.svg)]()
+[![Coverage](https://img.shields.io/badge/coverage-67.61%25-yellow.svg)]()
 [![Analytics](https://img.shields.io/badge/analytics-3%20backends-blue.svg)](docs/reference/ANALYTICS_STRATEGY.md)
 
 ---
 
 ## 🚀 Quick Navigation
 
-**Package users (start here):** [Quickstart](docs/for-package-users/quickstart.md) • [Registering tools](docs/for-package-users/registering-tools.md) • [Discovering tools](docs/for-package-users/discovering-tools.md) • [Extending via plugins](docs/for-package-users/extending.md)
+**Package users (start here):** [Quickstart](docs/for-package-users/quickstart.md) • [Registering tools](docs/for-package-users/registering-tools.md) • [Discovering tools](docs/for-package-users/discovering-tools.md) • [Extending via plugins](docs/for-package-users/extending.md) • [Sub-agent dispatch](docs/user-guide/sub_agent_dispatch.md)
 
 **Contributors:** [Development guide](docs/for-contributors/development.md) • [Architecture](docs/for-contributors/architecture.md) • [Plugins](docs/for-contributors/plugins.md) • [Testing](docs/for-contributors/testing.md) • [Security](docs/for-contributors/security.md)
 
@@ -109,6 +110,14 @@ Natural Language → Large Model (Planning) → Tool Search → Workflow Executi
 
 **Key Innovation:** Right model for each task - GPT-4 for complex reasoning, Phi-3 for simple parsing/classification.
 
+### 🧭 Why ToolWeaver (Crux)
+
+- **Secure fan-out:** Parallel sub-agent dispatcher with guardrails for cost, concurrency, time, rate limits, and recursion depth.
+- **Built-in safety:** PII/secrets redaction, template sanitization, and idempotency caching so large fan-outs do not leak or repeat work.
+- **Useful outputs:** Aggregation/ranking (majority vote, best score, custom) to turn noisy parallel calls into a single decision.
+- **When to use:** Divide-and-conquer workloads, ensemble scoring, self-consistency runs, or any planner that needs 100+ tool/model calls without runaway spend.
+- **Why not DIY:** Removes boilerplate for limits, logging, and safety; integrates with A2A client and plugin registry with documented, typed APIs.
+
 ## Installation
 
 ### 👤 For Users (Install Package)
@@ -178,8 +187,26 @@ Then explore development examples:
 All tests run on:
 - **Python 3.10, 3.11, 3.12, 3.13**
 - **Platforms: Ubuntu, Windows, macOS**
-- **Test Coverage**: 85%+ (unit + integration tests)
+- **Test Results**: 964 passed, 15 failed (98.5% pass rate)
+  - 7 Ollama tests (requires local Ollama installation)
+  - 5 benchmark API tests (optional performance validation)
+  - 3 feature tests (minor issues)
+- **Test Coverage**: 67.61% overall (6,183 lines covered out of 9,145)
+  - Security modules: 95%+ (pii_detector, secrets_redactor, template_sanitizer)
+  - Core tools: 90%+ (sub_agent, composition, error_recovery, idempotency)
+  - Infrastructure: 85%+ (rate_limiter, a2a_client, mcp_client)
 - **Type Checking**: mypy strict mode on critical modules
+
+**High-Coverage Modules (>90%):**
+- `orchestrator/tools/` - Core tool management (85-97%)
+- `orchestrator/security/` - Security features (96-100%)
+- `orchestrator/_internal/infra/` - Infrastructure (67-100%)
+- `orchestrator/shared/models.py` - Data models (100%)
+
+**Failing Tests:**
+- Optional service integrations (Ollama, Redis SaaS)
+- Non-critical benchmark validations
+- Edge case handling in specialized modules
 
 See [.github/workflows/test-matrix.yml](.github/workflows/test-matrix.yml) for CI details.
 

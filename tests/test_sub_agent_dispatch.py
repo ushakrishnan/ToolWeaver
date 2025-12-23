@@ -4,6 +4,7 @@ Tests for parallel sub-agent dispatch.
 
 import asyncio
 import time
+import logging
 import pytest
 
 from orchestrator.tools.sub_agent import (
@@ -163,6 +164,48 @@ async def test_large_dispatch_100_agents():
     results = await dispatch_agents("Task {i}", args, max_parallel=20, executor=exec_fn)
     assert len(results) == 100
     assert all(r.success for r in results)
+
+
+@pytest.mark.asyncio
+async def test_a2a_style_executor_integration():
+    async def exec_fn(prompt, args, agent_name, model):
+        await asyncio.sleep(0.01)
+        return {"output": {"text": prompt, "meta": args}, "cost": 0.05}
+
+    args = [{"i": i} for i in range(3)]
+    limits = DispatchResourceLimits(max_total_cost_usd=5.0, cost_per_agent_estimate=0.01)
+    results = await dispatch_agents("Do {i}", args, executor=exec_fn, limits=limits)
+
+    assert len(results) == 3
+    assert all(r.success for r in results)
+    assert all(r.cost == 0.05 for r in results)
+    assert results[0].output["output"]["meta"]["i"] == 0
+
+
+@pytest.mark.asyncio
+async def test_min_success_with_aggregation_passes_and_returns_majority():
+    get_global_cache().clear()
+
+    async def exec_fn(prompt, args, agent_name, model):
+        return {"choice": args["choice"], "cost": 0.0}
+
+    args = [{"choice": "a"}, {"choice": "a"}, {"choice": "b"}]
+    limits = DispatchResourceLimits(min_success_count=2)
+    result = await dispatch_agents(
+        "Vote {choice}",
+        args,
+        limits=limits,
+        executor=exec_fn,
+        aggregate_fn=lambda res: majority_vote(res, "choice"),
+    )
+
+    assert result == "a"
+
+
+def test_secrets_redactor_auto_installed(caplog):
+    with caplog.at_level(logging.INFO):
+        logging.getLogger().info("token sk-abc12345678901234567890")
+    assert any("[REDACTED_OPENAI_KEY]" in message for message in caplog.messages)
 
 
 def test_aggregation_helpers():

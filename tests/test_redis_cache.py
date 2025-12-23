@@ -343,6 +343,11 @@ def test_concurrent_access(redis_cache_with_fallback):
 )
 def test_real_redis_connection():
     """Test actual Redis connection (skip if not available)"""
+    from orchestrator._internal.infra.redis_cache import REDIS_AVAILABLE
+    
+    if not REDIS_AVAILABLE:
+        pytest.skip("redis package not installed")
+    
     cache = RedisCache(
         redis_url=os.getenv("REDIS_URL"),
         password=os.getenv("REDIS_PASSWORD"),

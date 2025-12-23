@@ -80,6 +80,16 @@ from .config import get_config, reset_config, validate_config
 # === Logging (Phase 0.l) ===
 # ✅ DONE: Phase 0.l complete
 from ._internal.logger import get_logger, set_log_level, enable_debug_mode
+from ._internal.security.secrets_redactor import install_secrets_redactor
+
+# === Agent-to-Agent (A2A) Client (Phase 1.7) ===
+# ✅ DONE: Agent delegation and discovery
+from ._internal.infra.a2a_client import (
+    AgentCapability,
+    AgentDelegationRequest,
+    AgentDelegationResponse,
+    A2AClient,
+)
 
 # ============================================================
 # Public API Definition
@@ -142,7 +152,16 @@ __all__ = [
     "get_logger",
     "set_log_level",
     "enable_debug_mode",
+    
+    # Agent-to-Agent (A2A) Client (Phase 1.7)
+    "AgentCapability",
+    "AgentDelegationRequest",
+    "AgentDelegationResponse",
+    "A2AClient",
 ]
+
+# Auto-install secrets redaction on root logger to prevent credential leakage in logs.
+install_secrets_redactor()
 
 # ============================================================
 # Important: Do not import from orchestrator._internal

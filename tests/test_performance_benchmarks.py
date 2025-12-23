@@ -10,8 +10,8 @@ import pytest
 
 from orchestrator.tools.tool_discovery import discover_tools
 from orchestrator.tools.discovery_api import search_tools
-from orchestrator.orchestrator import Orchestrator
-from orchestrator.monitoring import MonitoringBackend
+from orchestrator._internal.runtime.orchestrator import Orchestrator
+from orchestrator._internal.observability.monitoring_backends import create_backend
 
 
 @dataclass
@@ -48,7 +48,7 @@ class TestRegressionBenchmarks:
 
         # Regression: cached discovery should be <5ms
         assert p95 < 5.0, f"Discovery cache p95: {p95}ms (target <5ms)"
-        print(f"✓ Discovery cache: {mean:.2f}ms mean, {p95:.2f}ms p95")
+        print(f"[OK] Discovery cache: {mean:.2f}ms mean, {p95:.2f}ms p95")
 
     @pytest.mark.asyncio
     async def test_tool_search_performance(self):
@@ -79,7 +79,7 @@ class TestRegressionBenchmarks:
 
         # Regression: search should be <50ms
         assert p95 < 50.0, f"Search p95: {p95}ms (target <50ms)"
-        print(f"✓ Tool search: {mean:.2f}ms mean, {p95:.2f}ms p95")
+        print(f"[OK] Tool search: {mean:.2f}ms mean, {p95:.2f}ms p95")
 
     @pytest.mark.asyncio
     async def test_concurrent_discovery_requests(self):
@@ -93,10 +93,10 @@ class TestRegressionBenchmarks:
         elapsed = (time.perf_counter() - start) * 1000
 
         # All should succeed
-        assert all(len(r) > 0 for r in results)
+        assert all(len(r.tools) > 0 for r in results)
         # Should be near cache latency, not 10x slower
         assert elapsed < 100.0, f"Concurrent discovery: {elapsed}ms (target <100ms)"
-        print(f"✓ Concurrent discovery (10x): {elapsed:.2f}ms")
+        print(f"[OK] Concurrent discovery (10x): {elapsed:.2f}ms")
 
     @pytest.mark.asyncio
     async def test_large_catalog_search(self):
@@ -105,7 +105,7 @@ class TestRegressionBenchmarks:
         
         # Simulate 200 tools by duplicating
         large_catalog = {}
-        for i, (name, tool) in enumerate(catalog.items()):
+        for i, (name, tool) in enumerate(catalog.tools.items()):
             large_catalog[f"{name}_{i//2}"] = tool
             if len(large_catalog) >= 200:
                 break
@@ -126,13 +126,13 @@ class TestRegressionBenchmarks:
 
         # Should scale sub-linearly, <100ms for 200 tools
         assert p95 < 100.0, f"Large catalog p95: {p95}ms (target <100ms)"
-        print(f"✓ Large catalog search (200+ tools): {mean:.2f}ms mean, {p95:.2f}ms p95")
+        print(f"[OK] Large catalog search (200+ tools): {mean:.2f}ms mean, {p95:.2f}ms p95")
 
     @pytest.mark.asyncio
     async def test_orchestration_latency(self):
         """Verify orchestration maintains <100ms overhead."""
         # Create minimal orchestrator
-        monitor = MonitoringBackend(backend="memory")
+        monitor = create_backend("memory")
         catalog = await discover_tools(use_cache=True)
         orchestrator = Orchestrator(catalog, monitoring=monitor)
 
@@ -155,11 +155,11 @@ class TestRegressionBenchmarks:
 
         # Orchestration overhead should be minimal
         assert mean < 5.0, f"Orchestration overhead: {mean:.2f}ms"
-        print(f"✓ Orchestration latency: {mean:.2f}ms mean")
+        print(f"[OK] Orchestration latency: {mean:.2f}ms mean")
 
     def test_monitoring_overhead(self):
         """Verify monitoring adds <5% overhead."""
-        monitor = MonitoringBackend(backend="memory")
+        monitor = create_backend("memory")
         
         # Simulate monitoring calls
         start = time.perf_counter()
@@ -176,7 +176,7 @@ class TestRegressionBenchmarks:
         per_call_ms = elapsed / 1000
         # Should be <0.5ms per call
         assert per_call_ms < 0.5, f"Monitoring per-call: {per_call_ms:.3f}ms"
-        print(f"✓ Monitoring overhead: {per_call_ms:.3f}ms per call")
+        print(f"[OK] Monitoring overhead: {per_call_ms:.3f}ms per call")
 
 
 class TestScalabilityBenchmarks:
@@ -195,7 +195,7 @@ class TestScalabilityBenchmarks:
             # Create tool definitions
             base_tools = await discover_tools(use_cache=True)
             for i in range(size):
-                for tool_name, tool in list(base_tools.items())[:size]:
+                for tool_name, tool in list(base_tools.tools.items())[:size]:
                     catalog[f"{tool_name}_{i}"] = tool
 
             # Benchmark search
@@ -232,7 +232,7 @@ class TestScalabilityBenchmarks:
         
         # Simulate concurrent operations
         async def concurrent_search():
-            return await find_relevant_tools(
+            return await search_tools(
                 query="test query",
                 catalog=catalog,
                 limit=5
@@ -247,10 +247,10 @@ class TestScalabilityBenchmarks:
         elapsed = (time.perf_counter() - start) * 1000
 
         # All should succeed
-        assert all(len(r) > 0 for r in results)
+        assert all(len(r.tools) > 0 for r in results)
         
         per_request = elapsed / 50
-        print(f"✓ Concurrent load (50 requests): {elapsed:.0f}ms total, {per_request:.2f}ms/request")
+        print(f"[OK] Concurrent load (50 requests): {elapsed:.0f}ms total, {per_request:.2f}ms/request")
 
     @pytest.mark.asyncio
     async def test_cache_efficiency(self):
@@ -267,8 +267,8 @@ class TestScalabilityBenchmarks:
 
         speedup = uncached_time / max(cached_time, 1.0)
 
-        assert tools_uncached.keys() == tools_cached.keys()
-        print(f"✓ Cache efficiency:")
+        assert tools_uncached.tools.keys() == tools_cached.tools.keys()
+        print(f"[OK] Cache efficiency:")
         print(f"  Uncached: {uncached_time:.0f}ms")
         print(f"  Cached: {cached_time:.0f}ms")
         print(f"  Speedup: {speedup:.0f}x")
@@ -293,7 +293,7 @@ class TestMemoryBenchmarks:
 
         # Should be reasonable (<10MB for discovery)
         peak_mb = peak / 1024 / 1024
-        print(f"✓ Discovery memory: peak {peak_mb:.1f}MB")
+        print(f"[OK] Discovery memory: peak {peak_mb:.1f}MB")
         assert peak_mb < 10.0, f"Discovery memory peak: {peak_mb:.1f}MB"
 
     @pytest.mark.asyncio
@@ -304,13 +304,13 @@ class TestMemoryBenchmarks:
         base_tools = await discover_tools(use_cache=True)
         
         # Single tool size
-        sample_tool = list(base_tools.values())[0]
+        sample_tool = list(base_tools.tools.values())[0]
         tool_bytes = sys.getsizeof(str(sample_tool))
         
         # Estimate for 1000 tools
         estimated_1000_tools_mb = (tool_bytes * 1000) / 1024 / 1024
         
-        print(f"✓ Catalog memory scaling:")
+        print(f"[OK] Catalog memory scaling:")
         print(f"  Per-tool approx: {tool_bytes} bytes")
         print(f"  Est. 1000 tools: {estimated_1000_tools_mb:.1f}MB")
         
