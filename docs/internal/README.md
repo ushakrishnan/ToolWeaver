@@ -4,35 +4,26 @@ This folder contains **private planning documents** that are **NOT** included in
 
 ## 📁 Contents
 
-### 🎯 Current Status & Planning
-- **`NEXT_STEPS.md`** - **PRIMARY ROADMAP** | Phase 2 complete, Phase 3-5 planning | All pending items prioritized
-- `A2A_INTEGRATION_PLAN.md` - Phase 2 completion (marked 🟢 COMPLETE) | Reference for A2A architecture
-- `PERFORMANCE_BENCHMARK_RESULTS.md` - Regression targets and benchmark strategy
+### ⭐ START HERE - MASTER TODO LIST
+- **[`CONSOLIDATED_TODOS.md`](CONSOLIDATED_TODOS.md)** - **📋 SINGLE SOURCE OF TRUTH** | All tasks, phases, and tracking | Start here for all development work
 
-### 📋 Reference & Implementation Details
-- `CODE_EXECUTION_IMPLEMENTATION_PLAN.md` - Phase 0-1 detailed roadmap (reference)
-- `PROGRAMMATIC_EXECUTION_SUMMARY.md` - Phase 1-2 completion details (reference)
-- `EXAMPLES_SAMPLES_CONSOLIDATION.md` - Examples strategy (reference)
+### 🔒 Security & Strategic Analysis
+- **[`SECURITY_ARCHITECTURE_REVIEW.md`](SECURITY_ARCHITECTURE_REVIEW.md)** - Security analysis, threat model, implementation gaps & roadmap
+- **[`BUSINESS_STRATEGY.md`](BUSINESS_STRATEGY.md)** - Business model, revenue strategy, licensing | Update annually
+- **[`AGENT_UX_AND_MARKET_POSITIONING.md`](AGENT_UX_AND_MARKET_POSITIONING.md)** - Market positioning, competitive analysis | Update quarterly
 
-### 🔍 Analysis Documents
-- `ANTHROPIC_MCP_COMPARISON.md` - Gap analysis vs Anthropic | ⚠️ Needs update with current capabilities
-- `DELIVERY_PACKAGE.md` - Phase 2 A2A delivery summary (archived)
+### 📖 Reference
+- [**`RELEASES.md`**](RELEASES.md) - Version history and release notes | ⚠️ Needs update for v0.2.0+
 
-### 💼 Strategic & Business
-- **`BUSINESS_STRATEGY.md`** - Business model, revenue strategy, licensing | Update annually
-- **`AGENT_UX_AND_MARKET_POSITIONING.md`** - Market positioning, competitive analysis | Update quarterly
-- `RELEASES.md` - Version history and release notes | ⚠️ Needs update for v0.2.0+
+## 📊 Document Status (Dec 23, 2025)
 
-## 📊 Document Status (Dec 18, 2025)
-
-| Document | Type | Status | Action |
-|----------|------|--------|--------|
-| **NEXT_STEPS.md** | **Roadmap** | ✅ Fresh | Primary reference for planning |
-| A2A_INTEGRATION_PLAN.md | Reference | ✅ Complete | Reference only (Phase 2 done) |
-| PERFORMANCE_BENCHMARK_RESULTS.md | Reference | ✅ Current | Performance targets |
-| CODE_EXECUTION_IMPLEMENTATION_PLAN.md | Reference | ✅ Current | Phase 0-1 reference |
-| PROGRAMMATIC_EXECUTION_SUMMARY.md | Reference | ✅ Current | Phase 1-2 details |
-| EXAMPLES_SAMPLES_CONSOLIDATION.md | Reference | ✅ Current | Examples strategy |
+| Document | Purpose | Status |
+|----------|---------|--------|
+| **CONSOLIDATED_TODOS.md** | Master task list & phases | ✅ Active - Single source of truth |
+| **SECURITY_ARCHITECTURE_REVIEW.md** | Security & tech analysis | ✅ Current |
+| **BUSINESS_STRATEGY.md** | Business & licensing | ✅ Current |
+| **AGENT_UX_AND_MARKET_POSITIONING.md** | Market positioning | ✅ Current |
+| **RELEASES.md** | Release notes | ⚠️ Needs v0.2.0+ update |
 | BUSINESS_STRATEGY.md | Strategic | ⚠️ Review needed | Q1 2026 update |
 | AGENT_UX_AND_MARKET_POSITIONING.md | Strategic | ⚠️ Review needed | Q1 2026 update |
 | ANTHROPIC_MCP_COMPARISON.md | Analysis | ⚠️ Needs update | Update with current gaps |
@@ -41,24 +32,15 @@ This folder contains **private planning documents** that are **NOT** included in
 
 ## 🎯 Quick Action Items
 
-See **`NEXT_STEPS.md`** for the complete prioritized roadmap. Key immediate actions:
+**See [`CONSOLIDATED_TODOS.md`](CONSOLIDATED_TODOS.md) for the complete master task list.**
 
-**This Week** (Priority 1):
-1. Execute performance benchmarks in production
-2. Update ANTHROPIC_MCP_COMPARISON.md with current capabilities
-3. Update RELEASES.md with v0.2.0+ releases
+**Current Phase:** Phase 0 (Security Foundations) - NOT STARTED
 
-**Next 2-3 Weeks** (Priority 2):
-1. Create 2-3 advanced workflow examples
-2. Create 1 getting-started video
-3. Expand troubleshooting guide
+**Next Task:** 0.1 - Sub-Agent Resource Quotas (2-3 hours)
 
-**Weeks 4+ (Priority 3+)**:
-1. Performance optimization (streaming chunk sizes, cost analytics)
-2. Phase 3: Skill Library (4-6 weeks)
-3. Phase 4: RBAC & Multi-tenant (6-8 weeks)
+**Phase 0 Progress:** ⬜⬜⬜⬜⬜⬜⬜ 0/7 tasks complete
 
-Full details and timeline: **See [`NEXT_STEPS.md`](NEXT_STEPS.md)**
+**Critical:** Phase 0 MUST be completed before Phase 1 can begin. See CONSOLIDATED_TODOS.md for full breakdown.
 
 ## 🔒 Privacy
 
@@ -80,7 +62,7 @@ These documents are for:
 
 ## 🔄 Updates
 
-- **Last Major Update**: December 18, 2025
+- **Last Major Update**: December 23, 2025
 - **Next Review**: March 2026 (quarterly)
 - Update documents as features complete and priorities shift
 

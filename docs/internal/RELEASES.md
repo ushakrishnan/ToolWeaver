@@ -4,6 +4,66 @@ This is a running log of all releases. Use this content when creating GitHub rel
 
 ---
 
+## v0.3.1 - Documentation Restructuring & Internal Organization (December 23, 2025)
+
+### 🏗️ Maintenance Release: Consolidated Developer Documentation
+
+Streamlined internal documentation with consolidated master TODO list and security analysis framework.
+
+**Key Improvements**: Single source of truth for all development tasks, streamlined internal docs structure, and comprehensive security architecture review for Phase 1 readiness.
+
+### ✨ What's New
+
+#### 📚 Documentation Consolidation
+- **`CONSOLIDATED_TODOS.md`**: Master task list combining all phases and roadmaps
+  - Phase 0-4 implementation plans
+  - Real-time task tracking with status indicators
+  - Risk assessment and sequencing
+  - ~1000 lines of comprehensive planning
+
+- **`SECURITY_ARCHITECTURE_REVIEW.md`**: Pre-Phase 1 security requirements
+  - 6 critical threat scenarios with impact analysis
+  - Current security posture assessment
+  - 8 priority security improvements
+  - 802 lines of security analysis
+
+- **`README.md`**: Updated index for internal docs
+  - Cleaned up 18 archived documents
+  - Single entry point for all development guidance
+  - Quick links to essential references
+
+#### 🗑️ Documentation Cleanup
+- **Removed 18 archived/redundant documents**:
+  - Historical phase documents (PHASE_0_*, PHASE_1_*)
+  - Superseded roadmaps and plans
+  - Old analysis documents
+  - Session notes and temporary files
+
+- **Preserved 5 essential references**:
+  - CONSOLIDATED_TODOS.md (master TODO)
+  - SECURITY_ARCHITECTURE_REVIEW.md (pre-Phase 1)
+  - BUSINESS_STRATEGY.md (strategic planning)
+  - AGENT_UX_AND_MARKET_POSITIONING.md (market positioning)
+  - RELEASES.md (version history)
+
+### 📊 Impact
+- **Documentation cleanliness**: 88% reduction in doc files (23 → 5 in docs/internal)
+- **Maintainability**: Single source of truth for all development work
+- **Clarity**: Organized roadmap from current state through Phase 4 completion
+
+### 🚀 Development Status
+- **Current Version**: v0.3.0
+- **Tests Passing**: 699/735 (95%+)
+- **Phase Status**: Foundation complete, Phase 0 Security pending start
+- **Next Major Release**: v0.4.0 (Phase 0 Security + Phase 1 Agent Dispatch)
+
+### 📝 Notes
+- This is a **documentation-only release** - no code changes
+- All functionality remains at v0.3.0 level
+- Internal docs moved to `docs/internal/` (not in public package)
+
+---
+
 ## v0.4.0 - Analytics Backends & Documentation Consolidation (December 18, 2025)
 
 ### 📊 Major Release: Production Analytics & Clean Documentation
