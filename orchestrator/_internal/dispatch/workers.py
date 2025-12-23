@@ -1,7 +1,7 @@
 import asyncio
 import os
 import logging
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import Any, Dict, Optional, TYPE_CHECKING, Literal, cast
 from ...shared.models import ReceiptOCROut, LineItemParserOut, LineItem, CategorizerOut
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ def _get_small_model_worker() -> Optional["SmallModelWorker"]:
         if use_small_model:
             try:
                 from ..execution.small_model_worker import SmallModelWorker
-                backend = os.getenv("SMALL_MODEL_BACKEND", "ollama")
+                backend = cast(Literal['transformers', 'ollama', 'azure'], os.getenv("SMALL_MODEL_BACKEND", "ollama"))
                 model_name = os.getenv("WORKER_MODEL", "phi3")
                 _small_model_worker = SmallModelWorker(backend=backend, model_name=model_name)
                 logger.info(f"Initialized small model worker: {backend}/{model_name}")
@@ -29,7 +29,11 @@ def _get_small_model_worker() -> Optional["SmallModelWorker"]:
                 _small_model_worker = False
         else:
             _small_model_worker = False
-    return _small_model_worker if _small_model_worker is not False else None
+    
+    # Return the worker if available, None if failed or disabled
+    if isinstance(_small_model_worker, bool):
+        return None
+    return _small_model_worker
 
 # Local Azure CV wrapper provides stable imports + availability flag
 from .azure_cv import (

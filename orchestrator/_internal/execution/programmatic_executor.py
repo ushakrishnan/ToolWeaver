@@ -444,7 +444,7 @@ class ProgrammaticToolExecutor:
                 raise ValueError(f"MCP tool not found: {tool_def.name}")
             
             tool_func = shim.tool_map[tool_def.name]
-            result = await tool_func(**parameters)
+            result = await tool_func(parameters)
             return result
         
         elif tool_def.type == "function":
