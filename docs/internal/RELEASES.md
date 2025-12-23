@@ -4,7 +4,7 @@ This is a running log of all releases. Use this content when creating GitHub rel
 
 ---
 
-## v0.3.1 - Documentation Restructuring & Internal Organization (December 23, 2025)
+## v0.5.0 - Documentation Restructuring & Internal Organization (December 23, 2025)
 
 ### 🏗️ Maintenance Release: Consolidated Developer Documentation
 
@@ -52,20 +52,18 @@ Streamlined internal documentation with consolidated master TODO list and securi
 - **Clarity**: Organized roadmap from current state through Phase 4 completion
 
 ### 🚀 Development Status
-- **Current Version**: v0.3.1 ← **YOU ARE HERE**
+- **Current Version**: v0.5.0 ← **YOU ARE HERE**
 - **Tests Passing**: 699/735 (95%+)
-- **Phase Status**: Foundation complete, Phase 0 Security pending start
-- **Next Release**: v0.4.0 (Phase 0 Security Implementation)
+- **Phase Status**: Foundation complete
 
 ### 📝 Notes
 - This is a **documentation-only release** - no code changes
-- All functionality remains at v0.3.0 level
+- All functionality remains at v0.4.0 level
 - Internal docs moved to `docs/internal/` (not in public package)
-- Update `pyproject.toml` version to 0.3.1 ✅
 
 ---
 
-## v0.4.0 - Analytics Backends & Monitoring (December 18, 2025)
+## v0.3.1 - Documentation Restructuring & Internal Organization (December 23, 2025)
 
 ### 📊 Major Release: Production Analytics & Clean Documentation
 
