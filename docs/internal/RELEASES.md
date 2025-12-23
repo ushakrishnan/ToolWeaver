@@ -52,25 +52,42 @@ Streamlined internal documentation with consolidated master TODO list and securi
 - **Clarity**: Organized roadmap from current state through Phase 4 completion
 
 ### 🚀 Development Status
-- **Current Version**: v0.3.0
+- **Current Version**: v0.3.1 ← **YOU ARE HERE**
 - **Tests Passing**: 699/735 (95%+)
 - **Phase Status**: Foundation complete, Phase 0 Security pending start
-- **Next Major Release**: v0.4.0 (Phase 0 Security + Phase 1 Agent Dispatch)
+- **Next Release**: v0.4.0 (Phase 0 Security Implementation)
 
 ### 📝 Notes
 - This is a **documentation-only release** - no code changes
 - All functionality remains at v0.3.0 level
 - Internal docs moved to `docs/internal/` (not in public package)
+- Update `pyproject.toml` version to 0.3.1 ✅
 
 ---
 
-## v0.4.0 - Analytics Backends & Documentation Consolidation (December 18, 2025)
+## v0.4.0 - Phase 0 Security Implementation (PLANNED - Target: 5-7 hours)
 
-### 📊 Major Release: Production Analytics & Clean Documentation
+### 🔒 Security Foundations for Multi-Agent Orchestration
 
-Complete tri-backend analytics system with flexible deployment options and streamlined documentation structure.
+**Status**: NOT STARTED (blocker for Phase 1)
 
-**Key Innovation**: Three production-ready analytics backends (SQLite, OTLP, Prometheus) with single environment variable switching and zero code changes for migration.
+**Goals**: Enable safe parallel agent dispatch with cost controls, data protection, and attack prevention.
+
+**Implementation Roadmap**:
+1. Sub-agent resource quotas (cost, concurrency, depth limits)
+2. PII detection in agent responses  
+3. Request rate limiting for parallel API calls
+4. Secrets redaction in logs and errors
+5. Prompt injection protection for templates
+6. Dispatch depth limits for recursion prevention
+7. Template sanitization for LLM safety
+8. Distributed lock support for shared state
+
+See `docs/internal/SECURITY_ARCHITECTURE_REVIEW.md` for complete threat analysis and detailed implementation plan.
+
+---
+
+## v0.5.0 - Analytics Backends & Monitoring (December 18, 2025)
 
 ### ✨ What's New
 
