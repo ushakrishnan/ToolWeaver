@@ -82,19 +82,19 @@ Phase 0 (Security)  →  Phase 1 (Dispatch)  →  Phase 2 (Composition)  →  Ph
 **File:** `orchestrator/tools/sub_agent_limits.py` (NEW)
 
 **What to Build:**
-- [ ] Create `DispatchResourceLimits` dataclass
+- [x] Create `DispatchResourceLimits` dataclass
   - Cost controls: `max_total_cost_usd`, `cost_per_agent_estimate`
   - Concurrency: `max_concurrent`, `max_total_agents`
   - Time: `max_agent_duration_s`, `max_total_duration_s`
   - Rate limiting: `requests_per_second`
   - Failure: `max_failure_rate`, `min_success_count`
   - Recursion: `max_dispatch_depth`, `current_depth`
-- [ ] Create `DispatchQuotaExceeded` exception
-- [ ] Create `DispatchLimitTracker` class
+- [x] Create `DispatchQuotaExceeded` exception
+- [x] Create `DispatchLimitTracker` class
   - `check_pre_dispatch()` - Validate BEFORE dispatch starts
   - `record_agent_completion()` - Track cost/failures during execution
   - Enforce all limits in real-time
-- [ ] Write unit tests (8+ test cases)
+- [x] Write unit tests (13 test cases)
   - Cost limit enforcement
   - Agent count limits
   - Recursion depth prevention
@@ -106,10 +106,10 @@ Phase 0 (Security)  →  Phase 1 (Dispatch)  →  Phase 2 (Composition)  →  Ph
 - AS-2: Recursive Agent Spawn (exponential DoS)
 
 **Acceptance Criteria:**
-- [ ] Dispatch fails if estimated cost > budget
-- [ ] Dispatch fails if depth > max_dispatch_depth
-- [ ] Dispatch fails fast if failure_rate > threshold
-- [ ] All tests pass
+- [x] Dispatch fails if estimated cost > budget
+- [x] Dispatch fails if depth > max_dispatch_depth
+- [x] Dispatch fails fast if failure_rate > threshold
+- [x] All tests pass
 
 ---
 
@@ -117,13 +117,13 @@ Phase 0 (Security)  →  Phase 1 (Dispatch)  →  Phase 2 (Composition)  →  Ph
 **File:** `orchestrator/_internal/infra/rate_limiter.py` (NEW)
 
 **What to Build:**
-- [ ] Create `RateLimiter` class (token bucket algorithm)
+- [x] Create `RateLimiter` class (token bucket algorithm)
   - Constructor: `requests_per_second`, `burst_size`
   - Method: `async acquire()` - Block until token available
   - Context manager support (`async with rate_limiter:`)
-- [ ] Token refill logic (elapsed × rate)
-- [ ] Thread-safe with asyncio.Lock
-- [ ] Write unit tests (5+ test cases)
+- [x] Token refill logic (elapsed × rate)
+- [x] Thread-safe with asyncio.Lock
+- [x] Write unit tests (17 test cases)
   - Correct rate enforcement (10 RPS test)
   - Burst handling
   - Concurrent usage (thread safety)
@@ -133,9 +133,9 @@ Phase 0 (Security)  →  Phase 1 (Dispatch)  →  Phase 2 (Composition)  →  Ph
 - Overwhelming external APIs with parallel requests
 
 **Acceptance Criteria:**
-- [ ] 10 RPS limit allows exactly 10 requests in 1 second
-- [ ] Burst allows temporary spike
-- [ ] Thread-safe under concurrent load
+- [x] 10 RPS limit allows exactly 10 requests in 1 second
+- [x] Burst allows temporary spike
+- [x] Thread-safe under concurrent load
 
 ---
 
@@ -143,21 +143,21 @@ Phase 0 (Security)  →  Phase 1 (Dispatch)  →  Phase 2 (Composition)  →  Ph
 **File:** `orchestrator/_internal/infra/a2a_auth.py` (NEW)
 
 **What to Build:**
-- [ ] Create `AuthConfig` dataclass
+- [x] Create `AuthConfig` dataclass
   - Fields: `type` ("bearer", "api_key", "none"), `token_env`, `header_name`
-- [ ] Create `AuthManager` class
+- [x] Create `AuthManager` class
   - Method: `get_headers(config)` - Returns dict with auth headers
   - Handle bearer token formatting
   - Validate token exists in env
-- [ ] Write unit tests (3+ test cases)
+- [x] Write unit tests (19 test cases)
 
 **Threats Mitigated:**
 - Missing auth tokens causing silent failures
 - Foundation for OAuth2/mTLS later
 
 **Acceptance Criteria:**
-- [ ] Bearer token formatted correctly
-- [ ] Raises error if token missing
+- [x] Bearer token formatted correctly
+- [x] Raises error if token missing
 
 ---
 
@@ -165,14 +165,14 @@ Phase 0 (Security)  →  Phase 1 (Dispatch)  →  Phase 2 (Composition)  →  Ph
 **File:** `orchestrator/_internal/security/pii_detector.py` (NEW)
 
 **What to Build:**
-- [ ] Create `PIIDetector` class
+- [x] Create `PIIDetector` class
   - Regex patterns: SSN, email, credit card, phone, API key
   - Method: `scan(text)` - Returns list of (type, match) findings
   - Method: `redact(text)` - Replace PII with `[REDACTED_TYPE]`
-- [ ] Create `ResponseFilter` class
+- [x] Create `ResponseFilter` class
   - Method: `filter_response(response_dict)` - Remove sensitive keys, redact PII
   - Add `_field_pii_detected` metadata for audit
-- [ ] Write unit tests (8+ test cases)
+- [x] Write unit tests (28 test cases)
   - Detect SSN, email, credit card, phone
   - Redaction accuracy
   - Nested dict handling
@@ -182,9 +182,9 @@ Phase 0 (Security)  →  Phase 1 (Dispatch)  →  Phase 2 (Composition)  →  Ph
 - Data breach via compromised agents
 
 **Acceptance Criteria:**
-- [ ] SSN "123-45-6789" redacted to "[REDACTED_SSN]"
-- [ ] API keys removed from responses
-- [ ] Metadata tracks what was redacted
+- [x] SSN "123-45-6789" redacted to "[REDACTED_SSN]"
+- [x] API keys removed from responses
+- [x] Metadata tracks what was redacted
 
 ---
 
@@ -192,12 +192,12 @@ Phase 0 (Security)  →  Phase 1 (Dispatch)  →  Phase 2 (Composition)  →  Ph
 **File:** `orchestrator/_internal/security/secrets_redactor.py` (NEW)
 
 **What to Build:**
-- [ ] Create `SecretsRedactor(logging.Filter)`
+- [x] Create `SecretsRedactor(logging.Filter)`
   - Regex patterns: api_key, bearer token, password, OpenAI key, GitHub token
   - Method: `filter(record)` - Redact secrets from log messages
-- [ ] Create `install_secrets_redactor()` - Install on root logger
+- [x] Create `install_secrets_redactor()` - Install on root logger
 - [ ] Integrate in `orchestrator/__init__.py` (called at import)
-- [ ] Write unit tests (5+ test cases)
+- [x] Write unit tests (24 test cases)
   - OpenAI key "sk-abc..." → "[REDACTED_OPENAI_KEY]"
   - Bearer tokens redacted
   - Passwords redacted
@@ -207,26 +207,26 @@ Phase 0 (Security)  →  Phase 1 (Dispatch)  →  Phase 2 (Composition)  →  Ph
 - Security breach via log files
 
 **Acceptance Criteria:**
-- [ ] "sk-abc123" never appears in logs
-- [ ] Bearer tokens redacted
+- [x] "sk-abc123" never appears in logs
+- [x] Bearer tokens redacted
 - [ ] Works across all logger instances
 
 ---
 
 #### 0.6: Template Sanitization (1 hour) ⚠️ HIGH
-**File:** Extend `orchestrator/_internal/validation.py`
+**File:** `orchestrator/_internal/security/template_sanitizer.py` (NEW)
 
 **What to Build:**
-- [ ] Add `LLM_INJECTION_PATTERNS` regex list
+- [x] Add `LLM_INJECTION_PATTERNS` regex list
   - "ignore previous instructions"
   - "disregard prior"
   - "you are now"
   - "system:"
-- [ ] Add `sanitize_template(template)` function
+- [x] Add `sanitize_template(template)` function
   - Check LLM injection patterns
   - Check existing DANGEROUS_PATTERNS
   - Raise `UnsafeInputError` if found
-- [ ] Write unit tests (6+ test cases)
+- [x] Write unit tests (40 test cases)
   - Detect common prompt injections
   - Allow safe templates
 
@@ -235,44 +235,44 @@ Phase 0 (Security)  →  Phase 1 (Dispatch)  →  Phase 2 (Composition)  →  Ph
 - LLM jailbreak at scale
 
 **Acceptance Criteria:**
-- [ ] "Ignore previous instructions" blocked
-- [ ] "system: you are now" blocked
-- [ ] Safe templates pass validation
+- [x] "Ignore previous instructions" blocked
+- [x] "system: you are now" blocked
+- [x] Safe templates pass validation
 
 ---
 
 #### 0.7: Idempotency Keys (1 hour) ⚠️ MEDIUM
-**File:** Extend `orchestrator/tools/sub_agent.py`
+**File:** `orchestrator/_internal/infra/idempotency.py` (NEW)
 
 **What to Build:**
-- [ ] Add `idempotency_key` field to `SubAgentTask`
-- [ ] Create `generate_idempotency_key(task)` function
+- [x] Add `idempotency_key` field to `SubAgentTask`
+- [x] Create `generate_idempotency_key(task)` function
   - Hash: template + arguments + agent_name
   - Return 16-char hex string
-- [ ] Add idempotency check in `dispatch_agents()`
+- [x] Add idempotency check in `dispatch_agents()`
   - Check cache before dispatch
   - Store result with key after completion
-- [ ] Write unit tests (4+ test cases)
+- [x] Write unit tests (4+ test cases)
 
 **Threats Mitigated:**
 - AS-6: Race Conditions (duplicate operations on retry)
 - Data corruption from concurrent access
 
 **Acceptance Criteria:**
-- [ ] Same task generates same key
-- [ ] Cached results returned immediately
-- [ ] No duplicate operations
+- [x] Same task generates same key
+- [x] Cached results returned immediately
+- [x] No duplicate operations
 
 ---
 
 ### ✅ Phase 0 Completion Checklist
 
 **Before proceeding to Phase 1:**
-- [ ] All 7 components implemented
-- [ ] All unit tests passing (35+ tests total)
+- [x] All 7 components implemented
+- [x] All unit tests passing (35+ tests total)
 - [ ] Security tests added to CI
 - [ ] Code review completed
-- [ ] Documentation updated
+- [x] Documentation updated
 
 **Estimated Time:** 6.5-7.5 hours (mandatory: 5-6 hours)
 
@@ -280,7 +280,7 @@ Phase 0 (Security)  →  Phase 1 (Dispatch)  →  Phase 2 (Composition)  →  Ph
 
 ## 🚀 PHASE 1: PARALLEL SUB-AGENT DISPATCH (v0.4)
 
-**Status:** ⏸️ BLOCKED (waiting for Phase 0)  
+**Status:** 🚧 IN PROGRESS (Phase 1 started)  
 **Timeline:** 1 week (6-8 hours)  
 **Depends on:** Phase 0 complete
 
@@ -290,16 +290,14 @@ Enable agents to dispatch 100+ sub-agents in parallel for divide-and-conquer tas
 ### 📋 Task Breakdown
 
 #### 1.1: Define Dispatch API (1 hour)
-
-#### 1.1: Define Dispatch API (1 hour)
 **File:** `orchestrator/tools/sub_agent.py` (NEW)
 
 **What to Build:**
-- [ ] Create `SubAgentTask` dataclass
+- [x] Create `SubAgentTask` dataclass
   - Fields: `prompt_template`, `arguments`, `agent_name`, `model`, `timeout_sec`, `idempotency_key`
-- [ ] Create `SubAgentResult` dataclass
+- [x] Create `SubAgentResult` dataclass
   - Fields: `task_args`, `output`, `error`, `duration_ms`, `success`, `cost`
-- [ ] Define `dispatch_agents()` function signature
+- [x] Define `dispatch_agents()` function signature
   ```python
   async def dispatch_agents(
       template: str,
@@ -312,13 +310,13 @@ Enable agents to dispatch 100+ sub-agents in parallel for divide-and-conquer tas
       **kwargs
   ) -> List[SubAgentResult]
   ```
-- [ ] Add comprehensive docstrings with examples
+- [x] Add comprehensive docstrings with examples
 - [ ] Write API design doc
 
 **Acceptance Criteria:**
 - [ ] Clean, intuitive API design
-- [ ] Type hints on all functions
-- [ ] Docstrings with usage examples
+- [x] Type hints on all functions
+- [x] Docstrings with usage examples
 
 ---
 
@@ -326,17 +324,17 @@ Enable agents to dispatch 100+ sub-agents in parallel for divide-and-conquer tas
 **File:** `orchestrator/tools/sub_agent.py`
 
 **What to Build:**
-- [ ] Template filling logic (format strings with arguments)
-- [ ] Create agent tasks from template + arguments
-- [ ] Implement parallel dispatch with `asyncio.gather()`
-- [ ] Add semaphore for `max_parallel` concurrency control
-- [ ] Integrate `DispatchResourceLimits` from Phase 0
-- [ ] Integrate `RateLimiter` from Phase 0 (if configured)
-- [ ] Per-agent timeout handling (don't fail all if one times out)
-- [ ] Per-agent error capture (store in `SubAgentResult.error`)
-- [ ] Track cost per agent (use `A2AClient` cost tracking)
-- [ ] Apply `ResponseFilter` from Phase 0 to all results
-- [ ] Template sanitization via Phase 0 `sanitize_template()`
+- [x] Template filling logic (format strings with arguments)
+- [x] Create agent tasks from template + arguments
+- [x] Implement parallel dispatch with `asyncio.gather()`
+- [x] Add semaphore for `max_parallel` concurrency control
+- [x] Integrate `DispatchResourceLimits` from Phase 0
+- [x] Integrate `RateLimiter` from Phase 0 (if configured)
+- [x] Per-agent timeout handling (don't fail all if one times out)
+- [x] Per-agent error capture (store in `SubAgentResult.error`)
+- [x] Track cost per agent (use `A2AClient` cost tracking)
+- [x] Apply `ResponseFilter` from Phase 0 to all results
+- [x] Template sanitization via Phase 0 `sanitize_template()`
 
 **Integration Points:**
 ```python
@@ -355,9 +353,9 @@ for result in results:
 
 **Acceptance Criteria:**
 - [ ] 100 agents execute in parallel
-- [ ] Respects max_parallel limit
-- [ ] One failure doesn't stop others
-- [ ] All Phase 0 integrations working
+- [x] Respects max_parallel limit
+- [x] One failure doesn't stop others
+- [x] All Phase 0 integrations working
 
 ---
 
