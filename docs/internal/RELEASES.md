@@ -65,29 +65,13 @@ Streamlined internal documentation with consolidated master TODO list and securi
 
 ---
 
-## v0.4.0 - Phase 0 Security Implementation (PLANNED - Target: 5-7 hours)
+## v0.4.0 - Analytics Backends & Monitoring (December 18, 2025)
 
-### 🔒 Security Foundations for Multi-Agent Orchestration
+### 📊 Major Release: Production Analytics & Clean Documentation
 
-**Status**: NOT STARTED (blocker for Phase 1)
+Complete tri-backend analytics system with flexible deployment options and streamlined documentation structure.
 
-**Goals**: Enable safe parallel agent dispatch with cost controls, data protection, and attack prevention.
-
-**Implementation Roadmap**:
-1. Sub-agent resource quotas (cost, concurrency, depth limits)
-2. PII detection in agent responses  
-3. Request rate limiting for parallel API calls
-4. Secrets redaction in logs and errors
-5. Prompt injection protection for templates
-6. Dispatch depth limits for recursion prevention
-7. Template sanitization for LLM safety
-8. Distributed lock support for shared state
-
-See `docs/internal/SECURITY_ARCHITECTURE_REVIEW.md` for complete threat analysis and detailed implementation plan.
-
----
-
-## v0.5.0 - Analytics Backends & Monitoring (December 18, 2025)
+**Key Innovation**: Three production-ready analytics backends (SQLite, OTLP, Prometheus) with single environment variable switching and zero code changes for migration.
 
 ### ✨ What's New
 
@@ -129,6 +113,40 @@ See `docs/internal/SECURITY_ARCHITECTURE_REVIEW.md` for complete threat analysis
   - Factory: 3/3 subtests ✓
 - **Total Test Count**: 488 tests passing (up from 461)
 - **Zero Warnings**: Fixed Gemini import, tool_search_tool registration, MeterProvider override
+
+---
+
+## v0.5.0 - Phase 0 Security Implementation (PLANNED - Target: 5-7 hours)
+
+### 🔒 Security Foundations for Multi-Agent Orchestration
+
+**Status**: NOT STARTED (critical blocker for Phase 1)
+
+**Goals**: Enable safe parallel agent dispatch with cost controls, data protection, and attack prevention.
+
+**Threat Scenarios Addressed**:
+1. Cost exhaustion attacks ($1000s+ damage)
+2. Recursive agent spawn (exponential DoS)
+3. Credential harvesting from logs
+4. PII exfiltration via agents
+5. Mass prompt injection (100x amplification)
+6. Race conditions in shared state
+
+**Implementation Tasks**:
+- [ ] 0.1: Sub-agent resource quotas (2-3 hours)
+- [ ] 0.2: PII detection in responses
+- [ ] 0.3: Request rate limiting
+- [ ] 0.4: Secrets redaction in logs
+- [ ] 0.5: Prompt injection protection
+- [ ] 0.6: Dispatch depth limits
+- [ ] 0.7: Template sanitization
+- [ ] 0.8: Distributed lock support
+
+**Reference**: See `docs/internal/SECURITY_ARCHITECTURE_REVIEW.md` for complete threat analysis and detailed implementation roadmap.
+
+---
+
+## v0.4.0 - Analytics Backends & Monitoring (December 18, 2025) - RELEASE NOTES ARCHIVE
 
 #### 🐛 Bug Fixes
 - **Issue 1**: "Failed to register tool_search_tool" warning
