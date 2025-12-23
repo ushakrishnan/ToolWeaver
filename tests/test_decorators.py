@@ -39,7 +39,7 @@ def test_tool_decorator_registers_and_executes():
     assert td["metadata"].get("category") == "testing"
 
     # Execute the tool through the plugin
-    result = asyncio.get_event_loop().run_until_complete(plugin.execute("echo", {"text": "hello"}))
+    result = asyncio.run(plugin.execute("echo", {"text": "hello"}))
     assert result == {"text": "hello"}
 
 
@@ -65,7 +65,7 @@ def test_tool_decorator_custom_name_and_provider():
     assert tools[0]["provider"] == "local"
 
     # Execute with custom name
-    result = asyncio.get_event_loop().run_until_complete(plugin.execute("custom_echo", {"text": "world"}))
+    result = asyncio.run(plugin.execute("custom_echo", {"text": "world"}))
     assert result == {"text": "world"}
 
 
@@ -88,9 +88,7 @@ def test_mcp_tool_auto_params_and_async_execution():
     assert params["account"]["required"] is True
     assert params["include_pending"]["required"] is False
 
-    result = asyncio.get_event_loop().run_until_complete(
-        plugin.execute("get_balance", {"account": "123"})
-    )
+    result = asyncio.run(plugin.execute("get_balance", {"account": "123"}))
     assert result == {"account": "123", "pending": False}
 
 
@@ -111,7 +109,7 @@ def test_a2a_agent_decorator_sync_function():
     assert td["parameters"][1]["name"] == "priority"
     assert td["parameters"][1]["required"] is False
 
-    result = asyncio.get_event_loop().run_until_complete(plugin.execute("route", {"task": "triage"}))
+    result = asyncio.run(plugin.execute("route", {"task": "triage"}))
     assert result == {"task": "triage", "priority": 1}
 
 

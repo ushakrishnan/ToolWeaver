@@ -59,7 +59,7 @@ def test_a2a_capability_nested_schema_roundtrip():
 
     client.register_agent(cap)
 
-    agents = asyncio.get_event_loop().run_until_complete(client.discover_agents())
+    agents = asyncio.run(client.discover_agents())
     assert len(agents) == 1
     a = agents[0]
     assert a.input_schema == nested_in

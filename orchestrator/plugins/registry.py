@@ -128,16 +128,19 @@ class PluginRegistry:
                 f"Plugin '{name}' must implement execute() method"
             )
         
-        # Validate tool definitions for uniqueness and shape
-        self._validate_plugin_tools(name=name, plugin=plugin)
-
+        # Check for duplicate plugin name before validating tools
+        # (to provide a clear PluginAlreadyRegisteredError instead of DuplicateToolNameError)
         with self._lock:
             if name in self._plugins and not replace:
                 raise PluginAlreadyRegisteredError(
                     f"Plugin '{name}' already registered. "
                     f"Use replace=True to override."
                 )
-            
+        
+        # Validate tool definitions for uniqueness and shape
+        self._validate_plugin_tools(name=name, plugin=plugin)
+
+        with self._lock:
             self._plugins[name] = plugin
             logger.info(f"Registered plugin: {name}")
 

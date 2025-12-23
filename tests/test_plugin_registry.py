@@ -1,67 +1,3 @@
-from typing import Any, Dict, List
-
-import pytest
-
-from orchestrator.plugins.registry import (
-    PluginRegistry,
-    register_plugin,
-    unregister_plugin,
-    get_plugin,
-    list_plugins,
-    PluginAlreadyRegisteredError,
-    PluginNotFoundError,
-    InvalidPluginError,
-)
-
-
-class GoodPlugin:
-    def get_tools(self) -> List[Dict[str, Any]]:
-        return [{"name": "demo", "description": "Demo tool"}]
-
-    async def execute(self, tool_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        return {"ok": True, "name": tool_name, "params": params}
-
-
-class BadPluginNoExecute:
-    def get_tools(self) -> List[Dict[str, Any]]:
-        return []
-
-
-def test_registry_register_get_list_unregister():
-    reg = PluginRegistry()
-    reg.register("good", GoodPlugin())
-
-    assert reg.list() == ["good"]
-    plugin = reg.get("good")
-    assert isinstance(plugin, GoodPlugin)
-
-    reg.unregister("good")
-    assert reg.list() == []
-
-
-def test_registry_invalid_plugin_interface():
-    reg = PluginRegistry()
-    with pytest.raises(InvalidPluginError):
-        reg.register("bad", BadPluginNoExecute())
-
-
-def test_global_convenience_functions():
-    # ensure clean state
-    try:
-        unregister_plugin("conv")
-    except PluginNotFoundError:
-        pass
-
-    register_plugin("conv", GoodPlugin())
-    assert "conv" in list_plugins()
-    assert isinstance(get_plugin("conv"), GoodPlugin)
-
-    with pytest.raises(PluginAlreadyRegisteredError):
-        register_plugin("conv", GoodPlugin())
-
-    unregister_plugin("conv")
-    with pytest.raises(PluginNotFoundError):
-        get_plugin("conv")
 """
 Tests for plugin registry system.
 
@@ -76,7 +12,6 @@ from orchestrator.plugins import (
     list_plugins,
     get_registry,
     PluginRegistry,
-    PluginError,
     PluginNotFoundError,
     PluginAlreadyRegisteredError,
     InvalidPluginError,
@@ -137,6 +72,30 @@ def clean_registry():
     registry.clear()
     yield registry
     registry.clear()
+
+
+# ============================================================
+# Test Global Convenience Functions
+# ============================================================
+
+def test_global_convenience_functions(clean_registry):
+    """Test global convenience functions (register_plugin, get_plugin, list_plugins, unregister_plugin)."""
+    # Register a plugin using global functions
+    register_plugin("test_global", ValidPlugin())
+    
+    assert "test_global" in list_plugins()
+    assert isinstance(get_plugin("test_global"), ValidPlugin)
+    
+    # Attempting to register duplicate should raise error
+    with pytest.raises(PluginAlreadyRegisteredError):
+        register_plugin("test_global", ValidPlugin())
+    
+    # Unregister should work
+    unregister_plugin("test_global")
+    
+    # Plugin should no longer be in registry
+    with pytest.raises(PluginNotFoundError):
+        get_plugin("test_global")
 
 
 # ============================================================
@@ -332,7 +291,7 @@ def test_registry_get_all_tools(clean_registry):
 
 
 def test_registry_get_all_tools_with_error(clean_registry):
-    """Test get_all_tools() handles plugin errors gracefully."""
+    """Test that registration fails for plugins that raise on get_tools()."""
     class BrokenPlugin:
         def get_tools(self):
             raise ValueError("Broken!")
@@ -340,14 +299,17 @@ def test_registry_get_all_tools_with_error(clean_registry):
         async def execute(self, tool_name, params):
             pass
     
-    register_plugin("broken", BrokenPlugin())
-    register_plugin("working", ValidPlugin())
+    # Registration should fail for broken plugin
+    with pytest.raises(InvalidPluginError, match="get_tools\\(\\) failed"):
+        register_plugin("broken", BrokenPlugin())
     
+    # Working plugin should register fine
+    register_plugin("working", ValidPlugin())
     all_tools = clean_registry.get_all_tools()
     
-    # Broken plugin returns empty list
-    assert all_tools["broken"] == []
-    # Working plugin returns tools
+    # Only working plugin should be in registry
+    assert "broken" not in all_tools
+    assert "working" in all_tools
     assert len(all_tools["working"]) == 1
 
 
@@ -361,11 +323,34 @@ def test_registry_thread_safety():
     
     registry = PluginRegistry()
     errors = []
+    counter = {"value": 0}  # Shared counter for unique indices
+    counter_lock = threading.Lock()
     
     def register_many():
         try:
-            for i in range(100):
-                registry.register(f"plugin_{i}", ValidPlugin(), replace=True)
+            for _ in range(100):
+                # Get a globally unique index
+                with counter_lock:
+                    idx = counter["value"]
+                    counter["value"] += 1
+                
+                # Create a unique plugin for this registration
+                class UniquePlugin:
+                    def __init__(self, plugin_idx):
+                        self.plugin_idx = plugin_idx
+                    
+                    def get_tools(self):
+                        return [
+                            {
+                                "name": f"tool_{self.plugin_idx}",
+                                "description": f"Tool {self.plugin_idx}"
+                            }
+                        ]
+                    
+                    async def execute(self, tool_name, params):
+                        return {"result": f"executed {tool_name}"}
+                
+                registry.register(f"plugin_{idx}", UniquePlugin(idx), replace=False)
         except Exception as e:
             errors.append(e)
     
@@ -379,15 +364,15 @@ def test_registry_thread_safety():
     # No errors should occur
     assert len(errors) == 0
     
-    # At least some plugins should be registered
-    assert len(registry.list()) > 0
+    # All 500 plugins should be registered (5 threads * 100 each)
+    assert len(registry.list()) == 500
 
 
 # ============================================================
 # Test Global Registry Singleton
 # ============================================================
 
-def test_get_registry_singleton():
+def test_get_registry_singleton(clean_registry):
     """Test that get_registry() returns the same instance."""
     registry1 = get_registry()
     registry2 = get_registry()

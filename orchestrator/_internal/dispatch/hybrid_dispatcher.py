@@ -9,11 +9,15 @@ This module provides a unified interface for dispatching to:
 
 import asyncio
 import logging
-from typing import Any, Callable, Dict, Optional, cast
+from typing import Any, Callable, Dict, Optional, cast, TYPE_CHECKING
 from ..execution.code_exec_worker import code_exec_worker
 from ...shared.models import FunctionCallInput, FunctionCallOutput
 from ..infra.a2a_client import AgentDelegationRequest, A2AClient
-from ..infra.mcp_client import MCPClientShim
+
+if TYPE_CHECKING:
+    from ..infra.mcp_client import MCPClientShim
+else:
+    MCPClientShim = None
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +81,7 @@ async def function_call_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
 async def dispatch_step(
     step: Dict[str, Any],
     step_outputs: Dict[str, Any],
-    mcp_client: MCPClientShim,
+    mcp_client: "MCPClientShim",
     monitor: Optional[Any] = None,
     a2a_client: Optional[A2AClient] = None,
 ) -> Dict[str, Any]:

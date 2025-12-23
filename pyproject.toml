@@ -27,10 +27,18 @@ classifiers = [
 # Core dependencies - MINIMAL (Phase 0: Package-First)
 # Only essentials. Everything else is optional.
 dependencies = [
-    "pydantic>=2.0.0",       # Data validation
-    "aiohttp>=3.9.0",        # Async HTTP
-    "python-dotenv>=1.0.0",  # Env var loading
-    "pyyaml>=6.0.0",         # YAML parsing for Phase 3 loader
+    "pydantic>=2.0.0",             # Data validation
+    "aiohttp>=3.9.0",              # Async HTTP
+    "python-dotenv>=1.0.0",        # Env var loading
+    "pyyaml>=6.0.0",               # YAML parsing for Phase 3 loader
+    "requests>=2.31.0",            # HTTP library
+    "numpy>=1.24.0",               # Numerical computing
+    "sentence-transformers>=2.2.0", # Semantic embeddings
+    "rank-bm25>=0.2.2",            # BM25 ranking algorithm
+    "openai>=1.0.0",               # OpenAI API
+    "anthropic>=0.18.0",           # Anthropic API
+    "azure-ai-vision-imageanalysis>=1.0.0", # Azure vision
+    "azure-identity>=1.15.0",      # Azure authentication
 ]
 
 [project.optional-dependencies]
