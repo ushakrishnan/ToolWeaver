@@ -12,7 +12,8 @@ import logging
 from typing import Any, Callable, Dict, Optional, cast
 from ..execution.code_exec_worker import code_exec_worker
 from ...shared.models import FunctionCallInput, FunctionCallOutput
-from ..infra.a2a_client import AgentDelegationRequest
+from ..infra.a2a_client import AgentDelegationRequest, A2AClient
+from ..infra.mcp_client import MCPClientShim
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +68,7 @@ async def function_call_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
     logger.info(f"Executing function call: {validated.name}")
     try:
         result = func(**validated.args)
-        return FunctionCallOutput(result=result).model_dump()
+        return cast(Dict[str, Any], FunctionCallOutput(result=result).model_dump())
     except Exception as e:
         logger.error(f"Function call failed: {validated.name}", exc_info=True)
         raise RuntimeError(f"Function '{validated.name}' execution failed: {e}")
@@ -76,9 +77,9 @@ async def function_call_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
 async def dispatch_step(
     step: Dict[str, Any],
     step_outputs: Dict[str, Any],
-    mcp_client: Any,
+    mcp_client: MCPClientShim,
     monitor: Optional[Any] = None,
-    a2a_client: Optional[Any] = None,
+    a2a_client: Optional[A2AClient] = None,
 ) -> Dict[str, Any]:
     """
     Main hybrid dispatcher that routes to appropriate worker based on tool type.
@@ -135,7 +136,7 @@ async def dispatch_step(
             idempotency_key=step.get('idempotency_key'),
             timeout=step.get('timeout_s', 30)
         )
-        return cast(Dict[str, Any], result) if isinstance(result, dict) else {}
+        return cast(Dict[str, Any], result)
     elif tool_type.startswith("agent_") and a2a_client:
         agent_id = tool_type[len("agent_"):]
         task = resolved_input.get("task") or step.get("task") or tool_type
@@ -158,13 +159,13 @@ async def dispatch_step(
                 chunks.append(chunk)
             return {"chunks": chunks}
         resp = await a2a_client.delegate_to_agent(req)
-        return cast(Dict[str, Any], resp.result) if isinstance(resp.result, dict) else {}
+        return cast(Dict[str, Any], resp.result)
     elif tool_type == "function_call":
         # Structured function call
         return await function_call_worker(resolved_input)
     elif tool_type == "code_exec":
         # Sandboxed code execution
-        return await code_exec_worker(resolved_input)
+        return cast(Dict[str, Any], await code_exec_worker(resolved_input))
     else:
         available_mcp = ', '.join(mcp_client.tool_map.keys())
         available_funcs = ', '.join(_function_map.keys())

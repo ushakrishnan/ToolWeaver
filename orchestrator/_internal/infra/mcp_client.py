@@ -1,7 +1,7 @@
 import asyncio
 import time
 from collections import OrderedDict
-from typing import Callable, Dict, Any, Optional, AsyncGenerator
+from typing import Callable, Dict, Any, Optional, AsyncGenerator, Awaitable
 from ..dispatch.workers import (
     receipt_ocr_worker,
     line_item_parser_worker,
@@ -13,7 +13,9 @@ from ..dispatch.workers import (
 )
 from ..execution.code_exec_worker import code_exec_worker
 
-_tool_map = {
+ToolHandler = Callable[[Dict[str, Any]], Awaitable[Dict[str, Any]]]
+
+_tool_map: Dict[str, ToolHandler] = {
     "receipt_ocr": receipt_ocr_worker,
     "line_item_parser": line_item_parser_worker,
     "expense_categorizer": expense_categorizer_worker,
@@ -25,7 +27,7 @@ _tool_map = {
     "process_resource": process_resource_worker,
 }
 
-_idempotency_store: "OrderedDict[str, tuple[float, Any]]" = OrderedDict()
+_idempotency_store: "OrderedDict[str, tuple[float, Dict[str, Any]]]" = OrderedDict()
 _IDEMPOTENCY_TTL_S = 600
 _IDEMPOTENCY_MAX = 256
 
@@ -48,7 +50,7 @@ class MCPClientShim:
         self._circuit_open_until: Optional[float] = None
         self._observer = observer
 
-    async def call_tool(self, tool_name: str, payload: Dict[str, Any], idempotency_key: Optional[str] = None, timeout: int = 30) -> Any:
+    async def call_tool(self, tool_name: str, payload: Dict[str, Any], idempotency_key: Optional[str] = None, timeout: int = 30) -> Dict[str, Any]:
         if idempotency_key:
             cached = self._get_cached(idempotency_key)
             if cached is not None:
@@ -155,7 +157,7 @@ class MCPClientShim:
             raise last_exc
         raise RuntimeError("Tool stream failed for unknown reasons")
 
-    def _get_cached(self, key: str) -> Optional[Any]:
+    def _get_cached(self, key: str) -> Optional[Dict[str, Any]]:
         entry = _idempotency_store.get(key)
         if not entry:
             return None
@@ -166,7 +168,7 @@ class MCPClientShim:
         _idempotency_store.move_to_end(key)
         return val
 
-    def _store(self, key: str, val: Any) -> None:
+    def _store(self, key: str, val: Dict[str, Any]) -> None:
         _idempotency_store[key] = (time.time(), val)
         _idempotency_store.move_to_end(key)
         if len(_idempotency_store) > _IDEMPOTENCY_MAX:

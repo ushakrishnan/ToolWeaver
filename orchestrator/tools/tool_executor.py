@@ -108,19 +108,12 @@ async def _execute_mcp_tool(
     timeout: int
 ) -> Any:
     """Execute an MCP server tool"""
-    from orchestrator.mcp_client import MCPClient  # type: ignore[import-not-found]
-    
-    # Get or create MCP client for server
-    client = MCPClient(server_name=server)
-    
-    # Connect if not already connected
-    if not client.is_connected():
-        await client.connect()
-    
-    # Execute tool with timeout
+    from orchestrator._internal.infra.mcp_client import MCPClientShim
+
+    # Create shim client and execute tool
+    client = MCPClientShim()
     result = await asyncio.wait_for(
         client.call_tool(tool_name, parameters),
-        timeout=timeout
+        timeout=timeout,
     )
-    
     return result

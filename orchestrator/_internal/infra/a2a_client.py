@@ -8,7 +8,7 @@ import time
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, AsyncGenerator
+from typing import Any, Callable, Dict, List, Optional, AsyncGenerator, TypedDict
 
 import aiohttp
 from aiohttp import ClientResponseError, ClientError, WSMsgType
@@ -55,10 +55,16 @@ class AgentDelegationResponse:
 
     agent_id: str
     success: bool
-    result: Any
+    result: Dict[str, Any]
     execution_time: float
     cost: Optional[float] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+class StreamChunk(TypedDict):
+    """Chunk payload for streamed HTTP agent responses."""
+
+    chunk: str
 
 
 class A2AClient:
@@ -218,11 +224,16 @@ class A2AClient:
 
         for attempt in range(self._max_retries + 1):
             try:
-                result = await asyncio.wait_for(
+                raw_result = await asyncio.wait_for(
                     self._delegate_http(agent, request),
                     timeout=request.timeout,
                 )
                 self._reset_circuit()
+                result: Dict[str, Any]
+                if isinstance(raw_result, dict):
+                    result = raw_result
+                else:
+                    result = {"result": raw_result}
                 response = AgentDelegationResponse(
                     agent_id=request.agent_id,
                     success=True,
@@ -265,7 +276,7 @@ class A2AClient:
         return AgentDelegationResponse(
             agent_id=request.agent_id,
             success=False,
-            result=None,
+            result={},
             execution_time=asyncio.get_event_loop().time() - start,
             cost=agent.cost_estimate,
             metadata={
@@ -421,7 +432,7 @@ class A2AClient:
         self,
         agent: AgentCapability,
         request: AgentDelegationRequest,
-    ) -> Any:
+    ) -> Dict[str, Any]:
         """Delegate to an HTTP agent endpoint returning JSON."""
         headers = {"Content-Type": "application/json"}
         auth_cfg = agent.metadata.get("auth") if agent.metadata else None
@@ -454,8 +465,10 @@ class A2AClient:
                 response.raise_for_status()
                 # Prefer JSON; fallback to text if not JSON
                 if response.headers.get("Content-Type", "").startswith("application/json"):
-                    return await response.json()
-                return await response.text()
+                    parsed = await response.json()
+                    return parsed if isinstance(parsed, dict) else {"result": parsed}
+                text = await response.text()
+                return {"result": text}
 
     async def _delegate_stream(
         self,
@@ -480,7 +493,7 @@ class A2AClient:
         agent: AgentCapability,
         request: AgentDelegationRequest,
         chunk_timeout: Optional[float],
-    ) -> AsyncGenerator[Dict[str, Any], None]:
+    ) -> AsyncGenerator[StreamChunk, None]:
         headers = {"Content-Type": "application/json"}
         auth_cfg = agent.metadata.get("auth") if agent.metadata else None
         if auth_cfg and auth_cfg.get("type") in {"bearer", "api_key"}:

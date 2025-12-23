@@ -1,12 +1,18 @@
 import asyncio, json, logging, os
 from functools import partial
-from typing import Dict, Any, Optional, Callable, Awaitable
+from typing import Dict, Any, Optional, Callable, Awaitable, TYPE_CHECKING
 from ...shared.models import PlanModel
 from ..infra.mcp_client import MCPClientShim
 from ..infra.a2a_client import A2AClient, AgentDelegationRequest
 from ..dispatch.hybrid_dispatcher import dispatch_step
 from ..observability.monitoring import ToolUsageMonitor
 from datetime import datetime
+
+if TYPE_CHECKING:
+    from ...tools.tool_discovery import discover_tools
+    from ..execution.skill_library import get_skill
+    from ..execution.validation import validate_stub
+    from ..execution.skill_metrics import SkillExecutionTimer
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -287,7 +293,10 @@ class Orchestrator:
         self._monitor = get_monitor()
 
     async def discover_tools(self, *, use_cache: bool = True) -> list[Any]:
-        from ..tools.tool_discovery import discover_tools  # type: ignore[import-not-found]
+        try:
+            from ...tools.tool_discovery import discover_tools
+        except ImportError as exc:
+            raise RuntimeError("tool_discovery module not available") from exc
         function_modules = None
         catalog = await discover_tools(
             mcp_client=self.mcp,
@@ -340,9 +349,12 @@ class Orchestrator:
             KeyError: If skill not found
             RuntimeError: If skill execution fails
         """
-        from .execution.skill_library import get_skill  # type: ignore[import-not-found]
-        from .execution.validation import validate_stub  # type: ignore[import-not-found]
-        from .execution.skill_metrics import SkillExecutionTimer  # type: ignore[import-not-found]
+        try:
+            from ..execution.skill_library import get_skill
+            from ..execution.validation import validate_stub
+            from ..execution.skill_metrics import SkillExecutionTimer
+        except ImportError as exc:
+            raise RuntimeError("Skill execution modules not available") from exc
         from pathlib import Path
         
         start = datetime.now()
