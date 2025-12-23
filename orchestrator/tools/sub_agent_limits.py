@@ -40,7 +40,7 @@ class DispatchResourceLimits:
     
     # Failure controls
     max_failure_rate: Optional[float] = 0.3  # Fail-fast if >30% fail
-    min_success_count: int = 1  # Need at least 1 success
+    min_success_count: int = 0  # Require explicit opt-in for success threshold
     
     # Recursion controls
     max_dispatch_depth: int = 3  # Max nested dispatch levels

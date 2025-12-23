@@ -11,7 +11,7 @@ from __future__ import annotations
 import asyncio
 import time
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Awaitable
+from typing import Any, Callable, Dict, List, Optional, Awaitable, Tuple
 
 from orchestrator.tools.sub_agent_limits import (
     DispatchLimitTracker,
@@ -84,7 +84,8 @@ async def dispatch_agents(
     timeout_per_agent: int = 30,
     limits: Optional[DispatchResourceLimits] = None,
     executor: Optional[AgentExecutor] = None,
-) -> List[SubAgentResult]:
+    aggregate_fn: Optional[Callable[[List[SubAgentResult]], Any]] = None,
+) -> Any:
     """
     Dispatch multiple agents in parallel with safety controls.
 
@@ -218,6 +219,19 @@ async def dispatch_agents(
 
     coro_list = [runner(arg) for arg in arguments]
     results = await asyncio.gather(*coro_list)
+
+    # Enforce min_success_count threshold (opt-in if >0)
+    success_count = sum(1 for r in results if r.success)
+    if limits.min_success_count and limits.min_success_count > 0:
+        if success_count < limits.min_success_count:
+            raise DispatchQuotaExceeded(
+                f"Success count {success_count} below minimum {limits.min_success_count}"
+            )
+
+    # Apply optional aggregation
+    if aggregate_fn:
+        return aggregate_fn(results)
+
     return results
 
 

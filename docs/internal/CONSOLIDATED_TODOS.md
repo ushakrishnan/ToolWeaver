@@ -352,7 +352,7 @@ for result in results:
 ```
 
 **Acceptance Criteria:**
-- [ ] 100 agents execute in parallel
+- [x] 100 agents execute in parallel
 - [x] Respects max_parallel limit
 - [x] One failure doesn't stop others
 - [x] All Phase 0 integrations working
@@ -363,20 +363,20 @@ for result in results:
 **File:** `orchestrator/tools/sub_agent.py`
 
 **What to Build:**
-- [ ] Result collection from parallel execution
-- [ ] Success rate calculation
-- [ ] Check `min_success_count` threshold (raise if not met)
-- [ ] Built-in aggregation functions:
+- [x] Result collection from parallel execution
+- [x] Success rate calculation
+- [x] Check `min_success_count` threshold (raise if not met)
+- [x] Built-in aggregation functions:
   - `collect_all()` - Return all results as-is
   - `rank_by_metric(field)` - Sort results by a field
   - `majority_vote(field)` - Find most common value
   - `best_result(score_fn)` - Return highest scored result
-- [ ] Optional custom aggregation function parameter
+- [x] Optional custom aggregation function parameter
 
 **Acceptance Criteria:**
-- [ ] All aggregation patterns work
-- [ ] Thresholds enforced
-- [ ] Custom functions supported
+- [x] All aggregation patterns work
+- [x] Thresholds enforced
+- [x] Custom functions supported
 
 ---
 

@@ -16,7 +16,7 @@ from orchestrator.tools.sub_agent import (
     best_result,
 )
 from orchestrator._internal.infra.idempotency import get_global_cache
-from orchestrator.tools.sub_agent_limits import DispatchResourceLimits
+from orchestrator.tools.sub_agent_limits import DispatchResourceLimits, DispatchQuotaExceeded
 
 
 @pytest.mark.asyncio
@@ -119,6 +119,18 @@ async def test_rate_limiter_enforced_time_window():
 
 
 @pytest.mark.asyncio
+async def test_min_success_threshold_enforced():
+    get_global_cache().clear()
+    async def exec_fn(prompt, args, agent_name, model):
+        raise RuntimeError("fail")
+
+    limits = DispatchResourceLimits(min_success_count=1)
+    args = [{"i": 1}, {"i": 2}]
+    with pytest.raises(DispatchQuotaExceeded):
+        await dispatch_agents("Task {i}", args, limits=limits, executor=exec_fn)
+
+
+@pytest.mark.asyncio
 async def test_cost_limit_exceeded_returns_error():
     async def exec_fn(prompt, args, agent_name, model):
         return {"output": prompt, "cost": 10.0}
@@ -129,6 +141,28 @@ async def test_cost_limit_exceeded_returns_error():
     # At least one should fail due to cost overrun
     assert any(not r.success for r in results)
     assert any("cost" in (r.error or "") or "exceeds" in (r.error or "") for r in results)
+
+
+@pytest.mark.asyncio
+async def test_custom_aggregation_function():
+    get_global_cache().clear()
+    async def exec_fn(prompt, args, agent_name, model):
+        return {"score": args["i"]}
+
+    args = [{"i": 1}, {"i": 3}, {"i": 2}]
+    agg = await dispatch_agents("{i}", args, executor=exec_fn, aggregate_fn=lambda res: max(r.output["score"] for r in res))
+    assert agg == 3
+
+
+@pytest.mark.asyncio
+async def test_large_dispatch_100_agents():
+    async def exec_fn(prompt, args, agent_name, model):
+        return {"output": prompt}
+
+    args = [{"i": i} for i in range(100)]
+    results = await dispatch_agents("Task {i}", args, max_parallel=20, executor=exec_fn)
+    assert len(results) == 100
+    assert all(r.success for r in results)
 
 
 def test_aggregation_helpers():
