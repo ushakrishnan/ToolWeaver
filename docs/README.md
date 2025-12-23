@@ -1,33 +1,240 @@
 # ToolWeaver Documentation
 
+**Project Status:** ✅ ALL PHASES COMPLETE (0-4)  
+**Test Results:** 971/985 passing (98.6%) | Coverage: 67.61%
+
 Welcome to the ToolWeaver documentation! This guide is organized by audience and use case.
 
-## 🧭 Quick Navigation
+## 🎯 Project Status & Quick Links
 
-**👤 New User?** → Start with [User Guide](#-user-guide)  
-**👨‍💻 Contributing?** → See [Developer Guide](#-developer-guide)  
-**🚀 Deploying?** → Check [Deployment](#-deployment)  
-**📚 Deep Dive?** → Browse [Reference](#-reference)
+**NEW:** [Phases Overview](PHASES_OVERVIEW.md) - What was implemented in Phases 0-4  
+**NEW:** [Examples Guide](examples/) - 29 runnable examples  
+**NEW:** [Examples Testing Guide](examples/EXAMPLES_TESTING_GUIDE.md) - How to test examples
 
 ---
 
-## 👤 User Guide
+## 🧭 Quick Navigation
+
+**👤 New User?** → Start with [Getting Started](#-getting-started)  
+**👨‍💻 Contributing?** → See [Developer Guide](#-developer-guide)  
+**🚀 Deploying?** → Check [Deployment](#-deployment)  
+**📚 Deep Dive?** → Browse [Reference](#-reference)  
+**🧪 Learning?** → Explore [29 Examples](examples/)
+
+---
+
+## 👤 Getting Started
 
 *For users installing ToolWeaver via `pip install toolweaver`*
 
 | Document | Description | Time |
 |----------|-------------|------|
-| [Getting Started](user-guide/GETTING_STARTED.md) | Step-by-step tutorial for new users | 10 min |
-| [Configuration](user-guide/CONFIGURATION.md) | Configure API providers and settings | 15 min |
-| [Features Guide](user-guide/FEATURES_GUIDE.md) | Complete feature reference | 30 min |
-| [MCP Tools Guide](user-guide/MCP_SETUP_GUIDE.md) | Set up and use MCP tools | 15 min |
-| [A2A Agents Guide](user-guide/A2A_SETUP_GUIDE.md) | Configure Agent-to-Agent delegation | 20 min |
-| [Workflow Usage](user-guide/WORKFLOW_USAGE_GUIDE.md) | Build and compose workflows | 20 min |
-| [Quick Reference](user-guide/QUICK_REFERENCE.md) | Common commands and patterns | 5 min |
-| [Troubleshooting](user-guide/TROUBLESHOOTING.md) | Timeouts, streaming, costs | 5 min |
-| [Free Tier Setup](user-guide/FREE_TIER_SETUP.md) | Use free services (Qdrant, Redis) | 10 min |
+| [Quick Reference](getting-started/quickstart.md) | 5-minute quick start | 5 min |
+| [Discovering Tools](getting-started/discovering-tools.md) | Find and explore tools | 10 min |
+| [Registering Tools](getting-started/registering-tools.md) | Add your own tools | 10 min |
+| [Extending ToolWeaver](getting-started/extending.md) | Custom plugins and tools | 15 min |
+| [FAQ](getting-started/faq.md) | Common questions | 10 min |
 
-**Start here:** [Getting Started](user-guide/GETTING_STARTED.md)
+**Also See:**
+- [User Guide](user-guide/GETTING_STARTED.md) - Complete feature guide
+- [Configuration](user-guide/CONFIGURATION.md) - Setup all providers
+- [Troubleshooting](user-guide/TROUBLESHOOTING.md) - Common issues
+
+**Start here:** [Quick Reference](getting-started/quickstart.md)
+
+---
+
+## 👨‍💻 Developer Guide
+
+*For contributors modifying ToolWeaver source code*
+
+| Document | Description | Time |
+|----------|-------------|------|
+| [Phases Overview](PHASES_OVERVIEW.md) | What was implemented | 10 min |
+| [Architecture](developer-guide/ARCHITECTURE.md) | System design and components | 30 min |
+| [Implementation](developer-guide/IMPLEMENTATION.md) | Code structure and patterns | 20 min |
+| [Security](developer-guide/SECURITY.md) | Security model and sandboxing | 15 min |
+| [Workflow](developer-guide/WORKFLOW.md) | Development workflow and setup | 15 min |
+| [Publishing](developer-guide/PUBLISHING.md) | Package release process | 10 min |
+
+**Prerequisites:**
+- Read [../CONTRIBUTING.md](../CONTRIBUTING.md) first
+- Setup: `git clone` + `pip install -e ".[dev]"`
+- Explore: [29 Examples](examples/)
+
+**Start here:** [Phases Overview](PHASES_OVERVIEW.md)
+
+---
+
+## 🧪 Examples
+
+*29 runnable examples demonstrating all major features*
+
+| Category | Count | Purpose |
+|----------|-------|---------|
+| [Basic Usage](examples/#-basic-usage-start-here) | 3 | Getting started |
+| [Tool Integration](examples/#-tool-integration--discovery) | 3 | Tool discovery & catalogs |
+| [Workflows](examples/#-workflow--composition) | 3 | Tool composition & chaining |
+| [Advanced Patterns](examples/#-advanced-patterns) | 3 | Monitoring, caching, routing |
+| [Agent Patterns](examples/#-agent-patterns) | 6 | Agent dispatch & coordination |
+| [Specialized Workflows](examples/#-specialized-workflows) | 5 | Complete pipelines, approvals |
+| [Distributed & Parallel](examples/#-distributed--parallel) | 2 | Parallel execution |
+| [Advanced Integration](examples/#-advanced-integration) | 2 | MCP, cost optimization |
+| [Templates](examples/#-templates--learning) | 2 | Community templates |
+
+**Total:** 29 examples | All documented | All ready to run
+
+**Start here:** [Examples Overview](examples/README.md)
+
+---
+
+## 🚀 Deployment
+
+*Production deployment guides*
+
+| Document | Purpose |
+|----------|---------|
+| [Production Deployment](deployment/PRODUCTION_DEPLOYMENT.md) | Deploy to production |
+| [Azure Setup](deployment/AZURE_SETUP.md) | Azure OpenAI configuration |
+| [Redis Setup](deployment/REDIS_SETUP.md) | Redis for caching |
+| [Qdrant Setup](deployment/QDRANT_SETUP.md) | Vector DB setup |
+| [SQLite + Grafana](deployment/SQLITE_GRAFANA_SETUP.md) | Monitoring setup |
+
+**Start here:** [Production Deployment](deployment/PRODUCTION_DEPLOYMENT.md)
+
+---
+
+## 📚 Reference
+
+*Detailed technical reference*
+
+| Document | Purpose |
+|----------|---------|
+| [Two-Model Architecture](reference/TWO_MODEL_ARCHITECTURE.md) | Large + small model design |
+| [Workflow Architecture](reference/WORKFLOW_ARCHITECTURE.md) | Workflow execution model |
+| [Registry Discovery](reference/REGISTRY_DISCOVERY.md) | Tool discovery mechanisms |
+| [Search Tuning](reference/SEARCH_TUNING.md) | Optimize tool search |
+| [Prompt Caching](reference/PROMPT_CACHING.md) | Cache prompts for speed |
+| [Migration Guide](reference/MIGRATION_GUIDE.md) | Upgrade between versions |
+| [Analytics Guide](reference/ANALYTICS_GUIDE.md) | Monitoring and metrics |
+| [Small Model Improvements](reference/SMALL_MODEL_IMPROVEMENTS.md) | Ollama phi3 enhancements |
+| [Skill Library](reference/SKILL_LIBRARY.md) | Skill management reference |
+
+**Start here:** [Two-Model Architecture](reference/TWO_MODEL_ARCHITECTURE.md)
+
+---
+
+## 🔐 Security
+
+| Document | Purpose |
+|----------|---------|
+| [Threat Model](security/threat-model.md) | Security analysis and threats |
+
+---
+
+## 🎓 How It Works
+
+*Progressive depth explanations*
+
+| Document | Purpose | Depth |
+|----------|---------|-------|
+| [README](how-it-works/README.md) | Overview | Overview |
+| [Programmatic Tool Calling](how-it-works/programmatic-tool-calling/README.md) | How tools are called | Technical |
+| [Detailed Explanation](how-it-works/programmatic-tool-calling/EXPLAINED.md) | Deep dive | Very technical |
+| [Integration Summary](how-it-works/programmatic-tool-calling/INTEGRATION_SUMMARY.md) | Implementation summary | Technical |
+| [Walkthrough](how-it-works/programmatic-tool-calling/WALKTHROUGH.md) | Step-by-step | Tutorial |
+| [Reference](how-it-works/programmatic-tool-calling/REFERENCE.md) | API reference | Reference |
+| [Diagrams](how-it-works/programmatic-tool-calling/DIAGRAMS.md) | Architecture diagrams | Visual |
+
+**Start here:** [How It Works Overview](how-it-works/README.md)
+
+---
+
+## 📁 Internal Documentation
+
+*Private team documentation (not in public docs)*
+
+- [Phases Overview](PHASES_OVERVIEW.md) - What was completed
+- [Internal Docs](internal/) - Strategic, planning, release notes
+- [Test Reports](internal/test-reports/) - Coverage and failure analysis
+
+---
+
+## 🗂️ Documentation Structure
+
+```
+docs/
+├── README.md (this file - navigation hub)
+├── PHASES_OVERVIEW.md (what was implemented)
+├── examples/ (29 runnable examples)
+├── getting-started/ (for new users)
+├── user-guide/ (features and usage)
+├── developer-guide/ (for contributors)
+├── deployment/ (production setup)
+├── reference/ (technical reference)
+├── how-it-works/ (progressive explanations)
+├── architecture/ (system design)
+├── security/ (threat model)
+└── internal/ (strategic & planning)
+```
+
+---
+
+## 🎯 Common Tasks
+
+### I want to...
+
+**Use ToolWeaver as a package:**
+→ [Getting Started](user-guide/GETTING_STARTED.md)
+
+**Contribute to ToolWeaver:**
+→ [Architecture](developer-guide/ARCHITECTURE.md)
+
+**Deploy to production:**
+→ [Production Deployment](deployment/PRODUCTION_DEPLOYMENT.md)
+
+**Learn about implementation:**
+→ [Phases Overview](PHASES_OVERVIEW.md)
+
+**Run examples:**
+→ [Examples Guide](examples/README.md)
+
+**Test examples:**
+→ [Examples Testing Guide](examples/EXAMPLES_TESTING_GUIDE.md)
+
+**Understand security:**
+→ [Security Guide](developer-guide/SECURITY.md) or [Threat Model](security/threat-model.md)
+
+**Optimize costs:**
+→ [Cost-Aware Selection](user-guide/cost_aware_selection.md)
+
+---
+
+## 📊 Documentation Statistics
+
+| Metric | Value |
+|--------|-------|
+| Total Documents | 75+ markdown files |
+| Examples | 29 runnable |
+| Coverage | 67.61% code coverage |
+| Tests | 971/985 passing (98.6%) |
+| Phases Complete | 5 (0-4) |
+| Features | 30+ major |
+
+---
+
+## 🔗 Navigation Tips
+
+- **Use Ctrl+F** to search within this page
+- **Follow the blue links** to go deeper
+- **Return to index** via breadcrumb links
+- **Check "Start here" links** for first-time guidance
+- **Review related docs** at the bottom of each page
+
+---
+
+**Last Updated:** December 23, 2025  
+**Version:** 0.6.0
 
 ---
 
