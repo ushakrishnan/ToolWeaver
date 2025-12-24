@@ -3,7 +3,7 @@
 Complete guide to 28 runnable samples demonstrating all major ToolWeaver features using the **published PyPI package**.
 
 **Total Samples:** 28  
-**Package Source:** PyPI (`pip install toolweaver==0.5.0`)  
+**Package Source:** PyPI (`pip install toolweaver==0.7.0`)  
 **Setup Status:** ✅ All configured with requirements.txt (no local imports)  
 **Test Coverage:** All samples ready for distribution and user testing
 
@@ -14,7 +14,7 @@ Complete guide to 28 runnable samples demonstrating all major ToolWeaver feature
 | Aspect | Examples | Samples |
 |--------|----------|---------|
 | **Package Source** | Local source (`sys.path.insert`) | Published PyPI package |
-| **Installation** | Add orchestrator to path | `pip install toolweaver==0.5.0` |
+| **Installation** | Add orchestrator to path | `pip install toolweaver==0.7.0` |
 | **Use Case** | Development & contribution | End-user distribution |
 | **Requirements** | Local dev environment | Any Python environment |
 
@@ -98,7 +98,7 @@ Expected output: All 13 core samples pass structure validation ✅
 
 Each sample has its own `requirements.txt` pinned to:
 ```
-toolweaver==0.5.0
+toolweaver==0.7.0
 ```
 
 Additional dependencies vary by sample (pydantic, aiohttp, etc.) but all are specified in each sample's `requirements.txt`.

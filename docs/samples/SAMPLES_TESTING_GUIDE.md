@@ -22,7 +22,7 @@ pip install -r requirements.txt
 ### 3. Verify Installation
 ```bash
 pip show toolweaver
-# Should show: Version: 0.5.0
+# Should show: Version: 0.7.0
 ```
 
 ---
@@ -89,7 +89,7 @@ Running structure validation for 13 examples...
 
 **Solution:**
 ```bash
-pip install toolweaver==0.5.0
+pip install toolweaver==0.7.0
 ```
 
 Samples should NOT use `sys.path.insert()`. If you see that, you're looking at `examples/`, not `samples/`.
@@ -130,7 +130,7 @@ Before distributing samples:
 - [ ] All 13 core samples pass `test_all_examples.py`
 - [ ] Each sample runs without requiring local source code
 - [ ] No `sys.path.insert()` in any sample (use PyPI package only)
-- [ ] All `requirements.txt` pin `toolweaver==0.5.0`
+- [ ] All `requirements.txt` pin `toolweaver==0.7.0`
 - [ ] No .env secrets committed (only .env.example)
 - [ ] Emoji output renders correctly on Windows (or shows ASCII like `[OK]`)
 - [ ] README links in samples/README.md are accurate
