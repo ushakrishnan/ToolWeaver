@@ -2,245 +2,247 @@
 Example 04: Vector Search and Tool Discovery
 
 Demonstrates:
-- Automatic tool discovery from multiple sources
-- Semantic search across large tool catalogs
-- Token reduction through intelligent tool selection
-- Performance optimization with caching
+- Registering multiple tools across different domains
+- Using search_tools() for keyword-based search
+- Using semantic_search_tools() for intelligent discovery
+- Comparing search strategies
 
 Use Case:
-Scale from 10 to 1000+ tools while maintaining accuracy and reducing costs
+Find the right tool among many registered tools using semantic understanding
 """
 
 import asyncio
-import os
-import time
 from pathlib import Path
-
-from dotenv import load_dotenv
-
-# Add project root to path
 import sys
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from orchestrator.tool_discovery import ToolDiscoveryOrchestrator
-from orchestrator.tool_search import ToolSearchEngine
-from orchestrator.orchestrator import Orchestrator
+from orchestrator import mcp_tool, search_tools, semantic_search_tools, get_available_tools
 
 
-# Load environment variables
-env_path = Path(__file__).parent / ".env"
-load_dotenv(env_path)
+# ============================================================
+# Register a diverse set of tools across multiple domains
+# ============================================================
+
+@mcp_tool(domain="finance", description="Calculate compound interest for investments")
+async def compound_interest(principal: float, rate: float, years: int) -> dict:
+    """Calculate compound interest."""
+    amount = principal * ((1 + rate) ** years)
+    return {"principal": principal, "final_amount": amount, "interest_earned": amount - principal}
 
 
-async def phase1_discovery():
-    """Phase 1: Discover all available tools"""
-    print("\n" + "="*60)
-    print("PHASE 1: Tool Discovery")
-    print("="*60)
-    
-    discovery = ToolDiscoveryOrchestrator(
-        enable_cache=True,
-        cache_ttl=86400  # 24 hours
-    )
-    
-    start_time = time.time()
-    catalog = await discovery.discover_all()
-    elapsed = (time.time() - start_time) * 1000
-    
-    print(f"\n✓ Discovered {len(catalog.tools)} tools in {elapsed:.0f}ms")
-    
-    # Categorize by type
-    mcp_tools = [t for t in catalog.tools if hasattr(t, 'server_name')]
-    function_tools = [t for t in catalog.tools if t.type == 'function']
-    code_tools = [t for t in catalog.tools if t.type == 'code_execution']
-    
-    print(f"  - {len(mcp_tools)} MCP tools")
-    print(f"  - {len(function_tools)} function tools")
-    print(f"  - {len(code_tools)} code execution patterns")
-    
-    print("\nSample tools discovered:")
-    for i, tool in enumerate(catalog.tools[:5], 1):
-        print(f"  {i}. {tool.name}: {tool.description[:60]}...")
-    
-    return catalog
+@mcp_tool(domain="finance", description="Convert currency from one type to another")
+async def currency_converter(amount: float, from_currency: str, to_currency: str) -> dict:
+    """Convert between currencies."""
+    # Mock conversion rates
+    rates = {"USD": 1.0, "EUR": 0.85, "GBP": 0.73, "JPY": 110.0}
+    converted = amount * (rates.get(to_currency, 1.0) / rates.get(from_currency, 1.0))
+    return {"amount": amount, "from": from_currency, "to": to_currency, "converted": converted}
 
 
-async def phase2_semantic_search(catalog, query):
-    """Phase 2: Use semantic search to find relevant tools"""
-    print("\n" + "="*60)
-    print("PHASE 2: Semantic Search")
-    print("="*60)
-    
-    print(f"\nQuery: '{query}'")
-    print(f"Searching {len(catalog.tools)} tools...")
-    
-    # Initialize search engine
-    engine = ToolSearchEngine(
-        strategy="hybrid",  # BM25 + embeddings
-        bm25_weight=0.4,
-        top_k=5
-    )
-    
-    start_time = time.time()
-    results = engine.search(query, catalog, top_k=5)
-    elapsed = (time.time() - start_time) * 1000
-    
-    print(f"\n✓ Found {len(results)} relevant tools in {elapsed:.1f}ms:")
-    for i, (tool, score) in enumerate(results, 1):
-        print(f"  {i}. {tool.name} (score: {score:.2f})")
-        print(f"     {tool.description[:70]}...")
-    
-    # Calculate token savings
-    total_tokens = sum(len(t.name) + len(t.description) for t in catalog.tools) * 1.3
-    selected_tokens = sum(len(t.name) + len(t.description) for t, _ in results) * 1.3
-    reduction = (1 - selected_tokens / total_tokens) * 100
-    
-    print(f"\nToken Reduction:")
-    print(f"  - All tools: ~{total_tokens:,.0f} tokens")
-    print(f"  - Selected: ~{selected_tokens:,.0f} tokens")
-    print(f"  - Savings: {reduction:.1f}%")
-    
-    return [tool for tool, _ in results]
+@mcp_tool(domain="data", description="Analyze CSV file and generate statistics")
+async def csv_analyzer(file_path: str) -> dict:
+    """Analyze CSV data."""
+    return {"rows": 1000, "columns": 10, "summary": "Data looks healthy"}
 
 
-async def phase3_comparison():
-    """Phase 3: Compare search strategies"""
-    print("\n" + "="*60)
-    print("PHASE 3: Search Strategy Comparison")
-    print("="*60)
+@mcp_tool(domain="data", description="Merge multiple dataframes together")
+async def dataframe_merger(files: list) -> dict:
+    """Merge dataframes."""
+    return {"merged_rows": 5000, "source_files": len(files)}
+
+
+@mcp_tool(domain="communication", description="Send email with attachments")
+async def email_sender(to: str, subject: str, body: str) -> dict:
+    """Send email."""
+    return {"status": "sent", "recipient": to, "subject": subject}
+
+
+@mcp_tool(domain="communication", description="Post message to Slack channel")
+async def slack_notifier(channel: str, message: str) -> dict:
+    """Send Slack notification."""
+    return {"status": "posted", "channel": channel}
+
+
+@mcp_tool(domain="web", description="Scrape content from website URL")
+async def web_scraper(url: str) -> dict:
+    """Scrape web content."""
+    return {"url": url, "content_length": 5000, "links_found": 42}
+
+
+@mcp_tool(domain="web", description="Check if website is online and measure response time")
+async def uptime_checker(url: str) -> dict:
+    """Check website uptime."""
+    return {"url": url, "status": "online", "response_time_ms": 150}
+
+
+@mcp_tool(domain="receipts", description="Extract text from receipt images using OCR")
+async def receipt_ocr(image_uri: str) -> dict:
+    """Extract receipt text."""
+    return {"text": "Receipt data...", "confidence": 0.95}
+
+
+@mcp_tool(domain="receipts", description="Parse line items and prices from receipt text")
+async def receipt_parser(text: str) -> dict:
+    """Parse receipt items."""
+    return {"items": [{"name": "Item 1", "price": 10.00}], "total": 10.00}
+
+
+# ============================================================
+# Demonstration Functions
+# ============================================================
+
+async def demo_keyword_search():
+    """Demonstrate keyword-based search."""
+    print("\n" + "="*70)
+    print("DEMO 1: Keyword Search")
+    print("="*70)
+    print()
     
-    # Create sample tools for comparison
-    from orchestrator.shared.models import Tool
-    
-    tools = [
-        Tool(name="receipt_ocr", description="Extract text from receipt images using OCR", type="mcp"),
-        Tool(name="slack_notify", description="Send notifications to Slack channels", type="mcp"),
-        Tool(name="github_create_issue", description="Create issues in GitHub repositories", type="mcp"),
-        Tool(name="image_analyzer", description="Analyze and process image content", type="function"),
-        Tool(name="text_parser", description="Parse and extract structured data from text", type="function"),
-        Tool(name="database_query", description="Query PostgreSQL databases", type="mcp"),
-        Tool(name="email_send", description="Send emails via SMTP", type="function"),
-        Tool(name="pdf_generator", description="Generate PDF documents from templates", type="function"),
-        Tool(name="data_validator", description="Validate data against schemas", type="code_execution"),
-        Tool(name="file_converter", description="Convert files between formats", type="function"),
-    ]
-    
-    from orchestrator.shared.models import ToolCatalog
-    test_catalog = ToolCatalog(tools=tools)
-    
-    query = "process receipt image"
-    
-    strategies = ["hybrid", "bm25", "embeddings"]
-    
-    print(f"\nQuery: '{query}'")
-    print(f"Catalog: {len(tools)} tools\n")
-    
-    for strategy in strategies:
-        engine = ToolSearchEngine(strategy=strategy, top_k=3)
-        start_time = time.time()
-        results = engine.search(query, test_catalog, top_k=3)
-        elapsed = (time.time() - start_time) * 1000
-        
-        print(f"Strategy: {strategy.upper()}")
-        print(f"  Time: {elapsed:.1f}ms")
-        print(f"  Results:")
-        for i, (tool, score) in enumerate(results, 1):
-            print(f"    {i}. {tool.name} ({score:.2f})")
+    # Search by keyword
+    print("Searching for 'currency'...")
+    results = search_tools(query="currency")
+    print(f"   Found {len(results)} tool(s):\n")
+    for tool in results:
+        print(f"   • {tool.name}")
+        print(f"     {tool.description}")
+        print(f"     Domain: {tool.domain}")
         print()
 
 
-async def phase4_execution(selected_tools, query):
-    """Phase 4: Execute with selected tools"""
-    print("\n" + "="*60)
-    print("PHASE 4: Execution with Optimal Tool Set")
-    print("="*60)
+async def demo_domain_search():
+    """Demonstrate domain-based search."""
+    print("\n" + "="*70)
+    print("DEMO 2: Domain-Based Search")
+    print("="*70)
+    print()
     
-    print(f"\nTask: '{query}'")
-    print(f"Using {len(selected_tools)} pre-selected tools")
-    
-    # Note: This is a simulation - real execution would use Orchestrator
-    print("\nSimulated execution:")
-    print("  1. Image loaded successfully")
-    print("  2. OCR extracted text")
-    print("  3. Parsed structured data")
-    print("  4. Validated results")
-    print("\n✓ Task completed successfully")
-    
-    print("\nMetrics:")
-    print("  - Execution time: 1.2s")
-    print("  - Tools used: 3/5 selected")
-    print("  - Success rate: 100%")
+    # Search by domain
+    domains = ["finance", "data", "communication", "web", "receipts"]
+    for domain in domains:
+        results = search_tools(domain=domain)
+        print(f"{domain.upper()}: {len(results)} tool(s)")
+    print()
 
 
-async def phase5_caching_demo():
-    """Phase 5: Demonstrate caching benefits"""
-    print("\n" + "="*60)
-    print("PHASE 5: Caching Performance")
-    print("="*60)
+async def demo_semantic_search():
+    """Demonstrate semantic search (embedding-based)."""
+    print("\n" + "="*70)
+    print("DEMO 3: Semantic Search")
+    print("="*70)
+    print()
     
-    discovery = ToolDiscoveryOrchestrator(
-        enable_cache=True,
-        cache_ttl=86400
-    )
+    queries = [
+        "I need to calculate investment returns",
+        "How can I notify my team?",
+        "Process receipt from restaurant",
+        "Check if my website is working"
+    ]
     
-    # First call (cache miss)
-    print("\nFirst discovery (cache miss):")
-    start_time = time.time()
-    catalog1 = await discovery.discover_all()
-    elapsed1 = (time.time() - start_time) * 1000
-    print(f"  Time: {elapsed1:.1f}ms")
-    print(f"  Tools: {len(catalog1.tools)}")
-    
-    # Second call (cache hit)
-    print("\nSecond discovery (cache hit):")
-    start_time = time.time()
-    catalog2 = await discovery.discover_all()
-    elapsed2 = (time.time() - start_time) * 1000
-    print(f"  Time: {elapsed2:.1f}ms")
-    print(f"  Tools: {len(catalog2.tools)}")
-    
-    speedup = elapsed1 / elapsed2 if elapsed2 > 0 else float('inf')
-    print(f"\nSpeedup: {speedup:.1f}x faster with cache")
+    for query in queries:
+        print(f"Query: \"{query}\"")
+        try:
+            # Semantic search uses embeddings for better matching
+            results = semantic_search_tools(query=query, top_k=2)
+            print(f"   Best matches:")
+            for i, tool in enumerate(results[:2], 1):
+                print(f"   {i}. {tool.name} ({tool.domain})")
+                print(f"      {tool.description}")
+        except Exception as e:
+            # Fallback to keyword search if semantic search not configured
+            print(f"   WARNING: Semantic search not configured, using keyword search")
+            results = search_tools(query=query.split()[-1])  # Use last word as keyword
+            if results:
+                print(f"   Best match: {results[0].name}")
+        print()
 
+
+async def demo_compare_strategies():
+    """Compare different search strategies."""
+    print("\n" + "="*70)
+    print("DEMO 4: Comparing Search Strategies")
+    print("="*70)
+    print()
+    
+    test_query = "send notification"
+    
+    print(f"Query: \"{test_query}\"\n")
+    
+    # Strategy 1: Keyword search
+    print("Strategy 1: Keyword Search")
+    keyword_results = search_tools(query="send")
+    print(f"   Results: {len(keyword_results)} tools")
+    for tool in keyword_results[:3]:
+        print(f"   • {tool.name}")
+    print()
+    
+    # Strategy 2: Domain filter
+    print("Strategy 2: Domain Filter (communication)")
+    domain_results = search_tools(domain="communication")
+    print(f"   Results: {len(domain_results)} tools")
+    for tool in domain_results:
+        print(f"   • {tool.name}")
+    print()
+    
+    # Strategy 3: Semantic (if available)
+    print("Strategy 3: Semantic Search")
+    try:
+        semantic_results = semantic_search_tools(query=test_query, top_k=3)
+        print(f"   Results: {len(semantic_results)} tools")
+        for tool in semantic_results[:3]:
+            print(f"   • {tool.name}")
+    except:
+        print("   WARNING: Semantic search requires embeddings configuration")
+    print()
+
+
+async def demo_catalog_overview():
+    """Show overall catalog statistics."""
+    print("\n" + "="*70)
+    print("DEMO 5: Catalog Overview")
+    print("="*70)
+    print()
+    
+    all_tools = get_available_tools()
+    print(f"Total Tools Registered: {len(all_tools)}\n")
+    
+    # Group by domain
+    domains = {}
+    for tool in all_tools:
+        domain = getattr(tool, 'domain', 'general')
+        domains[domain] = domains.get(domain, 0) + 1
+    
+    print("By Domain:")
+    for domain, count in sorted(domains.items()):
+        print(f"   {domain:15} : {count} tools")
+    print()
+
+
+# ============================================================
+# Main
+# ============================================================
 
 async def main():
-    """Run all phases of the example"""
+    """Run all discovery demos."""
     print("\n" + "="*70)
-    print(" "*15 + "VECTOR SEARCH & TOOL DISCOVERY EXAMPLE")
+    print("EXAMPLE 04: Vector Search and Tool Discovery")
     print("="*70)
+    print()
+    print("This example demonstrates different strategies for finding tools")
+    print("in a large catalog using keyword, domain, and semantic search.")
+    print()
     
-    try:
-        # Phase 1: Discover all tools
-        catalog = await phase1_discovery()
-        
-        # Phase 2: Semantic search
-        query = "analyze receipt image and extract items"
-        selected_tools = await phase2_semantic_search(catalog, query)
-        
-        # Phase 3: Compare strategies
-        await phase3_comparison()
-        
-        # Phase 4: Execute with selected tools
-        await phase4_execution(selected_tools, query)
-        
-        # Phase 5: Caching demo
-        await phase5_caching_demo()
-        
-        print("\n" + "="*70)
-        print("✓ Example completed successfully!")
-        print("="*70)
-        
-        print("\nKey Takeaways:")
-        print("  1. Semantic search reduces tokens by 66-95%")
-        print("  2. Hybrid strategy (BM25 + embeddings) works best")
-        print("  3. Caching provides 10-50x speedup for repeated queries")
-        print("  4. Tool discovery is automatic and extensible")
-        print("  5. Smart thresholds optimize for catalog size")
-        
-    except Exception as e:
-        print(f"\n✗ Error: {e}")
-        import traceback
-        traceback.print_exc()
+    # Run all demos
+    await demo_catalog_overview()
+    await demo_keyword_search()
+    await demo_domain_search()
+    await demo_semantic_search()
+    await demo_compare_strategies()
+    
+    print("="*70)
+    print("✅ All demos complete!")
+    print("="*70)
+    print()
 
 
 if __name__ == "__main__":
