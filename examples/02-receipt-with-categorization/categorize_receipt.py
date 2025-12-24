@@ -1,72 +1,168 @@
 """
 Example 2: Receipt with Categorization
 
-Demonstrates multi-step workflow:
-- OCR extraction
-- Line item parsing (Phi-3 or keyword matching)
-- Expense categorization (Phi-3 or rules)
-- Statistical computation (function call)
+Demonstrates multi-step workflow using tool chaining:
+- Register multiple tools (@mcp_tool)
+- Chain tools together (OCR -> Parse -> Categorize -> Stats)
+- Show how to build complex workflows from simple tools
 """
 
 import asyncio
 import json
 from pathlib import Path
 import sys
+from typing import Dict, List, Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from orchestrator import execute_plan, final_synthesis
+from orchestrator import mcp_tool, search_tools
 
 
-# Define multi-step execution plan
-categorization_plan = {
-    "request_id": "example-02-categorization",
-    "steps": [
-        # Step 1: Extract text from receipt
-        {
-            "id": "extract_text",
-            "tool": "receipt_ocr",
-            "input": {
-                "image_uri": "https://example.com/receipts/grocery-receipt.jpg"
-            }
-        },
-        # Step 2: Parse line items (uses Phi-3 if enabled)
-        {
-            "id": "parse_items",
-            "tool": "line_item_parser",
-            "input": {
-                "text": "step:extract_text"  # Reference step 1 output
-            },
-            "depends_on": ["extract_text"]
-        },
-        # Step 3: Categorize items (uses Phi-3 if enabled)
-        {
-            "id": "categorize",
-            "tool": "expense_categorizer",
-            "input": {
-                "items": "step:parse_items"  # Reference step 2 output
-            },
-            "depends_on": ["parse_items"]
-        },
-        # Step 4: Compute statistics (function call)
-        {
-            "id": "compute_stats",
-            "tool": "function_call",
-            "input": {
-                "name": "compute_item_statistics",
-                "args": {
-                    "items": "step:categorize"
-                }
-            },
-            "depends_on": ["categorize"]
-        }
-    ],
-    "final_synthesis": {
-        "prompt_template": "Receipt processing complete:\n{{steps}}"
+# ============================================================
+# Tool 1: OCR - Extract text from receipt image
+# ============================================================
+@mcp_tool(domain="receipts", description="Extract text from receipt images")
+async def receipt_ocr(image_uri: str) -> dict:
+    """Extract text from a receipt image using OCR."""
+    # Mock OCR result with realistic receipt text
+    mock_receipt_text = """GROCERY MART
+Date: 2024-01-15
+
+Milk 2%              $3.99
+Eggs Large 12ct      $4.50
+Bread Whole Wheat    $2.99
+Chicken Breast 2lb   $12.98
+Apples Gala 3lb      $5.97
+Shampoo              $8.99
+Toothpaste           $4.49
+-------------
+Subtotal:           $43.91
+Tax (8%):           $ 3.51
+-------------
+TOTAL:              $47.42
+
+Thank you!"""
+    
+    return {
+        "text": mock_receipt_text.strip(),
+        "confidence": 0.96,
+        "line_count": 18
     }
-}
 
 
+# ============================================================
+# Tool 2: Parser - Extract line items from text
+# ============================================================
+@mcp_tool(domain="receipts", description="Parse line items from receipt text")
+async def line_item_parser(text: str) -> dict:
+    """Parse receipt text into structured line items."""
+    # Simple keyword-based parsing (could use LLM for smarter parsing)
+    lines = text.split('\n')
+    items = []
+    
+    # Look for lines with prices (dollar sign + amount)
+    import re
+    price_pattern = r'\$\s*(\d+\.\d{2})'
+    
+    for line in lines:
+        price_match = re.search(price_pattern, line)
+        if price_match and not any(keyword in line.lower() for keyword in ['subtotal', 'tax', 'total', 'thank']):
+            price = float(price_match.group(1))
+            # Extract item name (everything before the price)
+            name = line[:price_match.start()].strip()
+            if name:
+                items.append({
+                    "name": name,
+                    "price": price,
+                    "raw_line": line.strip()
+                })
+    
+    return {
+        "items": items,
+        "item_count": len(items),
+        "parsing_method": "keyword_based"
+    }
+
+
+# ============================================================
+# Tool 3: Categorizer - Categorize expenses
+# ============================================================
+@mcp_tool(domain="receipts", description="Categorize expense items")
+async def expense_categorizer(items: List[Dict[str, Any]]) -> dict:
+    """Categorize expense items into food, household, etc."""
+    # Simple rule-based categorization
+    categories = {
+        "food": ["milk", "eggs", "bread", "chicken", "apples", "grocery"],
+        "household": ["shampoo", "toothpaste", "soap", "detergent", "cleaner"],
+        "other": []
+    }
+    
+    categorized_items = []
+    category_totals = {"food": 0.0, "household": 0.0, "other": 0.0}
+    
+    for item in items:
+        name_lower = item["name"].lower()
+        assigned_category = "other"
+        
+        # Match against category keywords
+        for category, keywords in categories.items():
+            if any(keyword in name_lower for keyword in keywords):
+                assigned_category = category
+                break
+        
+        categorized_item = {
+            **item,
+            "category": assigned_category
+        }
+        categorized_items.append(categorized_item)
+        category_totals[assigned_category] += item["price"]
+    
+    return {
+        "items": categorized_items,
+        "category_totals": category_totals,
+        "categorization_method": "rule_based"
+    }
+
+
+# ============================================================
+# Tool 4: Statistics - Compute summary statistics
+# ============================================================
+@mcp_tool(domain="receipts", description="Compute receipt statistics")
+async def compute_statistics(items: List[Dict[str, Any]], category_totals: Dict[str, float]) -> dict:
+    """Compute summary statistics for categorized items."""
+    if not items:
+        return {
+            "total_amount": 0.0,
+            "item_count": 0,
+            "avg_amount": 0.0,
+            "categories": {}
+        }
+    
+    total = sum(item["price"] for item in items)
+    count = len(items)
+    avg = total / count if count > 0 else 0.0
+    
+    # Category breakdowns
+    categories_detail = {}
+    for category, cat_total in category_totals.items():
+        cat_items = [item for item in items if item.get("category") == category]
+        categories_detail[category] = {
+            "total": cat_total,
+            "count": len(cat_items),
+            "percentage": (cat_total / total * 100) if total > 0 else 0.0
+        }
+    
+    return {
+        "total_amount": total,
+        "item_count": count,
+        "avg_amount": avg,
+        "categories": categories_detail
+    }
+
+
+# ============================================================
+# Main Workflow - Chain tools together
+# ============================================================
 async def main():
     """Run receipt categorization workflow."""
     print("=" * 60)
@@ -74,42 +170,64 @@ async def main():
     print("=" * 60)
     print()
     
-    print("📝 Plan Overview:")
+    print("📝 Workflow Overview:")
     print("   Step 1: Extract text from receipt (OCR)")
-    print("   Step 2: Parse line items (Phi-3 or keyword matching)")
-    print("   Step 3: Categorize expenses (Phi-3 or rules)")
-    print("   Step 4: Compute statistics (function call)")
+    print("   Step 2: Parse line items")
+    print("   Step 3: Categorize expenses")
+    print("   Step 4: Compute statistics")
     print()
     
-    print("💡 Using Phi-3? Check USE_SMALL_MODEL in .env")
-    print("   - true:  Phi-3 via Ollama (intelligent parsing)")
-    print("   - false: Keyword matching (fast, basic)")
+    # Step 1: OCR
+    print("🔍 Step 1: Extracting text from receipt...")
+    ocr_result = await receipt_ocr({"image_uri": "https://example.com/receipts/grocery.jpg"})
+    print(f"   ✓ Extracted {ocr_result['line_count']} lines (confidence: {ocr_result['confidence']*100:.1f}%)")
     print()
     
-    # Execute plan
-    print("🚀 Executing plan...")
-    context = await execute_plan(categorization_plan)
-    
-    # Display results
-    print()
-    print("✅ Execution complete!")
-    print()
-    print("📊 Detailed Results:")
-    print(json.dumps(context, indent=2))
+    # Step 2: Parse items
+    print("📋 Step 2: Parsing line items...")
+    parse_result = await line_item_parser({"text": ocr_result["text"]})
+    print(f"   ✓ Found {parse_result['item_count']} items")
     print()
     
-    # Show summary
-    if 'compute_stats' in context['steps']:
-        stats = context['steps']['compute_stats']['result']
-        print("💰 Summary:")
-        print(f"   Total Amount: ${stats['total_amount']:.2f}")
-        print(f"   Item Count: {stats['count']}")
-        print(f"   Average: ${stats['avg_amount']:.2f}")
-        print()
-        print("   By Category:")
-        for category, cat_stats in stats['categories'].items():
-            print(f"   - {category}: ${cat_stats['total']:.2f}")
-        print()
+    # Step 3: Categorize
+    print("🏷️  Step 3: Categorizing expenses...")
+    categorize_result = await expense_categorizer({"items": parse_result["items"]})
+    print(f"   ✓ Categorized into {len(categorize_result['category_totals'])} categories")
+    print()
+    
+    # Step 4: Compute statistics
+    print("📊 Step 4: Computing statistics...")
+    stats_result = await compute_statistics({
+        "items": categorize_result["items"],
+        "category_totals": categorize_result["category_totals"]
+    })
+    print("   ✓ Statistics computed")
+    print()
+    
+    # Display summary
+    print("=" * 60)
+    print("📄 FINAL RESULTS")
+    print("=" * 60)
+    print()
+    
+    print(f"💰 Total Amount: ${stats_result['total_amount']:.2f}")
+    print(f"🧾 Item Count: {stats_result['item_count']}")
+    print(f"📈 Average per Item: ${stats_result['avg_amount']:.2f}")
+    print()
+    
+    print("📊 By Category:")
+    for category, details in stats_result['categories'].items():
+        if details['count'] > 0:
+            print(f"   {category.upper()}:")
+            print(f"      Total: ${details['total']:.2f} ({details['percentage']:.1f}%)")
+            print(f"      Items: {details['count']}")
+    print()
+    
+    print("🛒 Item Details:")
+    for item in categorize_result['items']:
+        print(f"   • {item['name']:25} ${item['price']:6.2f}  [{item['category']}]")
+    print()
+    print("=" * 60)
 
 
 if __name__ == "__main__":

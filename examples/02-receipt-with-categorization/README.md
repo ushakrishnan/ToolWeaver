@@ -2,113 +2,128 @@
 
 ## What This Does
 
-Processes a receipt end-to-end: OCR → Parse line items → Categorize expenses → Compute statistics.
+Demonstrates building complex workflows by chaining multiple tools:
+- OCR extraction → Parse items → Categorize expenses → Compute statistics
+- Shows how to register multiple related tools
+- Demonstrates passing data between tools
+- Realistic multi-step business process
 
 **Complexity:** ⭐⭐ Intermediate  
-**Concepts:** Multi-step plans, dependencies, small models, function calls  
+**Concepts:** Tool chaining, multiple @mcp_tool decorators, workflow composition  
 **Time:** 10 minutes
 
 ## What You'll Learn
 
-- Multi-step execution plans with dependencies
-- Small model workers (Phi-3 via Ollama)
-- Function calls for business logic
-- Step output references (`step:step_id`)
+- Registering multiple tools with `@mcp_tool`
+- Chaining tools together to build workflows
+- Passing data between tool invocations
+- Building realistic business processes from simple tools
 
 ## Prerequisites
 
-- Azure Computer Vision (or mock mode)
-- Ollama with Phi-3 model (optional, falls back to keyword matching)
+- Python 3.10+
+- No external API keys required (uses mock data)
 
 ## Setup
 
-1. **Install Ollama (optional for small models):**
+1. **Install ToolWeaver:**
 ```bash
-# Download from https://ollama.ai
-ollama pull phi3
+cd ../..
+pip install -e .
 ```
 
-2. **Configure environment:**
+2. **(Optional) For real OCR:**
 ```bash
-cp .env ../../.env
-# Edit if using real Azure CV
-```
-
-3. **Install ToolWeaver:**
-```bash
-pip install -e ../..
-```
-
+# Edit .env with your Azure Computer Vision credentials
+AZURE_COMPUTER_VISION_ENDPOINT=https://your-resource.cognitiveservices.azure.com/
+AZURE_COMPUTER_VISION_KEY=your-key-here
 ## Run
 
 ```bash
-# With Ollama + mock OCR
+cd examples/02-receipt-with-categorization
 python categorize_receipt.py
-
-# Without Ollama (keyword matching)
-USE_SMALL_MODEL=false python categorize_receipt.py
-
-# With real Azure CV
-OCR_MODE=azure python categorize_receipt.py
 ```
 
 ## Expected Output
 
-```json
-{
-  "extract_text": {
-    "text": "GROCERY STORE\\nBread $3.99\\nMilk $4.50\\nBananas $2.99"
-  },
-  "parse_items": {
-    "items": [
-      {"name": "Bread", "price": 3.99},
-      {"name": "Milk", "price": 4.50},
-      {"name": "Bananas", "price": 2.99}
-    ]
-  },
-  "categorize": {
-    "categorized_items": [
-      {"name": "Bread", "price": 3.99, "category": "Food"},
-      {"name": "Milk", "price": 4.50, "category": "Groceries"},
-      {"name": "Bananas", "price": 2.99, "category": "Groceries"}
-    ]
-  },
-  "compute_stats": {
-    "total": 11.48,
-    "count": 3,
-    "avg": 3.83,
-    "by_category": {
-      "Food": 3.99,
-      "Groceries": 7.49
-    }
-  }
-}
+```
+============================================================
+EXAMPLE 2: Receipt with Categorization
+============================================================
+
+📝 Workflow Overview:
+   Step 1: Extract text from receipt (OCR)
+   Step 2: Parse line items
+   Step 3: Categorize expenses
+   Step 4: Compute statistics
+
+🔍 Step 1: Extracting text from receipt...
+   ✓ Extracted 18 lines (confidence: 96.0%)
+
+📋 Step 2: Parsing line items...
+   ✓ Found 7 items
+
+🏷️  Step 3: Categorizing expenses...
+   ✓ Categorized into 3 categories
+
+📊 Step 4: Computing statistics...
+   ✓ Statistics computed
+
+============================================================
+📄 FINAL RESULTS
+============================================================
+
+💰 Total Amount: $43.91
+🧾 Item Count: 7
+📈 Average per Item: $6.27
+
+📊 By Category:
+   FOOD:
+      Total: $30.43 (69.3%)
+      Items: 5
+   HOUSEHOLD:
+      Total: $13.48 (30.7%)
+      Items: 2
 ```
 
 ## What's Happening
 
-1. **Step 1 (OCR)** - Extract text from receipt image
-2. **Step 2 (Parse)** - Phi-3 parses line items from text
-3. **Step 3 (Categorize)** - Phi-3 assigns categories to items
-4. **Step 4 (Stats)** - Function call computes aggregated statistics
+1. **Tool Registration** - Four tools registered with `@mcp_tool`:
+   - `receipt_ocr` - Extracts text from receipt images
+   - `line_item_parser` - Parses text into structured items  
+   - `expense_categorizer` - Categorizes items (food, household, etc.)
+   - `compute_statistics` - Calculates totals and breakdowns
 
-**Dependency Flow:**
+2. **Tool Chaining** - Tools are called in sequence:
+   ```python
+   ocr_result = await receipt_ocr({...})
+   parse_result = await line_item_parser({"text": ocr_result["text"]})
+   categorize_result = await expense_categorizer({"items": parse_result["items"]})
+   stats = await compute_statistics({...})
+   ```
+
+3. **Data Flow:**
+   ```
+   receipt_ocr → line_item_parser → expense_categorizer → compute_statistics
+   ```
+
+## Code Walkthrough
+
+```python
+# Register tools
+@mcp_tool(domain="receipts")
+async def receipt_ocr(image_uri: str) -> dict: ...
+
+@mcp_tool(domain="receipts")
+async def line_item_parser(text: str) -> dict: ...
+
+# Chain them
+ocr_result = await receipt_ocr({"image_uri": "..."})
+parse_result = await line_item_parser({"text": ocr_result["text"]})
 ```
-extract_text → parse_items → categorize → compute_stats
-```
-
-## Cost Comparison
-
-| Configuration | Cost | Speed |
-|--------------|------|-------|
-| **Phi-3 (Ollama)** | $0.002 | ~3 sec |
-| **GPT-4o (all steps)** | $0.15 | ~8 sec |
-| **Keyword matching** | $0.002 | ~1 sec |
-
-💡 **98% cost savings** with Phi-3 for parsing/categorization!
 
 ## Next Steps
 
-- Try with your own receipts
-- Explore [03-batch-processing](../03-batch-processing) for parallel execution
-- See [04-github-operations](../04-github-operations) for GitHub integration
+- Explore [03-github-operations](../03-github-operations) for external API integration
+- See [04-vector-search-discovery](../04-vector-search-discovery) for semantic tool search  
+- Check [09-code-execution](../09-code-execution) for programmatic tool execution
