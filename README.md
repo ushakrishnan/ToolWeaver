@@ -1247,7 +1247,7 @@ Semantic search: 30 tools → 10 relevant (~66.7% token reduction, ~3,000 tokens
 
 ## Examples
 
-The `examples/` directory contains 29 runnable demos showcasing ToolWeaver's capabilities. **We're currently modernizing all examples to use the current API.**
+The `examples/` directory contains 29 runnable demos showcasing ToolWeaver's capabilities. **8 examples fully modernized and tested (28% complete).**
 
 ### ✅ Working Examples (Fully Tested)
 
@@ -1256,11 +1256,15 @@ Run these to see ToolWeaver in action:
 ```bash
 cd examples/01-basic-receipt-processing
 python process_receipt.py
-# Output: Extracts text from receipt image using OCR
+# Output: Registers OCR tool, demonstrates @mcp_tool decorator
 
 cd examples/02-receipt-with-categorization  
 python categorize_receipt.py
 # Output: Chains 4 tools - OCR → Parse → Categorize → Statistics
+
+cd examples/03-github-operations
+python github_ops.py
+# Output: GitHub operations - tool registration, discovery, data analysis
 
 cd examples/04-vector-search-discovery
 python discover_tools.py
@@ -1269,11 +1273,31 @@ python discover_tools.py
 cd examples/05-workflow-library
 python workflow_demo.py
 # Output: Shows YAML configuration + tool organization by domain
+
+cd examples/09-code-execution
+python code_execution_demo.py
+# Output: Safe computation tools - receipts, validation, transformations
+
+cd examples/16-agent-delegation
+python delegate_to_agent.py
+# Output: Agent discovery and delegation patterns
+
+cd examples/25-parallel-agents
+python main.py
+# Output: Parallel task execution with resource limits
 ```
+
+### 📊 Examples Status
+
+- ✅ **8 Complete** (28%): Examples 01, 02, 03, 04, 05, 09, 16, 25
+- 🔄 **2 Partial** (7%): Examples requiring additional configuration
+- ⏳ **19 Pending** (65%): Remaining examples under modernization
 
 ### 📚 Complete Examples
 
 See [examples/README.md](examples/README.md) for all 29 examples with difficulty ratings and feature descriptions.
+
+See [docs/internal/EXAMPLES_MODERNIZATION_STATUS.md](docs/internal/EXAMPLES_MODERNIZATION_STATUS.md) for detailed modernization tracking.
 
 ### 🚀 Quick Demo Script
 
@@ -1285,9 +1309,9 @@ python run_demo.py
 
 ### 📖 Learning Path
 
-**Beginner:** 01 → 02 → 05  
-**Intermediate:** 04 → 06 → 09  
-**Advanced:** 16 → 17 → 25  
+**Beginner:** 01 → 02 → 03  
+**Intermediate:** 04 → 05 → 09  
+**Advanced:** 16 → 25  
 
 See [docs/examples/EXAMPLES_TESTING_GUIDE.md](docs/examples/EXAMPLES_TESTING_GUIDE.md) for detailed learning guide.
 
