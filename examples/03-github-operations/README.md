@@ -1,117 +1,100 @@
-# Example 3: GitHub Operations with MCP
+# Example 03: GitHub Operations with ToolWeaver
 
-## What This Does
+Demonstrates integrating external APIs (GitHub) through the ToolWeaver tool system.
 
-Connects to GitHub's remote MCP server to perform repository operations:
-- List repository files
-- Create issues
-- Create pull requests
-- Search code
+## Features
 
-**Complexity:** ⭐⭐⭐ Advanced  
-**Concepts:** Remote MCP servers, GitHub integration, external APIs  
-**Time:** 15 minutes
+- External API tool registration
+- Repository search and filtering
+- Repository statistics analysis
+- Multi-step tool orchestration
+- Mock implementation (no credentials needed)
 
 ## What You'll Learn
 
-- Connecting to GitHub's hosted MCP server
-- Using remote MCP tools (36+ GitHub operations)
-- Server-Sent Events (SSE) protocol
-- Token-based authentication
+1. **Registering External Tools** - How to wrap external APIs as ToolWeaver tools
+2. **API Integration** - Calling multiple tools in sequence
+3. **Tool Discovery** - Finding and inspecting available tools
+4. **Data Analysis** - Aggregating data from multiple tool calls
 
-## Prerequisites
+## Files
 
-- GitHub account
-- Personal Access Token with scopes: `repo`, `read:org`, `workflow`
+- `github_ops.py` - Main example demonstrating GitHub operations
+- `requirements.txt` - Python dependencies
+- `.env` - Environment configuration (optional)
 
-## Setup
-
-1. **Create GitHub Token:**
-   - Go to https://github.com/settings/tokens
-   - Click "Generate new token (classic)"
-   - Select scopes: `repo`, `read:org`, `workflow`, `read:user`
-   - Copy token
-
-2. **Configure environment:**
-```bash
-cp .env ../../.env
-# Edit ../../.env and add:
-#   GITHUB_TOKEN=ghp_your_token_here
-#   GITHUB_OWNER=your-github-username
-```
-
-3. **Install ToolWeaver:**
-```bash
-pip install -e ../..
-```
-
-## Run
+## Running
 
 ```bash
-# Test connection
-python test_connection.py
-
-# List repository files
-python list_repo_files.py owner/repo
-
-# Create an issue
-python create_issue.py
-
-# Search code
-python search_code.py "def main" owner/repo
+python github_ops.py
 ```
 
-## Available Operations
+**Output:**
+```
+EXAMPLE 03: GitHub Operations
 
-GitHub MCP provides 36+ tools organized in toolsets:
+Step 1: Listing repositories...
+   Found 5 repositories:
+      • ToolWeaver           ( 1200 stars) - Python
+      • MCP-Server           (  850 stars) - TypeScript
+      • AI-Agents            (  600 stars) - Python
+      • Cloud-SDK            (  450 stars) - Go
+      • Data-Pipeline        (  320 stars) - Python
 
-| Toolset | Tools |
-|---------|-------|
-| **repos** | get_file_contents, create_branch, create_or_update_file, list_commits |
-| **issues** | create_issue, add_issue_comment, list_issues |
-| **pull_requests** | create_pull_request, add_comment_to_pending_review |
-| **actions** | list_workflows, trigger_workflow |
-| **code_security** | list_code_scanning_alerts |
+Step 2: Getting details for ToolWeaver repository...
+   Stars: 1200, Forks: 180, Issues: 23, PRs: 5
 
-## Example Output
+Step 3: Searching for Python repositories...
+   Found 3 Python repositories
 
-**List Files:**
-```json
-{
-  "files": [
-    {"name": "README.md", "type": "file", "size": 1024},
-    {"name": "src/", "type": "dir"},
-    {"name": "tests/", "type": "dir"}
-  ]
-}
+Step 4: Analyzing repository statistics...
+   Total repositories: 5
+   Total stars: 3420
+   Average stars: 684
+
+Step 5: Discovering all GitHub tools...
+   Found 4 GitHub tools
 ```
 
-**Create Issue:**
-```json
-{
-  "number": 42,
-  "title": "Feature: Add monitoring",
-  "url": "https://github.com/owner/repo/issues/42"
-}
+## Key Concepts
+
+### Tool Registration
+```python
+@mcp_tool(domain="github", description="List repositories for an organization")
+async def list_repositories(org: str, limit: int = 10) -> dict:
+    # Integrate with external API
+    return {"repositories": [...]}
 ```
 
-## What's Happening
+### Tool Calling
+```python
+result = await list_repositories({"org": "ushakrishnan", "limit": 5})
+```
 
-1. **Authentication** - Token-based auth with GitHub API
-2. **MCP Connection** - HTTPS connection to `api.githubcopilot.com/mcp/`
-3. **SSE Protocol** - Server-Sent Events for streaming responses
-4. **Tool Execution** - Remote execution on GitHub's infrastructure
+### Tool Discovery
+```python
+tools = search_tools(domain="github")
+for tool in tools:
+    print(f"{tool.name} - {tool.description}")
+```
 
-## Security Notes
+## Real-World Usage
 
-- ✅ Token stored in `.env` (gitignored)
-- ✅ Read-only mode available (`GITHUB_MCP_READONLY=true`)
-- ✅ Fine-grained token scopes
-- ⚠️ Never commit tokens to git
+This pattern works with:
+- GitHub API (with actual tokens)
+- Slack, Discord, Teams APIs
+- Cloud provider APIs (AWS, Azure, GCP)
+- Internal APIs and databases
+- Third-party services
 
-## Next Steps
+## Learning Path
 
-- Automate repository workflows
-- Build CI/CD integrations
-- Create automated issue management
-- Explore [GitHub MCP docs](https://github.com/github/github-mcp-server)
+- **Previous:** Example 02 - Receipt categorization (tool chaining)
+- **Next:** Example 04 - Vector search discovery (advanced search)
+- **Advanced:** Example 13 - Complete pipeline (production patterns)
+
+## Complexity
+
+- **Difficulty:** ⭐⭐ Intermediate
+- **Concepts:** External APIs, tool registration, discovery
+- **Time:** 10 minutes
