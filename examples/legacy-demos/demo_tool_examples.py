@@ -286,7 +286,7 @@ def main():
     catalog.add_tool(create_line_item_parser_with_examples())
     catalog.add_tool(create_expense_categorizer_with_examples())
     
-    print(f"\n✅ Created catalog with {len(catalog.tools)} tools")
+    print(f"\n[OK] Created catalog with {len(catalog.tools)} tools")
     print(f"   Total examples: {sum(len(t.examples) for t in catalog.tools.values())}")
     
     # Show LLM format without examples
@@ -330,7 +330,7 @@ def main():
     print(f"   With examples:    {with_ex_chars:,} chars (~{with_ex_chars // 4} tokens)")
     print(f"   Increase:         {with_ex_chars - no_ex_chars:,} chars (+{((with_ex_chars - no_ex_chars) / no_ex_chars * 100):.0f}%)")
     
-    print(f"\n✅ Benefits:")
+    print(f"\n[OK] Benefits:")
     print(f"   • Parameter accuracy: 72% → 90%+ (saves debugging time)")
     print(f"   • Format ambiguity: High → Low (shows date/ID patterns)")
     print(f"   • Optional params: Confusing → Clear (shows when to use)")

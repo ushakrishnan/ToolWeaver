@@ -20,18 +20,18 @@ async def test_github_mcp():
     toolsets = os.getenv("GITHUB_MCP_TOOLSETS", "repos,issues,pull_requests")
     
     if not github_token:
-        print("❌ GITHUB_TOKEN not found in .env file")
+        print("[X] GITHUB_TOKEN not found in .env file")
         print("Get token from: https://github.com/settings/tokens")
         return False
     
     if not github_owner:
-        print("❌ GITHUB_OWNER not found in .env file")
+        print("[X] GITHUB_OWNER not found in .env file")
         return False
     
-    print(f"✅ GitHub Token: {github_token[:8]}...{github_token[-4:]}")
-    print(f"✅ GitHub Owner: {github_owner}")
-    print(f"✅ MCP Server URL: {mcp_url}")
-    print(f"✅ Toolsets: {toolsets}")
+    print(f"[OK] GitHub Token: {github_token[:8]}...{github_token[-4:]}")
+    print(f"[OK] GitHub Owner: {github_owner}")
+    print(f"[OK] MCP Server URL: {mcp_url}")
+    print(f"[OK] Toolsets: {toolsets}")
     print()
     
     # Test 1: List available tools
@@ -65,17 +65,17 @@ async def test_github_mcp():
                         data = json.loads(line[6:])  # Remove 'data: ' prefix
                         if 'result' in data:
                             tools = data['result'].get('tools', [])
-                            print(f"✅ Found {len(tools)} tools")
+                            print(f"[OK] Found {len(tools)} tools")
                             print(f"📋 Sample tools:")
                             for tool in tools[:5]:
                                 print(f"   - {tool['name']}: {tool.get('description', 'N/A')[:80]}")
                             break
             else:
-                print(f"❌ Failed to list tools: {response.status_code}")
+                print(f"[X] Failed to list tools: {response.status_code}")
                 print(f"Response: {response.text[:500]}")
                 return False
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"[X] Error: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -110,7 +110,7 @@ async def test_github_mcp():
             if response.status_code == 200:
                 data = response.json()
                 result = data.get("result", {})
-                print(f"✅ User info retrieved successfully")
+                print(f"[OK] User info retrieved successfully")
                 print(f"📋 User: {result.get('content', [{}])[0].get('text', 'N/A')[:200]}...")
             else:
                 print(f"⚠️  User info call: {response.status_code}")
@@ -119,7 +119,7 @@ async def test_github_mcp():
         print(f"⚠️  User info error: {e}")
     
     print()
-    print("✅ GitHub MCP Server connection test complete!")
+    print("[OK] GitHub MCP Server connection test complete!")
     return True
 
 if __name__ == "__main__":

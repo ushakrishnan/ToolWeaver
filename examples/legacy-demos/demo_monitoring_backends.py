@@ -46,7 +46,7 @@ def example_local_monitoring():
     
     # Get summary
     summary = monitor.get_summary()
-    print(f"\n✅ Logged to: .tool_logs/")
+    print(f"\n[OK] Logged to: .tool_logs/")
     print(f"   Total calls: {summary['overview']['total_tool_calls']}")
     print(f"   Cache hit rate: {summary['overview']['cache_hit_rate']:.1%}")
     print(f"\n💾 Log files:")
@@ -116,7 +116,7 @@ def example_wandb_monitoring():
     # Log tokens
     monitor.log_token_usage(input_tokens=2000, output_tokens=300, cached_tokens=1800)
     
-    print(f"\n✅ Metrics sent to W&B")
+    print(f"\n[OK] Metrics sent to W&B")
     print(f"   View at: https://wandb.ai/your-team/toolweaver-demo")
     print(f"\n📊 Available visualizations:")
     print(f"   - Tool latency over time")
@@ -181,7 +181,7 @@ def example_prometheus_monitoring():
     # Log tokens
     monitor.log_token_usage(input_tokens=1000, output_tokens=150, cached_tokens=800)
     
-    print(f"\n✅ Prometheus metrics server running on port 8000")
+    print(f"\n[OK] Prometheus metrics server running on port 8000")
     print(f"   Metrics endpoint: http://localhost:8000/metrics")
     print(f"\n📊 Exposed metrics:")
     print(f"   - toolweaver_tool_calls_total")
@@ -229,7 +229,7 @@ def example_multi_backend_monitoring():
     monitor.log_search_query("payment tools", num_results=4, latency=0.009)
     monitor.log_token_usage(input_tokens=1500, output_tokens=250)
     
-    print(f"\n✅ Metrics sent to all backends:")
+    print(f"\n[OK] Metrics sent to all backends:")
     print(f"   📁 Local: .tool_logs/")
     print(f"   🎨 W&B: https://wandb.ai/your-team/toolweaver-prod")
     print(f"   📊 Prometheus: http://localhost:8001/metrics")
@@ -260,7 +260,7 @@ async def example_production_pattern():
     
     monitor = ToolUsageMonitor(backends=backends)
     
-    print(f"✅ Monitoring backends: {backends}")
+    print(f"[OK] Monitoring backends: {backends}")
     
     # Simulate tool usage
     tools = [

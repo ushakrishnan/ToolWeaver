@@ -246,7 +246,7 @@ async def main():
     print()
     
     print("=" * 70)
-    print("✅ Code execution demonstration complete!")
+    print("[OK] Code execution demonstration complete!")
     print("=" * 70)
     print()
     

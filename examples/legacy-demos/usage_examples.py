@@ -38,7 +38,7 @@ async def example_1_natural_language():
     
     # Execute the plan
     result = await execute_plan(plan)
-    print(f"\n✅ Completed! {len(result['step_outputs'])} steps executed")
+    print(f"\n[OK] Completed! {len(result['step_outputs'])} steps executed")
     
     return plan, result
 
@@ -72,14 +72,14 @@ async def example_2_small_model():
     # Parse line items with Phi-3
     print("🤖 Phi-3 parsing receipt...")
     items = await worker.parse_line_items(receipt_text)
-    print(f"✅ Found {len(items)} items:")
+    print(f"[OK] Found {len(items)} items:")
     for item in items:
         print(f"  - {item['description']}: ${item['total']}")
     
     # Categorize with Phi-3
     print("\n🤖 Phi-3 categorizing items...")
     categorized = await worker.categorize_items(items)
-    print(f"✅ Categorized {len(categorized)} items:")
+    print(f"[OK] Categorized {len(categorized)} items:")
     for item in categorized:
         print(f"  - {item['description']}: {item.get('category', 'unknown')}")
     
@@ -178,7 +178,7 @@ async def example_4_hybrid_plan():
     
     # Execute
     result = await execute_plan(plan)
-    print(f"\n✅ Executed {len(result['step_outputs'])} steps")
+    print(f"\n[OK] Executed {len(result['step_outputs'])} steps")
     
     return plan, result
 

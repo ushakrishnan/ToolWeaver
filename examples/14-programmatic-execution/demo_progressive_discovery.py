@@ -209,7 +209,7 @@ async def demo_comparison():
     print(f"\n✨ Context Reduction:  {reduction:>4.1f}%")
     
     if reduction >= 30:
-        print(f"✅ SUCCESS: Achieved target of 30-50% reduction!")
+        print(f"[OK] SUCCESS: Achieved target of 30-50% reduction!")
     else:
         print(f"⚠️  Below target: Need {30 - reduction:.1f}% more reduction")
     

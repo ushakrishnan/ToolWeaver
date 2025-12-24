@@ -22,7 +22,7 @@ async def main():
     print("\nArchitecture:")
     print("  🧠 Large Model (GPT-4o/Claude) → Generates execution plans")
     print("  🤖 Small Models (Phi-3/Llama) → Executes specific tasks")
-    print("  ⚙️  Hybrid Orchestrator → Manages execution with DAG")
+    print("  [*]  Hybrid Orchestrator → Manages execution with DAG")
     print("\n" + "="*60)
     
     # Get user request
@@ -51,7 +51,7 @@ async def main():
         planner = LargePlanner(provider=provider)
         print(f"✓ Using {planner.provider} with model {planner.model}\n")
     except Exception as e:
-        print(f"\n❌ Failed to initialize planner: {e}")
+        print(f"\n[X] Failed to initialize planner: {e}")
         print("\nMake sure you have:")
         print("  1. Installed dependencies: pip install openai")
         print("  2. Set provider in .env: PLANNER_PROVIDER=azure-openai")
@@ -88,7 +88,7 @@ async def main():
             return
         
     except Exception as e:
-        print(f"\n❌ Plan generation failed: {e}")
+        print(f"\n[X] Plan generation failed: {e}")
         import traceback
         traceback.print_exc()
         return
@@ -116,10 +116,10 @@ async def main():
                 keys = list(output.keys())[:3]
                 print(f"    Keys: {', '.join(keys)}{'...' if len(output) > 3 else ''}")
         
-        print("\n✅ Execution completed successfully!")
+        print("\n[OK] Execution completed successfully!")
         
     except Exception as e:
-        print(f"\n❌ Plan execution failed: {e}")
+        print(f"\n[X] Plan execution failed: {e}")
         import traceback
         traceback.print_exc()
         
@@ -148,10 +148,10 @@ async def main():
                 print("="*60 + "\n")
                 print(synth['synthesis'])
                 print("\n" + "="*60)
-                print("\n✅ Refined plan executed successfully!")
+                print("\n[OK] Refined plan executed successfully!")
                 
             except Exception as e2:
-                print(f"\n❌ Refined plan also failed: {e2}")
+                print(f"\n[X] Refined plan also failed: {e2}")
 
 
 if __name__ == '__main__':

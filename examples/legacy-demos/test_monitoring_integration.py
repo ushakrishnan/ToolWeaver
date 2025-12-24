@@ -35,7 +35,7 @@ async def main():
     
     # Check monitoring configuration
     backends = os.getenv("MONITORING_BACKENDS", "local")
-    print(f"✅ MONITORING_BACKENDS from .env: {backends}")
+    print(f"[OK] MONITORING_BACKENDS from .env: {backends}")
     print()
     
     # Get monitor (will be initialized on first plan execution)
@@ -46,13 +46,13 @@ async def main():
         # Execute plan (monitor will be auto-initialized)
         context = await execute_plan(test_plan)
         print()
-        print("✅ Plan executed successfully!")
+        print("[OK] Plan executed successfully!")
         print(f"📋 Result: {context}")
         print()
         
         # Get the monitor instance
         monitor = get_monitor()
-        print(f"✅ Monitor initialized with {len(monitor.backends)} backend(s)")
+        print(f"[OK] Monitor initialized with {len(monitor.backends)} backend(s)")
         for backend in monitor.backends:
             backend_type = type(backend).__name__
             print(f"   - {backend_type}")
@@ -60,16 +60,16 @@ async def main():
         
         # Check W&B
         if any('wandb' in str(type(b)).lower() for b in monitor.backends):
-            print("✅ W&B backend is active!")
+            print("[OK] W&B backend is active!")
             print("📊 Check your dashboard at: https://wandb.ai/usha-krishnan/ToolWeaver")
         
         print()
         print("=" * 60)
-        print("✅ Monitoring integration test complete!")
+        print("[OK] Monitoring integration test complete!")
         print("=" * 60)
         
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"[X] Test failed: {e}")
         import traceback
         traceback.print_exc()
 

@@ -194,7 +194,7 @@ async def main():
     print()
     
     print("=" * 70)
-    print("✅ GitHub operations complete!")
+    print("[OK] GitHub operations complete!")
     print("=" * 70)
     print()
 

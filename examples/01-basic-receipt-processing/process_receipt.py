@@ -66,7 +66,7 @@ async def main():
     print()
     
     if not tools:
-        print("❌ No receipt tools found")
+        print("[X] No receipt tools found")
         return
     
     # Use the first tool
@@ -80,7 +80,7 @@ async def main():
     result = await receipt_ocr({"image_uri": "https://example.com/receipts/sample-receipt.jpg"})
     
     print()
-    print("✅ Result:")
+    print("[OK] Result:")
     print(f"   Confidence: {result['confidence']*100:.1f}%")
     print(f"   Lines extracted: {result['line_count']}")
     print()

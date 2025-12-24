@@ -240,7 +240,7 @@ async def main():
     await demo_compare_strategies()
     
     print("="*70)
-    print("✅ All demos complete!")
+    print("[OK] All demos complete!")
     print("="*70)
     print()
 

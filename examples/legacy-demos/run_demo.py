@@ -47,7 +47,7 @@ async def run_plan(plan_path):
         
         return context, synth
     except Exception as e:
-        print(f"\n❌ Plan execution failed: {e}")
+        print(f"\n[X] Plan execution failed: {e}")
         import traceback
         traceback.print_exc()
         raise
