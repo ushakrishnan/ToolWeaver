@@ -1247,59 +1247,93 @@ Semantic search: 30 tools → 10 relevant (~66.7% token reduction, ~3,000 tokens
 
 ## Examples
 
-See the [examples/](examples/) directory for comprehensive demos:
+The `examples/` directory contains 29 runnable demos showcasing ToolWeaver's capabilities. **We're currently modernizing all examples to use the current API.**
+
+### ✅ Working Examples (Fully Tested)
+
+Run these to see ToolWeaver in action:
 
 ```bash
-# Run main demo with example plans
-python run_demo.py
+cd examples/01-basic-receipt-processing
+python process_receipt.py
+# Output: Extracts text from receipt image using OCR
 
-# Or run specific examples
-python examples/legacy-demos/demo_integrated.py      # Full pipeline
-python examples/legacy-demos/test_discovery.py       # Tool discovery
-python examples/legacy-demos/test_search.py          # Semantic search
-python examples/legacy-demos/demo_tool_examples.py   # Parameter accuracy
+cd examples/02-receipt-with-categorization  
+python categorize_receipt.py
+# Output: Chains 4 tools - OCR → Parse → Categorize → Statistics
+
+cd examples/04-vector-search-discovery
+python discover_tools.py
+# Output: Registers 10 tools, demonstrates keyword/domain/semantic search
+
+cd examples/05-workflow-library
+python workflow_demo.py
+# Output: Shows YAML configuration + tool organization by domain
 ```
 
-See [examples/README.md](examples/README.md) for complete list.
+### 📚 Complete Examples
+
+See [examples/README.md](examples/README.md) for all 29 examples with difficulty ratings and feature descriptions.
+
+### 🚀 Quick Demo Script
+
+For a quick overview without navigating examples:
+
+```bash
+python run_demo.py
+```
+
+### 📖 Learning Path
+
+**Beginner:** 01 → 02 → 05  
+**Intermediate:** 04 → 06 → 09  
+**Advanced:** 16 → 17 → 25  
+
+See [docs/examples/EXAMPLES_TESTING_GUIDE.md](docs/examples/EXAMPLES_TESTING_GUIDE.md) for detailed learning guide.
 
 ## Project Structure
 
 ```
 ToolWeaver/
-├── orchestrator/              # Core orchestration engine
-│   ├── orchestrator.py       # Main execution engine
-│   ├── planner.py            # LLM-based planner
-│   ├── models.py             # Tool definitions (ToolCatalog, ToolExample)
-│   ├── tool_discovery.py     # Automatic tool discovery
-│   ├── tool_search.py        # Semantic search engine
-│   ├── programmatic_executor.py  # Code-based tool calling
-│   ├── monitoring.py         # Production monitoring
-│   ├── hybrid_dispatcher.py  # Tool routing
-│   ├── functions.py          # Registered functions
-│   ├── workers.py            # MCP workers
-│   ├── code_exec_worker.py   # Sandboxed code execution
-│   └── mcp_client.py         # MCP client
-├── tests/                    # Test suite (103 tests)
-│   ├── test_tool_models.py
-│   ├── test_planner_integration.py
-│   ├── test_tool_search.py
-│   ├── test_programmatic_executor.py
-│   └── test_monitoring.py
-├── docs/                     # Documentation
-│   ├── CONFIGURATION.md      # Provider setup
-│   ├── PRODUCTION_DEPLOYMENT.md  # Deploy to Azure
-│   ├── PROMPT_CACHING.md     # 90% cost reduction
-│   ├── SEARCH_TUNING.md      # Optimize search
-│   ├── MIGRATION_GUIDE.md    # Upgrade guide
-│   └── ...
-├── examples/                 # Example scripts
-│   ├── demo_integrated.py    # Full pipeline
-│   ├── demo_tool_examples.py # Parameter accuracy
-│   ├── test_discovery.py     # Tool discovery
-│   └── ...
-├── example_plan.json         # Example execution plans
-├── requirements.txt          # Dependencies
-└── run_demo.py              # Main demo script
+├── orchestrator/                    # Core package (public API)
+│   ├── __init__.py                 # Public exports (@mcp_tool, search_tools, etc.)
+│   ├── config.py                   # Configuration management
+│   ├── plugins/                    # Plugin system
+│   ├── selection/                  # Tool selection & cost optimization
+│   ├── shared/                     # Shared models (ToolDefinition, etc.)
+│   ├── skills/                     # Skill management
+│   ├── tools/                      # Tool utilities (decorators, discovery, etc.)
+│   │   ├── decorators.py          # @mcp_tool, @tool, @a2a_agent
+│   │   ├── discovery_api.py       # search_tools(), get_available_tools()
+│   │   ├── sub_agent.py           # dispatch_agents()
+│   │   └── error_recovery.py      # Error handling
+│   └── _internal/                  # Internal implementation (not public API)
+│       ├── execution/              # Programmatic execution engine
+│       ├── infra/                  # Infrastructure (MCP client, A2A client)
+│       ├── workflows/              # Workflow execution
+│       └── ...
+├── tests/                           # Test suite (971/985 passing, 98.6%)
+│   ├── test_tool_*.py
+│   ├── test_*_integration.py
+│   └── conftest.py
+├── docs/                            # Documentation (80+ files)
+│   ├── user-guide/                 # For end users
+│   ├── developer-guide/            # For contributors
+│   ├── deployment/                 # Production deployment
+│   ├── reference/                  # API reference
+│   ├── getting-started/            # Quick start
+│   └── internal/                   # Development notes
+├── examples/                        # Example scripts (29 total, 4 modernized)
+│   ├── 01-basic-receipt-processing/
+│   ├── 02-receipt-with-categorization/
+│   ├── 04-vector-search-discovery/
+│   ├── 05-workflow-library/
+│   └── ... (25 more)
+├── scripts/                         # Helper scripts
+├── pyproject.toml                  # Package configuration
+├── requirements.txt                # Dependencies
+├── conftest.py                     # Pytest configuration
+└── README.md                       # This file
 ```
 
 ## Requirements
