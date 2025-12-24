@@ -13,6 +13,7 @@ Manage tools through configuration files for easy version control and deployment
 
 import asyncio
 import yaml
+from pathlib import Path
 
 from orchestrator import load_tools_from_yaml, get_available_tools, mcp_tool, search_tools
 
