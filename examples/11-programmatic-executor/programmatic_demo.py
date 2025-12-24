@@ -4,7 +4,6 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from orchestrator.programmatic_executor import ProgrammaticExecutor
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent / ".env")
@@ -104,7 +103,7 @@ async def main():
         print(f"  Scale: {scale}")
         print(f"  {comparison}")
     
-    print("\n✓ Example completed!")
+    print("\n[OK] Example completed!")
     print("\nKey Insight:")
     print("  LLM for planning, Python for execution")
     print("  Keep data in memory, not in LLM context")
