@@ -93,3 +93,5 @@ prometheus_multiproc_dir/
 .ruff_cache/
 .mypy_cache/
 
+# Internal documentation (kept locally, not in repo)
+docs/internal/
