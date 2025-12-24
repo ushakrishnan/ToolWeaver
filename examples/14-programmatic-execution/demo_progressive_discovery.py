@@ -14,7 +14,6 @@ import json
 from pathlib import Path
 
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
-from orchestrator.programmatic_executor import ProgrammaticToolExecutor
 
 
 def create_sample_catalog() -> ToolCatalog:

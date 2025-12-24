@@ -15,7 +15,6 @@ import tempfile
 from pathlib import Path
 
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
-from orchestrator.code_generator import StubGenerator
 
 
 def create_sample_catalog() -> ToolCatalog:

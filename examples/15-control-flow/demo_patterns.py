@@ -12,20 +12,29 @@ Demonstrates how control flow patterns enable advanced agentic workflows:
 import asyncio
 from pathlib import Path
 import sys
+from dataclasses import dataclass
+from enum import Enum
+from typing import List, Callable, Any
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from orchestrator.control_flow_patterns import (
-    ControlFlowPatterns,
-    PatternType,
-    create_polling_code,
-    create_parallel_code,
-    create_conditional_code,
-    create_retry_code,
-)
-from orchestrator.sandbox import SandboxEnvironment, ResourceLimits
+# Simple enums and classes for pattern demonstration
+class PatternType(Enum):
+    """Types of control flow patterns"""
+    POLLING = "polling"
+    PARALLEL = "parallel"
+    CONDITIONAL = "conditional"
+    RETRY = "retry"
+    SEQUENTIAL = "sequential"
 
+@dataclass
+class ControlFlowPattern:
+    """Represents a control flow pattern"""
+    name: str
+    pattern_type: PatternType
+    description: str
+    code_template: str
 
 async def demo_pattern_detection():
     """Demo: Automatic pattern detection from task descriptions"""

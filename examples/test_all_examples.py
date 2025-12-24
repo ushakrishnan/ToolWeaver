@@ -25,7 +25,7 @@ def print_header(text):
 
 def print_test(example, status, message=""):
     """Print test result"""
-    color = GREEN if status == "✓" else RED if status == "✗" else YELLOW
+    color = GREEN if status == "[OK]" else RED if status == "[FAIL]" else YELLOW
     print(f"{color}{status}{RESET} {example:40} {message}")
 
 # Define all examples with their main scripts
@@ -95,32 +95,32 @@ def main():
         example_dir = examples_dir / example_name
         
         if not example_dir.exists():
-            print_test(example_name, "✗", "Directory not found")
+            print_test(example_name, "[FAIL]", "Directory not found")
             results["failed"].append(example_name)
             continue
         
         # Check for required files
         missing = check_file_exists(example_dir, script_name)
         if missing:
-            print_test(example_name, "✗", f"Missing files: {', '.join(missing)}")
+            print_test(example_name, "[FAIL]", f"Missing files: {', '.join(missing)}")
             results["failed"].append(example_name)
             continue
         
         # Check script syntax and imports
         import_issues = check_imports(example_dir, script_name)
         if import_issues:
-            print_test(example_name, "⚠", f"Issues: {', '.join(import_issues)}")
+            print_test(example_name, "[WARN]", f"Issues: {', '.join(import_issues)}")
             results["warnings"].append(example_name)
             continue
         
-        print_test(example_name, "✓", "All checks passed")
+        print_test(example_name, "[OK]", "All checks passed")
         results["passed"].append(example_name)
     
     # Print summary
     print_header("TEST SUMMARY")
-    print(f"{GREEN}✓ Passed:{RESET}  {len(results['passed'])}")
-    print(f"{YELLOW}⚠ Warnings:{RESET} {len(results['warnings'])}")
-    print(f"{RED}✗ Failed:{RESET}  {len(results['failed'])}")
+    print(f"{GREEN}[OK] Passed:{RESET}  {len(results['passed'])}")
+    print(f"{YELLOW}[WARN] Warnings:{RESET} {len(results['warnings'])}")
+    print(f"{RED}[FAIL] Failed:{RESET}  {len(results['failed'])}")
     
     if results["warnings"]:
         print(f"\n{YELLOW}Warnings (may need optional dependencies):{RESET}")
