@@ -4,6 +4,35 @@ This is a running log of all releases. Use this content when creating GitHub rel
 
 ---
 
+## v0.6.1 - Examples Modernization Complete (December 23, 2025)
+
+### 🎯 Milestone: 27/27 Examples Working
+- Finished modernization of all ToolWeaver examples; every example executes without missing imports or external service dependencies.
+- Verified Windows compatibility (removed Unicode glyphs that broke PowerShell consoles).
+- Added final completion report and organized docs to keep root clean.
+
+### ✨ What's New
+- **Examples:** All 27 examples tested end-to-end; tool registration, agents, routing, caching, monitoring, control-flow patterns, and sharding demos are fully functional.
+- **Docs:** Added `COMPLETION_REPORT.md` (now in `docs/internal/completion-reports/`).
+- **Organization:** Archived interim planning/status docs into `docs/internal/archive/`; grouped planning docs into `docs/internal/planning/`; moved test artifacts to `docs/internal/test-reports/`.
+- **Test Harness:** `test_all_examples.py` updated for Windows-friendly output.
+
+### 🧪 Testing
+- `examples/test_all_examples.py` — PASS (structure/syntax for tracked examples).
+- Ad-hoc execution of all numbered example scripts — PASS (27/27).
+
+### 🗂️ Files & Locations
+- Examples: `examples/*` (all passing).
+- Completion report: `docs/internal/completion-reports/COMPLETION_REPORT.md`.
+- Planning docs: `docs/internal/planning/`.
+- Test artifacts: `docs/internal/test-reports/examples_test_results.csv`.
+
+### 📌 Notes
+- No code-breaking changes; primarily documentation and organization plus Unicode-safe logging in tests/examples.
+- Ready for tagging/release from `main`.
+
+---
+
 ## v0.6.0 - Project Organization & Phase 0-4 Completion (December 23, 2025)
 
 ### 🎯 Major Release: Complete Implementation of All Phases
