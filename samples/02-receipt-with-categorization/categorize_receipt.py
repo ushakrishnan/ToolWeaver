@@ -166,7 +166,7 @@ async def main():
     print("=" * 60)
     print()
     
-    print("📝 Workflow Overview:")
+    print("[doc] Workflow Overview:")
     print("   Step 1: Extract text from receipt (OCR)")
     print("   Step 2: Parse line items")
     print("   Step 3: Categorize expenses")
@@ -174,25 +174,25 @@ async def main():
     print()
     
     # Step 1: OCR
-    print("🔍 Step 1: Extracting text from receipt...")
+    print("[?] Step 1: Extracting text from receipt...")
     ocr_result = await receipt_ocr({"image_uri": "https://example.com/receipts/grocery.jpg"})
     print(f"   ✓ Extracted {ocr_result['line_count']} lines (confidence: {ocr_result['confidence']*100:.1f}%)")
     print()
     
     # Step 2: Parse items
-    print("📋 Step 2: Parsing line items...")
+    print("[list] Step 2: Parsing line items...")
     parse_result = await line_item_parser({"text": ocr_result["text"]})
     print(f"   ✓ Found {parse_result['item_count']} items")
     print()
     
     # Step 3: Categorize
-    print("🏷️  Step 3: Categorizing expenses...")
+    print("[tag] Step 3: Categorizing expenses...")
     categorize_result = await expense_categorizer({"items": parse_result["items"]})
     print(f"   ✓ Categorized into {len(categorize_result['category_totals'])} categories")
     print()
     
     # Step 4: Compute statistics
-    print("📊 Step 4: Computing statistics...")
+    print("[#] Step 4: Computing statistics...")
     stats_result = await compute_statistics({
         "items": categorize_result["items"],
         "category_totals": categorize_result["category_totals"]
@@ -202,7 +202,7 @@ async def main():
     
     # Display summary
     print("=" * 60)
-    print("📄 FINAL RESULTS")
+    print("[OK] FINAL RESULTS")
     print("=" * 60)
     print()
     
@@ -211,7 +211,7 @@ async def main():
     print(f"📈 Average per Item: ${stats_result['avg_amount']:.2f}")
     print()
     
-    print("📊 By Category:")
+    print("[#] By Category:")
     for category, details in stats_result['categories'].items():
         if details['count'] > 0:
             print(f"   {category.upper()}:")

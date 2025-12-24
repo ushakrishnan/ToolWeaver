@@ -42,6 +42,20 @@ cp .env.example .env
 python process_receipt.py
 ```
 
+### Troubleshooting
+
+**Windows Console - Character Encoding Issues:**
+If you see garbled output (e.g., `ΓÇó` instead of `•`), set the encoding:
+```powershell
+$env:PYTHONIOENCODING='utf-8'
+python process_receipt.py
+```
+
+Or add to your PowerShell profile permanently:
+```powershell
+[Environment]::SetEnvironmentVariable("PYTHONIOENCODING", "utf-8", "User")
+```
+
 ## 📚 Example Index
 
 ### ⭐ Featured: Complete End-to-End
