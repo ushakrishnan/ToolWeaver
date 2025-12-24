@@ -1,8 +1,4 @@
-# Sample 04: Vector Search and Tool Discovery
-
-> Status: PyPI package refresh is in progress. This sample may lag behind the latest source; for the most up-to-date code paths, use [examples/](../../examples/). Samples will be regenerated after the refresh.
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
+# Example 04: Vector Search and Tool Discovery
 
 **Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
 **Feature Demonstrated:** Automatic tool discovery and semantic search
@@ -76,7 +72,7 @@ Discovery Cache ← Tool Catalog ← MCP/Functions/Code
 
 - Python 3.10+
 - Azure OpenAI or OpenAI API access
-- ToolWeaver installed (`pip install -e ../..`)
+- ToolWeaver installed (`pip install toolweaver==0.5.0`)
 
 ## Setup
 
@@ -150,9 +146,6 @@ Combines two approaches:
 
 ```python
 # Discovery settings
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 ToolDiscoveryOrchestrator(
     enable_cache=True,          # Cache discovered tools
     cache_ttl=86400,            # 24 hours
@@ -160,9 +153,6 @@ ToolDiscoveryOrchestrator(
 )
 
 # Search settings
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 ToolSearchEngine(
     strategy="hybrid",          # hybrid, bm25, embeddings
     bm25_weight=0.4,           # 40% keyword, 60% semantic
@@ -182,9 +172,9 @@ See the script for examples of:
 
 ## Related Examples
 
-- **Sample 01**: Basic tool usage (no search needed)
-- **Sample 10**: Multi-step planning (uses search internally)
-- **Sample 12**: Sharded catalog (search at scale)
+- **Example 01**: Basic tool usage (no search needed)
+- **Example 10**: Multi-step planning (uses search internally)
+- **Example 12**: Sharded catalog (search at scale)
 
 ## Learn More
 

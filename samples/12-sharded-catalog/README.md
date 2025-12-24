@@ -1,8 +1,4 @@
-# Sample 12: Sharded Catalog
-
-> Status: PyPI package refresh is in progress. This sample may lag behind the latest source; for the most up-to-date code paths, use [examples/](../../examples/). Samples will be regenerated after the refresh.
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
+# Example 12: Sharded Catalog
 
 **Complexity:** ⭐⭐⭐ Advanced | **Time:** 15 minutes  
 **Feature Demonstrated:** Sharded catalogs for scaling to 1000+ tools

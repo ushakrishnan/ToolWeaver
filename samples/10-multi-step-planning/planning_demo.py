@@ -1,9 +1,7 @@
 """Example 10: Multi-Step Planning"""
 import asyncio
 from pathlib import Path
-import sys
 
-from orchestrator.planner import Planner
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent / ".env")
@@ -92,7 +90,7 @@ async def main():
     for plan, steps, parallel, time, cost in metrics:
         print(f"{plan:<20} {steps:<8} {parallel:<10} {time:<10} {cost:<10}")
     
-    print("\n✓ Example completed!")
+    print("\n[OK] Example completed!")
     print("\nKey Benefits:")
     print("  - Natural language → executable plan")
     print("  - Automatic parallelization")

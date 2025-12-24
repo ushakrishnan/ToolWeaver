@@ -1,80 +1,114 @@
-# Sample 1: Basic Receipt Processing
-
-> Status: PyPI package refresh is in progress. This sample may lag behind the latest source; for the most up-to-date code paths, use [examples/](../../examples/). Samples will be regenerated after the refresh.
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
+# Example 1: Basic Receipt Processing
 
 ## What This Does
 
-Processes a single receipt image using Azure Computer Vision OCR to extract text.
+Demonstrates the simplest way to register and use a tool with ToolWeaver. This example shows:
+- Registering a receipt OCR tool using the `@mcp_tool` decorator
+- Discovering tools using `search_tools()`
+- Calling the tool to extract text from a receipt image
 
 **Complexity:** ⭐ Basic  
-**Concepts:** MCP workers, execution plans  
+**Concepts:** Tool registration, tool discovery, tool execution  
 **Time:** 5 minutes
 
 ## What You'll Learn
 
-- How to create a simple execution plan
-- Using MCP workers (receipt_ocr)
-- Basic orchestrator execution
+- How to register a tool using `@mcp_tool`
+- How to search for tools using `search_tools()`
+- How to execute a registered tool directly
+- Basic tool definition with parameters and return types
 
 ## Prerequisites
 
-- Azure Computer Vision resource (or use mock mode)
 - Python 3.10+
+- No external API keys required (uses mock data)
 
 ## Setup
 
-1. Copy `.env` to parent directory or configure:
+1. Install ToolWeaver from PyPI (pinned to the deployed version):
 ```bash
-cp .env ../../.env
-# Edit ../../.env with your Azure CV endpoint
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
+pip install toolweaver==0.5.0
 ```
 
-2. Install ToolWeaver:
+2. (Optional) For real Azure Computer Vision:
 ```bash
-pip install -e ../..
+# Edit .env with your Azure CV credentials
+AZURE_COMPUTER_VISION_ENDPOINT=https://your-resource.cognitiveservices.azure.com/
+AZURE_COMPUTER_VISION_KEY=your-key-here
 ```
 
 ## Run
 
 ```bash
-# With real Azure Computer Vision
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
+# With mock data (no Azure account needed)
 python process_receipt.py
 
-# With mock data (no Azure account needed)
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
-OCR_MODE=mock python process_receipt.py
+# With real Azure Computer Vision (if configured)
+python process_receipt.py
 ```
 
 ## Expected Output
 
-```json
-{
-  "steps": {
-    "extract_text": {
-      "text": "RESTAURANT XYZ\\nDate: 2024-01-15\\nBurger $12.99\\nFries $4.50\\nTotal: $17.49",
-      "confidence": 0.95
-    }
-  }
-}
+```
+============================================================
+EXAMPLE 1: Basic Receipt Processing
+============================================================
+
+🔍 Searching for receipt tools...
+   Found 1 tool(s)
+
+📝 Using tool: receipt_ocr
+   Description: Extract text from receipt images
+
+🚀 Processing receipt...
+
+✅ Result:
+   Confidence: 95.0%
+   Lines extracted: 12
+
+📄 Extracted Text:
+RESTAURANT XYZ
+    Date: 2024-01-15
+
+    Burger       $12.99
+    Fries        $ 4.50
+    Soda         $ 2.50
+    -------------
+    Subtotal:    $19.99
+    Tax (8%):    $ 1.60
+    -------------
+    TOTAL:       $21.59
+
+    Thank you!
+
+============================================================
 ```
 
 ## What's Happening
 
-1. **Plan definition** - JSON with single step
-2. **OCR execution** - Azure Computer Vision extracts text
-3. **Result** - Structured JSON with extracted text and confidence
+1. **Tool Registration** - `@mcp_tool` decorator registers `receipt_ocr` function
+2. **Tool Discovery** - `search_tools(query="receipt")` finds registered tool
+3. **Tool Execution** - Direct function call with parameters dict
+4. **Result** - Structured dict with extracted text, confidence, and line count
+
+## Code Walkthrough
+
+```python
+# 1. Register a tool
+@mcp_tool(domain="receipts", description="Extract text from receipt images")
+async def receipt_ocr(image_uri: str) -> dict:
+    # Tool implementation
+    return {"text": "...", "confidence": 0.95, "line_count": 12}
+
+# 2. Search for tools
+tools = search_tools(query="receipt")
+
+# 3. Execute the tool
+result = await receipt_ocr({"image_uri": "https://example.com/receipt.jpg"})
+```
 
 ## Next Steps
 
-- Try with your own receipt images
-- Explore [02-receipt-with-categorization](../02-receipt-with-categorization) to parse and categorize items
+- Try [02-receipt-with-categorization](../02-receipt-with-categorization) to parse and categorize items
+- Explore [04-vector-search-discovery](../04-vector-search-discovery) for semantic tool search
+- Check [05-workflow-library](../05-workflow-library) for YAML-based tool workflows

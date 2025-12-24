@@ -1,8 +1,4 @@
-# Sample 06: Monitoring and Observability
-
-> Status: PyPI package refresh is in progress. This sample may lag behind the latest source; for the most up-to-date code paths, use [examples/](../../examples/). Samples will be regenerated after the refresh.
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
+# Example 06: Monitoring and Observability
 
 **Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
 **Feature Demonstrated:** Production-grade monitoring with WandB and Prometheus
@@ -185,16 +181,10 @@ monitor = WandBMonitor(
 )
 
 # Automatic tracking
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 with monitor.track_operation("process_receipt"):
     result = await orchestrator.execute(task)
     
 # Manual logging
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 monitor.log_metrics({
     "cost": 0.052,
     "tokens": 3450,
@@ -210,29 +200,11 @@ from orchestrator.monitoring import PrometheusMonitor
 monitor = PrometheusMonitor(port=8000)
 
 # Metrics automatically exposed at /metrics
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 # - request_duration_seconds (histogram)
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 # - request_total (counter)
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 # - token_usage_total (counter)
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 # - cost_dollars_total (counter)
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 # - tool_usage_total (counter by tool name)
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 ```
 
 ### 3. Custom Monitoring
@@ -265,9 +237,6 @@ monitor = CompositeMonitor(
 )
 
 # All backends receive metrics simultaneously
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 ```
 
 ## Benefits
@@ -296,9 +265,6 @@ monitor = CompositeMonitor(
 
 ```python
 # WandB Configuration
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 WandBMonitor(
     project="my-project",           # Project name
     entity="my-team",                # Team/organization
@@ -308,9 +274,6 @@ WandBMonitor(
 )
 
 # Prometheus Configuration
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 PrometheusMonitor(
     port=8000,                       # Metrics server port
     namespace="toolweaver",          # Metrics namespace
@@ -347,9 +310,9 @@ The example demonstrates:
 
 ## Related Examples
 
-- **Sample 01-03**: All can be monitored
-- **Sample 07**: Cache monitoring
-- **Sample 08**: Model cost comparison
+- **Example 01-03**: All can be monitored
+- **Example 07**: Cache monitoring
+- **Example 08**: Model cost comparison
 
 ## Learn More
 

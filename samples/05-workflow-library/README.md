@@ -1,8 +1,4 @@
-# Sample 05: Workflow Library and Composition
-
-> Status: PyPI package refresh is in progress. This sample may lag behind the latest source; for the most up-to-date code paths, use [examples/](../../examples/). Samples will be regenerated after the refresh.
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
+# Example 05: Workflow Library and Composition
 
 **Complexity:** ⭐⭐ Intermediate | **Time:** 15 minutes  
 **Feature Demonstrated:** Reusable workflow patterns and automatic tool chaining
@@ -203,21 +199,12 @@ from orchestrator.workflow_library import WorkflowLibrary
 library = WorkflowLibrary()
 
 # Save workflow
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 library.save(workflow, version="v1")
 
 # Load workflow
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 loaded = library.load("receipt_processing", version="v1")
 
 # List available workflows
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 workflows = library.list()
 ```
 
@@ -225,15 +212,9 @@ workflows = library.list()
 
 ```python
 # Compose two workflows
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 combined = workflow1.then(workflow2)
 
 # Conditional composition
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 workflow.if_condition(
     condition=lambda result: result['amount'] > 1000,
     then_workflow=approval_workflow,
@@ -289,9 +270,9 @@ The example demonstrates:
 
 ## Related Examples
 
-- **Sample 02**: Uses simple workflows internally
-- **Sample 10**: Multi-step planning generates workflows
-- **Sample 11**: Programmatic executor for complex flows
+- **Example 02**: Uses simple workflows internally
+- **Example 10**: Multi-step planning generates workflows
+- **Example 11**: Programmatic executor for complex flows
 
 ## Learn More
 

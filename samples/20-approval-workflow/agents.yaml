@@ -1,0 +1,15 @@
+agents:
+  - agent_id: analysis_agent
+    name: Local Analysis Agent
+    protocol: http
+    endpoint: http://127.0.0.1:8089/analyze
+    capabilities: ["draft", "summarize"]
+    metadata:
+      tags: ["local", "dev"]
+  - agent_id: validator_agent
+    name: Local Validator Agent
+    protocol: http
+    endpoint: http://127.0.0.1:8089/validate
+    capabilities: ["validate", "policy_check"]
+    metadata:
+      tags: ["local", "dev"]

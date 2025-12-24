@@ -1,8 +1,4 @@
-# Sample 11: Programmatic Executor
-
-> Status: PyPI package refresh is in progress. This sample may lag behind the latest source; for the most up-to-date code paths, use [examples/](../../examples/). Samples will be regenerated after the refresh.
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
+# Example 11: Programmatic Executor
 
 **Complexity:** ⭐⭐⭐ Advanced | **Time:** 15 minutes  
 **Feature Demonstrated:** Programmatic workflow execution keeping data out of LLM context

@@ -10,12 +10,11 @@ Demonstrates all ToolWeaver features in a production-ready pipeline:
 - WandB monitoring for observability
 - Code execution for calculations
 - Programmatic executor for batch processing
-
-This sample uses ToolWeaver from PyPI.
 """
 
 import os
 import time
+
 from dotenv import load_dotenv
 
 # Load environment

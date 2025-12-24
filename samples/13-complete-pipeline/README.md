@@ -1,14 +1,7 @@
-# Sample 13: Complete End-to-End Pipeline
-
-> Status: PyPI package refresh is in progress. This sample may lag behind the latest source; for the most up-to-date code paths, use [examples/](../../examples/). Samples will be regenerated after the refresh.
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
+# Example 13: Complete End-to-End Pipeline
 
 **Complexity:** ⭐⭐⭐ Advanced | **Time:** 20 minutes  
 **Feature Demonstrated:** Complete ToolWeaver pipeline with all major features
-
-> **Note:** This sample uses ToolWeaver from PyPI (`pip install toolweaver`).  
-> For development examples using local source, see [examples/](../../examples/).
 
 ## Overview
 
@@ -78,15 +71,15 @@ Natural Language Request
 
 ## Setup
 
-1. **Install ToolWeaver and dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. **Configure environment**:
+1. **Configure environment** (already done if using main .env):
    ```bash
    cp .env.example .env
-   # Edit .env with your API keys
+   # Edit if needed - defaults are set from main .env
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   pip install -r ../../requirements.txt
    ```
 
 3. **Optional services**:
@@ -248,9 +241,6 @@ Handles growth efficiently:
 
 ```python
 # Complete configuration
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 config = {
     # Discovery
     "enable_discovery_cache": True,
@@ -302,15 +292,15 @@ The script demonstrates:
 ## Related Examples
 
 **Prerequisites** (Learn these first):
-- [Sample 01](../01-basic-receipt-processing) - Basic execution
-- [Sample 02](../02-receipt-with-categorization) - Multi-step workflows
+- [Example 01](../01-basic-receipt-processing) - Basic execution
+- [Example 02](../02-receipt-with-categorization) - Multi-step workflows
 
 **Individual Features** (Deep dive into each):
-- [Sample 04](../04-vector-search-discovery) - Discovery & search
-- [Sample 06](../06-monitoring-observability) - Monitoring
-- [Sample 07](../07-caching-optimization) - Caching
-- [Sample 08](../08-hybrid-model-routing) - Hybrid models
-- [Sample 11](../11-programmatic-executor) - Batch processing
+- [Example 04](../04-vector-search-discovery) - Discovery & search
+- [Example 06](../06-monitoring-observability) - Monitoring
+- [Example 07](../07-caching-optimization) - Caching
+- [Example 08](../08-hybrid-model-routing) - Hybrid models
+- [Example 11](../11-programmatic-executor) - Batch processing
 
 ## Learn More
 

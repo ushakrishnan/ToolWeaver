@@ -1,8 +1,4 @@
-# Sample 07: Caching and Optimization
-
-> Status: PyPI package refresh is in progress. This sample may lag behind the latest source; for the most up-to-date code paths, use [examples/](../../examples/). Samples will be regenerated after the refresh.
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
+# Example 07: Caching and Optimization
 
 **Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
 **Feature Demonstrated:** Multi-layer caching with Redis for cost and performance optimization
@@ -45,13 +41,7 @@ Implements distributed Redis caching across multiple layers (discovery, search, 
 ```bash
 cp .env.example .env
 # Add your API keys
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 # Optional: Start Redis locally or use cloud Redis
-
-> **Note:** This sample uses ToolWeaver from PyPI. Install with: `pip install -r requirements.txt`
-
 docker run -d -p 6379:6379 redis
 python caching_demo.py
 ```

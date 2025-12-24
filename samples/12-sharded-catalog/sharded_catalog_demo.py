@@ -2,13 +2,79 @@
 import asyncio
 import time
 from pathlib import Path
-import sys
+from dataclasses import dataclass
+from typing import List, Dict
 
-from orchestrator.sharded_catalog import ShardedCatalog
-from orchestrator.shared.models import Tool, ToolCatalog
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent / ".env")
+
+# Simple Tool dataclass for demo
+@dataclass
+class Tool:
+    """Simple tool representation"""
+    name: str
+    description: str
+    type: str = "function"
+
+@dataclass
+class ToolCatalog:
+    """Simple catalog of tools"""
+    tools: List[Tool]
+
+class ShardedCatalog:
+    """
+    Catalog that shards tools for efficient searching.
+    
+    Instead of searching all 1000+ tools, split into shards and search only relevant ones.
+    This reduces tokens, cost, and latency while maintaining relevance.
+    """
+    def __init__(self, shard_size: int = 50):
+        self.shard_size = shard_size
+        self.shards: List[List[Tool]] = []
+        self.shard_metadata: List[Dict[str, str]] = []
+    
+    async def build_from_catalog(self, catalog: ToolCatalog) -> None:
+        """Split catalog into shards"""
+        tools = catalog.tools
+        
+        # Create shards
+        for i in range(0, len(tools), self.shard_size):
+            shard = tools[i:i + self.shard_size]
+            self.shards.append(shard)
+            
+            # Store metadata about shard
+            categories = set()
+            for tool in shard:
+                # Extract category from tool name (e.g., "image_tool_5" -> "image")
+                category = tool.name.split("_")[0]
+                categories.add(category)
+            
+            self.shard_metadata.append({
+                "categories": ",".join(sorted(categories)),
+                "tool_count": len(shard)
+            })
+    
+    async def search_shards(self, query: str, limit: int = 2) -> List[Tool]:
+        """
+        Search only relevant shards (those matching query).
+        Returns tools from up to 'limit' shards.
+        """
+        matching_shards = []
+        
+        # Find shards with matching categories
+        for i, metadata in enumerate(self.shard_metadata):
+            if query.lower() in metadata["categories"].lower():
+                matching_shards.append(i)
+                if len(matching_shards) >= limit:
+                    break
+        
+        # Collect tools from matching shards
+        results = []
+        for shard_idx in matching_shards:
+            results.extend(self.shards[shard_idx])
+        
+        return results
 
 def create_large_catalog(n_tools: int) -> ToolCatalog:
     """Create a large tool catalog for testing"""
@@ -34,7 +100,7 @@ async def main():
     # Create large catalog
     print("\nCreating large catalog...")
     catalog_1000 = create_large_catalog(1000)
-    print(f"✓ Created catalog with {len(catalog_1000.tools)} tools")
+    print(f"[OK] Created catalog with {len(catalog_1000.tools)} tools")
     
     # Scenario 1: Naive search (no sharding)
     print("\n" + "-"*70)
@@ -126,10 +192,10 @@ async def main():
         (5000, 100, "60ms", "$0.001"),
         (10000, 200, "75ms", "$0.002"),
     ]
-    for tools, shards, time, cost in scales:
-        print(f"{tools:<10} {shards:<10} {time:<15} {cost:<15}")
+    for tools, shards, search_time, cost in scales:
+        print(f"{tools:<10} {shards:<10} {search_time:<15} {cost:<15}")
     
-    print("\n✓ Example completed!")
+    print("\n[OK] Example completed!")
     print("\nKey Insights:")
     print("  - Sharding enables sub-linear scaling")
     print("  - Search 10% of tools, get 90% of relevant results")
