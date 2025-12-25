@@ -1,6 +1,7 @@
 site_name: ToolWeaver
 site_description: Tool orchestration, parallel agents, caching, and sandboxed execution.
 site_url: https://ushakrishnan.github.io/ToolWeaver/
+use_directory_urls: true
 
 repo_url: https://github.com/ushakrishnan/ToolWeaver
 repo_name: ToolWeaver
