@@ -35,8 +35,7 @@ extra_css:
 
 nav:
 
-  - Home:
-    - index.md
+  - Home: index.md
 
   - Get Started:
     - get-started/index.md
