@@ -18,7 +18,10 @@ theme:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.sections
+    - navigation.expand
     - navigation.top
+    - navigation.instant
+    - toc.integrate
     - search.suggest
     - search.highlight
     - content.tabs.link
