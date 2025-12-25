@@ -11,10 +11,10 @@ edit_uri: edit/main/docs/
 theme:
   name: material
   features:
+    - navigation.tabs            # top-level tabs
     - navigation.sections        # section headers
     - navigation.indexes         # REQUIRED: arrows + collapse
     - navigation.expand          # expand active section
-    - navigation.prune           # hide unrelated sections
     - navigation.instant
     - navigation.top
     - search.suggest
