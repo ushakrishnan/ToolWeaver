@@ -1,0 +1,29 @@
+{
+  "tools": [
+    {
+      "name": "fetch_data",
+      "description": "Retrieve raw content from a URL",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "url": {"type": "string"}
+        },
+        "required": ["url"]
+      },
+      "endpoint": "mcp://local/fetch"
+    },
+    {
+      "name": "store_data",
+      "description": "Store a JSON document to local storage",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "collection": {"type": "string"},
+          "document": {"type": "object"}
+        },
+        "required": ["collection", "document"]
+      },
+      "endpoint": "mcp://local/store"
+    }
+  ]
+}
