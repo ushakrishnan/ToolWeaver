@@ -14,7 +14,7 @@ Complete showcase of ToolWeaver capabilities through real-world scenarios using 
 | Feature | **examples/** (Here) | **[samples/](../samples/)** |
 |---------|---------------------|---------------------------|
 | **For** | Contributors & Developers | End Users |
-| **Requires** | `git clone` + `pip install -e .` | `pip install toolweaver==0.5.0` |
+| **Requires** | `git clone` + `pip install -e .` | `pip install toolweaver` |
 | **Imports** | From local source | From installed package |
 | **Modify** | Yes - edit source directly | No - use as reference |
 | **Use When** | Contributing to ToolWeaver | Building with ToolWeaver |
@@ -26,10 +26,10 @@ Complete showcase of ToolWeaver capabilities through real-world scenarios using 
 ### Setup
 
 ```bash
-# Clone and install the published package (pinned to the deployed release)
+# Clone and install the published package
 git clone https://github.com/ushakrishnan/ToolWeaver.git
 cd ToolWeaver
-pip install toolweaver==0.5.0
+pip install toolweaver
 
 # Navigate to a sample
 cd samples/01-basic-receipt-processing
@@ -348,10 +348,10 @@ See [EXAMPLES_TESTING_REPORT.md](../docs/internal/EXAMPLES_TESTING_REPORT.md) fo
 All samples require:
 - Python 3.10+
 - Virtual environment activated
-- Core dependencies: `pip install toolweaver==0.5.0`
+- Core dependencies: `pip install toolweaver`
 - Environment variables configured (see each example's `.env.example`)
 
-Optional dependencies for advanced features (if available for this version):
-- WandB, Redis, Qdrant: `pip install "toolweaver[all]==0.5.0"`
+Optional dependencies for advanced features:
+- WandB, Redis, Qdrant: `pip install "toolweaver[all]"`
 
 See main [requirements.txt](../requirements.txt) for complete dependencies.

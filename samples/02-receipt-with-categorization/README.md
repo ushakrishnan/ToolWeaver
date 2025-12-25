@@ -28,7 +28,7 @@ Demonstrates building complex workflows by chaining multiple tools:
 
 1. **Install ToolWeaver (from PyPI):**
 ```bash
-pip install toolweaver==0.5.0
+pip install toolweaver
 ```
 
 2. **(Optional) For real OCR:**

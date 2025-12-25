@@ -25,9 +25,9 @@ Demonstrates the simplest way to register and use a tool with ToolWeaver. This e
 
 ## Setup
 
-1. Install ToolWeaver from PyPI (pinned to the deployed version):
+1. Install ToolWeaver from PyPI:
 ```bash
-pip install toolweaver==0.5.0
+pip install toolweaver
 ```
 
 2. (Optional) For real Azure Computer Vision:

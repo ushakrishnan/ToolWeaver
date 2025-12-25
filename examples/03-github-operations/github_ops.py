@@ -187,7 +187,7 @@ async def main():
     
     # Step 5: Tool discovery
     print("Step 5: Discovering all GitHub tools...")
-    github_tools = search_tools(domain="github")
+    github_tools = search_tools(query="", domain="github")
     print(f"   Found {len(github_tools)} GitHub tools:")
     for tool in github_tools:
         print(f"      • {tool.name:30} - {tool.description}")

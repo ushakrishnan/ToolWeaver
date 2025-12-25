@@ -35,6 +35,7 @@ def sample_catalog():
         parameters=[
             ToolParameter(name="image_url", type="string", description="Receipt image URL", required=True)
         ],
+        domain="finance",
         source="test"
     ))
     
@@ -45,6 +46,7 @@ def sample_catalog():
         parameters=[
             ToolParameter(name="text", type="string", description="OCR text", required=True)
         ],
+        domain="finance",
         source="test"
     ))
     
@@ -57,6 +59,7 @@ def sample_catalog():
             ToolParameter(name="channel", type="string", description="Channel name", required=True),
             ToolParameter(name="message", type="string", description="Message text", required=True)
         ],
+        domain="comms",
         source="test"
     ))
     
@@ -69,6 +72,7 @@ def sample_catalog():
             ToolParameter(name="subject", type="string", description="Email subject", required=True),
             ToolParameter(name="body", type="string", description="Email body", required=True)
         ],
+        domain="comms",
         source="test"
     ))
     
@@ -80,6 +84,7 @@ def sample_catalog():
         parameters=[
             ToolParameter(name="sql", type="string", description="SQL query", required=True)
         ],
+        domain="data",
         source="test"
     ))
     
@@ -90,6 +95,7 @@ def sample_catalog():
         parameters=[
             ToolParameter(name="path", type="string", description="File path", required=True)
         ],
+        domain="data",
         source="test"
     ))
     
@@ -435,6 +441,28 @@ class TestConvenienceFunction:
         assert isinstance(tools, list)
         assert all(isinstance(t, ToolDefinition) for t in tools)
         assert len(tools) <= 3
+
+    def test_search_tools_filters_by_domain(self, sample_catalog, temp_cache_dir):
+        """Domain filter should return only matching tools and cache separately"""
+        finance_tools = search_tools(
+            "",
+            sample_catalog,
+            top_k=10,
+            domain="finance",
+            cache_dir=temp_cache_dir,
+        )
+
+        assert {t.name for t in finance_tools} == {"receipt_ocr", "line_item_parser"}
+
+        comms_tools = search_tools(
+            "",
+            sample_catalog,
+            top_k=10,
+            domain="comms",
+            cache_dir=temp_cache_dir,
+        )
+
+        assert {t.name for t in comms_tools} == {"slack_send_message", "email_send"}
 
 
 class TestExplainResults:

@@ -72,7 +72,7 @@ Discovery Cache ← Tool Catalog ← MCP/Functions/Code
 
 - Python 3.10+
 - Azure OpenAI or OpenAI API access
-- ToolWeaver installed (`pip install toolweaver==0.5.0`)
+- ToolWeaver installed (`pip install toolweaver`)
 
 ## Setup
 

@@ -120,7 +120,7 @@ async def demo_domain_search():
     # Search by domain
     domains = ["finance", "data", "communication", "web", "receipts"]
     for domain in domains:
-        results = search_tools(domain=domain)
+        results = search_tools(query="", domain=domain)
         print(f"{domain.upper()}: {len(results)} tool(s)")
     print()
 
@@ -178,7 +178,7 @@ async def demo_compare_strategies():
     
     # Strategy 2: Domain filter
     print("Strategy 2: Domain Filter (communication)")
-    domain_results = search_tools(domain="communication")
+    domain_results = search_tools(query="", domain="communication")
     print(f"   Results: {len(domain_results)} tools")
     for tool in domain_results:
         print(f"   • {tool.name}")

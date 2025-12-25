@@ -1,0 +1,136 @@
+site_name: ToolWeaver
+site_description: Tool orchestration, parallel agents, caching, and sandboxed execution.
+site_url: https://ushakrishnan.github.io/ToolWeaver/
+
+repo_url: https://github.com/ushakrishnan/ToolWeaver
+repo_name: ToolWeaver
+
+docs_dir: docs
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.sections        # section headers
+    - navigation.indexes         # REQUIRED: arrows + collapse
+    - navigation.expand          # expand active section
+    - navigation.prune           # hide unrelated sections
+    - navigation.instant
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - tables
+  - toc:
+      permalink: true
+
+extra_css:
+  - assets/styles/typography.css
+
+nav:
+
+  - Home:
+    - index.md
+
+  - Get Started:
+    - get-started/index.md
+    - Quickstart: get-started/quickstart.md
+    - Installation: get-started/installation.md
+
+  - Tutorials:
+    - tutorials/index.md
+    - Sandbox Execution: tutorials/sandbox-execution.md
+    - Caching Deep Dive: tutorials/caching-deep-dive.md
+    - Parallel Agents: tutorials/parallel-agents.md
+
+  - How-to Guides:
+    - how-to/index.md
+    - Add a Tool: how-to/add-a-tool.md
+    - Run Parallel Dispatch: how-to/parallel-dispatch.md
+    - Use Caching: how-to/caching.md
+
+  - Product:
+    - product/index.md
+    - Overview: product/overview.md
+    - Project Overview: product/project-overview.md
+    - Why ToolWeaver: product/why-toolweaver.md
+    - Use Cases: product/use-cases.md
+    - How It Works: product/how-it-works.md
+    - Security & Safety: product/security.md
+    - Performance & Cost: product/performance.md
+    - Comparison & Fit: product/comparison.md
+    - FAQ: product/faq.md
+
+  - Concepts:
+    - concepts/index.md
+    - Overview: concepts/overview.md
+
+  - Reference:
+    - reference/index.md
+    - Public API: reference/api.md
+    - Python API:
+      - reference/api-python/index.md
+      - Exports Index: reference/api-python/exports/index.md
+      - Decorators: reference/api-python/decorators.md
+      - Templates: reference/api-python/templates.md
+      - YAML Loaders: reference/api-python/yaml-loaders.md
+      - Skill Bridge: reference/api-python/skill-bridge.md
+      - Discovery: reference/api-python/discovery.md
+      - Plugins: reference/api-python/plugins.md
+      - Configuration: reference/api-python/configuration.md
+      - Logging: reference/api-python/logging.md
+      - A2A Client: reference/api-python/a2a-client.md
+      - Version & Security: reference/api-python/version-security.md
+    - CLI:
+      - reference/cli.md
+    - Deep Dives:
+      - reference/deep-dives/index.md
+      - Two-Model Architecture: reference/deep-dives/two-model-architecture.md
+      - Workflow Architecture: reference/deep-dives/workflow-architecture.md
+      - Registry Discovery: reference/deep-dives/registry-discovery.md
+      - Search Tuning: reference/deep-dives/search-tuning.md
+      - Prompt Caching: reference/deep-dives/prompt-caching.md
+      - Analytics Guide: reference/deep-dives/analytics-guide.md
+      - Skill Library: reference/deep-dives/skill-library.md
+      - Small Model Improvements: reference/deep-dives/small-model-improvements.md
+      - Hybrid Model Routing: reference/deep-dives/hybrid-model-routing.md
+      - Control Flow Patterns: reference/deep-dives/control-flow-patterns.md
+      - Agent Delegation: reference/deep-dives/agent-delegation.md
+      - Multi-Agent Coordination: reference/deep-dives/multi-agent-coordination.md
+      - Error Recovery: reference/deep-dives/error-recovery.md
+      - Migration Guide: reference/deep-dives/migration-guide.md
+      - Skills Packaging: reference/deep-dives/skills-packaging.md
+      - Plugin Extension: reference/deep-dives/plugin-extension.md
+      - Idempotency & Retry: reference/deep-dives/idempotency-retry.md
+      - REST API Usage: reference/deep-dives/rest-api-usage.md
+    - REST API:
+      - reference/api-rest/index.md
+      - Overview: reference/api-rest/overview.md
+      - List Tools: reference/api-rest/list-tools.md
+      - Get Tool: reference/api-rest/get-tool.md
+      - Execute Tool: reference/api-rest/execute-tool.md
+      - MCP Adapter: reference/api-rest/mcp-adapter.md
+
+  - Deployment:
+    - deployment/index.md
+    - Production: deployment/production-deployment.md
+    - Azure Setup: deployment/azure-setup.md
+    - Redis Setup: deployment/redis-setup.md
+    - Qdrant Setup: deployment/qdrant-setup.md
+    - SQLite + Grafana: deployment/sqlite-grafana-setup.md
+
+  - Samples:
+    - samples/index.md
+    - Testing: samples/testing.md
+
+  - Developer Guide:
+    - developer-guide/index.md
+    - Publishing: developer-guide/publishing.md

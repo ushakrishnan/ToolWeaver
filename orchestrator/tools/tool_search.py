@@ -100,7 +100,10 @@ class ToolSearchEngine:
         query: str,
         catalog: ToolCatalog,
         top_k: int = 5,
-        min_score: float = 0.3
+        min_score: float = 0.3,
+        *,
+        domain: Optional[str] = None,
+        type_filter: Optional[str] = None,
     ) -> List[Tuple[ToolDefinition, float]]:
         """
         Search for relevant tools using hybrid approach.
@@ -123,19 +126,23 @@ class ToolSearchEngine:
             for tool, score in results:
                 print(f"{tool.name}: {score:.2f}")
         """
-        tools = list(catalog.tools.values())
+        tools = [
+            t for t in catalog.tools.values()
+            if (domain is None or t.domain == domain)
+            and (type_filter is None or t.type == type_filter)
+        ]
         
         if len(tools) == 0:
-            logger.warning("Empty tool catalog - no tools to search")
+            logger.warning("No tools available after filtering")
             return []
         
         # Smart routing: Skip search if tool count is small
         if len(tools) <= 20:
-            logger.info(f"Tool count ({len(tools)}) ≤ 20, returning all tools")
+            logger.info(f"Tool count ({len(tools)}) ≤ 20, returning filtered tools")
             return [(tool, 1.0) for tool in tools[:top_k]]
         
         # Check cache for this query + tool catalog hash
-        cache_key = self._get_cache_key(query, catalog)
+        cache_key = self._get_cache_key(query, catalog, domain=domain, type_filter=type_filter)
         cached_results = self._load_from_cache(cache_key)
         if cached_results:
             logger.info(f"Cache hit for query: '{query[:50]}...'")
@@ -264,15 +271,23 @@ class ToolSearchEngine:
         
         return embedding
     
-    def _get_cache_key(self, query: str, catalog: ToolCatalog) -> str:
-        """Generate cache key from query and catalog"""
+    def _get_cache_key(
+        self,
+        query: str,
+        catalog: ToolCatalog,
+        *,
+        domain: Optional[str] = None,
+        type_filter: Optional[str] = None,
+    ) -> str:
+        """Generate cache key from query, catalog, and filters"""
         # Hash catalog based on tool names (stable across runs)
         catalog_hash = hashlib.md5(
             str(sorted(catalog.tools.keys())).encode()
         ).hexdigest()
         
-        # Hash query
-        query_hash = hashlib.md5(query.encode()).hexdigest()
+        # Hash query + filters
+        filter_blob = f"{query}|{domain or ''}|{type_filter or ''}"
+        query_hash = hashlib.md5(filter_blob.encode()).hexdigest()
         
         return f"{query_hash}_{catalog_hash}"
     
@@ -347,6 +362,8 @@ def search_tools(
     query: str,
     catalog: ToolCatalog,
     top_k: int = 5,
+    domain: Optional[str] = None,
+    type_filter: Optional[str] = None,
     **kwargs
 ) -> List[ToolDefinition]:
     """
@@ -356,6 +373,8 @@ def search_tools(
         query: Natural language query
         catalog: Tool catalog to search
         top_k: Number of results
+        domain: Optional domain filter
+        type_filter: Optional tool type filter
         **kwargs: Additional arguments for ToolSearchEngine
     
     Returns:
@@ -367,5 +386,11 @@ def search_tools(
             print(tool.name)
     """
     engine = ToolSearchEngine(**kwargs)
-    results = engine.search(query, catalog, top_k=top_k)
+    results = engine.search(
+        query,
+        catalog,
+        top_k=top_k,
+        domain=domain,
+        type_filter=type_filter,
+    )
     return [tool for tool, score in results]

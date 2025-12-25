@@ -239,7 +239,7 @@ async def main():
     
     print("Step 5: Discover Computation Tools")
     print("-" * 70)
-    comp_tools = search_tools(domain="computation")
+    comp_tools = search_tools(query="", domain="computation")
     print(f"  Found {len(comp_tools)} computation tools:")
     for tool in comp_tools:
         print(f"    • {tool.name:30} - {tool.description}")

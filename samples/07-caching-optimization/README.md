@@ -48,6 +48,17 @@ python caching_demo.py
 
 ## Files
 
-- `caching_demo.py` - Main demonstration
+- `caching_demo.py` - Basic caching demonstration
+- `caching_deep_dive.py` - Detailed architecture walkthrough (multi-layer cache, circuit breaker, TTL strategies)
 - `.env` / `.env.example` - Configuration
 - `README.md` - This file
+
+## Run the Samples
+
+```bash
+# Basic demo (simple in-memory cache)
+python caching_demo.py
+
+# Deep dive (RedisCache + ToolCache architecture)
+python caching_deep_dive.py
+```
