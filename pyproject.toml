@@ -124,8 +124,8 @@ integration = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ushakrishnan/ToolWeaver"
-Documentation = "https://github.com/ushakrishnan/ToolWeaver/tree/main/docs"
+Homepage = "https://ushakrishnan.github.io/ToolWeaver"
+Documentation = "https://ushakrishnan.github.io/ToolWeaver"
 Repository = "https://github.com/ushakrishnan/ToolWeaver"
 Issues = "https://github.com/ushakrishnan/ToolWeaver/issues"
 Changelog = "https://github.com/ushakrishnan/ToolWeaver/releases"
