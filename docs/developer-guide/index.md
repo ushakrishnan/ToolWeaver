@@ -1,3 +1,3 @@
 # Developer Guide
 
-- [Publishing](publishing.md)
+- [Publishing](PUBLISHING.md)
