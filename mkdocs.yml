@@ -15,6 +15,7 @@ theme:
     accent: indigo
   features:
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
     - navigation.top
     - search.suggest
