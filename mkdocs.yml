@@ -48,6 +48,9 @@ nav:
     - Programmatic Execution: tutorials/programmatic-execution.md
     - Caching Deep Dive: tutorials/caching-deep-dive.md
     - Parallel Agents: tutorials/parallel-agents.md
+    - Cost Optimization: tutorials/cost-optimization.md
+    - Error Recovery: tutorials/error-recovery.md
+    - Agent Delegation: tutorials/agent-delegation.md
 
   - How-to Guides:
     - how-to/index.md
@@ -55,6 +58,9 @@ nav:
     - Orchestrate with Code: how-to/orchestrate-with-code.md
     - Run Parallel Dispatch: how-to/parallel-dispatch.md
     - Use Caching: how-to/caching.md
+    - Optimize Tool Costs: how-to/optimize-tool-costs.md
+    - Implement Retry Logic: how-to/implement-retry-logic.md
+    - Configure A2A Agents: how-to/configure-a2a-agents.md
 
   - Product:
     - product/index.md
