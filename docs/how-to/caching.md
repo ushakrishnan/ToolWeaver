@@ -18,20 +18,27 @@ print(search_tools(query="", domain="finance"))
 
 ## Idempotency for agent runs
 ```python
+import asyncio
 from orchestrator.tools.sub_agent import dispatch_agents
 from orchestrator.tools.sub_agent_limits import DispatchResourceLimits
 
-limits = DispatchResourceLimits(max_concurrent=5, max_total_cost_usd=10.0)
 
-result = await dispatch_agents(
-    template="do {{task}}",
-    arguments=[{"task": "item_1"}, {"task": "item_2"}],
-    agent_name="worker",
-    model="haiku",
-    limits=limits,
-    aggregate_fn=lambda results: [r.output for r in results],
-)
-# Second call with same arguments reuses cached result
+async def main():
+    limits = DispatchResourceLimits(max_concurrent=5, max_total_cost_usd=10.0)
+
+    result = await dispatch_agents(
+        template="do {{task}}",
+        arguments=[{"task": "item_1"}, {"task": "item_2"}],
+        agent_name="worker",
+        model="haiku",
+        limits=limits,
+        aggregate_fn=lambda results: [r.output for r in results],
+    )
+    # Second call with same arguments reuses cached result
+    print("Result:", result)
+
+
+asyncio.run(main())
 ```
 
 See deep dive: [samples/07-caching-optimization/caching_deep_dive.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/07-caching-optimization/caching_deep_dive.py)
