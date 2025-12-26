@@ -752,5 +752,6 @@ print(f"Auth config: {agent.auth}")
 ## Related Guides
 
 - [Implement Retry Logic](implement-retry-logic.md) - Handle agent failures
+- [Monitor Performance](monitor-performance.md) - Track agent metrics
 - [Optimize Tool Costs](optimize-tool-costs.md) - Minimize delegation costs
 

@@ -672,6 +672,7 @@ result = await retry_with_policy(func, policy)
 
 ## Related Guides
 
+- [Monitor Performance](monitor-performance.md) - Track retry metrics
 - [Optimize Tool Costs](optimize-tool-costs.md) - Don't waste money on retries
 - [Configure A2A Agents](configure-a2a-agents.md) - Handle agent failures
 

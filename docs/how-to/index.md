@@ -9,3 +9,4 @@ Task-focused instructions:
 - [Optimize Tool Costs](optimize-tool-costs.md)
 - [Implement Retry Logic](implement-retry-logic.md)
 - [Configure A2A Agents](configure-a2a-agents.md)
+- [Monitor Performance](monitor-performance.md)

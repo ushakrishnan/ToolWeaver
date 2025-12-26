@@ -61,6 +61,7 @@ nav:
     - Optimize Tool Costs: how-to/optimize-tool-costs.md
     - Implement Retry Logic: how-to/implement-retry-logic.md
     - Configure A2A Agents: how-to/configure-a2a-agents.md
+    - Monitor Performance: how-to/monitor-performance.md
 
   - Product:
     - product/index.md
