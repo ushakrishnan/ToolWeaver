@@ -667,12 +667,11 @@ result = await retry_with_policy(func, policy)
 ## Next Steps
 
 - **Tutorial:** [Error Recovery](../tutorials/error-recovery.md) - Learn core concepts
-- **Deep Dive:** [Idempotency & Retry](../reference/deep-dives/idempotency-retry.md) - Advanced patterns
+- **Deep Dive:** [Error Recovery](../reference/deep-dives/error-recovery.md) - Advanced patterns
 - **Sample:** [21-error-recovery](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/21-error-recovery) - Complete example
 
 ## Related Guides
 
-- [Implement Circuit Breakers](implement-circuit-breakers.md) - Advanced circuit breaker patterns
-- [Monitor Performance](monitor-performance.md) - Track retry metrics
 - [Optimize Tool Costs](optimize-tool-costs.md) - Don't waste money on retries
+- [Configure A2A Agents](configure-a2a-agents.md) - Handle agent failures
 

@@ -15,7 +15,7 @@ By the end of this tutorial, you'll understand:
 ## Prerequisites
 
 - Basic understanding of [ToolWeaver orchestration](../get-started/quickstart.md)
-- Familiarity with [agent architecture](../concepts/agents.md)
+- Familiarity with [ToolWeaver concepts](../concepts/overview.md)
 
 ## The Delegation Decision
 
@@ -576,12 +576,12 @@ Is the task stateful (requires memory)?
 ## Next Steps
 
 - **How-To Guide:** [Configure A2A Agents](../how-to/configure-a2a-agents.md) - Step-by-step setup
-- **Deep Dive:** [A2A Protocol](../reference/deep-dives/a2a-protocol.md) - Technical specification
+- **Deep Dive:** [Agent Delegation](../reference/deep-dives/agent-delegation.md) - Technical specification
 - **Sample:** [16-agent-delegation](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/16-agent-delegation) - Working examples
 
 ## Related Topics
 
-- [Multi-Agent Coordination](multi-agent-coordination.md) - Orchestrating multiple agents
+- [Multi-Agent Coordination](../reference/deep-dives/multi-agent-coordination.md) - Orchestrating multiple agents
 - [Cost Optimization](cost-optimization.md) - Minimize agent delegation costs
 - [Error Recovery](error-recovery.md) - Handle agent failures gracefully
 

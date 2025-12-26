@@ -528,6 +528,6 @@ print(f"Retry rate: {metrics.retry_rate():.1f}%")
 ## Related Topics
 
 - [Cost Optimization](cost-optimization.md) - Don't waste money on retries
-- [Idempotency & Retry](../reference/deep-dives/idempotency-retry.md) - Prevent duplicate operations
+- [Error Recovery Deep Dive](../reference/deep-dives/error-recovery.md) - Advanced patterns
 - [Parallel Agents](parallel-agents.md) - Circuit breakers for parallel dispatch
 

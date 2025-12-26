@@ -592,7 +592,7 @@ if self.spent > self.budget_limit * 0.8:
 
 ## Related Guides
 
-- [Implement Caching](implement-caching.md) - Cache setup details
-- [Monitor Performance](monitor-performance.md) - Track metrics
-- [Configure Selection](configure-selection.md) - Advanced selection tuning
+- [Use Caching](caching.md) - Cache setup details
+- [Implement Retry Logic](implement-retry-logic.md) - Avoid wasted retries
+- [Configure A2A Agents](configure-a2a-agents.md) - Minimize delegation costs
 

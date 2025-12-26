@@ -746,12 +746,11 @@ print(f"Auth config: {agent.auth}")
 ## Next Steps
 
 - **Tutorial:** [Agent Delegation](../tutorials/agent-delegation.md) - Learn delegation patterns
-- **Deep Dive:** [A2A Protocol](../reference/deep-dives/a2a-protocol.md) - Technical specification
+- **Deep Dive:** [Agent Delegation](../reference/deep-dives/agent-delegation.md) - Technical details
 - **Sample:** [16-agent-delegation](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/16-agent-delegation) - Working example
 
 ## Related Guides
 
 - [Implement Retry Logic](implement-retry-logic.md) - Handle agent failures
-- [Monitor Performance](monitor-performance.md) - Track agent metrics
 - [Optimize Tool Costs](optimize-tool-costs.md) - Minimize delegation costs
 
