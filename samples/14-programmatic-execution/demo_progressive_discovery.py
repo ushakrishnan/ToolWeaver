@@ -16,7 +16,7 @@ TRADITIONAL APPROACH (with parallel function calling):
     → LLM now has: 20 members + 100 records in context
   
   LLM Round 3: "Analyze expenses and find who exceeded budget"
-    → LLM processes 100 records manually
+    → LLM analyzes all 100 records in context
     → Finds 5 people over budget
     → Returns result
   
@@ -164,7 +164,7 @@ async def demo_traditional_approach():
     
     # Round 3: LLM analyzes and returns result
     print(f"\n📞 LLM Round 3: 'Analyze and find who exceeded $10K budget'")
-    print(f"   LLM processes {len(all_expenses) * 5} records to find overages")
+    print(f"   LLM analyzes {len(all_expenses) * 5} records in context to find overages")
     
     exceeded = []
     for member, expenses in all_expenses:
@@ -188,7 +188,7 @@ async def demo_traditional_approach():
     print(f"  Elapsed time: ~2 seconds (1 round per second)")
     print(f"  Estimated cost: $0.03")
     print(f"  Data LLM must process: {len(all_expenses) * 5} records (~100KB)")
-    print(f"  ⚠️  LLM reasoning overhead: High (analyzes 100 records manually)")
+    print(f"  ⚠️  LLM reasoning overhead: High (100KB data in context window)")
     
     return {
         "api_calls": 3,
@@ -302,15 +302,15 @@ print(json.dumps(result))
     result_json = json.dumps(result)
     
     print(f"   ✓ Filter & aggregate: {len(exceeded)} exceeded budget")
-    print(f"   ✓ Return result: {len(result_json) // 1024}KB (not 200KB)")
+    print(f"   ✓ Return result: {len(result_json) // 1024}KB (not 100KB)")
     
     print(f"\n📈 PROGRAMMATIC APPROACH SUMMARY:")
     print(f"  Total LLM API calls: 1")
-    print(f"  Total context tokens: ~300 (code gener in sandbox)")
+    print(f"  Total context tokens: ~300 (code generation + result only)")
+    print(f"  Elapsed time: {elapsed:.3f}s (parallel in sandbox)")
     print(f"  Estimated cost: $0.01")
     print(f"  Data returned to LLM: {len(result_json) // 1024}KB")
-    print(f"  ✅ LLM reasoning overhead: ZERO (code handles logic)
-    print(f"  Data returned to LLM: {len(result_json) // 1024}KB")
+    print(f"  ✅ LLM reasoning overhead: ZERO (code handles logic)")
     
     executor.cleanup()
     
@@ -342,7 +342,8 @@ async def demo_comparison():
     print(f"{'-'*75}")
     
     # API calls
-    improvemenLLM API Calls':<25} {traditional['api_calls']:<20} {programmatic['api_calls']:<20} {improvement:.0f}%")
+    improvement = (1 - programmatic["api_calls"] / traditional["api_calls"]) * 100
+    print(f"{'LLM API Calls':<25} {traditional['api_calls']:<20} {programmatic['api_calls']:<20} {improvement:.0f}%")
     
     # Context tokens
     improvement = (1 - programmatic["context_tokens"] / traditional["context_tokens"]) * 100
@@ -358,35 +359,36 @@ async def demo_comparison():
     
     # Data sent back to LLM
     trad_data = 100  # 100 expense records
-    ] + [{"amount": 100} for _ in range(100)])) // 1024  # Rough estimate
     prog_data = len(json.dumps(programmatic["result"])) // 1024
     
     improvement = (1 - prog_data / trad_data) * 100
     print(f"{'Data to LLM (KB)':<25} {trad_data:<20} {prog_data:<20} {improvement:.0f}%")
     
-    print(f"\n✨ Key Insight:")
-    print(f"   Programmatic execution excels at ORCHESTRATION")
-    print(f"   • Single LLMs:")
-    print(f"   1. CONTEXT EFFICIENCY")
-    print(f"      - Traditional: LLM sees 100KB of expense data, must analyze manually")
+    print(f"\n✨ Key Insights:")
+    print(f"\n   1. CONTEXT EFFICIENCY")
+    print(f"      - Traditional: LLM sees 100KB of expense data in context")
     print(f"      - Programmatic: Only 2KB summary returned to LLM")
     print(f"\n   2. REASONING EFFICIENCY")
-    print(f"      - Traditional: LLM spends tokens reasoning about 100 records")
+    print(f"      - Traditional: LLM spends tokens analyzing 100 records")
     print(f"      - Programmatic: Code handles logic, LLM only generates orchestration")
     print(f"\n   3. SCALABILITY")
-    print(f"      - Traditional: Processing 1000 items = 100KB+ context (doesn't scale)")
-    print(f"      - Programmatic: Processing 1000 items = same 2KB summary code
+    print(f"      - Traditional: Processing 1000 items = 1000KB+ context (doesn't scale)")
+    print(f"      - Programmatic: Processing 1000 items = same 2KB summary code")
+
+
 async def main():
     """Run all demos"""
     print("\n🎯 Programmatic Execution Demo")
-    print("   The Real Value: Orchestration, Not Context Reduction\n")
+    print("   The Real Value: Context Efficiency + Code Orchestration\n")
     
     # Main comparison demo
     await demo_comparison()
     
     print("\n" + "="*70)
     print("✨ Demo Complete!")
-    print("="*70) about CONTEXT EFFICIENCY + CODE ORCHESTRATION")
+    print("="*70)
+    print(f"\nKey Takeaway:")
+    print(f"  Programmatic execution is about CONTEXT EFFICIENCY + CODE ORCHESTRATION")
     print(f"  • LLM generates code once (not multi-round reasoning)")
     print(f"  • Code orchestrates parallel operations")
     print(f"  • Results aggregated locally (not sent to LLM)")
@@ -400,9 +402,7 @@ async def main():
     print(f"  • 67% fewer LLM API calls (1 vs 3)")
     print(f"  • 97% less context per call (2KB vs 100KB)")
     print(f"  • 66% cost reduction ($0.01 vs $0.03)")
-    print(f"  • Scales linearly (1000 items = same cost as 100)
-    print(f"  • 99% less data to LLM (2KB vs 200KB)")
-    print(f"  • Scales to 1000s of items effortlessly")
+    print(f"  • Scales linearly (1000 items = same cost as 100)")
 
 
 if __name__ == "__main__":
