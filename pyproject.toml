@@ -1,6 +1,6 @@
 [project]
 name = "toolweaver"
-version = "0.8.0"
+version = "0.8.1"
 description = "Production-ready AI tool orchestration with dynamic discovery, semantic search, and workflow composition"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -139,7 +139,11 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["orchestrator"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["orchestrator*"]
 
 [tool.setuptools.package-data]
 orchestrator = ["py.typed"]
