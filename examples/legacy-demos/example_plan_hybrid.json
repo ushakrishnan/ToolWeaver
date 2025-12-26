@@ -1,0 +1,104 @@
+{
+  "request_id": "req-hybrid-001",
+  "steps": [
+    {
+      "id": "step-1",
+      "tool": "receipt_ocr",
+      "input": {
+        "image_uri": "https://images.sampletemplates.com/wp-content/uploads/2018/04/Detailed-Grocery-Payment-Receipt-Samples.jpg"
+      },
+      "depends_on": [],
+      "mode": "parallel",
+      "idempotency_key": "ocr-hybrid-001"
+    },
+    {
+      "id": "step-2",
+      "tool": "line_item_parser",
+      "input": {
+        "ocr_text": "step:step-1"
+      },
+      "depends_on": [
+        "step-1"
+      ],
+      "mode": "sequential",
+      "timeout_s": 120,
+      "idempotency_key": "parse-hybrid-001"
+    },
+    {
+      "id": "step-bridge",
+      "tool": "code_exec",
+      "input": {
+        "code": "items = input['step_2']['items']; output = {'item_count': len(items), 'descriptions': [i['description'] for i in items]}",
+        "input_data": {
+          "step_2": "step:step-2"
+        }
+      },
+      "depends_on": [
+        "step-2"
+      ],
+      "mode": "sequential"
+    },
+    {
+      "id": "step-3",
+      "tool": "expense_categorizer",
+      "input": {
+        "items": "step:step-2"
+      },
+      "depends_on": [
+        "step-2"
+      ],
+      "mode": "parallel",
+      "idempotency_key": "cat-hybrid-001"
+    },
+    {
+      "id": "step-merge",
+      "tool": "function_call",
+      "input": {
+        "name": "merge_items",
+        "args": {
+          "items": "step:step-2"
+        }
+      },
+      "depends_on": [
+        "step-2"
+      ],
+      "mode": "sequential"
+    },
+    {
+      "id": "step-tax",
+      "tool": "function_call",
+      "input": {
+        "name": "compute_tax",
+        "args": {
+          "amount": 8.50,
+          "tax_rate": 0.08
+        }
+      },
+      "depends_on": [
+        "step-merge"
+      ],
+      "mode": "sequential"
+    },
+    {
+      "id": "step-statistics",
+      "tool": "function_call",
+      "input": {
+        "name": "compute_item_statistics",
+        "args": {
+          "items": "step:step-3"
+        }
+      },
+      "depends_on": [
+        "step-3"
+      ],
+      "mode": "sequential"
+    }
+  ],
+  "final_synthesis": {
+    "prompt_template": "# Receipt Processing Results\n\n## Summary\n\nProcessed receipt with hybrid orchestration (MCP + Function Calls + Code Exec).\n\n## Step Outputs:\n\n{{steps}}\n\n## Analysis\n\nThis demonstrates the power of hybrid tool orchestration:\n- MCP workers handled OCR and parsing (deterministic)\n- Function calls computed tax and statistics (structured APIs)\n- Code execution provided dynamic transformations (flexible logic)",
+    "meta": {
+      "expose_inputs_to_reasoner": false,
+      "hybrid_mode": true
+    }
+  }
+}
