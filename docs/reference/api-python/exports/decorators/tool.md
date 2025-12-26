@@ -6,7 +6,7 @@
 ```python
 from orchestrator import tool
 
-@tool(domain="demo")
+@tool(domain="demo", description="Echo a message")
 async def echo(message: str) -> dict:
     """Echo back the provided message.
     
