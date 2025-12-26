@@ -1,6 +1,6 @@
 # How to Orchestrate with Code
 
-Programmatic execution allows LLMs to generate code that orchestrates tools, enabling parallel execution, complex workflows, and local data aggregation.
+Programmatic execution allows LLMs to generate code that orchestrates tools, enabling parallel execution, complex workflows, and local data aggregation without the context bloat of traditional multi-round tool calling.
 
 ## Quick Start
 

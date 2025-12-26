@@ -18,16 +18,15 @@ Traditional Approach (with parallel function calling):
     → LLM must now see and reason about 100+ records
     
   Round 3: "Find who exceeded budget"
-    → LLM analyzes the 100 records manually
-    → LLM reasons: "emp_001 spent $12,000... emp_002 spent..."
+    → LLM analyzes the 100 records in its context window
     → Returns result
     
 Cost Breakdown:
   • 3 LLM API calls
-  • ~100KB context (LLM must reason about every expense record)
+  • ~100KB context (all expense data stays in LLM context)
   • ~2 seconds (3 round-trips)
   • $0.03 cost
-  • ⚠️  LLM wasted tokens analyzing raw data
+  • ⚠️  LLM wasted tokens on data analysis instead of orchestration logic
 ```
 
 The issue isn't just API calls—it's **context bloat**. The LLM receives all raw data and must reason through it, wasting tokens on manual analysis.
@@ -105,16 +104,16 @@ Programmatic: LLM generates code that does the filtering
 
 ### 2. Token Efficiency
 LLM tokens are consumed by reasoning, not just input/output.
+analyzing data, not just input/output.
 
 ```
-Traditional: LLM spends reasoning cycles on
-  "emp_001 has 5 expenses: $100, $200, $1500, ..."
-  "emp_002 has 5 expenses: $50, $600, ..."
-  → Wasted reasoning on data you already have
+Traditional: LLM must analyze
+  100 expense records in context to find overages
+  → Tokens spent on data analysis (could be done locally)
 
-Programmatic: LLM spends reasoning cycles on
-  Code generation (semantic task, not data analysis)
-  → More efficient use of token budget
+Programmatic: LLM generates code once
+  Code performs all analysis locally in sandbox
+  → LLM only generates orchestration logic (higher-value use of token
 ```
 
 ### 3. Scalability
