@@ -64,7 +64,7 @@ Or add to your PowerShell profile permanently:
 **Complexity:** ⭐⭐⭐ Advanced | **Time:** 20 minutes  
 **Demonstrates:** ALL ToolWeaver features in production-ready pipeline
 
-Complete demonstration: discovery, search, caching, monitoring, hybrid models, workflows, code execution, and batch processing. Shows 95% cost reduction and 10x speedup.
+Complete demonstration: discovery, search, caching, monitoring, hybrid models, workflows, code execution, and batch processing. Shows up to 95% cost reduction (breakdown: ~60% hybrid models, ~25% caching, ~10% search).
 
 ---
 
@@ -80,7 +80,7 @@ Simple OCR extraction from receipt images.
 **Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
 **Demonstrates:** Multi-step workflows, small model workers, cost optimization
 
-End-to-end receipt processing with categorization (98% cost savings).
+End-to-end receipt processing with categorization (up to 98% cost savings with hybrid models + local processing).
 
 #### [03-github-operations](03-github-operations/)
 **Complexity:** ⭐⭐⭐ Advanced | **Time:** 15 minutes  
@@ -94,7 +94,7 @@ GitHub operations: list files, create issues/PRs, search code.
 
 #### [04-vector-search-discovery](04-vector-search-discovery/)
 **Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
-**Demonstrates:** Tool discovery, semantic search, token reduction (66-95%)
+**Demonstrates:** Tool discovery, semantic search, token reduction (typically 66-95% depending on catalog)
 
 Automatically discover tools and use hybrid search to find relevant ones from large catalogs.
 
@@ -116,15 +116,15 @@ Production-grade observability with real-time dashboards.
 
 #### [07-caching-optimization](07-caching-optimization/)
 **Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  
-**Demonstrates:** Redis caching, multi-layer cache strategies, 90% cost savings
+**Demonstrates:** Redis caching, multi-layer cache strategies, up to 90% cost savings
 
-Distributed caching for discovery, search, and results (87% faster, 90% cheaper).
+Distributed caching for discovery, search, and results (up to 87% faster with high cache hit rates).
 
 #### [08-hybrid-model-routing](08-hybrid-model-routing/)
 **Complexity:** ⭐⭐⭐ Advanced | **Time:** 15 minutes  
-**Demonstrates:** Two-model architecture, 80-90% cost reduction, intelligent routing
+**Demonstrates:** Two-model architecture, up to 80-90% cost reduction, intelligent routing
 
-GPT-4 for planning, Phi-3 for execution (98.7% cost savings at scale).
+GPT-4 for planning, Phi-3 for execution (up to 98.7% savings with 100+ simple tasks).
 
 #### [09-code-execution](09-code-execution/)
 **Complexity:** ⭐⭐ Intermediate | **Time:** 10 minutes  

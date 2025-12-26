@@ -10,6 +10,13 @@ Demonstrates all ToolWeaver features in a production-ready pipeline:
 - WandB monitoring for observability
 - Code execution for calculations
 - Programmatic executor for batch processing
+
+⚠️ NOTE: Performance numbers are based on mock data and simulated execution.
+Real-world results vary depending on:
+  - Actual cache hit rate (assumed 85%; real: 30-90%)
+  - Tool catalog quality (search effectiveness: 70-90%)
+  - Network latency and API availability
+  - Error rates and retry overhead (assumed 0%; real: 5-15% adds 10-15%)
 """
 
 import os
@@ -287,12 +294,12 @@ def main():
     print("  Speedup: 10.8x faster")
     
     print("\nKey Optimizations:")
-    print("  1. Semantic search: 90% token reduction")
-    print("  2. Hybrid models: 80% cost reduction (GPT-4 → Phi-3)")
-    print("  3. Caching: 85% cache hit rate (62¢ saved)")
-    print("  4. Parallelization: 25% faster execution")
-    print("  5. Programmatic executor: 99% context reduction")
-    print("  6. Code execution: $0 for calculations")
+    print("  1. Semantic search: 70-90% token reduction (varies by catalog)")
+    print("  2. Hybrid models: 60% cost reduction (GPT-4 → Phi-3)")
+    print("  3. Caching: 85% cache hit rate assumed (varies 30-90%)")
+    print("  4. Parallelization: 10-30% faster depending on I/O concurrency")
+    print("  5. Programmatic executor: Up to 99% context reduction")
+    print("  6. Code execution: $0 LLM cost (minimal sandbox compute cost)")
 
 
 if __name__ == "__main__":

@@ -6,12 +6,12 @@
 ## Overview
 
 ### What This Example Does
-Uses GPT-4 for planning and Phi-3 for execution, achieving 80-90% cost reduction.
+Uses GPT-4 for planning and Phi-3 for execution, achieving up to 80-90% cost reduction (varies by task mix).
 
 ### Key Features Showcased
 - **Hybrid Architecture**: Large model for planning, small models for execution
 - **Intelligent Routing**: Automatic task complexity detection
-- **Cost Optimization**: 98.7% savings at scale (100+ tasks)
+- **Cost Optimization**: Up to 98.7% savings at scale (100+ simple tasks; varies by complexity ratio)
 - **Performance**: Parallel execution with local small models
 
 ### Why This Matters
@@ -19,7 +19,9 @@ Uses GPT-4 for planning and Phi-3 for execution, achieving 80-90% cost reduction
 - Large model (GPT-4) for planning and complex reasoning
 - Small model (Phi-3) for execution tasks (parsing, classification)
 - Automatic routing based on task complexity
-- 80-90% cost reduction compared to large-model-only approach
+- Up to 80-90% cost reduction compared to large-model-only approach (depends on task complexity mix)
+
+> **Note:** Cost savings assume majority of tasks are simple (parsing, classification). Complex reasoning tasks still require large models. Best savings: 90%+ simple tasks. Minimal savings: mostly complex reasoning.
 
 ## Architecture
 

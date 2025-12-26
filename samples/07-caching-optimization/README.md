@@ -11,8 +11,8 @@ Implements distributed Redis caching across multiple layers (discovery, search, 
 ### Key Features Showcased
 - **Redis Integration**: Distributed caching with Redis Cloud
 - **Multi-Layer Cache**: Discovery (24h), search (1h), results (5min)
-- **Performance**: 87% faster with cache hits
-- **Cost Savings**: 90% reduction through cache optimization
+- **Performance**: Up to 87% faster with cache hits (varies 30-90% by hit rate)
+- **Cost Savings**: Up to 90% reduction through cache optimization (assumes 85% hit rate)
 
 ### Why This Matters
 
@@ -33,8 +33,10 @@ Implements distributed Redis caching across multiple layers (discovery, search, 
 - Discovery cached: 24 hours
 - Search results cached: 1 hour
 - Execution results cached: 5 minutes
-- Cost: $0.05 per request (90% savings)
-- Time: 0.3s per request (87% faster)
+- Cost: $0.05 per request (90% savings with 85% cache hit rate)
+- Time: 0.3s per request (87% faster with cache hits)
+
+> **Note:** Performance numbers assume 85% cache hit rate on repeated patterns. Real-world hit rates vary 30-90% depending on query diversity and workload repetition.
 
 ## Setup
 

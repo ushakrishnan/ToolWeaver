@@ -27,13 +27,13 @@ This is what a production ToolWeaver application looks like - combining all opti
 **Task**: Process 100 receipts, categorize expenses, generate summary report
 
 **Without ToolWeaver**: 
-- Cost: $15.00 (100 × $0.15)
-- Time: 200 seconds (100 × 2s)
+- Cost: $15.00 (100 × $0.15 per receipt with GPT-4)
+- Time: 200 seconds (100 × 2s sequential processing)
 - No monitoring, no caching, manual workflows
 
 **With ToolWeaver**:
-- Cost: $0.75 (95% savings through hybrid models + caching)
-- Time: 25 seconds (87% faster through parallelization + caching)
+- Cost: $0.75 (95% savings breakdown: ~60% hybrid models, ~25% caching, ~10% search)
+- Time: 25 seconds (87% faster via parallelization + caching)
 - Full monitoring, automatic workflows, production-ready
 
 ## Architecture
@@ -45,7 +45,7 @@ Natural Language Request
     42 tools discovered
          ↓
     [Semantic Search]
-    5 relevant tools selected (90% token reduction)
+    5 relevant tools selected (typically 70-90% token reduction when tools are well-categorized)
          ↓
     [Planning - GPT-4]
     Multi-step plan generated

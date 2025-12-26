@@ -75,7 +75,7 @@ Inspired by Anthropic's MCP, extended with function registries, sandboxed execut
 - **Automatic tool discovery** - Introspects MCP servers, Python functions, and code execution capabilities
 - **Semantic tool search** - Finds relevant tools from 100+ catalog using hybrid BM25 + embedding search
 - **Workflow composition** - Chains tools automatically with dependency resolution and parallel execution
-- **Cost optimization** - 80-90% reduction through two-model architecture and multi-layer caching
+- **Cost optimization** - Up to 80-90% reduction possible through two-model architecture and multi-layer caching (varies by workload)
 - **Production-ready** - Monitoring, logging, security sandboxing, and distributed caching
 
 ### 💡 Simple Example
@@ -89,7 +89,7 @@ System automatically:
 3. Executes workflow → OCR (Azure) → filter (sandbox) → Slack (API)
 4. Monitors & logs → 275ms, 3 tools, 100% success
 
-Cost: $0.05 vs $0.45 (89% savings through caching + search + two-model architecture)
+Cost: $0.05 vs $0.45 (89% savings in this scenario—combines caching, search, and two-model architecture)
 ```
 
 ### 🏗️ Architecture
@@ -109,6 +109,14 @@ Natural Language → Large Model (Planning) → Tool Search → Workflow Executi
 ```
 
 **Key Innovation:** Right model for each task - GPT-4 for complex reasoning, Phi-3 for simple parsing/classification.
+
+> **⚠️ Performance Disclaimer:** Cost and speedup claims are benchmarked with mock data. Real-world results vary based on:
+> - Cache hit rates (examples assume 85%; actual range: 30-90%)
+> - Tool catalog quality (search effectiveness: 70-90%)
+> - Network latency and API availability
+> - Error rates and retry overhead (examples assume 0%; real: 5-15% adds 10-15% overhead)
+>
+> See individual samples for scenario-specific details.
 
 ### 🧭 Why ToolWeaver (Crux)
 

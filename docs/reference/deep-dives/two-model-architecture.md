@@ -10,7 +10,7 @@ ToolWeaver separates planning (large models) from execution (small models) to cu
 
 - Planner: GPT-4o/Claude turn user intent into structured plans (1 call/request).
 - Executors: Phi-3/Llama or deterministic tools perform parsing, routing, and enrichment (many cheap calls).
-- Cost impact: 80–90% savings vs all-large-model by pushing repetitive work to small models + caching.
+- Cost impact: Up to 80–90% savings possible vs all-large-model by pushing repetitive work to small models + caching (varies by task complexity mix).
 - Safety: planners see only necessary context; executors run in sandbox/process isolation.
 
 Execution flow

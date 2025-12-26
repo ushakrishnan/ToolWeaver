@@ -1,4 +1,8 @@
-"""Example 11: Programmatic Executor"""
+"""Example 11: Programmatic Executor
+
+⚠️ NOTE: This demo uses simulated timing for demonstration.
+Real-world performance varies with network latency and API availability.
+"""
 import asyncio
 from pathlib import Path
 
@@ -83,17 +87,17 @@ async def main():
     speedup = llm_time / prog_time
     print(f"  Cost savings: ${llm_cost - prog_cost:.2f} ({savings:.0f}%)")
     print(f"  Speedup: {speedup:.1f}x faster")
-    print(f"  Context reduction: 99% (500K → 5K tokens)")
+    print(f"  Context reduction: Up to 95-99% (varies by data size)")
     
     # Use case examples
     print("\n" + "="*70)
     print("USE CASES")
     print("="*70)
     use_cases = [
-        ("Batch document processing", "1000 PDFs", "Traditional: impossible, Programmatic: 2 min"),
+        ("Batch document processing", "1000 PDFs", "Traditional: impractical ($50), Programmatic: efficient ($0.20)"),
         ("Large dataset transformation", "10K records", "Traditional: $50, Programmatic: $0.20"),
         ("Iterative optimization", "100 iterations", "Traditional: 30 min, Programmatic: 1 min"),
-        ("Multi-step pipeline", "5 stages × 200 items", "Traditional: context overflow, Programmatic: works"),
+        ("Multi-step pipeline", "5 stages × 200 items", "Traditional: context overflow, Programmatic: stays efficient"),
     ]
     
     for use_case, scale, comparison in use_cases:
