@@ -45,12 +45,14 @@ nav:
   - Tutorials:
     - tutorials/index.md
     - Sandbox Execution: tutorials/sandbox-execution.md
+    - Programmatic Execution: tutorials/programmatic-execution.md
     - Caching Deep Dive: tutorials/caching-deep-dive.md
     - Parallel Agents: tutorials/parallel-agents.md
 
   - How-to Guides:
     - how-to/index.md
     - Add a Tool: how-to/add-a-tool.md
+    - Orchestrate with Code: how-to/orchestrate-with-code.md
     - Run Parallel Dispatch: how-to/parallel-dispatch.md
     - Use Caching: how-to/caching.md
 
