@@ -6,7 +6,7 @@
 ```python
 from orchestrator import a2a_agent
 
-@a2a_agent(name="classifier", version="1.0")
+@a2a_agent(name="classifier", domain="demo", description="Classify text into categories")
 async def classify(text: str) -> dict:
     """Classify text into predefined categories.
     

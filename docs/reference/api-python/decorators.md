@@ -75,7 +75,15 @@ async def echo(message: str) -> dict:
 
 - What: Wrap an agent function to be delegatable via the A2A client.
 - When: Use for higher-level evaluators/classifiers that other agents call.
-- Ho"""Classify text into predefined categories.
+- How: Decorate an async function; give it a stable `name` and optional metadata.
+
+Example:
+```python
+from orchestrator import a2a_agent
+
+@a2a_agent(name="classifier", domain="demo", description="Classify text into categories")
+async def classify(text: str) -> dict:
+    """Classify text into predefined categories.
     
     Args:
         text: The text to classify
@@ -83,14 +91,6 @@ async def echo(message: str) -> dict:
     Returns:
         Dictionary with classification label
     """
-    w: Decorate an async function; give it a stable `name` and optional version.
-
-Example:
-```python
-from orchestrator import a2a_agent
-
-@a2a_agent(name="classifier", version="1.0")
-async def classify(text: str) -> dict:
     return {"label": "electronics"}
 ```
 
