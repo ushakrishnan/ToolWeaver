@@ -18,6 +18,7 @@ from orchestrator import (
     mcp_tool,
     a2a_agent,
     FunctionToolTemplate,
+    register_template,
     load_tools_from_yaml,
     get_available_tools,
     search_tools,
@@ -73,16 +74,23 @@ class ExpensesFunctionTool(FunctionToolTemplate):
 # Fast and simple - auto-extracts parameters from type hints
 # ============================================================================
 
-@mcp_tool(domain="finance")
+@mcp_tool(domain="finance", description="Fetch employee expenses (decorator approach)")
 async def get_expenses_via_decorator(employee_id: str, year: int = 2025) -> Dict[str, Any]:
     """
-    Fetch employee expenses (decorator approach).
+    Fetch employee expenses using the decorator approach.
     
-    Decorator automatically:
+    The @mcp_tool decorator automatically:
     - Extracts parameters from type hints (employee_id: required, year: optional with default)
-    - Sets function name as tool name
-    - Uses docstring as description
-    - Supports both sync and async
+    - Uses the function name as the tool name
+    - Registers the tool at import time (no manual registration needed)
+    - Supports both sync and async functions
+    
+    Args:
+        employee_id: Employee ID to fetch expenses for
+        year: Fiscal year (default: 2025)
+    
+    Returns:
+        Dictionary with employee expenses and metadata
     """
     # Simulate async operation (e.g., API call)
     await asyncio.sleep(0.01)
@@ -163,11 +171,13 @@ async def demo_all_three_methods():
     """Demonstrate registering tools via all three methods."""
     
     print("\n" + "="*80)
-    print("Example 23: Three Ways to Add Tools to ToolWeaver")
-    print("="*80 + "\n")
-    
-    # METHOD 1: Register template-based tool
-    print("1. TEMPLATE APPROACH (Most verbose, most control)")
+    # Register template explicitly (not auto-registered like decorators)
+    register_template(template_tool)
+    template_def = template_tool.build_definition()
+    print(f"   Tool: {template_def.name}")
+    print(f"   Description: {template_def.description}")
+    print(f"   Parameters: {[p.name for p in template_def.parameters]}")
+    print("   ✓ Registered via register_template() call"))")
     print("-" * 80)
     template_tool = ExpensesFunctionTool()
     template_def = template_tool.build_definition()

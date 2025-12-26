@@ -307,6 +307,8 @@ Benefits:
     result1 = await dispatch_agents(
         template="Analyze item {item_id}",
         arguments=[{"item_id": "ITEM-123"}],
+        agent_name="analyzer",
+        model="haiku",
         executor=mock_executor
     )
     time1 = (time.time() - start) * 1000
@@ -327,6 +329,8 @@ Benefits:
     result2 = await dispatch_agents(
         template="Analyze item {item_id}",
         arguments=[{"item_id": "ITEM-123"}],
+        agent_name="analyzer",
+        model="haiku",
         executor=mock_executor
     )
     time2 = (time.time() - start) * 1000
@@ -485,6 +489,8 @@ Custom aggregation:
     candidates = [{"name": f"Candidate-{i}"} for i in range(10)]
     
     results = await dispatch_agents(
+        agent_name="evaluator",
+        model="haiku",
         template="Evaluate {name}",
         arguments=candidates,
         executor=mock_executor
