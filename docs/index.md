@@ -24,9 +24,10 @@ Planner outputs a DAG; the orchestrator discovers tools, narrows via hybrid sear
 	2. Define a tool:
 	   ```python
 	   from orchestrator import mcp_tool
-	   @mcp_tool(domain="demo")
+	   @mcp_tool(domain="demo", description="Echo a message")
 	   async def echo(message: str) -> dict:
-		   return {"echo": message}
+	       """Echo back the provided message."""
+	       return {"echo": message}
 	   ```
 	3. Run a parallel demo:
 	   ```bash

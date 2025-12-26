@@ -8,6 +8,14 @@ from orchestrator import a2a_agent
 
 @a2a_agent(name="classifier", version="1.0")
 async def classify(text: str) -> dict:
+    """Classify text into predefined categories.
+    
+    Args:
+        text: The text to classify
+    
+    Returns:
+        Dictionary with classification label
+    """
     return {"label": "electronics"}
 ```
 - Returns: Registered agent callable.

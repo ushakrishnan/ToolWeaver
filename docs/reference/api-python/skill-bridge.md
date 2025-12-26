@@ -13,6 +13,14 @@ from orchestrator import save_tool_as_skill, mcp_tool
 
 @mcp_tool(domain="demo")
 async def echo(message: str) -> dict:
+    """Echo back the provided message.
+    
+    Args:
+        message: The message to echo back
+    
+    Returns:
+        Dictionary with the echoed message
+    """
     return {"echo": message}
 
 save_tool_as_skill("echo", org="acme")

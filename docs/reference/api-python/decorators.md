@@ -26,6 +26,15 @@ from orchestrator import mcp_tool, search_tools
 
 @mcp_tool(domain="github", description="List repositories")
 async def list_repositories(org: str, limit: int = 10) -> dict:
+    """List repositories for a GitHub organization.
+    
+    Args:
+        org: Organization name (e.g., 'openai')
+        limit: Maximum repositories to return (default: 10)
+    
+    Returns:
+        Dictionary with list of repository names
+    """
     return {"repositories": ["repo-a", "repo-b"]}
 
 print([t.name for t in search_tools(domain="github")])
@@ -49,6 +58,14 @@ from orchestrator import tool
 
 @tool(domain="demo")
 async def echo(message: str) -> dict:
+    """Echo back the provided message.
+    
+    Args:
+        message: The message to echo back
+    
+    Returns:
+        Dictionary with the echoed message
+    """
     return {"echo": message}
 ```
 
@@ -58,7 +75,15 @@ async def echo(message: str) -> dict:
 
 - What: Wrap an agent function to be delegatable via the A2A client.
 - When: Use for higher-level evaluators/classifiers that other agents call.
-- How: Decorate an async function; give it a stable `name` and optional version.
+- Ho"""Classify text into predefined categories.
+    
+    Args:
+        text: The text to classify
+    
+    Returns:
+        Dictionary with classification label
+    """
+    w: Decorate an async function; give it a stable `name` and optional version.
 
 Example:
 ```python
