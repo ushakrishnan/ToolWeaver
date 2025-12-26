@@ -62,6 +62,10 @@ nav:
     - Implement Retry Logic: how-to/implement-retry-logic.md
     - Configure A2A Agents: how-to/configure-a2a-agents.md
     - Monitor Performance: how-to/monitor-performance.md
+    - Aggregate Agent Results: how-to/aggregate-agent-results.md
+    - Add Approval Gates: how-to/add-approval-gates.md
+    - Create Skill Package: how-to/create-skill-package.md
+    - Extend with Plugins: how-to/extend-with-plugins.md
 
   - Product:
     - product/index.md

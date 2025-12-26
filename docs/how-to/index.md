@@ -10,3 +10,7 @@ Task-focused instructions:
 - [Implement Retry Logic](implement-retry-logic.md)
 - [Configure A2A Agents](configure-a2a-agents.md)
 - [Monitor Performance](monitor-performance.md)
+- [Aggregate Agent Results](aggregate-agent-results.md)
+- [Add Approval Gates](add-approval-gates.md)
+- [Create Skill Package](create-skill-package.md)
+- [Extend with Plugins](extend-with-plugins.md)
