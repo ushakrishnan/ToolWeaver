@@ -136,6 +136,6 @@ Results + Metadata
 
 - [orchestrator/tools/sub_agent.py](../../orchestrator/tools/sub_agent.py#L78-L230) - Core dispatch implementation
 - [orchestrator/tools/sub_agent_limits.py](../../orchestrator/tools/sub_agent_limits.py#L19-L211) - Resource quotas
-- [docs/user-guide/agent-delegation.md](../../docs/user-guide/agent-delegation.md) - User guide
+- [Agent Delegation](https://ushakrishnan.github.io/ToolWeaver/reference/deep-dives/agent-delegation/) - Reference
 - [Sample 16: Agent Delegation](../16-agent-delegation/) - Basic agent delegation patterns
 - [Sample 17: Multi-Agent Coordination](../17-multi-agent-coordination/) - Advanced coordination

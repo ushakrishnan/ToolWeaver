@@ -19,7 +19,7 @@ Automatically discovers, searches, and chains tools while reducing costs by 80-9
 
 **Contributors:** [Development guide](https://ushakrishnan.github.io/ToolWeaver/developer-guide/) • [Architecture](https://ushakrishnan.github.io/ToolWeaver/reference/deep-dives/workflow-architecture/) • [Plugins](https://ushakrishnan.github.io/ToolWeaver/reference/api-python/plugins/) • [Testing](https://ushakrishnan.github.io/ToolWeaver/samples/testing/) • [Security](https://ushakrishnan.github.io/ToolWeaver/product/security/)
 
-**Documentation:** [User Guide](https://ushakrishnan.github.io/ToolWeaver/user-guide/) • [Developer Guide](https://ushakrishnan.github.io/ToolWeaver/developer-guide/) • [Deployment](https://ushakrishnan.github.io/ToolWeaver/deployment/) • [Reference](https://ushakrishnan.github.io/ToolWeaver/reference/)
+**Documentation:** [How-to Guides](https://ushakrishnan.github.io/ToolWeaver/how-to/) • [Developer Guide](https://ushakrishnan.github.io/ToolWeaver/developer-guide/) • [Deployment](https://ushakrishnan.github.io/ToolWeaver/deployment/) • [Reference](https://ushakrishnan.github.io/ToolWeaver/reference/)
 
 ---
 
