@@ -20,7 +20,7 @@ Contributors:
 
 from typing import Any, Awaitable, Callable, Dict, Iterable, List, Optional, Protocol, Tuple, Union
 
-__version__ = "0.10.0"
+__version__ = "0.10.1"
 
 
 # ============================================================
