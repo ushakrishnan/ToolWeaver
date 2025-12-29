@@ -59,12 +59,12 @@ async def main():
             response = await client.delegate_to_agent(request)
             
             if response.success:
-                print(f"  ✓ Task completed in {response.execution_time:.2f}s")
+                print(f"  [OK] Task completed in {response.execution_time:.2f}s")
                 if response.cost:
                     print(f"  Cost: ${response.cost:.4f}")
                 print(f"  Result: {response.result}")
             else:
-                print(f"  ✗ Task failed: {response.metadata.get('error')}")
+                print(f"  [FAIL] Task failed: {response.metadata.get('error')}")
         
         except Exception as e:
             print(f"  Note: Task delegation requires actual agent endpoints.")
@@ -82,7 +82,7 @@ async def main():
         print()
         
         print("="*70)
-        print("✓ Agent discovery demonstration complete!")
+        print("[OK] Agent discovery demonstration complete!")
         print("="*70)
 
 
