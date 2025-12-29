@@ -14,22 +14,15 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List, Callable, Any
 
-# Simple enums and classes for pattern demonstration
-class PatternType(Enum):
-    """Types of control flow patterns"""
-    POLLING = "polling"
-    PARALLEL = "parallel"
-    CONDITIONAL = "conditional"
-    RETRY = "retry"
-    SEQUENTIAL = "sequential"
+from orchestrator._internal.execution.sandbox import SandboxEnvironment
+from orchestrator._internal.workflows.control_flow_patterns import (
+    ControlFlowPatterns,
+    create_polling_code,
+    create_parallel_code,
+    create_conditional_code,
+    create_retry_code,
+)
 
-@dataclass
-class ControlFlowPattern:
-    """Represents a control flow pattern"""
-    name: str
-    pattern_type: PatternType
-    description: str
-    code_template: str
 
 async def demo_pattern_detection():
     """Demo: Automatic pattern detection from task descriptions"""
