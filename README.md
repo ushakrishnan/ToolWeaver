@@ -6,20 +6,20 @@ Automatically discovers, searches, and chains tools while reducing costs by 80-9
 
 [![PyPI version](https://badge.fury.io/py/toolweaver.svg)](https://pypi.org/project/toolweaver/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/ushakrishnan/ToolWeaver/blob/main/LICENSE)
 [![Tests](https://img.shields.io/badge/tests-964%20passing%20(98.5%25)-brightgreen.svg)]()
 [![Coverage](https://img.shields.io/badge/coverage-67.61%25-yellow.svg)]()
-[![Analytics](https://img.shields.io/badge/analytics-3%20backends-blue.svg)](docs/reference/ANALYTICS_STRATEGY.md)
+[![Analytics](https://img.shields.io/badge/analytics-3%20backends-blue.svg)](https://ushakrishnan.github.io/ToolWeaver/reference/deep-dives/analytics-guide/)
 
 ---
 
 ## 🚀 Quick Navigation
 
-**Package users (start here):** [Quickstart](docs/for-package-users/quickstart.md) • [Registering tools](docs/for-package-users/registering-tools.md) • [Discovering tools](docs/for-package-users/discovering-tools.md) • [Extending via plugins](docs/for-package-users/extending.md) • [Sub-agent dispatch](docs/user-guide/sub_agent_dispatch.md)
+**Package users (start here):** [Quickstart](https://ushakrishnan.github.io/ToolWeaver/get-started/quickstart/) • [Registering tools](https://ushakrishnan.github.io/ToolWeaver/how-to/add-a-tool/) • [Discovering tools](https://ushakrishnan.github.io/ToolWeaver/reference/deep-dives/registry-discovery/) • [Extending via plugins](https://ushakrishnan.github.io/ToolWeaver/how-to/extend-with-plugins/) • [Sub-agent dispatch](https://ushakrishnan.github.io/ToolWeaver/reference/deep-dives/agent-delegation/)
 
-**Contributors:** [Development guide](https://github.com/ushakrishnan/ToolWeaver/tree/main/docs/for-contributors/development.md) • [Architecture](https://github.com/ushakrishnan/ToolWeaver/tree/main/docs/for-contributors/architecture.md) • [Plugins](https://github.com/ushakrishnan/ToolWeaver/tree/main/docs/for-contributors/plugins.md) • [Testing](https://github.com/ushakrishnan/ToolWeaver/tree/main/docs/for-contributors/testing.md) • [Security](https://github.com/ushakrishnan/ToolWeaver/tree/main/docs/for-contributors/security.md)
+**Contributors:** [Development guide](https://ushakrishnan.github.io/ToolWeaver/developer-guide/) • [Architecture](https://ushakrishnan.github.io/ToolWeaver/reference/deep-dives/workflow-architecture/) • [Plugins](https://ushakrishnan.github.io/ToolWeaver/reference/api-python/plugins/) • [Testing](https://ushakrishnan.github.io/ToolWeaver/samples/testing/) • [Security](https://ushakrishnan.github.io/ToolWeaver/product/security/)
 
-**Documentation:** [User Guide](docs/user-guide/) • [Developer Guide](docs/developer-guide/) • [Deployment](docs/deployment/) • [Reference](docs/reference/)
+**Documentation:** [User Guide](https://ushakrishnan.github.io/ToolWeaver/user-guide/) • [Developer Guide](https://ushakrishnan.github.io/ToolWeaver/developer-guide/) • [Deployment](https://ushakrishnan.github.io/ToolWeaver/deployment/) • [Reference](https://ushakrishnan.github.io/ToolWeaver/reference/)
 
 ---
 
@@ -143,9 +143,9 @@ pip install toolweaver[vector]      # Add vector search
 pip install toolweaver[all]         # Everything
 ```
 
-Then explore ready-to-run examples:
-- **[samples/](samples/)** - Standalone examples using the installed package
-- Start with [Sample 01: Basic Receipt Processing](samples/01-basic-receipt-processing/)
+Then explore ready-to-run samples:
+- [Samples](https://ushakrishnan.github.io/ToolWeaver/samples/) - Standalone samples using the installed package
+- Start with [Sample 01: Basic Receipt Processing](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/01-basic-receipt-processing)
 
 ### 👨‍💻 For Contributors (Development Setup)
 
@@ -162,9 +162,9 @@ pip install -e .                # Editable install
 # pip install -e ".[dev]"       # With dev tools
 ```
 
-Then explore development examples:
-- **[examples/](examples/)** - Examples using local source code
-- See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines
+Then explore source samples:
+- [Repository samples](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples) - Uses local source code with editable installs
+- See [CONTRIBUTING.md](https://github.com/ushakrishnan/ToolWeaver/blob/main/CONTRIBUTING.md) for contribution guidelines
 
 ## 🛠️ Support Matrix
 
@@ -216,7 +216,7 @@ All tests run on:
 - Non-critical benchmark validations
 - Edge case handling in specialized modules
 
-See [.github/workflows/test-matrix.yml](.github/workflows/test-matrix.yml) for CI details.
+See [.github/workflows/test-matrix.yml](https://github.com/ushakrishnan/ToolWeaver/blob/main/.github/workflows/test-matrix.yml) for CI details.
 
 ---
 
@@ -291,27 +291,27 @@ cp .env.example .env
 python process_receipt.py
 ```
 
-**Browse all samples:** [samples/README.md](samples/README.md)
+**Browse all samples:** [samples/README.md](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/README.md)
 
-### \ud83d\udee0\ufe0f For Developers: Try Examples
+### \ud83d\udee0\ufe0f For Developers: Try Samples
 
 After cloning the repo and installing with `pip install -e .`:
 
 ```bash
-# Basic OCR example (\u2b50)
-cd examples/01-basic-receipt-processing
+# Basic OCR sample (\u2b50)
+cd samples/01-basic-receipt-processing
 python process_receipt.py
 
 # Multi-step workflow (\u2b50\u2b50)
-cd examples/02-receipt-with-categorization
+cd samples/02-receipt-with-categorization
 python categorize_receipt.py
 
 # Complete end-to-end demo (\u2b50\u2b50\u2b50)
-cd examples/13-complete-pipeline
+cd samples/13-complete-pipeline
 python complete_pipeline.py
 ```
 
-**Browse all examples:** [examples/README.md](examples/README.md)
+**Browse all samples:** [samples/README.md](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/README.md)
 
 ### Option 3: Natural Language Planning (Requires LLM API Key)
 
@@ -853,7 +853,7 @@ ToolCatalog → StubGenerator → tools/ directory → ToolFileSystem → AI Cod
                                (Python stubs)    (exploration API)
 ```
 
-**See:** [examples/14-programmatic-execution/](examples/14-programmatic-execution/) for detailed demos and benchmarks.
+**See:** [Sample 14](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/14-programmatic-execution) for detailed demos and benchmarks.
 
 ### Tool Usage Examples
 
@@ -1032,7 +1032,7 @@ messages = [
 
 ### Production Deployment
 
-See [PRODUCTION_DEPLOYMENT.md](docs/PRODUCTION_DEPLOYMENT.md) for complete production guide covering:
+See [Production Deployment](https://ushakrishnan.github.io/ToolWeaver/deployment/production-deployment/) for complete production guide covering:
 - Security hardening (Azure AD, managed identity, sandboxing)
 - Performance optimization (lazy loading, connection pooling, caching)
 - Monitoring setup (health checks, Prometheus metrics)
@@ -1145,7 +1145,7 @@ library.save_to_disk("workflows/custom")
 - ✅ **Error handling** - Retry logic with exponential backoff
 - ✅ **52 tests** - Comprehensive test coverage for workflows and patterns
 
-**See:** [Workflow Usage Guide](docs/WORKFLOW_USAGE_GUIDE.md) | [Architecture Docs](docs/WORKFLOW_ARCHITECTURE.md) | [Demo](examples/legacy-demos/demo_workflow.py)
+**See:** [Orchestrate with code](https://ushakrishnan.github.io/ToolWeaver/how-to/orchestrate-with-code/) | [Workflow architecture](https://ushakrishnan.github.io/ToolWeaver/reference/deep-dives/workflow-architecture/) | [Workflow library sample](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/05-workflow-library)
 
 ## End-to-End Example: Discovery → Search → Planning
 
@@ -1204,37 +1204,43 @@ Semantic search: 30 tools → 10 relevant (~66.7% token reduction, ~3,000 tokens
 
 ## Documentation
 
-> **📚 See [docs/README.md](docs/README.md) for complete documentation index with reading paths and use case guides**
+Full docs: https://ushakrishnan.github.io/ToolWeaver/
 
 ### Getting Started
-- **[Configuration Guide](docs/CONFIGURATION.md)** - Complete setup for all providers (Azure OpenAI, OpenAI, Claude, Gemini, Ollama, Azure AI Foundry)
-- **[Quick Reference](docs/QUICK_REFERENCE.md)** - Common patterns and code snippets
-- **[Free Tier Setup](docs/FREE_TIER_SETUP.md)** - Get started with free providers (no credit card)
+- [Quickstart](https://ushakrishnan.github.io/ToolWeaver/get-started/quickstart/)
+- [Installation](https://ushakrishnan.github.io/ToolWeaver/get-started/installation/)
+- [Tutorials](https://ushakrishnan.github.io/ToolWeaver/tutorials/)
 
-### Core Features
-- **[Features Guide](docs/FEATURES_GUIDE.md)** - Complete feature overview with performance metrics and capabilities
-- **[Workflow System Guide](docs/WORKFLOW_USAGE_GUIDE.md)** - Workflow composition, pattern recognition, and library management
-- **[Two-Model Architecture](docs/TWO_MODEL_ARCHITECTURE.md)** - Cost-optimized architecture with large planner + small executor
-- **[Prompt Caching Best Practices](docs/PROMPT_CACHING.md)** - Reduce costs by 90% with prompt caching strategies
-- **[Search Tuning Guide](docs/SEARCH_TUNING.md)** - Optimize semantic search for your use case
+### How-to Guides
+- [Add a Tool](https://ushakrishnan.github.io/ToolWeaver/how-to/add-a-tool/)
+- [Parallel Dispatch](https://ushakrishnan.github.io/ToolWeaver/how-to/parallel-dispatch/)
+- [Caching](https://ushakrishnan.github.io/ToolWeaver/how-to/caching/)
+- [Extend with Plugins](https://ushakrishnan.github.io/ToolWeaver/how-to/extend-with-plugins/)
+- [Monitor Performance](https://ushakrishnan.github.io/ToolWeaver/how-to/monitor-performance/)
+- [Aggregate Agent Results](https://ushakrishnan.github.io/ToolWeaver/how-to/aggregate-agent-results/)
 
-### Deployment & Production
-- **[Production Deployment Guide](docs/PRODUCTION_DEPLOYMENT.md)** - Deploy to Azure with security, monitoring, and scaling
-- **[Security Guide](docs/SECURITY.md)** - Security best practices, AST validation, and authentication
-- **[Azure Computer Vision Setup](docs/AZURE_SETUP.md)** - Configure real OCR with Azure CV
-- **[Small Model Improvements](docs/SMALL_MODEL_IMPROVEMENTS.md)** - Enhanced Phi3 JSON parsing + Azure CV integration
+### Reference
+- [Python API](https://ushakrishnan.github.io/ToolWeaver/reference/api-python/)
+- [CLI Reference](https://ushakrishnan.github.io/ToolWeaver/reference/cli/)
+- [Registry Discovery](https://ushakrishnan.github.io/ToolWeaver/reference/deep-dives/registry-discovery/)
+- [Plugin Extension](https://ushakrishnan.github.io/ToolWeaver/reference/deep-dives/plugin-extension/)
 
-### Scaling & Infrastructure
-- **[Qdrant Setup](docs/QDRANT_SETUP.md)** - Vector database for 1000+ tool catalogs
-- **[Redis Setup](docs/REDIS_SETUP.md)** - Distributed cache for multi-instance deployments
+### Architecture
+- [Two-Model Architecture](https://ushakrishnan.github.io/ToolWeaver/reference/deep-dives/two-model-architecture/)
+- [Workflow Architecture](https://ushakrishnan.github.io/ToolWeaver/reference/deep-dives/workflow-architecture/)
+- [Agent Delegation](https://ushakrishnan.github.io/ToolWeaver/reference/deep-dives/agent-delegation/)
+- [Control Flow Patterns](https://ushakrishnan.github.io/ToolWeaver/reference/deep-dives/control-flow-patterns/)
 
-### Architecture & Technical Details
-- **[Architecture Details](docs/ARCHITECTURE.md)** - Technical deep dive into orchestrator design
-- **[Workflow Architecture](docs/WORKFLOW_ARCHITECTURE.md)** - Workflow engine design and implementation
-- **[Implementation Details](docs/IMPLEMENTATION.md)** - Internal architecture and technical specifications
+### Deployment
+- [Production Deployment](https://ushakrishnan.github.io/ToolWeaver/deployment/production-deployment/)
+- [Azure Setup](https://ushakrishnan.github.io/ToolWeaver/deployment/azure-setup/)
+- [Redis Setup](https://ushakrishnan.github.io/ToolWeaver/deployment/redis-setup/)
+- [Qdrant Setup](https://ushakrishnan.github.io/ToolWeaver/deployment/qdrant-setup/)
+- [SQLite + Grafana](https://ushakrishnan.github.io/ToolWeaver/deployment/sqlite-grafana-setup/)
 
-### Migration & Maintenance
-- **[Migration Guide](docs/MIGRATION_GUIDE.md)** - Upgrade guides and breaking changes
+### Samples
+- [Samples Index](https://ushakrishnan.github.io/ToolWeaver/samples/)
+- [Samples Testing](https://ushakrishnan.github.io/ToolWeaver/samples/testing/)
 
 ## Provider Support
 
@@ -1253,75 +1259,17 @@ Semantic search: 30 tools → 10 relevant (~66.7% token reduction, ~3,000 tokens
 | **Azure AI Foundry** | Phi-3, Llama 3.2 | `SMALL_MODEL_BACKEND=azure` |
 | **Transformers** (Local) | Any HuggingFace model | `SMALL_MODEL_BACKEND=transformers` |
 
-## Examples
+## Samples
 
-The `examples/` directory contains 29 runnable demos showcasing ToolWeaver's capabilities. **8 examples fully modernized and tested (28% complete).**
+The `samples/` directory ships with 30+ runnable demos that match the PyPI package layout. Start with a few quick wins:
 
-### ✅ Working Examples (Fully Tested)
+- Receipt basics: [Sample 01](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/01-basic-receipt-processing)
+- Multi-step categorization: [Sample 02](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/02-receipt-with-categorization)
+- Workflow library: [Sample 05](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/05-workflow-library)
+- Code execution sandbox: [Sample 09](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/09-code-execution)
+- Parallel agents with limits: [Sample 25](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/25-parallel-agents)
 
-Run these to see ToolWeaver in action:
-
-```bash
-cd examples/01-basic-receipt-processing
-python process_receipt.py
-# Output: Registers OCR tool, demonstrates @mcp_tool decorator
-
-cd examples/02-receipt-with-categorization  
-python categorize_receipt.py
-# Output: Chains 4 tools - OCR → Parse → Categorize → Statistics
-
-cd examples/03-github-operations
-python github_ops.py
-# Output: GitHub operations - tool registration, discovery, data analysis
-
-cd examples/04-vector-search-discovery
-python discover_tools.py
-# Output: Registers 10 tools, demonstrates keyword/domain/semantic search
-
-cd examples/05-workflow-library
-python workflow_demo.py
-# Output: Shows YAML configuration + tool organization by domain
-
-cd examples/09-code-execution
-python code_execution_demo.py
-# Output: Safe computation tools - receipts, validation, transformations
-
-cd examples/16-agent-delegation
-python delegate_to_agent.py
-# Output: Agent discovery and delegation patterns
-
-cd examples/25-parallel-agents
-python main.py
-# Output: Parallel task execution with resource limits
-```
-
-### 📊 Examples Status
-
-- ✅ **8 Complete** (28%): Examples 01, 02, 03, 04, 05, 09, 16, 25
-- 🔄 **2 Partial** (7%): Examples requiring additional configuration
-- ⏳ **19 Pending** (65%): Remaining examples under modernization
-
-### 📚 Complete Examples
-
-See [examples/README.md](examples/README.md) for all 29 examples with difficulty ratings and feature descriptions.
-
-See [docs/internal/EXAMPLES_MODERNIZATION_STATUS.md](docs/internal/EXAMPLES_MODERNIZATION_STATUS.md) for detailed modernization tracking.
-
-### 🚀 Quick Demo Script
-
-For a quick overview without navigating examples:
-
-```bash
-python run_demo.py
-```
-
-### 📖 Learning Path
-
-**Beginner:** 01 → 02 → 03  
-**Intermediate:** 04 → 05 → 09  
-**Advanced:** 16 → 25  
-
-See [docs/examples/EXAMPLES_TESTING_GUIDE.md](docs/examples/EXAMPLES_TESTING_GUIDE.md) for detailed learning guide.
+See the full catalog in the [samples README](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/README.md).
 
 ## Project Structure
 
@@ -1348,19 +1296,18 @@ ToolWeaver/
 │   ├── test_tool_*.py
 │   ├── test_*_integration.py
 │   └── conftest.py
-├── docs/                            # Documentation (80+ files)
-│   ├── user-guide/                 # For end users
-│   ├── developer-guide/            # For contributors
-│   ├── deployment/                 # Production deployment
-│   ├── reference/                  # API reference
-│   ├── getting-started/            # Quick start
-│   └── internal/                   # Development notes
-├── examples/                        # Example scripts (29 total, 4 modernized)
+├── docs/                            # Documentation (published via MkDocs)
+│   ├── get-started/               # Quick start
+│   ├── tutorials/                 # Hands-on walkthroughs
+│   ├── how-to/                    # Task-focused guides
+│   ├── reference/                 # API and deep dives
+│   └── deployment/                # Production deployment
+├── samples/                        # Runnable samples that ship with the package
 │   ├── 01-basic-receipt-processing/
 │   ├── 02-receipt-with-categorization/
-│   ├── 04-vector-search-discovery/
 │   ├── 05-workflow-library/
-│   └── ... (25 more)
+│   ├── 09-code-execution/
+│   └── ... (25+ more)
 ├── scripts/                         # Helper scripts
 ├── pyproject.toml                  # Package configuration
 ├── requirements.txt                # Dependencies
@@ -1373,7 +1320,7 @@ ToolWeaver/
 - Python 3.8+
 - pydantic
 - asyncio (built-in)
-- **Optional**: Azure Computer Vision for real OCR (see [setup guide](docs/AZURE_SETUP.md))
+- **Optional**: Azure Computer Vision for real OCR (see [setup guide](https://ushakrishnan.github.io/ToolWeaver/deployment/azure-setup/))
 
 ## Benefits
 
@@ -1417,7 +1364,7 @@ pip install -e ".[all]"
 cp .env.example .env
 
 # Edit .env with your credentials
-# See docs/CONFIGURATION.md for details
+# See https://ushakrishnan.github.io/ToolWeaver/reference/api-python/configuration/ for details
 ```
 
 ### Run Tests
@@ -1429,8 +1376,8 @@ pytest tests/test_tool_search.py # Specific test
 
 ### Project vs Package Usage
 
-| Aspect | **examples/** (Source) | **samples/** (Package) |
-|--------|----------------------|----------------------|
+| Aspect | **Repo (editable)** | **PyPI install** |
+|--------|---------------------|------------------|
 | **Purpose** | Development/Contributing | Learning/Using |
 | **Installation** | `pip install -e .` | `pip install toolweaver` |
 | **Imports** | Local source code | Installed package |
@@ -1443,7 +1390,7 @@ Contributions are welcome!
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes in `examples/` or `orchestrator/`
+3. Make your changes in `samples/` or `orchestrator/`
 4. Add tests for new functionality
 5. Run `pytest` to ensure all tests pass
 6. Commit your changes (`git commit -m 'Add amazing feature'`)
@@ -1454,7 +1401,7 @@ See [CONTRIBUTING.md](https://github.com/ushakrishnan/ToolWeaver/blob/main/CONTR
 
 ## License
 
-Apache License 2.0 - See [LICENSE](LICENSE) file for details.
+Apache License 2.0 - See [LICENSE](https://github.com/ushakrishnan/ToolWeaver/blob/main/LICENSE) for details.
 
 This package is open source and free to use. Apache 2.0 provides explicit patent protection and trademark rights.
 
