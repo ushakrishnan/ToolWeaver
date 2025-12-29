@@ -122,7 +122,7 @@ async def main():
         print()
     
     print("=" * 70)
-    print("✓ Parallel execution complete!")
+    print("[OK] Parallel execution complete!")
     print("=" * 70)
     print()
 
