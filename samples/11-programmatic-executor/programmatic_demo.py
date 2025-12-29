@@ -32,7 +32,7 @@ async def main():
     for receipt in receipts[:5]:  # Show first 5
         result = await simulate_tool("process", receipt)
         llm_calls += 1  # Each result goes through LLM
-        print(f"  Receipt {receipt['id']}: ${receipt['amount']:.2f} → LLM")
+        print(f"  Receipt {receipt['id']}: ${receipt['amount']:.2f} -> LLM")
     print(f"  ... ({len(receipts)-5} more)")
     llm_time = (time.time() - start) * 20  # Scale for demonstration
     llm_cost = llm_calls * 0.05

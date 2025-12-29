@@ -47,7 +47,7 @@ async def demo_pattern_detection():
     for task in tasks:
         pattern = ControlFlowPatterns.detect_pattern_need(task)
         print(f"\nTask: {task}")
-        print(f"   → Detected pattern: {pattern.value if pattern else 'None'}")
+        print(f"   -> Detected pattern: {pattern.value if pattern else 'None'}")
 
 
 async def demo_polling_pattern():
@@ -99,11 +99,11 @@ result = "Polling completed after checks: " + str(check_count)
     result = await sandbox.execute(execution_code)
     
     if result.success:
-        print(f"✅ Success!")
+        print(f"[OK] Success!")
         print(f"Output: {result.stdout.strip()}")
         print(f"Duration: {result.duration:.2f}s")
     else:
-        print(f"❌ Failed: {result.error}")
+        print(f"[FAIL] Failed: {result.error}")
 
 
 async def demo_parallel_pattern():
@@ -161,11 +161,11 @@ print(result)
     result = await sandbox.execute(execution_code)
     
     if result.success:
-        print(f"✅ Success!")
+        print(f"[OK] Success!")
         print(f"Output: {result.stdout.strip()}")
         print(f"Duration: {result.duration:.2f}s")
     else:
-        print(f"❌ Failed: {result.error}")
+        print(f"[FAIL] Failed: {result.error}")
 
 
 async def demo_conditional_pattern():
@@ -264,11 +264,11 @@ print(result)
     result = await sandbox.execute(execution_code)
     
     if result.success:
-        print(f"✅ Success!")
+        print(f"[OK] Success!")
         print(f"Output: {result.stdout.strip()}")
         print(f"Duration: {result.duration:.2f}s")
     else:
-        print(f"❌ Failed: {result.error}")
+        print(f"[FAIL] Failed: {result.error}")
 
 
 async def demo_pattern_comparison():
@@ -347,7 +347,7 @@ async def main():
         await demo_pattern_comparison()
         
         print("\n" + "=" * 80)
-        print("✅ All demos completed successfully!")
+        print("[OK] All demos completed successfully!")
         print("=" * 80)
         
         print("\nKey Benefits:")
@@ -358,7 +358,7 @@ async def main():
         print("  5. Composable patterns for complex workflows")
         
     except Exception as e:
-        print(f"\n❌ Demo failed: {e}")
+        print(f"\n[FAIL] Demo failed: {e}")
         import traceback
         traceback.print_exc()
 
