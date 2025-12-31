@@ -12,7 +12,7 @@ except Exception:  # noqa: BLE001
     pass
 
 try:
-    from .runtime.orchestrator import execute_plan, final_synthesis, Orchestrator  # noqa: F401
+    from .runtime.orchestrator import Orchestrator, execute_plan, final_synthesis  # noqa: F401
 except Exception:  # noqa: BLE001
     pass
 
@@ -32,11 +32,7 @@ except Exception:  # noqa: BLE001
     pass
 
 try:
-    from .dispatch.hybrid_dispatcher import (
-        dispatch_step,
-        register_function,
-        get_registered_functions,
-    )  # noqa: F401
+    pass  # noqa: F401
 except Exception:  # noqa: BLE001
     pass
 

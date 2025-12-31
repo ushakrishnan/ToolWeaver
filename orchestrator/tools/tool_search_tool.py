@@ -8,15 +8,16 @@ Reference: https://www.anthropic.com/engineering/advanced-tool-use
 """
 
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Any
+
 from ..shared.models import ToolCatalog, ToolDefinition
 from .tool_search import ToolSearchEngine
 
 logger = logging.getLogger(__name__)
 
 # Global search engine instance (lazy-initialized)
-_search_engine: Optional[ToolSearchEngine] = None
-_full_catalog: Optional[ToolCatalog] = None
+_search_engine: ToolSearchEngine | None = None
+_full_catalog: ToolCatalog | None = None
 
 def initialize_tool_search(catalog: ToolCatalog) -> None:
     """
@@ -36,7 +37,7 @@ def initialize_tool_search(catalog: ToolCatalog) -> None:
             _search_engine = None
             _full_catalog = None
 
-def tool_search_tool(query: str, top_k: int = 5) -> Dict[str, Any]:
+def tool_search_tool(query: str, top_k: int = 5) -> dict[str, Any]:
     """
     Search for tools by capability description.
     
@@ -77,27 +78,27 @@ def tool_search_tool(query: str, top_k: int = 5) -> Dict[str, Any]:
             "total_available": 0,
             "error": "Tool search engine not initialized"
         }
-    
+
     try:
         # Search for relevant tools
         results = _search_engine.search(query, _full_catalog, top_k=top_k)
-        
+
         # Convert to LLM format
         tools = []
         for tool_def, score in results:
             tool_dict = tool_def.to_llm_format(include_examples=True)
             tool_dict["relevance_score"] = round(score, 3)
             tools.append(tool_dict)
-        
+
         logger.info(f"Tool search for '{query}' returned {len(tools)} tools")
-        
+
         return {
             "tools": tools,
             "query": query,
             "total_available": len(_full_catalog.tools),
             "returned": len(tools)
         }
-    
+
     except Exception as e:
         logger.error(f"Tool search failed: {e}")
         return {
@@ -113,8 +114,8 @@ def get_tool_search_definition() -> ToolDefinition:
     
     This tool should always be loaded in the initial context.
     """
-    from ..shared.models import ToolParameter, ToolExample
-    
+    from ..shared.models import ToolExample, ToolParameter
+
     return ToolDefinition(
         name="tool_search_tool",
         type="function",

@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Dict
+from typing import Any
 
 from orchestrator import FunctionToolTemplate, register_template
 from orchestrator.plugins.registry import get_registry
@@ -7,7 +7,7 @@ from orchestrator.shared.models import ToolParameter
 
 
 class EchoTemplate(FunctionToolTemplate):
-    def execute(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(self, params: dict[str, Any]) -> dict[str, Any]:
         return {"text": params["text"]}
 
 

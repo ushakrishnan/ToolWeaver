@@ -8,7 +8,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 if __name__ == "__main__":
     # Import the github_ops module which contains the main demo
     import asyncio
+
     from github_ops import main
-    
+
     # Run the async main function
     asyncio.run(main())

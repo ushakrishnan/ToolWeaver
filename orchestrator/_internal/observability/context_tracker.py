@@ -12,11 +12,11 @@ Usage:
 """
 
 import logging
-from typing import Dict, Any, Callable, TYPE_CHECKING
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from typing import Any as AnyType
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +29,8 @@ class ContextBreakdown:
     user_input: int
     model_output: int
     total: int
-    
-    def to_dict(self) -> Dict[str, int]:
+
+    def to_dict(self) -> dict[str, int]:
         """Convert to dictionary"""
         return asdict(self)
 
@@ -50,11 +50,11 @@ class ContextTracker:
     - Reset between executions
     - Detailed breakdown reporting
     """
-    
+
     def __init__(self) -> None:
         """Initialize tracker with zero counts"""
         self.reset()
-        
+
     def reset(self) -> None:
         """Reset all counters to zero"""
         self.tool_definitions = 0
@@ -62,9 +62,9 @@ class ContextTracker:
         self.user_input = 0
         self.model_output = 0
         self.total_tokens = 0
-        
+
         logger.debug("Context tracker reset")
-        
+
     def add_tool_definitions(self, tokens: int) -> None:
         """
         Add tokens from tool definitions/catalog.
@@ -74,9 +74,9 @@ class ContextTracker:
         """
         self.tool_definitions += tokens
         self.total_tokens += tokens
-        
+
         logger.debug(f"Added {tokens} tool definition tokens")
-        
+
     def add_tool_result(self, tokens: int) -> None:
         """
         Add tokens from tool execution results.
@@ -86,9 +86,9 @@ class ContextTracker:
         """
         self.tool_results += tokens
         self.total_tokens += tokens
-        
+
         logger.debug(f"Added {tokens} tool result tokens")
-        
+
     def add_user_input(self, tokens: int) -> None:
         """
         Add tokens from user input.
@@ -98,9 +98,9 @@ class ContextTracker:
         """
         self.user_input += tokens
         self.total_tokens += tokens
-        
+
         logger.debug(f"Added {tokens} user input tokens")
-        
+
     def add_model_output(self, tokens: int) -> None:
         """
         Add tokens from model output.
@@ -110,9 +110,9 @@ class ContextTracker:
         """
         self.model_output += tokens
         self.total_tokens += tokens
-        
+
         logger.debug(f"Added {tokens} model output tokens")
-        
+
     def add_text(self, text: str, category: str = "model_output") -> None:
         """
         Add text and estimate token count.
@@ -123,7 +123,7 @@ class ContextTracker:
                      user_input, model_output)
         """
         tokens = self._estimate_tokens(text)
-        
+
         if category == "tool_definitions":
             self.add_tool_definitions(tokens)
         elif category == "tool_results":
@@ -134,7 +134,7 @@ class ContextTracker:
             self.add_model_output(tokens)
         else:
             raise ValueError(f"Unknown category: {category}")
-            
+
     def _estimate_tokens(self, text: str) -> int:
         """
         Estimate token count from text.
@@ -151,7 +151,7 @@ class ContextTracker:
         # Simple estimation: 4 chars ≈ 1 token
         # This is a rough approximation
         return len(text) // 4
-        
+
     def get_breakdown(self) -> ContextBreakdown:
         """
         Get detailed breakdown of context usage.
@@ -166,8 +166,8 @@ class ContextTracker:
             model_output=self.model_output,
             total=self.total_tokens
         )
-        
-    def get_percentage_breakdown(self) -> Dict[str, float]:
+
+    def get_percentage_breakdown(self) -> dict[str, float]:
         """
         Get breakdown as percentages.
         
@@ -181,19 +181,19 @@ class ContextTracker:
                 "user_input": 0.0,
                 "model_output": 0.0
             }
-        
+
         return {
             "tool_definitions": (self.tool_definitions / self.total_tokens) * 100,
             "tool_results": (self.tool_results / self.total_tokens) * 100,
             "user_input": (self.user_input / self.total_tokens) * 100,
             "model_output": (self.model_output / self.total_tokens) * 100
         }
-        
+
     def print_summary(self) -> None:
         """Print formatted summary of context usage"""
         breakdown = self.get_breakdown()
         percentages = self.get_percentage_breakdown()
-        
+
         print("\n" + "="*50)
         print("Context Usage Summary")
         print("="*50)
@@ -208,8 +208,8 @@ class ContextTracker:
         print(f"  Model output:     {breakdown.model_output:,} "
               f"({percentages['model_output']:.1f}%)")
         print("="*50 + "\n")
-        
-    def get_metrics(self) -> Dict[str, Any]:
+
+    def get_metrics(self) -> dict[str, Any]:
         """
         Get metrics for monitoring/logging.
         
@@ -218,7 +218,7 @@ class ContextTracker:
         """
         breakdown = self.get_breakdown()
         percentages = self.get_percentage_breakdown()
-        
+
         return {
             "total_tokens": self.total_tokens,
             "breakdown": breakdown.to_dict(),

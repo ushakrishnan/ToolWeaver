@@ -19,15 +19,15 @@ Example:
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..shared.models import ToolDefinition, ToolParameter
 
 
 class ClineAdapter:
     """Adapter to convert ToolWeaver tools to Cline format."""
-    
-    def __init__(self, tools: List[ToolDefinition]) -> None:
+
+    def __init__(self, tools: list[ToolDefinition]) -> None:
         """
         Initialize adapter with tools.
         
@@ -35,8 +35,8 @@ class ClineAdapter:
             tools: List of ToolDefinition objects to adapt
         """
         self.tools = tools
-    
-    def to_cline_config(self) -> Dict[str, Any]:
+
+    def to_cline_config(self) -> dict[str, Any]:
         """
         Convert tools to Cline MCP tool format.
         
@@ -51,8 +51,8 @@ class ClineAdapter:
                 "tool_count": len(self.tools),
             },
         }
-    
-    def to_cline_tools_json(self) -> List[Dict[str, Any]]:
+
+    def to_cline_tools_json(self) -> list[dict[str, Any]]:
         """
         Return tools in Cline's tools.json format.
         
@@ -60,8 +60,8 @@ class ClineAdapter:
             List of tool objects for tools.json
         """
         return [self._tool_to_cline_format(tool) for tool in self.tools]
-    
-    def _tool_to_cline_format(self, tool: ToolDefinition) -> Dict[str, Any]:
+
+    def _tool_to_cline_format(self, tool: ToolDefinition) -> dict[str, Any]:
         """Convert a single tool to Cline format."""
         cline_tool = {
             "id": tool.name,
@@ -74,21 +74,21 @@ class ClineAdapter:
                 "required": [p.name for p in tool.parameters if p.required],
             },
         }
-        
+
         # Add optional fields if present
         if tool.metadata:
             cline_tool["metadata"] = tool.metadata
-        
+
         if tool.returns:
             cline_tool["output_schema"] = tool.returns
-        
+
         return cline_tool
-    
-    def _build_properties(self, parameters: List[ToolParameter]) -> Dict[str, Any]:
+
+    def _build_properties(self, parameters: list[ToolParameter]) -> dict[str, Any]:
         """Build JSON schema properties from parameters."""
         properties = {}
         for param in parameters:
-            prop: Dict[str, Any] = {
+            prop: dict[str, Any] = {
                 "type": param.type,
                 "description": param.description or f"Parameter: {param.name}",
             }
@@ -96,7 +96,7 @@ class ClineAdapter:
                 prop["enum"] = param.enum
             properties[param.name] = prop
         return properties
-    
+
     def to_json(self, pretty: bool = True) -> str:
         """
         Serialize config to JSON string.
@@ -110,7 +110,7 @@ class ClineAdapter:
         config = self.to_cline_config()
         indent = 2 if pretty else None
         return json.dumps(config, indent=indent)
-    
+
     def save_to_file(self, filepath: str, pretty: bool = True) -> None:
         """
         Save Cline config to file.

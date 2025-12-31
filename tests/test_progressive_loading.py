@@ -5,18 +5,18 @@ Ensures browse_tools(), search_tools(), and get_tool_info() support
 progressive disclosure with detail_level parameter.
 """
 
+from typing import Any
+
 import pytest
-from typing import Dict, Any
 
 from orchestrator import (
-    tool,
     browse_tools,
-    search_tools,
     get_tool_info,
-    get_available_tools,
+    search_tools,
+    tool,
 )
 from orchestrator.plugins.registry import get_registry
-from orchestrator.shared.models import ToolParameter, ToolExample
+from orchestrator.shared.models import ToolParameter
 
 
 @pytest.fixture(autouse=True)
@@ -33,7 +33,7 @@ def setup_tools():
             ToolParameter(name="base", type="string", description="Base branch", required=True),
         ],
     )
-    def create_pr(params: Dict[str, Any]) -> Dict[str, Any]:
+    def create_pr(params: dict[str, Any]) -> dict[str, Any]:
         return {"pr_number": 123}
 
     @tool(
@@ -43,7 +43,7 @@ def setup_tools():
             ToolParameter(name="text", type="string", description="Message text", required=True),
         ],
     )
-    def send_message(params: Dict[str, Any]) -> Dict[str, Any]:
+    def send_message(params: dict[str, Any]) -> dict[str, Any]:
         return {"ok": True}
 
     @tool(
@@ -52,7 +52,7 @@ def setup_tools():
             ToolParameter(name="invoice_id", type="string", description="Invoice ID", required=True),
         ],
     )
-    def process_invoice(params: Dict[str, Any]) -> Dict[str, Any]:
+    def process_invoice(params: dict[str, Any]) -> dict[str, Any]:
         return {"status": "processed"}
 
     yield
@@ -265,19 +265,19 @@ def test_detail_levels_token_reduction():
     """Verify detail levels reduce token usage."""
     # Full tools have all parameters
     full_tools = browse_tools(detail_level="full")
-    
+
     # Summary tools omit parameter schemas
     summary_tools = browse_tools(detail_level="summary")
-    
+
     # Name-only tools minimal
     name_tools = browse_tools(detail_level="name")
-    
+
     # Rough token estimate: full > summary > name
     # Each level should be progressively smaller
     full_size = sum(len(str(t)) for t in full_tools)
     summary_size = sum(len(str(t)) for t in summary_tools)
     name_size = sum(len(str(t)) for t in name_tools)
-    
+
     assert name_size < summary_size < full_size
 
 

@@ -1,4 +1,3 @@
-import pytest
 
 import orchestrator as tw
 

@@ -6,13 +6,14 @@ import asyncio
 import os
 import time
 from collections import OrderedDict
+from collections.abc import AsyncGenerator, Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, AsyncGenerator, TypedDict
+from typing import Any, TypedDict
 
 import aiohttp
-from aiohttp import ClientResponseError, ClientError, WSMsgType
 import yaml
+from aiohttp import ClientError, ClientResponseError, WSMsgType
 
 
 @dataclass
@@ -21,20 +22,20 @@ class AgentCapability:
 
     name: str
     description: str
-    agent_id: Optional[str] = None
-    endpoint: Optional[str] = None
+    agent_id: str | None = None
+    endpoint: str | None = None
     protocol: str = "http"
-    capabilities: List[str] = field(default_factory=list)
-    input_schema: Dict[str, Any] = field(default_factory=dict)
-    output_schema: Dict[str, Any] = field(default_factory=dict)
-    cost_estimate: Optional[float] = None
-    latency_estimate: Optional[int] = None
+    capabilities: list[str] = field(default_factory=list)
+    input_schema: dict[str, Any] = field(default_factory=dict)
+    output_schema: dict[str, Any] = field(default_factory=dict)
+    cost_estimate: float | None = None
+    latency_estimate: int | None = None
     # Streaming capability flags used by tests and discovery metadata
     supports_streaming: bool = False
     supports_http_streaming: bool = False
     supports_sse: bool = False
     supports_websocket: bool = False
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -43,10 +44,10 @@ class AgentDelegationRequest:
 
     agent_id: str
     task: str
-    context: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
     timeout: int = 300
-    idempotency_key: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    idempotency_key: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -55,10 +56,10 @@ class AgentDelegationResponse:
 
     agent_id: str
     success: bool
-    result: Dict[str, Any]
+    result: dict[str, Any]
     execution_time: float
-    cost: Optional[float] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    cost: float | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class StreamChunk(TypedDict):
@@ -73,20 +74,20 @@ class A2AClient:
     def __init__(
         self,
         *,
-        config_path: Optional[str] = None,
-        registry_url: Optional[str] = None,
+        config_path: str | None = None,
+        registry_url: str | None = None,
         max_idempotency_entries: int = 256,
         idempotency_ttl_s: int = 600,
         max_retries: int = 2,
         retry_backoff_s: float = 0.1,
         circuit_breaker_threshold: int = 3,
         circuit_reset_s: int = 30,
-        observer: Optional[Callable[..., Any]] = None,
+        observer: Callable[..., Any] | None = None,
     ) -> None:
         self.config_path = Path(config_path) if config_path else None
         self.registry_url = registry_url
-        self.agent_map: Dict[str, AgentCapability] = {}
-        self._idempotency_store: "OrderedDict[str, tuple[float, AgentDelegationResponse]]" = OrderedDict()
+        self.agent_map: dict[str, AgentCapability] = {}
+        self._idempotency_store: OrderedDict[str, tuple[float, AgentDelegationResponse]] = OrderedDict()
         self._max_idempotency_entries = max_idempotency_entries
         self._idempotency_ttl_s = idempotency_ttl_s
         self._max_retries = max_retries
@@ -94,12 +95,12 @@ class A2AClient:
         self._circuit_breaker_threshold = circuit_breaker_threshold
         self._circuit_reset_s = circuit_reset_s
         self._consecutive_failures = 0
-        self._circuit_open_until: Optional[float] = None
+        self._circuit_open_until: float | None = None
         self._observer = observer
-        self._discovery_cache_agents: Optional[List[AgentCapability]] = None
-        self._discovery_cache_ts: Optional[float] = None
+        self._discovery_cache_agents: list[AgentCapability] | None = None
+        self._discovery_cache_ts: float | None = None
 
-    async def __aenter__(self) -> "A2AClient":
+    async def __aenter__(self) -> A2AClient:
         await self.load()
         return self
 
@@ -137,7 +138,7 @@ class A2AClient:
             if agent_id:  # Guard against None
                 self.agent_map[agent_id] = capability
 
-    def _validate_agent_cfg(self, agent_cfg: Dict[str, Any]) -> None:
+    def _validate_agent_cfg(self, agent_cfg: dict[str, Any]) -> None:
         required = ["agent_id", "name", "endpoint"]
         missing = [k for k in required if k not in agent_cfg]
         if missing:
@@ -156,11 +157,11 @@ class A2AClient:
     async def discover_agents(
         self,
         *,
-        capability: Optional[str] = None,
-        tags: Optional[List[str]] = None,
+        capability: str | None = None,
+        tags: list[str] | None = None,
         use_cache: bool = True,
         cache_ttl_s: int = 300,
-    ) -> List[AgentCapability]:
+    ) -> list[AgentCapability]:
         """Return agents filtered by capability and/or tags with optional caching."""
         now = time.time()
         cache_valid = (
@@ -213,8 +214,8 @@ class A2AClient:
             raise RuntimeError("A2A circuit open due to recent failures")
 
         start = asyncio.get_event_loop().time()
-        last_exc: Optional[Exception] = None
-        error_type: Optional[str] = None
+        last_exc: Exception | None = None
+        error_type: str | None = None
 
         self._emit("a2a.start", {
             "agent_id": request.agent_id,
@@ -229,7 +230,7 @@ class A2AClient:
                     timeout=request.timeout,
                 )
                 self._reset_circuit()
-                result: Dict[str, Any]
+                result: dict[str, Any]
                 if isinstance(raw_result, dict):
                     result = raw_result
                 else:
@@ -251,7 +252,7 @@ class A2AClient:
                     "success": True,
                 })
                 return response
-            except asyncio.TimeoutError as exc:
+            except asyncio.TimeoutError:
                 last_exc = RuntimeError(
                     f"Agent {request.agent_id} timed out after {request.timeout}s"
                 )
@@ -300,7 +301,7 @@ class A2AClient:
         self,
         request: AgentDelegationRequest,
         *,
-        chunk_timeout: Optional[float] = None,
+        chunk_timeout: float | None = None,
     ) -> Any:
         """Stream agent responses as an async generator.
 
@@ -315,8 +316,8 @@ class A2AClient:
         if self._is_circuit_open():
             raise RuntimeError("A2A circuit open due to recent failures")
 
-        last_exc: Optional[Exception] = None
-        error_type: Optional[str] = None
+        last_exc: Exception | None = None
+        error_type: str | None = None
         self._emit("a2a.stream.start", {
             "agent_id": request.agent_id,
             "protocol": agent.protocol,
@@ -339,7 +340,7 @@ class A2AClient:
                     "success": True,
                 })
                 return
-            except asyncio.TimeoutError as exc:
+            except asyncio.TimeoutError:
                 last_exc = RuntimeError(
                     f"Agent {request.agent_id} timed out after {request.timeout}s"
                 )
@@ -382,7 +383,7 @@ class A2AClient:
             return "schema_error"
         return "unknown"
 
-    def _emit(self, event: str, data: Dict[str, Any]) -> None:
+    def _emit(self, event: str, data: dict[str, Any]) -> None:
         if self._observer:
             try:
                 self._observer(event, data)
@@ -390,7 +391,7 @@ class A2AClient:
                 # Observer should never break execution
                 pass
 
-    def _get_cached_response(self, idempotency_key: Optional[str]) -> Optional[AgentDelegationResponse]:
+    def _get_cached_response(self, idempotency_key: str | None) -> AgentDelegationResponse | None:
         if not idempotency_key:
             return None
         entry = self._idempotency_store.get(idempotency_key)
@@ -405,7 +406,7 @@ class A2AClient:
         self._idempotency_store.move_to_end(idempotency_key)
         return resp
 
-    def _store_response(self, idempotency_key: Optional[str], response: AgentDelegationResponse) -> None:
+    def _store_response(self, idempotency_key: str | None, response: AgentDelegationResponse) -> None:
         if not idempotency_key:
             return
         self._idempotency_store[idempotency_key] = (time.time(), response)
@@ -432,7 +433,7 @@ class A2AClient:
         self,
         agent: AgentCapability,
         request: AgentDelegationRequest,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Delegate to an HTTP agent endpoint returning JSON."""
         headers = {"Content-Type": "application/json"}
         auth_cfg = agent.metadata.get("auth") if agent.metadata else None
@@ -474,7 +475,7 @@ class A2AClient:
         self,
         agent: AgentCapability,
         request: AgentDelegationRequest,
-        chunk_timeout: Optional[float],
+        chunk_timeout: float | None,
     ) -> Any:
         if agent.protocol == "http":
             async for chunk in self._delegate_http_stream(agent, request, chunk_timeout):
@@ -492,7 +493,7 @@ class A2AClient:
         self,
         agent: AgentCapability,
         request: AgentDelegationRequest,
-        chunk_timeout: Optional[float],
+        chunk_timeout: float | None,
     ) -> AsyncGenerator[StreamChunk, None]:
         headers = {"Content-Type": "application/json"}
         auth_cfg = agent.metadata.get("auth") if agent.metadata else None
@@ -542,7 +543,7 @@ class A2AClient:
         self,
         agent: AgentCapability,
         request: AgentDelegationRequest,
-        chunk_timeout: Optional[float],
+        chunk_timeout: float | None,
     ) -> Any:
         headers = {"Accept": "text/event-stream"}
 
@@ -578,7 +579,7 @@ class A2AClient:
         self,
         agent: AgentCapability,
         request: AgentDelegationRequest,
-        chunk_timeout: Optional[float],
+        chunk_timeout: float | None,
     ) -> Any:
         endpoint = agent.endpoint
         if not endpoint:
@@ -613,8 +614,8 @@ class A2AClient:
             del self.agent_map[agent_id]
             self.invalidate_discovery_cache()
 
-    def get_agent(self, agent_id: str) -> Optional[AgentCapability]:
+    def get_agent(self, agent_id: str) -> AgentCapability | None:
         return self.agent_map.get(agent_id)
 
-    def list_agents(self) -> List[AgentCapability]:
+    def list_agents(self) -> list[AgentCapability]:
         return list(self.agent_map.values())

@@ -7,11 +7,10 @@ leaderboards, and recommendation logs.
 Auto-creates tables on first run with proper indexes and constraints.
 """
 
-import sqlite3
 import logging
-from pathlib import Path
+import sqlite3
 from datetime import datetime
-from typing import Optional
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -177,7 +176,7 @@ class SQLiteSchema:
         ],
     }
 
-    def __init__(self, db_path: Optional[str] = None):
+    def __init__(self, db_path: str | None = None):
         """Initialize SQLite schema manager.
 
         Args:
@@ -402,7 +401,7 @@ class SQLiteSchema:
 
 
 def initialize_analytics_db(
-    db_path: Optional[str] = None, retention_days: int = 365, cleanup: bool = False
+    db_path: str | None = None, retention_days: int = 365, cleanup: bool = False
 ) -> bool:
     """Convenience function to initialize analytics database.
 

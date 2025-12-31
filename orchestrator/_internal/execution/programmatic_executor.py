@@ -14,27 +14,28 @@ Benefits:
 - Complex workflows (loops, filters, aggregations)
 """
 
-import asyncio
 import ast
+import asyncio
+import importlib
 import json
-import time
 import logging
-import uuid
+import shutil
 import sys
 import tempfile
-import shutil
-from typing import Dict, Any, List, Optional, Callable, Awaitable
+import time
+import uuid
+from collections.abc import Awaitable, Callable
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
+from typing import Any
 
 import orchestrator.tools.tool_executor as tool_executor
-import importlib
-
 from orchestrator.shared.models import ToolCatalog, ToolDefinition
-from .code_generator import StubGenerator
 from orchestrator.tools.tool_filesystem import ToolFileSystem
-from .sandbox import SandboxEnvironment, ExecutionResult, ResourceLimits, create_sandbox
+
+from .code_generator import StubGenerator
+from .sandbox import ExecutionResult, ResourceLimits, create_sandbox
 
 
 class SecurityError(Exception):
@@ -60,17 +61,17 @@ class ProgrammaticToolExecutor:
         print(result["output"])  # ["Alice", "Bob"]
         print(f"Called {len(result['tool_calls'])} tools in {result['execution_time']:.2f}s")
     """
-    
+
     def __init__(
         self,
         tool_catalog: ToolCatalog,
         timeout: int = 30,
         max_tool_calls: int = 100,
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
         enable_stubs: bool = True,
-        stub_dir: Optional[Path] = None,
+        stub_dir: Path | None = None,
         use_sandbox: bool = True,
-        sandbox_limits: Optional[ResourceLimits] = None,
+        sandbox_limits: ResourceLimits | None = None,
     ):
         """
         Args:
@@ -89,28 +90,28 @@ class ProgrammaticToolExecutor:
         self.logger = logger or logging.getLogger(__name__)
         self.enable_stubs = enable_stubs
         self.use_sandbox = use_sandbox
-        
+
         # Track tool calls for billing/monitoring
         self.tool_call_count = 0
-        self.tool_call_log: List[Dict[str, Any]] = []
+        self.tool_call_log: list[dict[str, Any]] = []
         self.execution_id = f"ptc_{uuid.uuid4().hex[:8]}"
-        
+
         # Phase 1: Stub generation for progressive disclosure
         self.stub_dir = stub_dir
         self.stubs_generated = False
-        self._temp_dir: Optional[str] = None
-        
+        self._temp_dir: str | None = None
+
         if self.enable_stubs:
             self._prepare_stub_environment()
-        
+
         # Initialize sandbox (Phase 2)
         self.sandbox = create_sandbox(use_docker=False, limits=sandbox_limits)
-    
+
     async def execute(
         self,
         code: str,
-        context: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """
         Execute code that orchestrates tool calls
         
@@ -132,13 +133,13 @@ class ProgrammaticToolExecutor:
         self.tool_call_log = []
 
         # Patch call_tool so generated stubs route back through this executor
-        original_call_tool: Optional[Callable[[str, str, Dict[str, Any], int], Awaitable[Any]]] = None
+        original_call_tool: Callable[[str, str, dict[str, Any], int], Awaitable[Any]] | None = None
         patched_call_tool = False
         if self.enable_stubs:
             try:
                 original_call_tool = getattr(tool_executor, "call_tool", None)
 
-                async def _call_tool_proxy(server: str, tool_name: str, parameters: Dict[str, Any], timeout: int = 30) -> Any:
+                async def _call_tool_proxy(server: str, tool_name: str, parameters: dict[str, Any], timeout: int = 30) -> Any:
                     tool_def = self.tool_catalog.tools.get(tool_name)
                     if not tool_def:
                         raise ValueError(f"Tool not found: {tool_name}")
@@ -185,7 +186,7 @@ class ProgrammaticToolExecutor:
                 patched_call_tool = True
             except Exception as patch_exc:
                 self.logger.warning(f"{self.execution_id}: Failed to patch call_tool for stubs: {patch_exc}")
-        
+
         # Build execution environment / context
         exec_context = {
             "json": json,
@@ -193,11 +194,11 @@ class ProgrammaticToolExecutor:
         }
         # Provide sys for safe path adjustments inside sandbox (no import needed)
         exec_context["sys"] = sys
-        
+
         # Inject tool functions
         for tool_name, tool_def in self.tool_catalog.tools.items():
             exec_context[tool_name] = self._create_tool_wrapper(tool_def)
-        
+
         try:
             if self.use_sandbox:
                 # Wrap code with prelude to ensure stub paths are importable, then async __main__ for sandbox
@@ -230,23 +231,23 @@ class ProgrammaticToolExecutor:
                     f"    {line}" if line.strip() else "" for line in code.split("\n")
                 )
                 wrapped_code = "\n".join(prelude_lines + ["async def __main__():", user_body])
-                
+
                 # Align sandbox timeout with executor timeout
                 if hasattr(self.sandbox, "limits") and self.sandbox.limits:
                     try:
                         self.sandbox.limits.max_duration = float(self.timeout)
                     except Exception:
                         pass
-                
+
                 # Execute in sandbox (sandbox enforces its own timeout)
                 sres: ExecutionResult = await self.sandbox.execute(wrapped_code, exec_context)
                 execution_time = time.time() - start_time
-                
+
                 self.logger.info(
                     f"Programmatic execution {self.execution_id}: "
                     f"{self.tool_call_count} tools called in {execution_time:.2f}s"
                 )
-                
+
                 # Normalize error format to match legacy expectations
                 if sres.success:
                     error_val = None
@@ -283,7 +284,7 @@ class ProgrammaticToolExecutor:
                 }
                 for tool_name, tool_def in self.tool_catalog.tools.items():
                     exec_globals[tool_name] = self._create_tool_wrapper(tool_def)
-                
+
                 stdout_buffer = StringIO()
                 parsed = ast.parse(code)
                 self._validate_code_safety(parsed)
@@ -305,12 +306,12 @@ class ProgrammaticToolExecutor:
                     "error": None,
                     "execution_id": self.execution_id
                 }
-            
+
         except asyncio.TimeoutError:
             execution_time = time.time() - start_time
             error_msg = f"Execution timeout after {self.timeout}s"
             self.logger.error(f"{self.execution_id}: {error_msg}")
-            
+
             return {
                 "output": stdout_buffer.getvalue() if 'stdout_buffer' in locals() else "",
                 "result": None,
@@ -319,12 +320,12 @@ class ProgrammaticToolExecutor:
                 "error": error_msg,
                 "execution_id": self.execution_id
             }
-        
+
         except SecurityError as e:
             execution_time = time.time() - start_time
             error_msg = f"Security violation: {str(e)}"
             self.logger.error(f"{self.execution_id}: {error_msg}")
-            
+
             return {
                 "output": stdout_buffer.getvalue() if 'stdout_buffer' in locals() else "",
                 "result": None,
@@ -333,12 +334,12 @@ class ProgrammaticToolExecutor:
                 "error": error_msg,
                 "execution_id": self.execution_id
             }
-        
+
         except Exception as e:
             execution_time = time.time() - start_time
             error_msg = f"{type(e).__name__}: {str(e)}"
             self.logger.error(f"{self.execution_id}: {error_msg}")
-            
+
             return {
                 "output": stdout_buffer.getvalue() if 'stdout_buffer' in locals() else "",
                 "result": None,
@@ -355,7 +356,7 @@ class ProgrammaticToolExecutor:
                         tool_executor.call_tool = original_call_tool  # type: ignore[assignment]
                 except Exception as restore_exc:
                     self.logger.warning(f"{self.execution_id}: Failed to restore call_tool: {restore_exc}")
-    
+
     def _create_tool_wrapper(self, tool_def: ToolDefinition) -> Callable[..., Awaitable[Any]]:
         """
         Create async function that wraps tool execution
@@ -377,16 +378,16 @@ class ProgrammaticToolExecutor:
             missing = set(required_params) - set(kwargs.keys())
             if missing:
                 raise ValueError(f"{tool_def.name}: Missing required parameters: {missing}")
-            
+
             # Check tool call limit
             if self.tool_call_count >= self.max_tool_calls:
                 raise RuntimeError(
                     f"Exceeded max tool calls ({self.max_tool_calls}). "
                     f"Consider optimizing your code or increasing the limit."
                 )
-            
+
             self.tool_call_count += 1
-            
+
             # Log the call with caller information (Anthropic pattern)
             start_ts: float = time.time()
             call_record = {
@@ -401,34 +402,34 @@ class ProgrammaticToolExecutor:
                 }
             }
             self.tool_call_log.append(call_record)
-            
+
             # Execute the actual tool
             try:
                 result = await self._execute_tool(tool_def, kwargs)
-                
+
                 call_record["result_size"] = len(str(result))
                 end_ts: float = time.time()
                 call_record["completed_at"] = end_ts
                 call_record["duration"] = end_ts - start_ts
                 call_record["error"] = None
-                
+
                 return result
-                
+
             except Exception as e:
                 call_record["error"] = str(e)
                 end_ts = time.time()
                 call_record["completed_at"] = end_ts
                 call_record["duration"] = end_ts - start_ts
                 raise
-        
+
         # Set function name for better debugging
         tool_wrapper.__name__ = tool_def.name
         return tool_wrapper
-    
+
     async def _execute_tool(
         self,
         tool_def: ToolDefinition,
-        parameters: Dict[str, Any]
+        parameters: dict[str, Any]
     ) -> Any:
         """
         Execute the actual tool based on its type
@@ -438,15 +439,15 @@ class ProgrammaticToolExecutor:
         if tool_def.type == "mcp":
             # Call MCP worker
             from orchestrator._internal.infra.mcp_client import MCPClientShim
-            
+
             shim = MCPClientShim()
             if tool_def.name not in shim.tool_map:
                 raise ValueError(f"MCP tool not found: {tool_def.name}")
-            
+
             tool_func = shim.tool_map[tool_def.name]
             result = await tool_func(parameters)
             return result
-        
+
         elif tool_def.type == "function":
             # Call structured function via hybrid dispatcher worker
             from orchestrator._internal.dispatch.hybrid_dispatcher import function_call_worker
@@ -456,18 +457,18 @@ class ProgrammaticToolExecutor:
             }
             result = await function_call_worker(payload)
             return result
-        
+
         elif tool_def.type == "code_exec":
             # Nested code execution not supported (prevents recursion attacks)
             raise SecurityError(
                 "Nested code execution is not allowed. "
                 "Move code_exec logic into programmatic calling instead."
             )
-        
+
         else:
             raise ValueError(f"Unknown tool type: {tool_def.type}")
-    
-    async def _exec_async(self, code: str, exec_globals: Dict) -> Any:
+
+    async def _exec_async(self, code: str, exec_globals: dict) -> Any:
         """
         Execute code that may contain await statements
         
@@ -476,13 +477,13 @@ class ProgrammaticToolExecutor:
         # Wrap code in async function
         wrapped_code = "async def __exec_func():\n"
         wrapped_code += "\n".join(f"    {line}" for line in code.split("\n"))
-        
+
         # Execute wrapper definition
         exec(wrapped_code, exec_globals)
-        
+
         # Call the async function
         return await exec_globals["__exec_func"]()
-    
+
     def _validate_code_safety(self, parsed: ast.AST) -> None:
         """
         AST-based code validation for security
@@ -509,56 +510,56 @@ class ProgrammaticToolExecutor:
             "pty", "fcntl", "resource", "signal",
             "pathlib", "shutil", "tempfile"
         ]
-        
+
         forbidden_functions = [
             "eval", "exec", "compile", "__import__",
             "open", "input", "raw_input",
             "delattr", "setattr", "getattr",  # Prevent reflection abuse
             "globals", "locals", "vars", "dir"  # Prevent introspection abuse
         ]
-        
+
         for node in ast.walk(parsed):
             # Check imports
             if isinstance(node, ast.Import):
                 for alias in node.names:
                     if alias.name in forbidden_imports:
                         raise SecurityError(f"Forbidden import: {alias.name}")
-                    
+
                     # Block partial matches (e.g., "os.path")
                     base_module = alias.name.split(".")[0]
                     if base_module in forbidden_imports:
                         raise SecurityError(f"Forbidden import: {alias.name}")
-            
+
             # Check from X import Y
             if isinstance(node, ast.ImportFrom):
                 if node.module:
                     if node.module in forbidden_imports:
                         raise SecurityError(f"Forbidden import: from {node.module}")
-                    
+
                     # Block partial matches
                     base_module = node.module.split(".")[0]
                     if base_module in forbidden_imports:
                         raise SecurityError(f"Forbidden import: from {node.module}")
-            
+
             # Check function calls
             if isinstance(node, ast.Call):
                 if isinstance(node.func, ast.Name):
                     if node.func.id in forbidden_functions:
                         raise SecurityError(f"Forbidden function: {node.func.id}()")
-                
+
                 # Check for dangerous attribute access: obj.system()
                 if isinstance(node.func, ast.Attribute):
                     if node.func.attr in ["system", "popen", "spawn", "call", "run"]:
                         raise SecurityError(f"Forbidden method: .{node.func.attr}()")
-            
+
             # Check for attempts to modify __builtins__
             if isinstance(node, ast.Assign):
                 for target in node.targets:
                     if isinstance(target, ast.Name):
                         if target.id in ["__builtins__", "__globals__", "__dict__"]:
                             raise SecurityError(f"Cannot modify: {target.id}")
-    
-    def _get_safe_builtins(self) -> Dict:
+
+    def _get_safe_builtins(self) -> dict:
         """
         Return safe subset of builtins
         
@@ -600,13 +601,13 @@ class ProgrammaticToolExecutor:
             # Other safe operations
             "all", "any", "slice", "hash", "id"
         }
-        
+
         # Build dictionary from __builtins__
         if isinstance(__builtins__, dict):
             return {k: __builtins__[k] for k in safe if k in __builtins__}
         else:
             return {k: getattr(__builtins__, k) for k in safe if hasattr(__builtins__, k)}
-    
+
     def _prepare_stub_environment(self) -> None:
         """
         Generate tool stubs and prepare for progressive disclosure.
@@ -628,20 +629,20 @@ class ProgrammaticToolExecutor:
                 stub_path = self.stub_dir if isinstance(self.stub_dir, Path) else Path(self.stub_dir)
                 self.stub_dir = stub_path
                 self.stub_dir.mkdir(parents=True, exist_ok=True)
-            
+
             # Generate stubs
             self.logger.info(f"Generating tool stubs in {self.stub_dir}")
             generator = StubGenerator(self.tool_catalog, self.stub_dir)
             stubs = generator.generate_all()
-            
+
             self.logger.info(f"Generated {len(stubs)} tool stubs")
-            
+
             # Add to sys.path for importing (only stub root; contains 'tools' package)
             stub_path_str = str(self.stub_dir)
             if stub_path_str not in sys.path:
                 sys.path.insert(0, stub_path_str)
                 self.logger.debug(f"Added {stub_path_str} to sys.path")
-            
+
             # Create ToolFileSystem for exploration
             self.tool_filesystem = ToolFileSystem(self.stub_dir)
 
@@ -663,16 +664,16 @@ class ProgrammaticToolExecutor:
                         self.logger.debug(f"Could not import stub module {modname}: {im_err}")
             except Exception as imp_all_err:
                 self.logger.debug(f"Stub pre-import pass failed: {imp_all_err}")
-            
+
             self.stubs_generated = True
             self.logger.info("Stub environment ready for progressive disclosure")
-            
+
         except Exception as e:
             self.logger.warning(f"Failed to prepare stub environment: {e}")
             self.logger.warning("Falling back to direct tool injection")
             self.enable_stubs = False
-    
-    def get_tools_directory_tree(self) -> Optional[str]:
+
+    def get_tools_directory_tree(self) -> str | None:
         """
         Get visual representation of tool directory for AI exploration.
         
@@ -688,10 +689,10 @@ class ProgrammaticToolExecutor:
         """
         if not self.enable_stubs or not hasattr(self, 'tool_filesystem'):
             return None
-        
+
         return self.tool_filesystem.get_directory_tree()
-    
-    def search_tools(self, query: str) -> List[str]:
+
+    def search_tools(self, query: str) -> list[str]:
         """
         Search for tools by name or description.
         
@@ -706,9 +707,9 @@ class ProgrammaticToolExecutor:
         if not self.enable_stubs or not hasattr(self, 'tool_filesystem'):
             # Fallback to catalog keys
             return [name for name in self.tool_catalog.tools.keys() if query.lower() in name.lower()]
-        
+
         return self.tool_filesystem.search_tools(query)
-    
+
     def cleanup(self) -> None:
         """Clean up temporary stub directory"""
         if self._temp_dir:
@@ -723,7 +724,7 @@ class ProgrammaticToolExecutor:
                                 sys.path.remove(path_str)
                         except (TypeError, ValueError):
                             pass
-                
+
                 # Delete temp directory
                 shutil.rmtree(self._temp_dir, ignore_errors=True)
                 self.logger.debug(f"Cleaned up stub directory: {self._temp_dir}")
@@ -733,7 +734,7 @@ class ProgrammaticToolExecutor:
                     self.logger.warning(f"Failed to cleanup stub directory: {e}")
                 except Exception:
                     pass
-    
+
     def __del__(self) -> None:
         """Cleanup on deletion"""
         self.cleanup()
@@ -743,9 +744,9 @@ class ProgrammaticToolExecutor:
 async def execute_programmatic_code(
     code: str,
     tool_catalog: ToolCatalog,
-    context: Optional[Dict[str, Any]] = None,
+    context: dict[str, Any] | None = None,
     timeout: int = 30
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Convenience function to execute programmatic tool calling code
     

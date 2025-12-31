@@ -1,14 +1,13 @@
 import logging
-import re
 
 import pytest
 
 from orchestrator._internal.errors import (
     MissingDependencyError,
+    get_install_suggestion,
+    optional_feature,
     require_package,
     require_packages,
-    optional_feature,
-    get_install_suggestion,
 )
 
 

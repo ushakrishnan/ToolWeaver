@@ -12,10 +12,8 @@ Execute computational tasks through a controlled, safe tool interface
 """
 
 import asyncio
-from typing import Any, Dict
 
 from orchestrator import mcp_tool, search_tools
-
 
 # ============================================================
 # Code Execution Tools - Demonstrate Safe Computation Pattern
@@ -26,21 +24,21 @@ async def calculate_receipt(items: list) -> dict:
     """Calculate receipt total with items and tax."""
     if not items:
         return {"error": "No items provided"}
-    
+
     try:
         subtotal = 0
         item_count = 0
-        
+
         for item in items:
             price = float(item.get("price", 0))
             quantity = int(item.get("quantity", 1))
             subtotal += price * quantity
             item_count += quantity
-        
+
         tax_rate = 0.08
         tax = subtotal * tax_rate
         total = subtotal + tax
-        
+
         return {
             "subtotal": round(subtotal, 2),
             "tax": round(tax, 2),
@@ -56,7 +54,7 @@ async def calculate_receipt(items: list) -> dict:
 async def validate_receipt_data(data: dict) -> dict:
     """Validate that receipt data is structurally correct."""
     errors = []
-    
+
     # Check required fields
     if not data.get("merchant"):
         errors.append("Missing merchant name")
@@ -64,7 +62,7 @@ async def validate_receipt_data(data: dict) -> dict:
         errors.append("No items found")
     elif not isinstance(data.get("items"), list):
         errors.append("Items must be a list")
-    
+
     # Check item structure
     if isinstance(data.get("items"), list):
         for i, item in enumerate(data["items"]):
@@ -74,7 +72,7 @@ async def validate_receipt_data(data: dict) -> dict:
                 float(item.get("price", 0))
             except (ValueError, TypeError):
                 errors.append(f"Item {i}: Invalid price")
-    
+
     # Check total if provided
     if "total" in data:
         try:
@@ -89,7 +87,7 @@ async def validate_receipt_data(data: dict) -> dict:
                 )
         except (ValueError, TypeError):
             errors.append("Invalid total value")
-    
+
     return {
         "valid": len(errors) == 0,
         "errors": errors,
@@ -102,7 +100,7 @@ async def transform_prices(items: list, multiplier: float = 1.0) -> dict:
     """Apply a transformation to all prices in items."""
     if not items:
         return {"error": "No items provided"}
-    
+
     try:
         transformed = []
         for item in items:
@@ -114,7 +112,7 @@ async def transform_prices(items: list, multiplier: float = 1.0) -> dict:
                 "new_price": new_price,
                 "multiplier": multiplier
             })
-        
+
         return {
             "items": transformed,
             "count": len(transformed),
@@ -131,19 +129,19 @@ async def generate_receipt_report(receipt: dict) -> dict:
     report.append("=" * 50)
     report.append("RECEIPT REPORT")
     report.append("=" * 50)
-    
+
     # Merchant info
     report.append(f"\nMerchant: {receipt.get('merchant', 'N/A')}")
     report.append(f"Date: {receipt.get('date', 'N/A')}")
-    
+
     # Items
     report.append("\nItems:")
     report.append("-" * 50)
-    
+
     items = receipt.get("items", [])
     total_price = 0
     total_qty = 0
-    
+
     for item in items:
         name = item.get("name", "Unknown")
         price = float(item.get("price", 0))
@@ -151,19 +149,19 @@ async def generate_receipt_report(receipt: dict) -> dict:
         item_total = price * qty
         total_price += item_total
         total_qty += qty
-        
+
         report.append(f"  {name:20} x{qty:2} @ ${price:7.2f} = ${item_total:7.2f}")
-    
+
     # Totals
     tax = total_price * 0.08
     final_total = total_price + tax
-    
+
     report.append("-" * 50)
     report.append(f"  Subtotal: ${total_price:>40.2f}")
     report.append(f"  Tax (8%): ${tax:>40.2f}")
     report.append(f"  Total:    ${final_total:>40.2f}")
     report.append("=" * 50)
-    
+
     return {
         "report": "\n".join(report),
         "item_count": len(items),
@@ -184,7 +182,7 @@ async def main():
     print("EXAMPLE 09: Code Execution with ToolWeaver")
     print("=" * 70)
     print()
-    
+
     # Sample data
     sample_receipt = {
         "merchant": "Restaurant XYZ",
@@ -195,7 +193,7 @@ async def main():
             {"name": "Drink", "price": 2.50, "quantity": 2}
         ]
     }
-    
+
     print("Step 1: Validate Receipt Data")
     print("-" * 70)
     validation = await validate_receipt_data({"data": sample_receipt})
@@ -206,7 +204,7 @@ async def main():
     else:
         print("  No errors found")
     print()
-    
+
     print("Step 2: Calculate Receipt Total")
     print("-" * 70)
     calculation = await calculate_receipt({"items": sample_receipt['items']})
@@ -215,7 +213,7 @@ async def main():
     print(f"  Total:    ${calculation['total']:.2f}")
     print(f"  Items:    {calculation['item_count']}")
     print()
-    
+
     print("Step 3: Apply Price Discount (10% off)")
     print("-" * 70)
     discounted = await transform_prices({
@@ -226,13 +224,13 @@ async def main():
     for item in discounted['items']:
         print(f"    {item['name']:15} ${item['original_price']:7.2f} -> ${item['new_price']:7.2f}")
     print()
-    
+
     print("Step 4: Generate Receipt Report")
     print("-" * 70)
     report = await generate_receipt_report({"receipt": sample_receipt})
     print(report['report'])
     print()
-    
+
     print("Step 5: Discover Computation Tools")
     print("-" * 70)
     comp_tools = search_tools(domain="computation")
@@ -240,12 +238,12 @@ async def main():
     for tool in comp_tools:
         print(f"    • {tool.name:30} - {tool.description}")
     print()
-    
+
     print("=" * 70)
     print("[OK] Code execution demonstration complete!")
     print("=" * 70)
     print()
-    
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -15,22 +15,18 @@ Usage:
     stubs = generator.generate_all()
 """
 
-import textwrap
-import re
 import logging
-from typing import Dict, List, Optional, Any
-from pathlib import Path
+import re
+import textwrap
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
-from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 from orchestrator._internal.workflows.control_flow_patterns import (
     ControlFlowPatterns,
     PatternType,
-    create_polling_code,
-    create_parallel_code,
-    create_conditional_code,
-    create_retry_code,
 )
+from orchestrator.shared.models import ToolCatalog, ToolDefinition
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +37,8 @@ class GeneratedStub:
     tool_name: str
     file_path: Path
     code: str
-    imports: List[str]
-    classes: List[str]
+    imports: list[str]
+    classes: list[str]
 
 
 class StubGenerator:
@@ -55,7 +51,7 @@ class StubGenerator:
     - Creates async function wrappers
     - Adds type hints and docstrings
     """
-    
+
     def __init__(self, catalog: ToolCatalog, output_dir: Path):
         """
         Initialize stub generator.
@@ -66,9 +62,9 @@ class StubGenerator:
         """
         self.catalog = catalog
         self.output_dir = output_dir
-        self.generated_stubs: Dict[str, GeneratedStub] = {}
-        
-    def generate_all(self) -> Dict[str, str]:
+        self.generated_stubs: dict[str, GeneratedStub] = {}
+
+    def generate_all(self) -> dict[str, str]:
         """
         Generate all stubs organized by server.
         
@@ -76,28 +72,28 @@ class StubGenerator:
             Dictionary mapping file paths to code
         """
         logger.info(f"Generating stubs for {len(self.catalog.tools)} tools")
-        
+
         # Group tools by server/domain
         by_server = self._group_by_server()
-        
+
         stubs = {}
-        
+
         for server_name, tools in by_server.items():
             server_dir = self.output_dir / "tools" / server_name
             server_dir.mkdir(parents=True, exist_ok=True)
-            
+
             logger.info(f"Generating {len(tools)} stubs for server: {server_name}")
-            
+
             for tool in tools:
                 try:
                     stub_path = server_dir / f"{tool.name}.py"
                     stub_code = self._generate_stub(tool)
-                    
+
                     # Write to disk
                     stub_path.write_text(stub_code)
-                    
+
                     stubs[str(stub_path)] = stub_code
-                    
+
                     # Track generated stub
                     self.generated_stubs[tool.name] = GeneratedStub(
                         tool_name=tool.name,
@@ -106,17 +102,17 @@ class StubGenerator:
                         imports=self._extract_imports(stub_code),
                         classes=self._extract_classes(stub_code)
                     )
-                    
+
                 except Exception as e:
                     logger.error(f"Failed to generate stub for {tool.name}: {e}")
                     continue
-            
+
             # Generate __init__.py for server
             self._generate_server_init(server_dir, tools)
-        
+
         # Generate top-level __init__.py
         self._generate_top_init()
-        
+
         logger.info(f"Generated {len(stubs)} stubs")
         return stubs
 
@@ -130,7 +126,7 @@ class StubGenerator:
         return True
 
     # --- Control Flow Integration (Phase 2) ---
-    def list_control_flow_patterns(self) -> List[Dict[str, Any]]:
+    def list_control_flow_patterns(self) -> list[dict[str, Any]]:
         """Expose available control flow patterns for code generation prompts."""
         patterns = ControlFlowPatterns.list_patterns()
         return [
@@ -143,7 +139,7 @@ class StubGenerator:
             for p in patterns
         ]
 
-    def render_control_flow(self, pattern_type: str, params: Dict[str, Any]) -> str:
+    def render_control_flow(self, pattern_type: str, params: dict[str, Any]) -> str:
         """Render a control flow code snippet by pattern type and parameters."""
         try:
             ptype = PatternType(pattern_type)
@@ -154,22 +150,22 @@ class StubGenerator:
         if not pattern:
             raise ValueError(f"Unknown control flow pattern: {pattern_type}")
         return ControlFlowPatterns.generate_code(pattern, params)
-        
-    def _group_by_server(self) -> Dict[str, List[ToolDefinition]]:
+
+    def _group_by_server(self) -> dict[str, list[ToolDefinition]]:
         """Group tools by server/domain"""
-        grouped: Dict[str, List[ToolDefinition]] = {}
-        
+        grouped: dict[str, list[ToolDefinition]] = {}
+
         for tool in self.catalog.tools.values():
             # Default to a general bucket when no explicit domain is provided
             server = tool.domain or "general"
-            
+
             if server not in grouped:
                 grouped[server] = []
-            
+
             grouped[server].append(tool)
-        
+
         return grouped
-        
+
     def _generate_stub(self, tool: ToolDefinition) -> str:
         """
         Generate single stub from tool definition.
@@ -183,10 +179,10 @@ class StubGenerator:
         # Generate input/output models
         input_class = self._generate_input_model(tool)
         output_class = self._generate_output_model(tool)
-        
+
         # Generate function
         function = self._generate_function(tool)
-        
+
         # Combine into module
         return textwrap.dedent(f'''
 """
@@ -206,46 +202,46 @@ from pydantic import BaseModel, Field
 
 {function}
         ''').strip() + "\n"
-        
+
     def _generate_input_model(self, tool: ToolDefinition) -> str:
         """Generate Pydantic model for input parameters"""
         class_name = self._camel_case(tool.name) + "Input"
-        
+
         if not tool.parameters:
             return f"class {class_name}(BaseModel):\n    \"\"\"Input parameters for {tool.name}\"\"\"\n    pass"
-        
+
         fields = []
         fields.append(f'class {class_name}(BaseModel):')
         fields.append(f'    """Input parameters for {tool.name}"""')
         fields.append("")
-        
+
         for param in tool.parameters:
             field_type = self._python_type(param.type)
-            
+
             # Make optional if not required
             if not param.required:
                 field_type = f"Optional[{field_type}]"
-            
+
             # Build field definition
             if param.required:
                 default = "..."
             else:
                 default = "None"
-            
+
             # Add description
             if param.description:
                 field_def = f'Field({default}, description="{param.description}")'
             else:
                 field_def = default
-            
+
             fields.append(f"    {param.name}: {field_type} = {field_def}")
-        
+
         return "\n".join(fields)
-        
+
     def _generate_output_model(self, tool: ToolDefinition) -> str:
         """Generate Pydantic model for output"""
         class_name = self._camel_case(tool.name) + "Output"
-        
+
         # For now, use generic output
         # TODO: Parse output schema if available
         return textwrap.dedent(f'''
@@ -255,15 +251,15 @@ class {class_name}(BaseModel):
     success: bool = True
     error: Optional[str] = None
         ''').strip()
-        
+
     def _generate_function(self, tool: ToolDefinition) -> str:
         """Generate async function wrapper"""
         input_class = self._camel_case(tool.name) + "Input"
         output_class = self._camel_case(tool.name) + "Output"
-        
+
         # Generate docstring
         docstring = self._generate_docstring(tool)
-        
+
         return textwrap.dedent(f'''
 async def {tool.name}(input_data: {input_class}) -> {output_class}:
     """
@@ -289,16 +285,16 @@ async def {tool.name}(input_data: {input_class}) -> {output_class}:
             error=str(e)
         )
         ''').strip()
-        
+
     def _generate_docstring(self, tool: ToolDefinition) -> str:
         """Generate comprehensive docstring"""
         lines = []
-        
+
         # Description
         if tool.description:
             lines.append(f"    {tool.description}")
             lines.append("")
-        
+
         # Parameters
         if tool.parameters:
             lines.append("    Args:")
@@ -307,7 +303,7 @@ async def {tool.name}(input_data: {input_class}) -> {output_class}:
                 desc = param.description or "No description"
                 lines.append(f"        {param.name} ({param.type}, {req}): {desc}")
             lines.append("")
-        
+
         # Returns
         lines.append("    Returns:")
         lines.append(f"        {self._camel_case(tool.name)}Output with result")
@@ -328,9 +324,9 @@ async def {tool.name}(input_data: {input_class}) -> {output_class}:
                 # If pattern rendering fails, include a brief note for debugging
                 lines.append("")
                 lines.append(f"    Control Flow: [invalid pattern: {e}]")
-        
+
         return "\n".join(lines)
-        
+
     def _python_type(self, param_type: str) -> str:
         """Convert parameter type to Python type hint"""
         type_map = {
@@ -348,23 +344,23 @@ async def {tool.name}(input_data: {input_class}) -> {output_class}:
             "dict": "Dict[str, Any]",
             "any": "Any"
         }
-        
+
         return type_map.get(param_type.lower(), "Any")
-        
+
     def _camel_case(self, snake_str: str) -> str:
         """Convert snake_case to CamelCase"""
         components = snake_str.split('_')
         return ''.join(x.title() for x in components)
-        
-    def _extract_imports(self, code: str) -> List[str]:
+
+    def _extract_imports(self, code: str) -> list[str]:
         """Extract import statements from code"""
         imports = []
         for line in code.split('\n'):
             if line.startswith('import ') or line.startswith('from '):
                 imports.append(line)
         return imports
-        
-    def _extract_classes(self, code: str) -> List[str]:
+
+    def _extract_classes(self, code: str) -> list[str]:
         """Extract class names from code"""
         classes = []
         for line in code.split('\n'):
@@ -373,26 +369,26 @@ async def {tool.name}(input_data: {input_class}) -> {output_class}:
                 if match:
                     classes.append(match.group(1))
         return classes
-        
-    def _generate_server_init(self, server_dir: Path, tools: List[ToolDefinition]) -> None:
+
+    def _generate_server_init(self, server_dir: Path, tools: list[ToolDefinition]) -> None:
         """Generate __init__.py for a server directory"""
         init_path = server_dir / "__init__.py"
-        
+
         imports = []
         all_exports = []
-        
+
         for tool in tools:
             # Import function and models
             imports.append(f"from .{tool.name} import {tool.name}")
             all_exports.append(tool.name)
-            
+
             # Also export input/output classes
             input_class = self._camel_case(tool.name) + "Input"
             output_class = self._camel_case(tool.name) + "Output"
-            
+
             imports.append(f"from .{tool.name} import {input_class}, {output_class}")
             all_exports.extend([input_class, output_class])
-        
+
         content = textwrap.dedent(f'''
 """
 Generated tool stubs for {server_dir.name}
@@ -404,20 +400,20 @@ Auto-generated by StubGenerator
 
 __all__ = {all_exports}
         ''').strip() + "\n"
-        
+
         init_path.write_text(content)
         logger.debug(f"Generated {init_path}")
-        
+
     def _generate_top_init(self) -> None:
         """Generate top-level __init__.py"""
         tools_dir = self.output_dir / "tools"
         init_path = tools_dir / "__init__.py"
-        
+
         # List all server directories
         servers = [d.name for d in tools_dir.iterdir() if d.is_dir() and not d.name.startswith('_')]
-        
+
         imports = [f"from . import {server}" for server in servers]
-        
+
         content = textwrap.dedent(f'''
 """
 Generated tool stubs
@@ -429,14 +425,14 @@ Auto-generated by StubGenerator
 
 __all__ = {servers}
         ''').strip() + "\n"
-        
+
         init_path.write_text(content)
         logger.debug(f"Generated {init_path}")
-        
-    def get_stub_info(self, tool_name: str) -> Optional[GeneratedStub]:
+
+    def get_stub_info(self, tool_name: str) -> GeneratedStub | None:
         """Get information about a generated stub"""
         return self.generated_stubs.get(tool_name)
-        
-    def list_generated_stubs(self) -> List[str]:
+
+    def list_generated_stubs(self) -> list[str]:
         """List all generated stub names"""
         return list(self.generated_stubs.keys())

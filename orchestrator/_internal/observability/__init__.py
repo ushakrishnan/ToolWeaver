@@ -5,9 +5,9 @@ Consolidates monitoring, metrics collection, and observability backends.
 """
 
 from .monitoring import (
-    ToolUsageMonitor,
-    ToolCallMetric,
     SearchMetric,
+    ToolCallMetric,
+    ToolUsageMonitor,
     create_monitor,
     print_metrics_report,
 )
@@ -15,10 +15,10 @@ from .monitoring import (
 # Optional: Monitoring backends (require wandb, prometheus_client for some)
 try:
     from .monitoring_backends import (
-        MonitoringBackend,
         LocalBackend,
-        WandbBackend,
+        MonitoringBackend,
         PrometheusBackend,
+        WandbBackend,
     )
     _BACKENDS_AVAILABLE = True
 except ImportError:

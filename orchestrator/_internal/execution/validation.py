@@ -8,12 +8,11 @@ Optional validation layer for generated stubs and skills.
 """
 
 import ast
-import sys
-from typing import Tuple, Optional, Dict, Any
 from pathlib import Path
+from typing import Any
 
 
-def validate_syntax(code: str) -> Tuple[bool, Optional[str]]:
+def validate_syntax(code: str) -> tuple[bool, str | None]:
     """
     Validate Python code syntax via AST parse.
     
@@ -28,7 +27,7 @@ def validate_syntax(code: str) -> Tuple[bool, Optional[str]]:
         return False, f"Parse error: {e}"
 
 
-def validate_exec_safe(code: str, *, timeout_secs: float = 2.0) -> Tuple[bool, Optional[str]]:
+def validate_exec_safe(code: str, *, timeout_secs: float = 2.0) -> tuple[bool, str | None]:
     """
     Lightweight execution test in a sandboxed environment.
     
@@ -63,7 +62,7 @@ def validate_exec_safe(code: str, *, timeout_secs: float = 2.0) -> Tuple[bool, O
         "enumerate": enumerate,
         "__builtins__": {},  # Block access to dangerous builtins
     }
-    
+
     try:
         # Execute in restricted namespace; catch import/runtime errors
         exec(code, {"__builtins__": safe_builtins})
@@ -80,7 +79,7 @@ def validate_exec_safe(code: str, *, timeout_secs: float = 2.0) -> Tuple[bool, O
         return False, f"Execution error: {type(e).__name__}: {e}"
 
 
-def validate_mypy(code: str, *, python_version: str = "3.10") -> Tuple[bool, Optional[str]]:
+def validate_mypy(code: str, *, python_version: str = "3.10") -> tuple[bool, str | None]:
     """
     Optional type checking via mypy (if installed).
     
@@ -91,13 +90,13 @@ def validate_mypy(code: str, *, python_version: str = "3.10") -> Tuple[bool, Opt
     except ImportError:
         # mypy not installed; skip silently
         return True, None
-    
+
     try:
         import tempfile
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(code)
             temp_path = f.name
-        
+
         try:
             stdout, stderr, exit_code = mypy.api.run(
                 [temp_path, f"--python-version={python_version}", "--no-error-summary"]
@@ -111,7 +110,7 @@ def validate_mypy(code: str, *, python_version: str = "3.10") -> Tuple[bool, Opt
                 return False, f"Mypy: {error_msg}"
         finally:
             Path(temp_path).unlink(missing_ok=True)
-    except Exception as e:
+    except Exception:
         # Mypy failed to run; treat as non-fatal
         return True, None
 
@@ -122,7 +121,7 @@ def validate_stub(
     check_syntax: bool = True,
     check_exec: bool = False,
     check_mypy: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Comprehensive validation of generated code.
     
@@ -140,29 +139,29 @@ def validate_stub(
             "mypy": {"pass": bool, "error": str or None} or None,
         }
     """
-    result: Dict[str, Any] = {"valid": True}
-    
+    result: dict[str, Any] = {"valid": True}
+
     # Syntax (always)
     if check_syntax:
         syntax_pass, syntax_err = validate_syntax(code)
         result["syntax"] = {"pass": syntax_pass, "error": syntax_err}
         if not syntax_pass:
             result["valid"] = False
-    
+
     # Exec (optional)
     if check_exec and result["valid"]:
         exec_pass, exec_err = validate_exec_safe(code)
         result["exec"] = {"pass": exec_pass, "error": exec_err}
         if not exec_pass:
             result["valid"] = False
-    
+
     # Mypy (optional)
     if check_mypy and result["valid"]:
         mypy_pass, mypy_err = validate_mypy(code)
         result["mypy"] = {"pass": mypy_pass, "error": mypy_err}
         if not mypy_pass:
             result["valid"] = False
-    
+
     return result
 
 
@@ -174,20 +173,20 @@ def add(x: int, y: int) -> int:
 
 result = add(1, 2)
 """
-    
+
     bad_code = """
 def add(x: int, y: int) -> int:
     return x + y
     
 result = add(1)  # Missing arg
 """
-    
+
     print("Good code:")
     print(validate_stub(good_code, check_syntax=True, check_exec=True))
-    
+
     print("\nBad code (exec):")
     print(validate_stub(bad_code, check_syntax=True, check_exec=True))
-    
+
     bad_syntax = "def add(x int y: int"
     print("\nBad syntax:")
     print(validate_stub(bad_syntax, check_syntax=True))

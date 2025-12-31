@@ -7,7 +7,6 @@ Uses the token bucket algorithm for smooth rate limiting with burst support.
 
 import asyncio
 import time
-from typing import Optional
 
 
 class RateLimiter:
@@ -44,11 +43,11 @@ class RateLimiter:
         async with limiter:
             await api_call()  # Waits ~0.1s
     """
-    
+
     def __init__(
         self,
         requests_per_second: float,
-        burst_size: Optional[int] = None,
+        burst_size: int | None = None,
     ):
         """
         Initialize rate limiter.
@@ -59,17 +58,17 @@ class RateLimiter:
         """
         if requests_per_second <= 0:
             raise ValueError("requests_per_second must be positive")
-        
+
         self.rate = requests_per_second
         self.burst_size = burst_size or int(requests_per_second * 2)
-        
+
         # Token bucket state
         self.tokens = float(self.burst_size)  # Start with full bucket
         self.last_refill = time.monotonic()
-        
+
         # Thread safety
         self._lock = asyncio.Lock()
-    
+
     async def acquire(self, tokens: int = 1) -> None:
         """
         Acquire tokens (blocks until available).
@@ -79,41 +78,41 @@ class RateLimiter:
         """
         if tokens <= 0:
             raise ValueError("tokens must be positive")
-        
+
         while True:
             async with self._lock:
                 # Refill tokens based on elapsed time
                 now = time.monotonic()
                 elapsed = now - self.last_refill
                 refill_amount = elapsed * self.rate
-                
+
                 self.tokens = min(
                     self.burst_size,
                     self.tokens + refill_amount
                 )
                 self.last_refill = now
-                
+
                 # Check if enough tokens available
                 if self.tokens >= tokens:
                     self.tokens -= tokens
                     return
-                
+
                 # Calculate wait time until next token
                 tokens_needed = tokens - self.tokens
                 wait_time = tokens_needed / self.rate
-            
+
             # Wait outside the lock
             await asyncio.sleep(wait_time)
-    
+
     async def __aenter__(self):
         """Context manager entry - acquire token."""
         await self.acquire()
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit - nothing to do."""
         pass
-    
+
     def get_available_tokens(self) -> float:
         """
         Get current available tokens (non-blocking check).
@@ -124,12 +123,12 @@ class RateLimiter:
         now = time.monotonic()
         elapsed = now - self.last_refill
         refill_amount = elapsed * self.rate
-        
+
         return min(
             self.burst_size,
             self.tokens + refill_amount
         )
-    
+
     def __repr__(self) -> str:
         return (
             f"RateLimiter(rate={self.rate} req/s, "

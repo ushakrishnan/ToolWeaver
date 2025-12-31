@@ -12,11 +12,11 @@ Manage tools through configuration files for easy version control and deployment
 """
 
 import asyncio
-import yaml
 from pathlib import Path
 
-from orchestrator import load_tools_from_yaml, get_available_tools, mcp_tool, search_tools
+import yaml
 
+from orchestrator import get_available_tools, mcp_tool
 
 # ============================================================
 # Create a sample YAML workflow file
@@ -79,33 +79,33 @@ async def demo_yaml_loading():
     print("DEMO: Loading Tools from YAML")
     print("="*70)
     print()
-    
+
     # Create temp YAML file
     yaml_path = Path(__file__).parent / "tools_config.yaml"
-    
+
     try:
         # Write sample YAML
         yaml_path.write_text(SAMPLE_WORKFLOW_YAML)
         print(f"Created YAML config: {yaml_path.name}")
         print()
-        
+
         # Load tools from YAML (note: this loads definitions, not actual implementations)
         print("Loading tools from YAML...")
         # Note: load_tools_from_yaml loads tool definitions but requires actual
         # implementations or workers to be registered separately
-        
+
         print("Sample YAML content:")
         print("-" * 70)
         print(SAMPLE_WORKFLOW_YAML[:300] + "...")
         print("-" * 70)
         print()
-        
+
         print("Tools defined in YAML:")
         yaml_data = yaml.safe_load(SAMPLE_WORKFLOW_YAML)
         for tool in yaml_data.get('tools', []):
             print(f"  • {tool['name']:25} | {tool['description']}")
         print()
-        
+
     finally:
         # Cleanup
         if yaml_path.exists():
@@ -122,15 +122,15 @@ async def demo_hybrid_approach():
     print("DEMO: Hybrid Approach (YAML + Code)")
     print("="*70)
     print()
-    
+
     print("Step 1: Define tools in code")
-    
+
     @mcp_tool(domain="weather", description="Get current temperature")
     async def get_temperature(city: str) -> dict:
         """Get temperature for a city."""
         temps = {"London": 8, "Paris": 7, "New York": -2, "Tokyo": 5}
         return {"city": city, "temperature": temps.get(city, "Unknown"), "unit": "C"}
-    
+
     @mcp_tool(domain="weather", description="Get weather forecast")
     async def get_forecast(city: str, days: int = 3) -> dict:
         """Get weather forecast."""
@@ -139,7 +139,7 @@ async def demo_hybrid_approach():
             "forecast_days": days,
             "conditions": ["Sunny", "Cloudy", "Rainy"][:days]
         }
-    
+
     @mcp_tool(domain="reporting", description="Generate summary report")
     async def generate_report(title: str, data: dict) -> dict:
         """Generate a report from data."""
@@ -149,21 +149,21 @@ async def demo_hybrid_approach():
             "format": "markdown",
             "content": f"# {title}\n\nData summary: {len(str(data))} chars"
         }
-    
+
     print("   Registered 3 tools")
     print()
-    
+
     print("Step 2: Use tools dynamically")
-    
+
     # Get temperature
     print("   Fetching weather...")
     temp_result = await get_temperature({"city": "London"})
     print(f"   -> {temp_result['city']}: {temp_result['temperature']}°{temp_result['unit']}")
-    
+
     # Get forecast
     forecast_result = await get_forecast({"city": "London", "days": 3})
     print(f"   -> Forecast: {', '.join(forecast_result['conditions'])}")
-    
+
     # Generate report
     report_result = await generate_report({
         "title": "Weather Report",
@@ -183,9 +183,9 @@ async def demo_tool_organization():
     print("DEMO: Tool Organization")
     print("="*70)
     print()
-    
+
     all_tools = get_available_tools()
-    
+
     # Group by domain
     domains = {}
     for tool in all_tools:
@@ -193,7 +193,7 @@ async def demo_tool_organization():
         if domain not in domains:
             domains[domain] = []
         domains[domain].append(tool)
-    
+
     print(f"Total registered tools: {len(all_tools)}")
     print()
     print("Tools by domain:")
@@ -220,11 +220,11 @@ async def main():
     print("This example shows how to define and manage tools using YAML")
     print("configurations and code registration patterns.")
     print()
-    
+
     await demo_yaml_loading()
     await demo_hybrid_approach()
     await demo_tool_organization()
-    
+
     print("="*70)
     print("Complete! You can now:")
     print("  1. Define tools in YAML for configuration management")

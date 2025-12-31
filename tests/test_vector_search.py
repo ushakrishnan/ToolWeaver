@@ -4,17 +4,19 @@ Tests for Vector Tool Search Engine (Phase 7)
 Validates Qdrant integration, fallback behavior, and performance.
 """
 
-import pytest
 import time
-from orchestrator.tools.vector_search import VectorToolSearchEngine
+
+import pytest
+
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
+from orchestrator.tools.vector_search import VectorToolSearchEngine
 
 
 @pytest.fixture
 def large_catalog():
     """Create a large tool catalog for testing"""
     catalog = ToolCatalog()
-    
+
     # GitHub tools
     for i in range(20):
         catalog.add_tool(ToolDefinition(
@@ -26,7 +28,7 @@ def large_catalog():
             ],
             domain="github"
         ))
-    
+
     # Slack tools
     for i in range(20):
         catalog.add_tool(ToolDefinition(
@@ -38,7 +40,7 @@ def large_catalog():
             ],
             domain="slack"
         ))
-    
+
     # AWS tools
     for i in range(20):
         catalog.add_tool(ToolDefinition(
@@ -50,7 +52,7 @@ def large_catalog():
             ],
             domain="aws"
         ))
-    
+
     # Database tools
     for i in range(20):
         catalog.add_tool(ToolDefinition(
@@ -62,7 +64,7 @@ def large_catalog():
             ],
             domain="database"
         ))
-    
+
     # General utilities
     for i in range(20):
         catalog.add_tool(ToolDefinition(
@@ -74,7 +76,7 @@ def large_catalog():
             ],
             domain="general"
         ))
-    
+
     return catalog  # 100 tools total
 
 
@@ -99,7 +101,7 @@ def search_engine_no_fallback():
 def test_initialization():
     """Test search engine initializes correctly"""
     engine = VectorToolSearchEngine()
-    
+
     assert engine.qdrant_url == "http://localhost:6333"
     assert engine.collection_name == "toolweaver_tools"
     assert engine.embedding_dim == 384
@@ -110,7 +112,7 @@ def test_index_catalog_memory_fallback(search_engine_with_fallback, large_catalo
     """Test indexing works with memory fallback (no Qdrant)"""
     # Don't initialize client - force fallback
     success = search_engine_with_fallback.index_catalog(large_catalog, batch_size=32)
-    
+
     assert success == True
     assert len(search_engine_with_fallback.memory_embeddings) == 100
     assert len(search_engine_with_fallback.memory_tools) == 100
@@ -120,17 +122,17 @@ def test_search_memory_fallback(search_engine_with_fallback, large_catalog):
     """Test search works with memory fallback"""
     # Index in memory
     search_engine_with_fallback.index_catalog(large_catalog)
-    
+
     # Search for GitHub tools
     results = search_engine_with_fallback.search(
         "create pull request on github",
         large_catalog,
         top_k=5
     )
-    
+
     assert len(results) > 0
     assert len(results) <= 5
-    
+
     # Check that results are relevant (should be github tools)
     github_tools = [tool for tool, score in results if tool.domain == "github"]
     assert len(github_tools) > 0  # At least some results should be github
@@ -140,10 +142,10 @@ def test_search_performance(search_engine_with_fallback, large_catalog):
     """Test search latency meets targets"""
     # Index catalog
     search_engine_with_fallback.index_catalog(large_catalog)
-    
+
     # Warm-up query
     search_engine_with_fallback.search("test", large_catalog, top_k=5)
-    
+
     # Measure search time
     queries = [
         "create github pull request",
@@ -152,23 +154,23 @@ def test_search_performance(search_engine_with_fallback, large_catalog):
         "run database query",
         "parse JSON file"
     ]
-    
+
     latencies = []
     for query in queries:
         start_time = time.time()
         results = search_engine_with_fallback.search(query, large_catalog, top_k=5)
         latency_ms = (time.time() - start_time) * 1000
         latencies.append(latency_ms)
-        
+
         assert len(results) > 0, f"No results for query: {query}"
-    
+
     avg_latency = sum(latencies) / len(latencies)
     max_latency = max(latencies)
-    
-    print(f"\n100-tool catalog performance:")
+
+    print("\n100-tool catalog performance:")
     print(f"  Average latency: {avg_latency:.1f}ms")
     print(f"  Max latency: {max_latency:.1f}ms")
-    
+
     # Target: <100ms for 100 tools
     assert avg_latency < 100, f"Average latency {avg_latency:.1f}ms exceeds 100ms target"
 
@@ -176,7 +178,7 @@ def test_search_performance(search_engine_with_fallback, large_catalog):
 def test_domain_filtering(search_engine_with_fallback, large_catalog):
     """Test domain-based search filtering"""
     search_engine_with_fallback.index_catalog(large_catalog)
-    
+
     # Search with domain filter (use lower min_score to ensure we get results)
     results = search_engine_with_fallback.search(
         "github pull request issue repo",
@@ -185,7 +187,7 @@ def test_domain_filtering(search_engine_with_fallback, large_catalog):
         domain="github",
         min_score=0.1  # Lower threshold to ensure we get results with filter
     )
-    
+
     # Should only return github tools
     assert len(results) > 0, "Domain filtering should return at least some github tools"
     for tool, score in results:
@@ -195,19 +197,19 @@ def test_domain_filtering(search_engine_with_fallback, large_catalog):
 def test_relevance_scores(search_engine_with_fallback, large_catalog):
     """Test that relevance scores are meaningful"""
     search_engine_with_fallback.index_catalog(large_catalog)
-    
+
     results = search_engine_with_fallback.search(
         "github pull request",
         large_catalog,
         top_k=10
     )
-    
+
     assert len(results) > 0
-    
+
     # Scores should be between 0 and 1
     for tool, score in results:
         assert 0 <= score <= 1, f"Score {score} out of range [0, 1]"
-    
+
     # Scores should be in descending order
     scores = [score for _, score in results]
     assert scores == sorted(scores, reverse=True), "Scores not sorted descending"
@@ -216,7 +218,7 @@ def test_relevance_scores(search_engine_with_fallback, large_catalog):
 def test_min_score_threshold(search_engine_with_fallback, large_catalog):
     """Test minimum score filtering"""
     search_engine_with_fallback.index_catalog(large_catalog)
-    
+
     # High threshold should return fewer results
     results_high = search_engine_with_fallback.search(
         "test",
@@ -224,7 +226,7 @@ def test_min_score_threshold(search_engine_with_fallback, large_catalog):
         top_k=20,
         min_score=0.8
     )
-    
+
     # Low threshold should return more results
     results_low = search_engine_with_fallback.search(
         "test",
@@ -232,9 +234,9 @@ def test_min_score_threshold(search_engine_with_fallback, large_catalog):
         top_k=20,
         min_score=0.1
     )
-    
+
     assert len(results_low) >= len(results_high)
-    
+
     # All results should meet minimum score
     for tool, score in results_high:
         assert score >= 0.8
@@ -243,10 +245,10 @@ def test_min_score_threshold(search_engine_with_fallback, large_catalog):
 def test_empty_catalog(search_engine_with_fallback):
     """Test behavior with empty catalog"""
     empty_catalog = ToolCatalog()
-    
+
     success = search_engine_with_fallback.index_catalog(empty_catalog)
     assert success == False
-    
+
     results = search_engine_with_fallback.search("test", empty_catalog)
     assert len(results) == 0
 
@@ -255,7 +257,7 @@ def test_embedding_model_lazy_load(search_engine_with_fallback):
     """Test that embedding model is lazily loaded"""
     # Initially None
     assert search_engine_with_fallback.embedding_model is None
-    
+
     # Trigger loading
     catalog = ToolCatalog()
     catalog.add_tool(ToolDefinition(
@@ -264,9 +266,9 @@ def test_embedding_model_lazy_load(search_engine_with_fallback):
         description="Test tool",
         parameters=[]
     ))
-    
+
     search_engine_with_fallback.index_catalog(catalog)
-    
+
     # Now loaded
     assert search_engine_with_fallback.embedding_model is not None
 
@@ -284,26 +286,26 @@ def test_scalability(search_engine_with_fallback, catalog_size):
             parameters=[],
             domain="general"
         ))
-    
+
     # Index
     start_time = time.time()
     search_engine_with_fallback.index_catalog(catalog, batch_size=64)
     index_time = (time.time() - start_time) * 1000
-    
+
     print(f"\nIndexing {catalog_size} tools took {index_time:.1f}ms")
-    
+
     # Search
     start_time = time.time()
     results = search_engine_with_fallback.search("test operation", catalog, top_k=5)
     search_time = (time.time() - start_time) * 1000
-    
+
     print(f"Searching {catalog_size} tools took {search_time:.1f}ms")
-    
+
     assert len(results) > 0
-    
+
     # Performance targets from Phase 7 design:
     # 100 tools: <30ms
-    # 500 tools: <60ms  
+    # 500 tools: <60ms
     # 1000 tools: <80ms
     targets = {100: 30, 500: 60, 1000: 80}
     if catalog_size in targets:

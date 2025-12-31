@@ -3,15 +3,16 @@
 
 import asyncio
 import logging
+
 logging.basicConfig(level=logging.ERROR)
 
 from orchestrator._internal.execution import (
-    create_workflow,
     add_step,
-    save_workflow,
-    load_workflow,
+    create_workflow,
     execute_workflow,
     list_workflows,
+    load_workflow,
+    save_workflow,
 )
 
 print("=" * 60)
@@ -27,9 +28,9 @@ add_step(w, 'step2', 'nonexistent_skill_2', {'input': 'test'}, retry=2)
 add_step(w, 'step3', 'nonexistent_skill_3', {'input': 'test'}, retry=1)
 
 print("[OK] Created workflow with 3 steps")
-print(f"  - Step 1: retry=0 (no retries)")
-print(f"  - Step 2: retry=2 (max 2 retries)")
-print(f"  - Step 3: retry=1 (max 1 retry)")
+print("  - Step 1: retry=0 (no retries)")
+print("  - Step 2: retry=2 (max 2 retries)")
+print("  - Step 3: retry=1 (max 1 retry)")
 
 # Save and load
 save_workflow(w)

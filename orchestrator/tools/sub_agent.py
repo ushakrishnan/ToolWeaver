@@ -10,39 +10,38 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Awaitable, Tuple
+from typing import Any
 
-from orchestrator.tools.sub_agent_limits import (
-    DispatchLimitTracker,
-    DispatchResourceLimits,
-    DispatchQuotaExceeded,
-)
-from orchestrator._internal.infra.rate_limiter import RateLimiter
 from orchestrator._internal.infra.idempotency import (
-    AgentTask,
     generate_idempotency_key,
     get_global_cache,
 )
+from orchestrator._internal.infra.rate_limiter import RateLimiter
 from orchestrator._internal.security.pii_detector import ResponseFilter
 from orchestrator._internal.security.template_sanitizer import sanitize_template
-
+from orchestrator.tools.sub_agent_limits import (
+    DispatchLimitTracker,
+    DispatchQuotaExceeded,
+    DispatchResourceLimits,
+)
 
 # Type for agent executor callables
-AgentExecutor = Callable[[str, Dict[str, Any], str, str], Awaitable[Any]]
+AgentExecutor = Callable[[str, dict[str, Any], str, str], Awaitable[Any]]
 
 
 @dataclass
 class SubAgentTask:
     """Task definition for a sub-agent invocation."""
     prompt_template: str
-    arguments: Dict[str, Any]
+    arguments: dict[str, Any]
     agent_name: str = "default"
     model: str = "haiku"
     timeout_sec: int = 30
-    idempotency_key: Optional[str] = None
+    idempotency_key: str | None = None
 
-    def with_generated_key(self) -> "SubAgentTask":
+    def with_generated_key(self) -> SubAgentTask:
         """Return a copy with idempotency_key populated if missing."""
         key = self.idempotency_key or generate_idempotency_key(
             self.agent_name,
@@ -62,29 +61,29 @@ class SubAgentTask:
 @dataclass
 class SubAgentResult:
     """Result of a sub-agent execution."""
-    task_args: Dict[str, Any]
+    task_args: dict[str, Any]
     output: Any
-    error: Optional[str]
+    error: str | None
     duration_ms: float
     success: bool
     cost: float = 0.0
 
 
-async def _default_executor(prompt: str, args: Dict[str, Any], agent_name: str, model: str) -> Any:
+async def _default_executor(prompt: str, args: dict[str, Any], agent_name: str, model: str) -> Any:
     """Default executor stub that echoes the prompt and args."""
     return {"output": prompt, "agent": agent_name, "model": model, "args": args, "cost": 0.0}
 
 
 async def dispatch_agents(
     template: str,
-    arguments: List[Dict[str, Any]],
+    arguments: list[dict[str, Any]],
     agent_name: str = "default",
     model: str = "haiku",
     max_parallel: int = 10,
     timeout_per_agent: int = 30,
-    limits: Optional[DispatchResourceLimits] = None,
-    executor: Optional[AgentExecutor] = None,
-    aggregate_fn: Optional[Callable[[List[SubAgentResult]], Any]] = None,
+    limits: DispatchResourceLimits | None = None,
+    executor: AgentExecutor | None = None,
+    aggregate_fn: Callable[[list[SubAgentResult]], Any] | None = None,
 ) -> Any:
     """
     Dispatch multiple agents in parallel with safety controls.
@@ -111,7 +110,7 @@ async def dispatch_agents(
     tracker = DispatchLimitTracker(limits)
     tracker.check_pre_dispatch(len(arguments))
 
-    rate_limiter: Optional[RateLimiter] = None
+    rate_limiter: RateLimiter | None = None
     if limits.requests_per_second:
         rate_limiter = RateLimiter(limits.requests_per_second)
 
@@ -120,9 +119,9 @@ async def dispatch_agents(
     exec_fn = executor or _default_executor
 
     semaphore = asyncio.Semaphore(max_parallel)
-    results: List[SubAgentResult] = []
+    results: list[SubAgentResult] = []
 
-    async def run_single(arg: Dict[str, Any]) -> SubAgentResult:
+    async def run_single(arg: dict[str, Any]) -> SubAgentResult:
         task = SubAgentTask(
             prompt_template=sanitized_template,
             arguments=arg,
@@ -156,7 +155,7 @@ async def dispatch_agents(
 
             try:
                 raw_result = await asyncio.wait_for(_call_executor(), timeout=task.timeout_sec)
-            except asyncio.TimeoutError as exc:
+            except asyncio.TimeoutError:
                 duration = (time.monotonic() - start) * 1000
                 await tracker.record_agent_completion(cost=0.0, success=False, duration=duration / 1000)
                 return SubAgentResult(
@@ -213,7 +212,7 @@ async def dispatch_agents(
             await tracker.release_slot()
 
     # Launch tasks with concurrency control
-    async def runner(arg: Dict[str, Any]) -> SubAgentResult:
+    async def runner(arg: dict[str, Any]) -> SubAgentResult:
         async with semaphore:
             return await run_single(arg)
 
@@ -237,12 +236,12 @@ async def dispatch_agents(
 
 # Aggregation utilities
 
-def collect_all(results: List[SubAgentResult]) -> List[SubAgentResult]:
+def collect_all(results: list[SubAgentResult]) -> list[SubAgentResult]:
     """Return all results as-is."""
     return results
 
 
-def rank_by_metric(results: List[SubAgentResult], field: str, reverse: bool = True) -> List[SubAgentResult]:
+def rank_by_metric(results: list[SubAgentResult], field: str, reverse: bool = True) -> list[SubAgentResult]:
     """Sort results by a numeric field inside result.output dict."""
     return sorted(
         results,
@@ -251,9 +250,9 @@ def rank_by_metric(results: List[SubAgentResult], field: str, reverse: bool = Tr
     )
 
 
-def majority_vote(results: List[SubAgentResult], field: str) -> Optional[Any]:
+def majority_vote(results: list[SubAgentResult], field: str) -> Any | None:
     """Return the most common value for a field in result.output dicts."""
-    counts: Dict[Any, int] = {}
+    counts: dict[Any, int] = {}
     for res in results:
         if isinstance(res.output, dict) and field in res.output:
             val = res.output[field]
@@ -263,7 +262,7 @@ def majority_vote(results: List[SubAgentResult], field: str) -> Optional[Any]:
     return max(counts.items(), key=lambda item: item[1])[0]
 
 
-def best_result(results: List[SubAgentResult], score_fn: Callable[[SubAgentResult], float]) -> Optional[SubAgentResult]:
+def best_result(results: list[SubAgentResult], score_fn: Callable[[SubAgentResult], float]) -> SubAgentResult | None:
     """Return the result with highest score from score_fn."""
     if not results:
         return None

@@ -3,21 +3,21 @@ Tests for parallel sub-agent dispatch.
 """
 
 import asyncio
-import time
 import logging
+import time
+
 import pytest
 
-from orchestrator.tools.sub_agent import (
-    SubAgentTask,
-    SubAgentResult,
-    dispatch_agents,
-    collect_all,
-    rank_by_metric,
-    majority_vote,
-    best_result,
-)
 from orchestrator._internal.infra.idempotency import get_global_cache
-from orchestrator.tools.sub_agent_limits import DispatchResourceLimits, DispatchQuotaExceeded
+from orchestrator.tools.sub_agent import (
+    SubAgentResult,
+    best_result,
+    collect_all,
+    dispatch_agents,
+    majority_vote,
+    rank_by_metric,
+)
+from orchestrator.tools.sub_agent_limits import DispatchQuotaExceeded, DispatchResourceLimits
 
 
 @pytest.mark.asyncio

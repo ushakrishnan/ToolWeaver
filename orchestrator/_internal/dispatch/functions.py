@@ -5,7 +5,8 @@ These functions demonstrate how to create type-safe, reusable functions
 that can be called through the function_call tool in execution plans.
 """
 
-from typing import List, Dict, Any
+from typing import Any
+
 from .hybrid_dispatcher import register_function
 
 
@@ -33,7 +34,7 @@ def compute_tax(amount: float, tax_rate: float = 0.07) -> float:
 
 
 @register_function("merge_items")
-def merge_items(items: List[Dict[str, Any]]) -> Dict[str, Any]:
+def merge_items(items: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Merge a list of items and compute aggregate statistics.
     
@@ -55,11 +56,11 @@ def merge_items(items: List[Dict[str, Any]]) -> Dict[str, Any]:
         items = items.get("items", [])
     if not isinstance(items, list):
         raise TypeError("Items must be a list")
-    
+
     total_sum = sum(item.get("total", 0) for item in items)
     count = len(items)
     avg_total = total_sum / count if count > 0 else 0
-    
+
     return {
         "total_sum": round(total_sum, 2),
         "count": count,
@@ -68,7 +69,7 @@ def merge_items(items: List[Dict[str, Any]]) -> Dict[str, Any]:
 
 
 @register_function("apply_discount")
-def apply_discount(amount: float, discount_percent: float) -> Dict[str, float]:
+def apply_discount(amount: float, discount_percent: float) -> dict[str, float]:
     """
     Apply a percentage discount to an amount.
     
@@ -87,10 +88,10 @@ def apply_discount(amount: float, discount_percent: float) -> Dict[str, float]:
         raise ValueError("Amount cannot be negative")
     if discount_percent < 0 or discount_percent > 100:
         raise ValueError("Discount percent must be between 0 and 100")
-    
+
     discount = round(amount * (discount_percent / 100), 2)
     final = round(amount - discount, 2)
-    
+
     return {
         "original": amount,
         "discount": discount,
@@ -99,7 +100,7 @@ def apply_discount(amount: float, discount_percent: float) -> Dict[str, float]:
 
 
 @register_function("filter_items_by_category")
-def filter_items_by_category(items: List[Dict[str, Any]], category: str) -> List[Dict[str, Any]]:
+def filter_items_by_category(items: list[dict[str, Any]], category: str) -> list[dict[str, Any]]:
     """
     Filter items by category.
     
@@ -122,12 +123,12 @@ def filter_items_by_category(items: List[Dict[str, Any]], category: str) -> List
         items = items.get("items", []) or items.get("categorized", [])
     if not isinstance(items, list):
         raise TypeError("Items must be a list")
-    
+
     return [item for item in items if item.get("category", "").lower() == category.lower()]
 
 
 @register_function("compute_item_statistics")
-def compute_item_statistics(items: List[Dict[str, Any]]) -> Dict[str, Any]:
+def compute_item_statistics(items: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Compute comprehensive statistics for a list of items.
     
@@ -151,11 +152,11 @@ def compute_item_statistics(items: List[Dict[str, Any]]) -> Dict[str, Any]:
         items = items.get("items", []) or items.get("categorized", [])
     if not isinstance(items, list):
         raise TypeError("Items must be a list")
-    
+
     count = len(items)
     total_amount = sum(item.get("total", 0) for item in items)
     total_quantity = sum(item.get("quantity", 0) for item in items)
-    
+
     # Category breakdown
     categories = {}
     for item in items:
@@ -164,7 +165,7 @@ def compute_item_statistics(items: List[Dict[str, Any]]) -> Dict[str, Any]:
             categories[cat] = {"count": 0, "total": 0}
         categories[cat]["count"] += 1
         categories[cat]["total"] += item.get("total", 0)
-    
+
     return {
         "count": count,
         "total_amount": round(total_amount, 2),

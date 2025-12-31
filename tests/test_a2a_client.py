@@ -3,12 +3,11 @@ from pathlib import Path
 
 import pytest
 from aiohttp import web
-import os
 
 from orchestrator._internal.infra.a2a_client import (
     A2AClient,
-    AgentDelegationRequest,
     AgentCapability,
+    AgentDelegationRequest,
 )
 
 

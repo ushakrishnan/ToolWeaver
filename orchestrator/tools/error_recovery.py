@@ -2,8 +2,9 @@
 
 import asyncio
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -13,36 +14,36 @@ class RecoveryResult:
     """Result of a recovery attempt."""
     success: bool
     result: Any = None
-    error: Optional[Exception] = None
+    error: Exception | None = None
     attempts: int = 0
     strategy_used: str = ""
 
 
 class ErrorRecoveryExecutor:
     """Execute tools with error recovery policies."""
-    
+
     async def execute_with_recovery(
         self,
         tool_func: Callable,
         tool_name: str,
         args: tuple = (),
-        kwargs: Optional[Dict[str, Any]] = None,
-        policy: Optional[Any] = None,  # ErrorRecoveryPolicy
-        fallback_tools: Optional[List[Callable]] = None,
+        kwargs: dict[str, Any] | None = None,
+        policy: Any | None = None,  # ErrorRecoveryPolicy
+        fallback_tools: list[Callable] | None = None,
     ) -> RecoveryResult:
         """Execute tool with retry/fallback/partial success handling."""
         if kwargs is None:
             kwargs = {}
-        
+
         if fallback_tools is None:
             fallback_tools = []
-        
+
         # Extract policy settings
         max_retries = getattr(policy, "max_retries", 0) if policy else 0
         strategy = getattr(policy, "strategy", "raise") if policy else "raise"
         backoff = getattr(policy, "retry_backoff", 1.0) if policy else 1.0
         timeout_override = getattr(policy, "timeout_override", None) if policy else None
-        
+
         # Try main tool with retries
         for attempt in range(max_retries + 1):
             try:
@@ -50,7 +51,7 @@ class ErrorRecoveryExecutor:
                     result = await tool_func(*args, **kwargs)
                 else:
                     result = tool_func(*args, **kwargs)
-                
+
                 return RecoveryResult(
                     success=True,
                     result=result,
@@ -92,7 +93,7 @@ class ErrorRecoveryExecutor:
                         attempts=attempt + 1,
                         strategy_used="partial_success",
                     )
-        
+
         # Shouldn't reach here, but handle gracefully
         return RecoveryResult(
             success=False,
@@ -100,12 +101,12 @@ class ErrorRecoveryExecutor:
             attempts=max_retries + 1,
             strategy_used="exhausted",
         )
-    
+
     async def _try_fallback_tools(
         self,
-        fallback_tools: List[Callable],
+        fallback_tools: list[Callable],
         args: tuple,
-        kwargs: Dict[str, Any],
+        kwargs: dict[str, Any],
         initial_attempts: int,
     ) -> RecoveryResult:
         """Try fallback tools sequentially."""
@@ -115,7 +116,7 @@ class ErrorRecoveryExecutor:
                     result = await fallback(*args, **kwargs)
                 else:
                     result = fallback(*args, **kwargs)
-                
+
                 return RecoveryResult(
                     success=True,
                     result=result,
@@ -126,7 +127,7 @@ class ErrorRecoveryExecutor:
                 logger.warning(
                     f"Fallback {i} failed: {e}"
                 )
-        
+
         return RecoveryResult(
             success=False,
             error=Exception(f"All {len(fallback_tools)} fallback tools failed"),

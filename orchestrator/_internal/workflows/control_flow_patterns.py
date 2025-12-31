@@ -6,8 +6,8 @@ and error handling that can be injected into generated code.
 """
 
 from dataclasses import dataclass
-from typing import Dict, Any, Optional, List
 from enum import Enum
+from typing import Any
 
 
 class PatternType(Enum):
@@ -25,13 +25,13 @@ class ControlFlowPattern:
     type: PatternType
     code_template: str
     description: str
-    required_params: List[str]
-    example: Optional[str] = None
+    required_params: list[str]
+    example: str | None = None
 
 
 class ControlFlowPatterns:
     """Library of standard control flow patterns"""
-    
+
     # Polling/waiting pattern
     POLL_PATTERN = ControlFlowPattern(
         type=PatternType.LOOP,
@@ -56,7 +56,7 @@ while True:
     await asyncio.sleep(10)
 '''
     )
-    
+
     # Parallel execution pattern
     PARALLEL_PATTERN = ControlFlowPattern(
         type=PatternType.PARALLEL,
@@ -77,7 +77,7 @@ results = await asyncio.gather(*[
 ])
 '''
     )
-    
+
     # Conditional branching pattern
     CONDITIONAL_PATTERN = ControlFlowPattern(
         type=PatternType.CONDITIONAL,
@@ -98,7 +98,7 @@ else:
     await notify_team(message=f"CI failed: {ci_result.error}")
 '''
     )
-    
+
     # Retry with exponential backoff pattern
     RETRY_PATTERN = ControlFlowPattern(
         type=PatternType.RETRY,
@@ -133,7 +133,7 @@ for attempt in range(max_retries):
         await asyncio.sleep(backoff)
 '''
     )
-    
+
     # Sequential with early exit pattern
     SEQUENTIAL_EARLY_EXIT_PATTERN = ControlFlowPattern(
         type=PatternType.SEQUENTIAL,
@@ -157,7 +157,7 @@ for doc in documents:
         break
 '''
     )
-    
+
     # Batch processing with limit pattern
     BATCH_LIMIT_PATTERN = ControlFlowPattern(
         type=PatternType.PARALLEL,
@@ -192,9 +192,9 @@ results = await asyncio.gather(*[
 ])
 '''
     )
-    
+
     @classmethod
-    def get_pattern(cls, pattern_type: PatternType) -> Optional[ControlFlowPattern]:
+    def get_pattern(cls, pattern_type: PatternType) -> ControlFlowPattern | None:
         """Get a specific pattern by type"""
         patterns = {
             PatternType.LOOP: cls.POLL_PATTERN,
@@ -204,9 +204,9 @@ results = await asyncio.gather(*[
             PatternType.SEQUENTIAL: cls.SEQUENTIAL_EARLY_EXIT_PATTERN,
         }
         return patterns.get(pattern_type)
-    
+
     @classmethod
-    def list_patterns(cls) -> List[ControlFlowPattern]:
+    def list_patterns(cls) -> list[ControlFlowPattern]:
         """List all available patterns"""
         return [
             cls.POLL_PATTERN,
@@ -216,9 +216,9 @@ results = await asyncio.gather(*[
             cls.SEQUENTIAL_EARLY_EXIT_PATTERN,
             cls.BATCH_LIMIT_PATTERN,
         ]
-    
+
     @classmethod
-    def generate_code(cls, pattern: ControlFlowPattern, params: Dict[str, Any]) -> str:
+    def generate_code(cls, pattern: ControlFlowPattern, params: dict[str, Any]) -> str:
         """
         Generate code from pattern with parameters.
         
@@ -236,16 +236,16 @@ results = await asyncio.gather(*[
         missing = set(pattern.required_params) - set(params.keys())
         if missing:
             raise ValueError(f"Missing required parameters: {missing}")
-        
+
         # Generate code from template
         try:
             code = pattern.code_template.format(**params)
             return code
         except KeyError as e:
             raise ValueError(f"Invalid parameter: {e}")
-    
+
     @classmethod
-    def detect_pattern_need(cls, task_description: str) -> Optional[PatternType]:
+    def detect_pattern_need(cls, task_description: str) -> PatternType | None:
         """
         Analyze task description to detect which pattern might be needed.
         
@@ -256,26 +256,26 @@ results = await asyncio.gather(*[
             Suggested pattern type, or None if no clear match
         """
         desc_lower = task_description.lower()
-        
+
         # Check in order of specificity (most specific first)
-        
+
         # Retry indicators (check first - more specific)
         if any(word in desc_lower for word in ["retry", "try again", "backoff", "attempt"]):
             return PatternType.RETRY
-        
-        # Loop indicators  
+
+        # Loop indicators
         if any(word in desc_lower for word in ["wait", "poll", "until"]):
             return PatternType.LOOP
-        
+
         # Conditional indicators
         if any(word in desc_lower for word in ["if ", " if", "else", "depending", "based on", "when "]):
             return PatternType.CONDITIONAL
-        
+
         # Parallel indicators (check last - least specific)
         # Use more specific matches to avoid false positives
         if any(word in desc_lower for word in [" all ", "batch", "parallel", "concurrent", "each ", " each"]):
             return PatternType.PARALLEL
-        
+
         return None
 
 

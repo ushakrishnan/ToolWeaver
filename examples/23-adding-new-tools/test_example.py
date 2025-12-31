@@ -4,13 +4,11 @@ Test Example 23: Adding New Tools
 Smoke tests for the add_new_tools example.
 """
 
-import asyncio
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
-from orchestrator.shared.models import ToolDefinition, ToolParameter, ToolCatalog
-from orchestrator._internal.infra.mcp_client import MCPClientShim
 from orchestrator._internal.infra.a2a_client import A2AClient
+from orchestrator._internal.infra.mcp_client import MCPClientShim
+from orchestrator.shared.models import ToolCatalog
 
 
 class TestToolDefinition:
@@ -131,7 +129,7 @@ class TestCatalogRegistration:
 
     def test_catalog_get_by_type(self):
         """Test filtering tools by type"""
-        from add_new_tools import create_weather_mcp_tool, create_stock_price_mcp_tool
+        from add_new_tools import create_stock_price_mcp_tool, create_weather_mcp_tool
 
         catalog = ToolCatalog()
         catalog.add_tool(create_weather_mcp_tool())
@@ -204,10 +202,10 @@ class TestWorkflow:
     async def test_complete_workflow(self):
         """Test complete workflow from definition to execution"""
         from add_new_tools import (
-            setup_mcp_tools,
-            setup_a2a_agents,
-            discover_all_tools,
             demonstrate_tool_usage,
+            discover_all_tools,
+            setup_a2a_agents,
+            setup_mcp_tools,
         )
 
         mcp_client = MCPClientShim()

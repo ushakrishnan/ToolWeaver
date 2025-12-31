@@ -2,15 +2,16 @@
 """Test skill registry - Phase 4.3."""
 
 import logging
+
 logging.basicConfig(level=logging.INFO)
 
+
 from orchestrator._internal.execution import (
-    configure_registry,
     RegistryConfig,
-    SkillRegistry,
     Skill,
+    SkillRegistry,
+    configure_registry,
 )
-from pathlib import Path
 
 print("=" * 70)
 print("PHASE 4.3: Remote Skill Registry - Test")
@@ -23,7 +24,7 @@ config = configure_registry(
     org="test_org",
     verify_signature=False
 )
-print(f"[OK] Configured registry:")
+print("[OK] Configured registry:")
 print(f"  URL: {config.url}")
 print(f"  Org: {config.org}")
 print(f"  Verify signatures: {config.verify_signature}")
@@ -31,7 +32,7 @@ print(f"  Verify signatures: {config.verify_signature}")
 # Test 2: Registry client creation
 print("\n[TEST 2] Registry Client")
 registry = SkillRegistry(config)
-print(f"[OK] Created registry client")
+print("[OK] Created registry client")
 print(f"  API URL format: {registry._api_url('/skills')}")
 
 # Test 3: Hash computation
@@ -59,8 +60,9 @@ print(f"[OK] Invalid signature rejected: {not is_invalid}")
 
 # Test 6: RegistrySkill metadata
 print("\n[TEST 6] Registry Skill Metadata")
-from orchestrator._internal.execution import RegistrySkill
 from datetime import datetime
+
+from orchestrator._internal.execution import RegistrySkill
 
 skill_meta = RegistrySkill(
     id="test_org/validator",
@@ -77,7 +79,7 @@ skill_meta = RegistrySkill(
     created_at=datetime.utcnow().isoformat(),
     license="MIT",
 )
-print(f"[OK] Created registry skill metadata:")
+print("[OK] Created registry skill metadata:")
 print(f"  ID: {skill_meta.id}")
 print(f"  Version: {skill_meta.version}")
 print(f"  Rating: {skill_meta.rating}/5 ({skill_meta.rating_count} reviews)")
@@ -86,7 +88,7 @@ print(f"  Tags: {skill_meta.tags}")
 
 # Test 7: RegistryConfig roundtrip
 print("\n[TEST 7] Registry Config Persistence")
-from orchestrator._internal.execution.skill_registry import _save_registry_config, _load_registry_config
+from orchestrator._internal.execution.skill_registry import _save_registry_config
 
 save_config = RegistryConfig(
     url="https://custom.registry.com",
@@ -96,10 +98,10 @@ save_config = RegistryConfig(
     timeout=45
 )
 _save_registry_config(save_config)
-print(f"[OK] Saved config to disk")
+print("[OK] Saved config to disk")
 
 # Note: Can't load directly because global _registry_instance would cache
-print(f"[OK] Config persistence implemented")
+print("[OK] Config persistence implemented")
 
 # Test 8: API URL builder
 print("\n[TEST 8] API URL Construction")
@@ -115,34 +117,27 @@ for path in test_paths:
     api_url = registry2._api_url(path)
     print(f"  {path} -> {api_url}")
 
-print(f"[OK] API URL construction working correctly")
+print("[OK] API URL construction working correctly")
 
 # Test 9: Convenience functions
 print("\n[TEST 9] Module-Level Functions")
-from orchestrator._internal.execution import (
-    search_registry,
-    get_registry_skill,
-    rate_registry_skill,
-    trending_skills,
-)
-print(f"[OK] All convenience functions imported:")
-print(f"  - search_registry()")
-print(f"  - get_registry_skill()")
-print(f"  - download_registry_skill()")
-print(f"  - rate_registry_skill()")
-print(f"  - get_registry_ratings()")
-print(f"  - trending_skills()")
+print("[OK] All convenience functions imported:")
+print("  - search_registry()")
+print("  - get_registry_skill()")
+print("  - download_registry_skill()")
+print("  - rate_registry_skill()")
+print("  - get_registry_ratings()")
+print("  - trending_skills()")
 
 # Test 10: Integration check
 print("\n[TEST 10] Integration with Skill Library")
-from orchestrator._internal.execution import Skill
 test_skill = Skill(
     name="test_skill",
     code_path="/tmp/test.py",
     description="Test skill for registry",
     version="1.0.0"
 )
-print(f"[OK] Skill objects compatible with registry:")
+print("[OK] Skill objects compatible with registry:")
 print(f"  Name: {test_skill.name}")
 print(f"  Version: {test_skill.version}")
 print(f"  Path: {test_skill.code_path}")

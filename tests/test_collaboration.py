@@ -2,25 +2,24 @@
 """Test team collaboration features - Phase 4.4."""
 
 import logging
+
 logging.basicConfig(level=logging.INFO)
 
 from orchestrator._internal.execution import (
     ApprovalManager,
     ApprovalStatus,
     AuditAction,
-    ChangeTracker,
-    AuditLog,
     Skill,
-    request_approval,
-    provide_approval,
     add_approval_comment,
-    get_approval,
-    get_pending_approvals,
-    get_my_approvals,
-    record_skill_change,
-    get_skill_change_history,
-    get_audit_logs,
     generate_audit_report,
+    get_approval,
+    get_audit_logs,
+    get_my_approvals,
+    get_pending_approvals,
+    get_skill_change_history,
+    provide_approval,
+    record_skill_change,
+    request_approval,
 )
 
 print("=" * 70)
@@ -29,13 +28,17 @@ print("=" * 70)
 
 # Test 1: Approval manager creation
 print("\n[TEST 1] Approval Manager")
-from orchestrator._internal.execution.team_collaboration import ApprovalManager as ColabApprovalManager
+from orchestrator._internal.execution.team_collaboration import (
+    ApprovalManager as ColabApprovalManager,
+)
+
 manager = ColabApprovalManager(min_approvals=1, approver_roles=['reviewer', 'lead', 'admin'])
 print(f"[OK] Created manager with {manager.min_approvals} min approvals")
 print(f"     Roles: {manager.approver_roles}")
 
 # Update module-level manager for consistent tests
 import orchestrator._internal.execution.team_collaboration as collab_module
+
 collab_module._approval_manager = manager
 
 # Test 2: Request approval
@@ -55,7 +58,7 @@ approval = request_approval(
     target_org='acme/email'
 )
 
-print(f"[OK] Created approval request")
+print("[OK] Created approval request")
 print(f"     ID: {approval.id}")
 print(f"     Status: {approval.status.value}")
 print(f"     Approvals needed: {approval.required_approvals}")
@@ -174,7 +177,7 @@ change = record_skill_change(
     summary='Upgraded regex to RFC 5322 compliant pattern'
 )
 
-print(f"[OK] Recorded change")
+print("[OK] Recorded change")
 print(f"     From: {change.version_from}")
 print(f"     To: {change.version_to}")
 print(f"     By: {change.changed_by}")
@@ -198,14 +201,14 @@ for log in logs:
     action = log.action.value
     action_counts[action] = action_counts.get(action, 0) + 1
 
-print(f"     By action:")
+print("     By action:")
 for action, count in action_counts.items():
     print(f"       {action}: {count}")
 
 # Test 11: Audit report
 print("\n[TEST 11] Audit Report")
 report = generate_audit_report(days=30)
-print(f"[OK] Generated audit report")
+print("[OK] Generated audit report")
 print(f"     Period: {report['period_days']} days")
 print(f"     Total entries: {report['total_entries']}")
 print(f"     By action: {report['by_action']}")
@@ -213,9 +216,9 @@ print(f"     By actor: {report['by_actor']}")
 
 # Test 12: Approval status enums
 print("\n[TEST 12] Approval Status Enums")
-statuses = [ApprovalStatus.DRAFT, ApprovalStatus.PENDING, ApprovalStatus.APPROVED, 
+statuses = [ApprovalStatus.DRAFT, ApprovalStatus.PENDING, ApprovalStatus.APPROVED,
            ApprovalStatus.REJECTED, ApprovalStatus.PUBLISHED]
-print(f"[OK] Available statuses:")
+print("[OK] Available statuses:")
 for status in statuses:
     print(f"     - {status.value}")
 
@@ -228,7 +231,7 @@ actions = [
     AuditAction.SKILL_PUBLISHED,
     AuditAction.COMMENT_ADDED
 ]
-print(f"[OK] Available audit actions:")
+print("[OK] Available audit actions:")
 for action in actions:
     print(f"     - {action.value}")
 

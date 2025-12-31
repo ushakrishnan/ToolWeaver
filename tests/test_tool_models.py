@@ -7,15 +7,17 @@ Tests cover:
 - ToolCatalog operations
 """
 
-import pytest
 from datetime import datetime
+
+import pytest
 from pydantic import ValidationError
-from orchestrator.shared.models import ToolParameter, ToolDefinition, ToolCatalog
+
+from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 
 
 class TestToolParameter:
     """Test ToolParameter model validation and behavior."""
-    
+
     def test_basic_parameter(self):
         """Test creating a basic parameter."""
         param = ToolParameter(
@@ -24,12 +26,12 @@ class TestToolParameter:
             description="User identifier",
             required=True
         )
-        
+
         assert param.name == "user_id"
         assert param.type == "string"
         assert param.required is True
         assert param.enum is None
-    
+
     def test_parameter_with_enum(self):
         """Test parameter with enum values."""
         param = ToolParameter(
@@ -39,10 +41,10 @@ class TestToolParameter:
             enum=["low", "medium", "high"],
             required=False
         )
-        
+
         assert param.enum == ["low", "medium", "high"]
         assert param.required is False
-    
+
     def test_parameter_with_default(self):
         """Test parameter with default value."""
         param = ToolParameter(
@@ -51,9 +53,9 @@ class TestToolParameter:
             description="Timeout in seconds",
             default=30
         )
-        
+
         assert param.default == 30
-    
+
     def test_nested_object_parameter(self):
         """Test parameter with nested object properties."""
         param = ToolParameter(
@@ -65,10 +67,10 @@ class TestToolParameter:
                 "port": {"type": "integer"}
             }
         )
-        
+
         assert param.properties is not None
         assert "host" in param.properties
-    
+
     def test_array_parameter(self):
         """Test parameter with array items."""
         param = ToolParameter(
@@ -77,14 +79,14 @@ class TestToolParameter:
             description="List of tags",
             items={"type": "string"}
         )
-        
+
         assert param.items is not None
         assert param.items["type"] == "string"
 
 
 class TestToolDefinition:
     """Test ToolDefinition model validation and conversion."""
-    
+
     def test_basic_tool_definition(self):
         """Test creating a basic tool definition."""
         tool = ToolDefinition(
@@ -95,13 +97,13 @@ class TestToolDefinition:
                 ToolParameter(name="user_id", type="string", description="User ID", required=True)
             ]
         )
-        
+
         assert tool.name == "get_user"
         assert tool.type == "function"
         assert len(tool.parameters) == 1
         assert tool.version == "1.0"
         assert tool.defer_loading is False
-    
+
     def test_tool_type_validation(self):
         """Test that tool type must be one of: mcp, function, code_exec."""
         with pytest.raises(ValidationError):
@@ -111,7 +113,7 @@ class TestToolDefinition:
                 description="Test",
                 parameters=[]
             )
-    
+
     def test_mcp_tool(self):
         """Test MCP tool definition."""
         tool = ToolDefinition(
@@ -124,11 +126,11 @@ class TestToolDefinition:
             source="mcp:azure_cv",
             metadata={"provider": "azure"}
         )
-        
+
         assert tool.type == "mcp"
         assert tool.source == "mcp:azure_cv"
         assert tool.metadata["provider"] == "azure"
-    
+
     def test_code_exec_tool(self):
         """Test code execution tool definition."""
         tool = ToolDefinition(
@@ -140,10 +142,10 @@ class TestToolDefinition:
             ],
             defer_loading=False  # Code exec should not be deferred
         )
-        
+
         assert tool.type == "code_exec"
         assert tool.defer_loading is False
-    
+
     def test_to_llm_format_basic(self):
         """Test conversion to LLM function calling format."""
         tool = ToolDefinition(
@@ -156,9 +158,9 @@ class TestToolDefinition:
                 ToolParameter(name="body", type="string", description="Email body", required=False)
             ]
         )
-        
+
         llm_format = tool.to_llm_format()
-        
+
         assert llm_format["name"] == "send_email"
         assert llm_format["description"] == "Send an email message"
         assert "parameters" in llm_format
@@ -167,7 +169,7 @@ class TestToolDefinition:
         assert "subject" in llm_format["parameters"]["properties"]
         assert "body" in llm_format["parameters"]["properties"]
         assert llm_format["parameters"]["required"] == ["to", "subject"]
-    
+
     def test_to_llm_format_with_enum(self):
         """Test LLM format includes enum values."""
         tool = ToolDefinition(
@@ -184,12 +186,12 @@ class TestToolDefinition:
                 )
             ]
         )
-        
+
         llm_format = tool.to_llm_format()
-        
+
         assert "enum" in llm_format["parameters"]["properties"]["level"]
         assert llm_format["parameters"]["properties"]["level"]["enum"] == ["low", "high"]
-    
+
     def test_to_llm_format_with_default(self):
         """Test LLM format includes default values."""
         tool = ToolDefinition(
@@ -205,23 +207,23 @@ class TestToolDefinition:
                 )
             ]
         )
-        
+
         llm_format = tool.to_llm_format()
-        
+
         assert llm_format["parameters"]["properties"]["seconds"]["default"] == 10
 
 
 class TestToolCatalog:
     """Test ToolCatalog operations."""
-    
+
     def test_empty_catalog(self):
         """Test creating an empty catalog."""
         catalog = ToolCatalog()
-        
+
         assert len(catalog.tools) == 0
         assert isinstance(catalog.discovered_at, datetime)
         assert catalog.version == "1.0"
-    
+
     def test_add_tool(self):
         """Test adding a tool to catalog."""
         catalog = ToolCatalog()
@@ -231,12 +233,12 @@ class TestToolCatalog:
             description="Test",
             parameters=[]
         )
-        
+
         catalog.add_tool(tool)
-        
+
         assert len(catalog.tools) == 1
         assert "test_tool" in catalog.tools
-    
+
     def test_get_tool(self):
         """Test retrieving a tool by name."""
         catalog = ToolCatalog()
@@ -247,37 +249,37 @@ class TestToolCatalog:
             parameters=[]
         )
         catalog.add_tool(tool)
-        
+
         retrieved = catalog.get_tool("my_tool")
-        
+
         assert retrieved is not None
         assert retrieved.name == "my_tool"
-        
+
         # Test non-existent tool
         assert catalog.get_tool("nonexistent") is None
-    
+
     def test_get_by_type(self):
         """Test filtering tools by type."""
         catalog = ToolCatalog()
-        
+
         # Add different types
         catalog.add_tool(ToolDefinition(name="func1", type="function", description="Test", parameters=[]))
         catalog.add_tool(ToolDefinition(name="func2", type="function", description="Test", parameters=[]))
         catalog.add_tool(ToolDefinition(name="mcp1", type="mcp", description="Test", parameters=[]))
         catalog.add_tool(ToolDefinition(name="code1", type="code_exec", description="Test", parameters=[]))
-        
+
         functions = catalog.get_by_type("function")
         mcp_tools = catalog.get_by_type("mcp")
         code_exec = catalog.get_by_type("code_exec")
-        
+
         assert len(functions) == 2
         assert len(mcp_tools) == 1
         assert len(code_exec) == 1
-    
+
     def test_to_llm_format(self):
         """Test converting entire catalog to LLM format."""
         catalog = ToolCatalog()
-        
+
         catalog.add_tool(ToolDefinition(
             name="tool1",
             type="function",
@@ -290,18 +292,18 @@ class TestToolCatalog:
             description="Second tool",
             parameters=[]
         ))
-        
+
         llm_format = catalog.to_llm_format()
-        
+
         assert len(llm_format) == 2
         assert all("name" in tool for tool in llm_format)
         assert all("description" in tool for tool in llm_format)
         assert all("parameters" in tool for tool in llm_format)
-    
+
     def test_to_llm_format_with_defer_loading(self):
         """Test defer_loading filter in LLM format conversion."""
         catalog = ToolCatalog()
-        
+
         # Add tools with different defer_loading settings
         catalog.add_tool(ToolDefinition(
             name="always_loaded",
@@ -317,20 +319,20 @@ class TestToolCatalog:
             parameters=[],
             defer_loading=True
         ))
-        
+
         # Without defer_loading filter - should get all
         all_tools = catalog.to_llm_format(defer_loading=False)
         assert len(all_tools) == 2
-        
+
         # With defer_loading filter - should only get non-deferred
         immediate_tools = catalog.to_llm_format(defer_loading=True)
         assert len(immediate_tools) == 1
         assert immediate_tools[0]["name"] == "always_loaded"
-    
+
     def test_multiple_operations(self):
         """Test multiple catalog operations in sequence."""
         catalog = ToolCatalog(source="test_suite", version="test_v1")
-        
+
         # Add multiple tools
         for i in range(5):
             catalog.add_tool(ToolDefinition(
@@ -339,7 +341,7 @@ class TestToolCatalog:
                 description=f"Tool number {i}",
                 parameters=[]
             ))
-        
+
         assert len(catalog.tools) == 5
         assert len(catalog.get_by_type("function")) == 3
         assert len(catalog.get_by_type("mcp")) == 2
@@ -349,11 +351,11 @@ class TestToolCatalog:
 
 class TestToolCatalogIntegration:
     """Integration tests for tool catalog with realistic scenarios."""
-    
+
     def test_receipt_processing_catalog(self):
         """Test catalog for receipt processing use case."""
         catalog = ToolCatalog(source="receipt_processor")
-        
+
         # Add OCR tool
         catalog.add_tool(ToolDefinition(
             name="receipt_ocr",
@@ -364,7 +366,7 @@ class TestToolCatalogIntegration:
             ],
             source="mcp:azure_cv"
         ))
-        
+
         # Add parser tool
         catalog.add_tool(ToolDefinition(
             name="parse_line_items",
@@ -374,7 +376,7 @@ class TestToolCatalogIntegration:
                 ToolParameter(name="text", type="string", description="Receipt text", required=True)
             ]
         ))
-        
+
         # Add categorizer
         catalog.add_tool(ToolDefinition(
             name="categorize_expenses",
@@ -384,13 +386,13 @@ class TestToolCatalogIntegration:
                 ToolParameter(name="items", type="array", description="Line items", items={"type": "object"}, required=True)
             ]
         ))
-        
+
         assert len(catalog.tools) == 3
         assert catalog.get_tool("receipt_ocr") is not None
-        
+
         llm_tools = catalog.to_llm_format()
         assert len(llm_tools) == 3
-        
+
         # Verify structure for LLM
         ocr_tool = next(t for t in llm_tools if t["name"] == "receipt_ocr")
         assert "image_url" in ocr_tool["parameters"]["properties"]
@@ -398,11 +400,11 @@ class TestToolCatalogIntegration:
 
 class TestToolExamples:
     """Test tool examples functionality (Phase 5)."""
-    
+
     def test_tool_example_creation(self):
         """Test creating a tool example."""
         from orchestrator.shared.models import ToolExample
-        
+
         example = ToolExample(
             scenario="Critical production bug requiring urgent attention",
             input={
@@ -414,23 +416,23 @@ class TestToolExamples:
             output={"ticket_id": "TICK-001", "status": "created", "sla_hours": 2},
             notes="Use critical priority for production outages, include escalation path"
         )
-        
+
         assert example.scenario == "Critical production bug requiring urgent attention"
         assert example.input["priority"] == "critical"
         assert example.output["ticket_id"] == "TICK-001"
         assert "production outages" in example.notes
-    
+
     def test_tool_definition_with_examples(self):
         """Test ToolDefinition with examples."""
         from orchestrator.shared.models import ToolExample
-        
+
         tool = ToolDefinition(
             name="create_ticket",
             type="function",
             description="Create a support ticket",
             parameters=[
                 ToolParameter(name="title", type="string", description="Ticket title", required=True),
-                ToolParameter(name="priority", type="string", description="Priority level", 
+                ToolParameter(name="priority", type="string", description="Priority level",
                             enum=["low", "medium", "high", "critical"], required=True)
             ],
             examples=[
@@ -446,15 +448,15 @@ class TestToolExamples:
                 )
             ]
         )
-        
+
         assert len(tool.examples) == 2
         assert tool.examples[0].scenario == "Critical production bug"
         assert tool.examples[1].input["priority"] == "low"
-    
+
     def test_llm_format_with_examples(self):
         """Test to_llm_format includes examples in description."""
         from orchestrator.shared.models import ToolExample
-        
+
         tool = ToolDefinition(
             name="create_ticket",
             type="function",
@@ -470,19 +472,19 @@ class TestToolExamples:
                 )
             ]
         )
-        
+
         llm_format = tool.to_llm_format(include_examples=True)
-        
+
         # Examples should be appended to description
         assert "Examples:" in llm_format["description"]
         assert "Critical bug" in llm_format["description"]
         assert "DB timeout" in llm_format["description"]
         assert "TICK-001" in llm_format["description"]
-    
+
     def test_llm_format_without_examples(self):
         """Test to_llm_format excludes examples when requested."""
         from orchestrator.shared.models import ToolExample
-        
+
         tool = ToolDefinition(
             name="create_ticket",
             type="function",
@@ -498,19 +500,19 @@ class TestToolExamples:
                 )
             ]
         )
-        
+
         llm_format = tool.to_llm_format(include_examples=False)
-        
+
         # Examples should NOT be in description
         assert "Examples:" not in llm_format["description"]
         assert "Critical bug" not in llm_format["description"]
-    
+
     def test_catalog_with_examples(self):
         """Test ToolCatalog propagates include_examples parameter."""
         from orchestrator.shared.models import ToolExample
-        
+
         catalog = ToolCatalog(source="test")
-        
+
         catalog.add_tool(ToolDefinition(
             name="tool1",
             type="function",
@@ -524,11 +526,11 @@ class TestToolExamples:
                 )
             ]
         ))
-        
+
         # With examples
         llm_tools_with = catalog.to_llm_format(include_examples=True)
         assert "Examples:" in llm_tools_with[0]["description"]
-        
+
         # Without examples
         llm_tools_without = catalog.to_llm_format(include_examples=False)
         assert "Examples:" not in llm_tools_without[0]["description"]

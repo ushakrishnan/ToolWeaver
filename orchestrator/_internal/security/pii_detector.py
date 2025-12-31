@@ -10,8 +10,8 @@ Threats Mitigated:
 """
 
 import re
-from typing import List, Tuple, Dict, Any
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -42,7 +42,7 @@ class PIIDetector:
         redacted = detector.redact("My SSN is 123-45-6789")
         # "My SSN is [REDACTED_SSN]"
     """
-    
+
     # Regex patterns for common PII types
     PATTERNS = {
         'ssn': re.compile(r'\b\d{3}-\d{2}-\d{4}\b'),
@@ -54,8 +54,8 @@ class PIIDetector:
         'aws_key': re.compile(r'\bAKIA[0-9A-Z]{16}\b'),
         'jwt': re.compile(r'\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b'),
     }
-    
-    def scan(self, text: str) -> List[PIIFinding]:
+
+    def scan(self, text: str) -> list[PIIFinding]:
         """
         Scan text for PII instances.
         
@@ -66,7 +66,7 @@ class PIIDetector:
             List of PII findings
         """
         findings = []
-        
+
         for pii_type, pattern in self.PATTERNS.items():
             for match in pattern.finditer(text):
                 findings.append(PIIFinding(
@@ -75,11 +75,11 @@ class PIIDetector:
                     start=match.start(),
                     end=match.end()
                 ))
-        
+
         # Sort by position for consistent processing
         findings.sort(key=lambda f: f.start)
         return findings
-    
+
     def redact(self, text: str) -> str:
         """
         Redact all PII from text.
@@ -91,15 +91,15 @@ class PIIDetector:
             Text with PII replaced by [REDACTED_TYPE]
         """
         findings = self.scan(text)
-        
+
         # Replace from end to start to preserve positions
         result = text
         for finding in reversed(findings):
             redaction = f"[REDACTED_{finding.type.upper()}]"
             result = result[:finding.start] + redaction + result[finding.end:]
-        
+
         return result
-    
+
     def has_pii(self, text: str) -> bool:
         """
         Quick check if text contains any PII.
@@ -134,7 +134,7 @@ class ResponseFilter:
         #   "_field_pii_detected": ["password", "email"]
         # }
     """
-    
+
     # Sensitive field names to remove
     SENSITIVE_KEYS = {
         'password', 'passwd', 'pwd',
@@ -142,11 +142,11 @@ class ResponseFilter:
         'private_key', 'access_token', 'refresh_token',
         'credit_card', 'ssn', 'social_security',
     }
-    
+
     def __init__(self):
         self.pii_detector = PIIDetector()
-    
-    def filter_response(self, response: Dict[str, Any]) -> Dict[str, Any]:
+
+    def filter_response(self, response: dict[str, Any]) -> dict[str, Any]:
         """
         Filter sensitive data from response dictionary.
         
@@ -161,17 +161,17 @@ class ResponseFilter:
             if isinstance(response, str):
                 return self.pii_detector.redact(response)
             return response
-        
+
         filtered = {}
         removed_fields = []
         pii_types = []
-        
+
         for key, value in response.items():
             # Check if key is sensitive
             if key.lower() in self.SENSITIVE_KEYS:
                 removed_fields.append(key)
                 continue
-            
+
             # Recursively filter nested dicts
             if isinstance(value, dict):
                 filtered[key] = self.filter_response(value)
@@ -193,7 +193,7 @@ class ResponseFilter:
             # Pass through other types
             else:
                 filtered[key] = value
-        
+
         # Add metadata about filtering
         if removed_fields or pii_types:
             metadata = []
@@ -202,10 +202,10 @@ class ResponseFilter:
             if pii_types:
                 metadata.extend(set(pii_types))
             filtered['_field_pii_detected'] = sorted(set(metadata))
-        
+
         return filtered
-    
-    def filter_string(self, text: str) -> Tuple[str, List[str]]:
+
+    def filter_string(self, text: str) -> tuple[str, list[str]]:
         """
         Filter PII from a string and return what was found.
         
@@ -217,9 +217,9 @@ class ResponseFilter:
         """
         findings = self.pii_detector.scan(text)
         pii_types = sorted(set(f.type for f in findings))
-        
+
         if findings:
             filtered = self.pii_detector.redact(text)
             return filtered, pii_types
-        
+
         return text, []

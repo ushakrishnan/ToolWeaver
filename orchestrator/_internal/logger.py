@@ -23,8 +23,7 @@ Output format:
 import logging
 import os
 import sys
-from typing import Any, Optional
-
+from typing import Any
 
 # ============================================================
 # Configuration
@@ -43,7 +42,7 @@ def _get_log_level_from_env() -> int:
         Log level as int (logging.INFO, logging.DEBUG, etc.)
     """
     level_str = os.getenv("TOOLWEAVER_LOG_LEVEL", DEFAULT_LOG_LEVEL).upper()
-    
+
     level_map = {
         "DEBUG": logging.DEBUG,
         "INFO": logging.INFO,
@@ -51,7 +50,7 @@ def _get_log_level_from_env() -> int:
         "ERROR": logging.ERROR,
         "CRITICAL": logging.CRITICAL,
     }
-    
+
     return level_map.get(level_str, logging.INFO)
 
 
@@ -60,7 +59,7 @@ def _get_log_level_from_env() -> int:
 # ============================================================
 
 _initialized = False
-_root_logger: Optional[logging.Logger] = None
+_root_logger: logging.Logger | None = None
 
 
 def _initialize_logging() -> None:
@@ -73,31 +72,31 @@ def _initialize_logging() -> None:
     - Timestamps in logs
     """
     global _initialized, _root_logger
-    
+
     if _initialized:
         return
-    
+
     # Get or create root logger for ToolWeaver
     _root_logger = logging.getLogger("orchestrator")
     _root_logger.setLevel(_get_log_level_from_env())
-    
+
     # Remove existing handlers (avoid duplicates)
     _root_logger.handlers.clear()
-    
+
     # Create console handler
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(_get_log_level_from_env())
-    
+
     # Create formatter
     formatter = logging.Formatter(LOG_FORMAT, datefmt=DATE_FORMAT)
     console_handler.setFormatter(formatter)
-    
+
     # Add handler to logger
     _root_logger.addHandler(console_handler)
-    
+
     # Don't propagate to root logger (avoid duplicate logs)
     _root_logger.propagate = False
-    
+
     _initialized = True
 
 
@@ -120,11 +119,11 @@ def get_logger(name: str) -> logging.Logger:
         [2025-12-19 10:45:23] DEBUG [orchestrator.tools.discovery] Found tool
     """
     _initialize_logging()
-    
+
     # Ensure logger name starts with "orchestrator"
     if not name.startswith("orchestrator"):
         name = f"orchestrator.{name}"
-    
+
     return logging.getLogger(name)
 
 
@@ -140,7 +139,7 @@ def set_log_level(level: str) -> None:
         >>> set_log_level("ERROR")  # Only show errors
     """
     _initialize_logging()
-    
+
     level_map = {
         "DEBUG": logging.DEBUG,
         "INFO": logging.INFO,
@@ -148,9 +147,9 @@ def set_log_level(level: str) -> None:
         "ERROR": logging.ERROR,
         "CRITICAL": logging.CRITICAL,
     }
-    
+
     log_level = level_map.get(level.upper(), logging.INFO)
-    
+
     if _root_logger:
         _root_logger.setLevel(log_level)
         for handler in _root_logger.handlers:
@@ -195,30 +194,30 @@ class StructuredLogger:
     
     Provides convenience methods for logging with context.
     """
-    
+
     def __init__(self, logger: logging.Logger):
         self._logger = logger
-    
+
     def info(self, message: str, **context: Any) -> None:
         """Log info with structured context."""
         self._logger.info(message, extra=context)
-    
+
     def debug(self, message: str, **context: Any) -> None:
         """Log debug with structured context."""
         self._logger.debug(message, extra=context)
-    
+
     def warning(self, message: str, **context: Any) -> None:
         """Log warning with structured context."""
         self._logger.warning(message, extra=context)
-    
+
     def error(self, message: str, **context: Any) -> None:
         """Log error with structured context."""
         self._logger.error(message, extra=context)
-    
+
     def critical(self, message: str, **context: Any) -> None:
         """Log critical with structured context."""
         self._logger.critical(message, extra=context)
-    
+
     def exception(self, message: str, **context: Any) -> None:
         """Log exception with traceback."""
         self._logger.exception(message, extra=context)

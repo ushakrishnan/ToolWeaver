@@ -5,20 +5,21 @@ Validates semantic_search_tools() function and integration with VectorToolSearch
 """
 
 import pytest
-from orchestrator.tools.discovery_api import semantic_search_tools, search_tools
-from orchestrator.shared.models import ToolDefinition, ToolParameter
+
 from orchestrator.plugins.registry import get_registry, register_plugin
+from orchestrator.shared.models import ToolDefinition, ToolParameter
+from orchestrator.tools.discovery_api import search_tools, semantic_search_tools
 
 
 class MockToolPlugin:
     """Simple plugin for registering test tools"""
-    
+
     def __init__(self):
         self.tools = []
-    
+
     def get_tools(self):
         return [t.model_dump() for t in self.tools]
-    
+
     async def execute(self, tool_name, params):
         return {"result": "ok"}
 
@@ -26,9 +27,9 @@ class MockToolPlugin:
 @pytest.fixture
 def sample_tools(monkeypatch):
     """Register sample tools for testing"""
-    
+
     plugin = MockToolPlugin()
-    
+
     # Create tools with domain set explicitly
     tools = [
         ToolDefinition(
@@ -86,16 +87,16 @@ def sample_tools(monkeypatch):
             ]
         ),
     ]
-    
+
     plugin.tools = tools
-    
+
     # Register the plugin
     registry = get_registry()
     old_plugin = registry.get("semantic_test") if registry.has("semantic_test") else None
     register_plugin("semantic_test", plugin)
-    
+
     yield tools
-    
+
     # Cleanup
     if old_plugin:
         register_plugin("semantic_test", old_plugin)
@@ -110,10 +111,10 @@ def test_semantic_search_basic(sample_tools):
         top_k=3,
         min_score=0.1
     )
-    
+
     assert len(results) > 0
     assert all(isinstance(r, tuple) and len(r) == 2 for r in results)
-    
+
     # Check that results contain (ToolDefinition, float) tuples
     tool, score = results[0]
     assert isinstance(tool, ToolDefinition)
@@ -129,7 +130,7 @@ def test_semantic_search_domain_filter(sample_tools):
         domain="slack",
         min_score=0.1
     )
-    
+
     # Should only return slack tools
     for tool, score in results:
         assert tool.domain == "slack"
@@ -142,7 +143,7 @@ def test_semantic_search_top_k(sample_tools):
         top_k=2,
         min_score=0.0
     )
-    
+
     assert len(results) <= 2
 
 
@@ -153,7 +154,7 @@ def test_semantic_search_min_score(sample_tools):
         top_k=10,
         min_score=0.8  # Very high threshold
     )
-    
+
     # Should return few or no results
     assert all(score >= 0.8 for _, score in results)
 
@@ -166,7 +167,7 @@ def test_semantic_search_conceptual_match(sample_tools):
         top_k=3,
         min_score=0.1
     )
-    
+
     # Check that slack_send_message is in results (conceptual match)
     tool_names = [tool.name for tool, _ in results]
     # Semantic search should find this conceptually similar tool
@@ -186,7 +187,7 @@ def test_semantic_search_fallback_to_substring(sample_tools):
 
     # Should return results
     assert len(results) > 0
-    
+
     # Semantic search may return different tools than substring (that's OK)
     # Just verify we get back ToolDefinition objects with scores
     for tool, score in results:
@@ -217,7 +218,7 @@ def test_search_tools_with_semantic_flag(sample_tools):
         use_semantic=True,
         top_k=3
     )
-    
+
     assert len(results) > 0
     assert all(isinstance(r, ToolDefinition) for r in results)
 
@@ -230,7 +231,7 @@ def test_search_tools_semantic_with_type_filter(sample_tools):
         type_filter="function",
         top_k=5
     )
-    
+
     # All results should have type="function"
     for tool in results:
         assert tool.type == "function"
@@ -242,7 +243,7 @@ def test_search_tools_semantic_disabled(sample_tools):
         query="github",
         use_semantic=False
     )
-    
+
     # Should use substring search
     assert len(results) > 0
     for tool in results:
@@ -256,7 +257,7 @@ def test_semantic_search_empty_catalog():
         "test query",
         top_k=5
     )
-    
+
     # Should handle gracefully
     assert isinstance(results, list)
 
@@ -268,7 +269,7 @@ def test_semantic_search_scores_descending(sample_tools):
         top_k=5,
         min_score=0.0
     )
-    
+
     if len(results) > 1:
         scores = [score for _, score in results]
         assert scores == sorted(scores, reverse=True), "Results should be sorted by score descending"

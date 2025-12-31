@@ -7,6 +7,7 @@ when enabled in .env file.
 
 import asyncio
 import os
+
 from orchestrator.orchestrator import execute_plan, get_monitor
 
 # Simple test plan
@@ -32,16 +33,16 @@ async def main():
     print("MONITORING INTEGRATION TEST")
     print("=" * 60)
     print()
-    
+
     # Check monitoring configuration
     backends = os.getenv("MONITORING_BACKENDS", "local")
     print(f"[OK] MONITORING_BACKENDS from .env: {backends}")
     print()
-    
+
     # Get monitor (will be initialized on first plan execution)
     print("🔍 Testing orchestrator with monitoring...")
     print()
-    
+
     try:
         # Execute plan (monitor will be auto-initialized)
         context = await execute_plan(test_plan)
@@ -49,7 +50,7 @@ async def main():
         print("[OK] Plan executed successfully!")
         print(f"📋 Result: {context}")
         print()
-        
+
         # Get the monitor instance
         monitor = get_monitor()
         print(f"[OK] Monitor initialized with {len(monitor.backends)} backend(s)")
@@ -57,17 +58,17 @@ async def main():
             backend_type = type(backend).__name__
             print(f"   - {backend_type}")
         print()
-        
+
         # Check W&B
         if any('wandb' in str(type(b)).lower() for b in monitor.backends):
             print("[OK] W&B backend is active!")
             print("📊 Check your dashboard at: https://wandb.ai/usha-krishnan/ToolWeaver")
-        
+
         print()
         print("=" * 60)
         print("[OK] Monitoring integration test complete!")
         print("=" * 60)
-        
+
     except Exception as e:
         print(f"[X] Test failed: {e}")
         import traceback

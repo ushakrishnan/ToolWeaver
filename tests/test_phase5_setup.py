@@ -8,21 +8,20 @@ Run with: python -m pytest tests/test_phase5_setup.py -v
 Or directly: python tests/test_phase5_setup.py
 """
 
-import os
-import sys
-import sqlite3
-from pathlib import Path
-from datetime import datetime
 import json
+import os
+import sqlite3
+import sys
+from datetime import datetime
+from pathlib import Path
 
 # Add orchestrator to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from orchestrator._internal.execution.analytics import (
+    MetricType,
     SkillAnalytics,
     SQLiteSchema,
-    initialize_analytics_db,
-    MetricType,
 )
 
 
@@ -383,14 +382,17 @@ class Phase5TestRunner:
     def test_grafana_connection(self) -> bool:
         """Test Grafana API connectivity."""
         try:
-            from orchestrator._internal.execution.analytics.grafana_client import GrafanaClient, GrafanaConfig
+            from orchestrator._internal.execution.analytics.grafana_client import (
+                GrafanaClient,
+                GrafanaConfig,
+            )
 
             config = GrafanaConfig(
                 url=os.getenv("GRAFANA_URL", ""),
                 api_key=os.getenv("GRAFANA_API_KEY", ""),
             )
             client = GrafanaClient(config)
-            
+
             if client.health_check():
                 self.log_test(
                     "Grafana Connection",

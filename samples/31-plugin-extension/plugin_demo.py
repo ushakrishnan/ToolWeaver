@@ -1,11 +1,11 @@
 import asyncio
-from typing import Any, Dict, List
+from typing import Any
 
-from orchestrator import register_plugin, list_plugins, get_plugin
+from orchestrator import get_plugin, list_plugins, register_plugin
 
 
 class DemoPlugin:
-    def get_tools(self) -> List[Dict[str, Any]]:
+    def get_tools(self) -> list[dict[str, Any]]:
         return [
             {
                 "name": "echo_text",
@@ -25,7 +25,7 @@ class DemoPlugin:
             },
         ]
 
-    async def execute(self, tool_name: str, params: Dict[str, Any]) -> Any:
+    async def execute(self, tool_name: str, params: dict[str, Any]) -> Any:
         if tool_name == "echo_text":
             return {"output": params.get("text", ""), "cost": 0.0}
         if tool_name == "word_count":

@@ -1,12 +1,12 @@
 """Test streaming metadata surface in discovery and execution."""
 
-import asyncio
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 
-from orchestrator.shared.models import ToolDefinition, ToolParameter
-from orchestrator.tools.agent_discovery import AgentDiscoverer
+import pytest
+
 from orchestrator._internal.infra.a2a_client import A2AClient, AgentCapability
+from orchestrator.shared.models import ToolDefinition
+from orchestrator.tools.agent_discovery import AgentDiscoverer
 
 
 class TestStreamingMetadataSurface:
@@ -108,7 +108,7 @@ class TestStreamingMetadataSurface:
 
         assert len(tools) == 1
         tool = list(tools.values())[0]
-        
+
         # Verify streaming metadata is surfaced
         assert tool.type == "agent"
         assert tool.metadata.get("supports_streaming") is True

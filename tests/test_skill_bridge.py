@@ -1,22 +1,21 @@
 """Tests for skill bridge integration between tools and skill library."""
 
-import pytest
 from pathlib import Path
 
+import pytest
+
 from orchestrator import (
-    tool,
     FunctionToolTemplate,
-    save_tool_as_skill,
-    load_tool_from_skill,
-    get_tool_skill,
-    sync_tool_with_skill,
     get_skill_backed_tools,
+    get_tool_skill,
+    load_tool_from_skill,
+    save_tool_as_skill,
+    sync_tool_with_skill,
+    tool,
 )
 from orchestrator._internal.execution.skill_library import (
     save_skill,
-    get_skill,
     update_skill,
-    list_skills,
 )
 
 
@@ -47,16 +46,16 @@ def test_save_tool_as_skill():
         tax = subtotal * tax_rate
         total = subtotal + tax
         return {"subtotal": subtotal, "tax": tax, "total": total}
-    
+
     # Get tool definition
     from orchestrator.tools.discovery_api import get_tool_info
     tool_def = get_tool_info("calculate_total")
-    
+
     assert tool_def is not None
-    
+
     # Save as skill
     skill = save_tool_as_skill(tool_def, calculate_total, tags=["finance", "calculation"])
-    
+
     assert skill.name == "calculate_total"
     assert skill.description == "Calculate order total"
     assert "finance" in skill.tags
@@ -64,7 +63,7 @@ def test_save_tool_as_skill():
     # Version might be 0.1.0 (new) or 0.1.1+ (update if skill already exists)
     assert skill.version.startswith("0.1")
     assert skill.metadata["tool_name"] == "calculate_total"
-    
+
     # Verify skill code was saved
     skill_path = Path(skill.code_path)
     assert skill_path.exists()
@@ -87,24 +86,24 @@ def process_invoice(invoice_data):
         "status": "processed"
     }
 """
-    
+
     save_skill(
         "process_invoice",
         code,
         description="Process invoice and calculate total",
         tags=["invoice", "accounting"]
     )
-    
+
     # Load as tool
     tool_def, func = load_tool_from_skill("process_invoice")
-    
+
     assert tool_def.name == "process_invoice"
     assert tool_def.description == "Process invoice and calculate total"
     assert tool_def.type == "function"
     assert tool_def.provider == "skill"
     assert tool_def.metadata["skill_reference"] == "process_invoice"
     assert tool_def.metadata["loaded_from_skill"] is True
-    
+
     # Test execution
     result = func({"invoice_number": "INV-001", "items": [{"amount": 100}, {"amount": 200}]})
     assert result["invoice_number"] == "INV-001"
@@ -117,7 +116,7 @@ def test_template_save_as_skill():
     # Create a template with function
     def add_numbers(a: int, b: int) -> int:
         return a + b
-    
+
     template = FunctionToolTemplate(
         name="add_numbers",
         description="Add two numbers",
@@ -127,10 +126,10 @@ def test_template_save_as_skill():
             {"name": "b", "type": "integer", "required": True, "description": "Second number"}
         ]
     )
-    
+
     # Save as skill
     skill = template.save_as_skill(tags=["math"])
-    
+
     assert skill.name == "add_numbers"
     assert skill.description == "Add two numbers"
     assert "math" in skill.tags
@@ -145,14 +144,14 @@ def multiply(x, y):
     return x * y
 """
     save_skill("multiply", code, description="Multiply two numbers", tags=["math"])
-    
+
     # Load as template
     template, func = FunctionToolTemplate.load_from_skill("multiply")
-    
+
     assert template.name == "multiply"
     assert template.description == "Multiply two numbers"
     assert template.type == "function"
-    
+
     # Test execution
     result = func(x=5, y=3)
     assert result == 15
@@ -163,10 +162,10 @@ def test_get_tool_skill():
     # Create a skill
     code = "def test_func(): return 'test'"
     save_skill("test_skill", code, description="Test skill")
-    
+
     # Get skill
     skill = get_tool_skill("test_skill")
-    
+
     assert skill is not None
     assert skill.name == "test_skill"
     assert skill.description == "Test skill"
@@ -180,20 +179,20 @@ def get_discount(price):
     return price * 0.1  # 10% discount
 """
     save_skill("get_discount", code_v1, description="Calculate discount")
-    
+
     # Update skill to new version
     code_v2 = """
 def get_discount(price):
     return price * 0.15  # 15% discount
 """
     update_skill("get_discount", code_v2, bump_type="minor")
-    
+
     # Sync tool
     tool_def, func = sync_tool_with_skill("get_discount")
-    
+
     assert tool_def is not None
     assert tool_def.name == "get_discount"
-    
+
     # Verify it uses new version
     result = func(price=100)
     assert result == 15.0  # 15% not 10%
@@ -217,9 +216,9 @@ def test_get_skill_backed_tools():
         "def not_a_tool(): pass",
         metadata={}  # No tool_name
     )
-    
+
     backed_tools = get_skill_backed_tools()
-    
+
     assert "tool1" in backed_tools
     assert "tool2" in backed_tools
     assert "not_a_tool" not in backed_tools
@@ -230,26 +229,26 @@ def test_skill_versioning():
     # Create function template
     def version_test(x: int) -> int:
         return x * 2
-    
+
     # Use timestamp in name to ensure uniqueness across test runs
     import time
     unique_name = f"version_test_{int(time.time() * 1000)}"
-    
+
     template = FunctionToolTemplate(
         name=unique_name,
         description="Test versioning",
         function=version_test
     )
-    
+
     # First save creates initial version
     skill_v1 = template.save_as_skill()
     v1 = skill_v1.version
-    
+
     # Patch bump should increment
     skill_v2 = template.save_as_skill(bump_type="patch")
     v2 = skill_v2.version
     assert v2 != v1, f"Patch bump should change version: {v1} -> {v2}"
-    
+
     # Minor bump should increment
     skill_v3 = template.save_as_skill(bump_type="minor")
     v3 = skill_v3.version
@@ -288,16 +287,16 @@ def test_nested_schema_preservation():
     )
     def nested_tool(data: dict) -> dict:
         return {"processed": data}
-    
+
     # Get tool def and save as skill
     from orchestrator.tools.discovery_api import get_tool_info
     tool_def = get_tool_info("nested_tool")
     skill = save_tool_as_skill(tool_def, nested_tool)
-    
+
     # Verify nested schema is in metadata
     assert skill.metadata["input_schema"] is not None
     assert skill.metadata["input_schema"]["properties"]["data"]["properties"]["user"]["properties"]["name"]["type"] == "string"
-    
+
     # Load back and verify schema preserved
     loaded_tool_def, _ = load_tool_from_skill("nested_tool")
     assert loaded_tool_def.input_schema is not None
@@ -311,7 +310,7 @@ def test_error_no_function():
         description="Template without function"
     )
     # Don't set _function
-    
+
     with pytest.raises(NotImplementedError, match="does not have a callable function"):
         template.save_as_skill()
 
@@ -326,6 +325,6 @@ def test_error_invalid_skill_code():
     """Test error when skill code cannot be executed."""
     # Create skill with syntax error
     save_skill("bad_skill", "def bad_func(: invalid syntax", description="Bad skill")
-    
+
     with pytest.raises(ValueError, match="Cannot execute skill code"):
         load_tool_from_skill("bad_skill")

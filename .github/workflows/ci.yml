@@ -63,7 +63,7 @@ jobs:
       - name: Install package only (ignore deps)
         run: |
           python -m pip install --upgrade pip
-          pip install -e . --no-deps
+          pip install -e .
       - name: Import orchestrator and print version
         run: |
           python - << 'PY'

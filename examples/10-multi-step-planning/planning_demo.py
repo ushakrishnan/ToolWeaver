@@ -1,7 +1,8 @@
 """Example 10: Multi-Step Planning"""
 import asyncio
-from pathlib import Path
 import sys
+from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from dotenv import load_dotenv
@@ -12,7 +13,7 @@ async def main():
     print("="*70)
     print(" "*20 + "MULTI-STEP PLANNING EXAMPLE")
     print("="*70)
-    
+
     # Example 1: Simple linear plan
     print("\nExample 1: Linear Plan")
     print("-" * 40)
@@ -27,7 +28,7 @@ async def main():
     for step in plan1:
         deps = f"(after {step['depends_on']})" if step['depends_on'] else "(start)"
         print(f"  Step {step['step']}: {step['action']} {deps}")
-    
+
     # Example 2: Parallel execution
     print("\nExample 2: Parallel Execution Plan")
     print("-" * 40)
@@ -45,7 +46,7 @@ async def main():
         deps = f"(after {step['depends_on']})" if step['depends_on'] else "(start)"
         parallel = " [PARALLEL]" if step.get("parallel") else ""
         print(f"  Step {step['step']}: {step['action']} {deps}{parallel}")
-    
+
     # Example 3: Conditional execution
     print("\nExample 3: Conditional Plan")
     print("-" * 40)
@@ -61,7 +62,7 @@ async def main():
         deps = f"(after {step['depends_on']})" if step['depends_on'] else "(start)"
         condition = f" [IF: {step['condition']}]" if step.get("condition") else ""
         print(f"  Step {step['step']}: {step['action']} {deps}{condition}")
-    
+
     # Example 4: Complex real-world scenario
     print("\nExample 4: Complex Real-World Plan")
     print("-" * 40)
@@ -76,7 +77,7 @@ async def main():
     print("  - 10 receipts processed in parallel (not sequential)")
     print("  - Estimated time: 1.5s (vs 15s sequential)")
     print("  - Cost: Same tokens, but 10x faster")
-    
+
     # Plan metrics
     print("\n" + "="*70)
     print("PLAN METRICS")
@@ -91,7 +92,7 @@ async def main():
     print("-" * 60)
     for plan, steps, parallel, time, cost in metrics:
         print(f"{plan:<20} {steps:<8} {parallel:<10} {time:<10} {cost:<10}")
-    
+
     print("\n[OK] Example completed!")
     print("\nKey Benefits:")
     print("  - Natural language → executable plan")

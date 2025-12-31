@@ -15,17 +15,15 @@ Features:
 from __future__ import annotations
 
 import ast
-import os
 import re
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import urlparse
 
-from pydantic import BaseModel, ValidationError, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from orchestrator._internal.errors import ToolWeaverError
 from orchestrator._internal.logger import get_logger
-
 
 logger = get_logger(__name__)
 
@@ -139,13 +137,13 @@ def sanitize_string(
     """
     if not isinstance(input_str, str):
         raise InvalidInputError(f"Expected string, got {type(input_str)}")
-    
+
     # Check length
     if len(input_str) > max_length:
         raise InvalidInputError(
             f"Input too long: {len(input_str)} > {max_length} characters"
         )
-    
+
     # Check for dangerous patterns
     match = DANGEROUS_REGEX.search(input_str)
     if match:
@@ -153,15 +151,15 @@ def sanitize_string(
             f"Dangerous pattern detected: {match.group()}\n"
             f"Input may contain injection attack or unsafe command."
         )
-    
+
     # Remove newlines if not allowed
     if not allow_newlines:
         input_str = input_str.replace("\n", "").replace("\r", "")
-    
+
     # Remove special chars if not allowed
     if not allow_special_chars:
         input_str = re.sub(r"[^\w\s.-]", "", input_str)
-    
+
     return input_str
 
 
@@ -190,16 +188,16 @@ def sanitize_dict(
     """
     if not isinstance(input_dict, dict):
         raise InvalidInputError(f"Expected dict, got {type(input_dict)}")
-    
+
     if len(input_dict) > max_keys:
         raise InvalidInputError(
             f"Dictionary too large: {len(input_dict)} > {max_keys} keys"
         )
-    
+
     def _sanitize_recursive(obj: Any, depth: int = 0) -> Any:
         if depth > max_depth:
             raise InvalidInputError(f"Dictionary too deeply nested (depth > {max_depth})")
-        
+
         if isinstance(obj, dict):
             return {
                 sanitize_string(str(k), max_length=1000): _sanitize_recursive(v, depth + 1)
@@ -211,7 +209,7 @@ def sanitize_dict(
             return sanitize_string(obj)
         else:
             return obj
-    
+
     result: dict[str, Any] = _sanitize_recursive(input_dict)
     return result
 
@@ -223,7 +221,7 @@ def sanitize_dict(
 
 def validate_file_path(
     file_path: str | Path,
-    base_dir: Optional[str | Path] = None,
+    base_dir: str | Path | None = None,
     must_exist: bool = False,
     allow_symlinks: bool = False
 ) -> Path:
@@ -252,15 +250,15 @@ def validate_file_path(
     """
     if not isinstance(file_path, (str, Path)):
         raise InvalidInputError(f"Expected str or Path, got {type(file_path)}")
-    
+
     path = Path(file_path).resolve()
-    
+
     # Check for symlinks
     if not allow_symlinks and path.is_symlink():
         raise PathTraversalError(
             f"Symbolic links not allowed: {file_path}"
         )
-    
+
     # Check base directory constraint
     if base_dir is not None:
         base = Path(base_dir).resolve()
@@ -270,11 +268,11 @@ def validate_file_path(
             raise PathTraversalError(
                 f"Path traversal detected: {file_path} is outside {base_dir}"
             )
-    
+
     # Check existence
     if must_exist and not path.exists():
         raise InvalidInputError(f"Path does not exist: {file_path}")
-    
+
     return path
 
 
@@ -287,7 +285,7 @@ SAFE_URL_SCHEMES = {"http", "https", "ftp", "ftps"}
 
 def validate_url(
     url: str,
-    allowed_schemes: Optional[set[str]] = None,
+    allowed_schemes: set[str] | None = None,
     block_private_ips: bool = True
 ) -> str:
     """
@@ -313,19 +311,19 @@ def validate_url(
     """
     if not isinstance(url, str):
         raise InvalidInputError(f"Expected string, got {type(url)}")
-    
+
     if allowed_schemes is None:
         allowed_schemes = SAFE_URL_SCHEMES
-    
+
     parsed = urlparse(url)
-    
+
     # Check scheme
     if parsed.scheme not in allowed_schemes:
         raise UnsafeURLError(
             f"Unsafe URL scheme: {parsed.scheme}\n"
             f"Allowed schemes: {', '.join(allowed_schemes)}"
         )
-    
+
     # Check for private IPs (basic check)
     if block_private_ips:
         hostname = parsed.hostname
@@ -333,9 +331,9 @@ def validate_url(
             # Block localhost and common private ranges
             if hostname in {"localhost", "127.0.0.1", "0.0.0.0"}:
                 raise UnsafeURLError(f"Localhost access not allowed: {url}")
-            
+
             # Block private IP ranges (basic check)
-            if (hostname.startswith("192.168.") or 
+            if (hostname.startswith("192.168.") or
                 hostname.startswith("10.") or
                 hostname.startswith("172.16.") or
                 hostname.startswith("172.17.") or
@@ -354,7 +352,7 @@ def validate_url(
                 hostname.startswith("172.30.") or
                 hostname.startswith("172.31.")):
                 raise UnsafeURLError(f"Private IP access not allowed: {url}")
-    
+
     return url
 
 
@@ -409,38 +407,38 @@ def validate_code(
     """
     if not isinstance(code, str):
         raise InvalidInputError(f"Expected string, got {type(code)}")
-    
+
     if len(code) > max_length:
         raise InvalidInputError(
             f"Code too long: {len(code)} > {max_length} characters"
         )
-    
+
     # Parse code into AST
     try:
         tree = ast.parse(code)
     except SyntaxError as e:
         raise InvalidCodeError(f"Syntax error in code: {e}")
-    
+
     # Check for dangerous node types
     for node in ast.walk(tree):
         node_type = type(node)
-        
+
         # Check imports
         if not allow_imports and node_type in {ast.Import, ast.ImportFrom}:
             raise InvalidCodeError(
                 "Dangerous construct: import statement not allowed"
             )
-        
+
         # Check function calls
         if isinstance(node, ast.Call):
             func_name = None
-            
+
             if isinstance(node.func, ast.Name):
                 func_name = node.func.id
             elif isinstance(node.func, ast.Attribute):
                 if isinstance(node.func.value, ast.Name):
                     func_name = f"{node.func.value.id}.{node.func.attr}"
-            
+
             if func_name in DANGEROUS_FUNCTIONS:
                 if not allow_file_io and func_name in {"open", "file"}:
                     raise InvalidCodeError(
@@ -450,7 +448,7 @@ def validate_code(
                     raise InvalidCodeError(
                         f"Dangerous function call: {func_name}"
                     )
-    
+
     return code
 
 
@@ -491,9 +489,9 @@ def validate_params(
             field = " -> ".join(str(x) for x in error["loc"])
             msg = error["msg"]
             error_msgs.append(f"  {field}: {msg}")
-        
+
         raise ValidationErrorBase(
-            f"Parameter validation failed:\n" + "\n".join(error_msgs)
+            "Parameter validation failed:\n" + "\n".join(error_msgs)
         )
 
 
@@ -503,7 +501,7 @@ def validate_params(
 
 def validate_tool_input(
     params: dict[str, Any],
-    schema: Optional[type[BaseModel]] = None,
+    schema: type[BaseModel] | None = None,
     sanitize: bool = True
 ) -> dict[str, Any]:
     """
@@ -529,12 +527,12 @@ def validate_tool_input(
     # Sanitize if requested
     if sanitize:
         params = sanitize_dict(params)
-    
+
     # Validate against schema if provided
     if schema is not None:
         validated_model = validate_params(params, schema)
         return validated_model.model_dump()
-    
+
     return params
 
 

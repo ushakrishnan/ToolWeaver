@@ -5,10 +5,9 @@ Provides structured authentication configuration for agent-to-agent communicatio
 supporting bearer tokens, API keys, and future OAuth2/mTLS extensions.
 """
 
-from dataclasses import dataclass
-from typing import Dict, Literal, Optional
 import os
-
+from dataclasses import dataclass
+from typing import Literal
 
 AuthType = Literal["bearer", "api_key", "none"]
 
@@ -24,9 +23,9 @@ class AuthConfig:
         header_name: HTTP header name for the auth token
     """
     type: AuthType
-    token_env: Optional[str] = None
+    token_env: str | None = None
     header_name: str = "Authorization"
-    
+
     def __post_init__(self):
         """Validate configuration after initialization."""
         if self.type in ("bearer", "api_key") and not self.token_env:
@@ -63,8 +62,8 @@ class AuthManager:
         headers = manager.get_headers(config)
         # {}
     """
-    
-    def get_headers(self, config: AuthConfig) -> Dict[str, str]:
+
+    def get_headers(self, config: AuthConfig) -> dict[str, str]:
         """
         Generate authentication headers from configuration.
         
@@ -79,20 +78,20 @@ class AuthManager:
         """
         if config.type == "none":
             return {}
-        
+
         # Get token from environment
         if not config.token_env:
             raise ValueError(
                 f"token_env is required for auth type '{config.type}'"
             )
-        
+
         token = os.getenv(config.token_env)
         if not token:
             raise ValueError(
                 f"Authentication token not found in environment variable "
                 f"'{config.token_env}'"
             )
-        
+
         # Format based on auth type
         if config.type == "bearer":
             # Bearer token format: "Bearer {token}"
@@ -102,7 +101,7 @@ class AuthManager:
             return {config.header_name: token}
         else:
             raise ValueError(f"Unsupported auth type: {config.type}")
-    
+
     def validate_config(self, config: AuthConfig) -> bool:
         """
         Validate that configuration is usable (token exists, etc.).
@@ -115,10 +114,10 @@ class AuthManager:
         """
         if config.type == "none":
             return True
-        
+
         if not config.token_env:
             return False
-        
+
         # Check if token exists in environment
         return os.getenv(config.token_env) is not None
 

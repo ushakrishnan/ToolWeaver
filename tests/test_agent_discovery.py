@@ -1,6 +1,6 @@
 import pytest
 
-from orchestrator._internal.infra.a2a_client import AgentCapability, A2AClient
+from orchestrator._internal.infra.a2a_client import A2AClient, AgentCapability
 from orchestrator.tools.agent_discovery import AgentDiscoverer
 
 

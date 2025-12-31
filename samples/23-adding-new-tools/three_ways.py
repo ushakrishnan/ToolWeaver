@@ -12,18 +12,17 @@ All three approaches produce identical tools and can be used together.
 import asyncio
 import tempfile
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 from orchestrator import (
-    mcp_tool,
-    a2a_agent,
     FunctionToolTemplate,
-    load_tools_from_yaml,
+    a2a_agent,
     get_available_tools,
+    load_tools_from_yaml,
+    mcp_tool,
     search_tools,
 )
 from orchestrator.shared.models import ToolParameter
-
 
 # ============================================================================
 # METHOD 1: Template Classes (Phase 1)
@@ -32,7 +31,7 @@ from orchestrator.shared.models import ToolParameter
 
 class ExpensesFunctionTool(FunctionToolTemplate):
     """Example tool using template class approach."""
-    
+
     def __init__(self):
         super().__init__(
             name="get_expenses_via_template",
@@ -54,9 +53,9 @@ class ExpensesFunctionTool(FunctionToolTemplate):
                 ),
             ],
         )
-    
+
     @staticmethod
-    def worker(employee_id: str, year: int = 2025) -> Dict[str, Any]:
+    def worker(employee_id: str, year: int = 2025) -> dict[str, Any]:
         """Template worker implementation."""
         return {
             "employee_id": employee_id,
@@ -74,7 +73,7 @@ class ExpensesFunctionTool(FunctionToolTemplate):
 # ============================================================================
 
 @mcp_tool(domain="finance")
-async def get_expenses_via_decorator(employee_id: str, year: int = 2025) -> Dict[str, Any]:
+async def get_expenses_via_decorator(employee_id: str, year: int = 2025) -> dict[str, Any]:
     """
     Fetch employee expenses (decorator approach).
     
@@ -86,7 +85,7 @@ async def get_expenses_via_decorator(employee_id: str, year: int = 2025) -> Dict
     """
     # Simulate async operation (e.g., API call)
     await asyncio.sleep(0.01)
-    
+
     return {
         "employee_id": employee_id,
         "year": year,
@@ -98,7 +97,7 @@ async def get_expenses_via_decorator(employee_id: str, year: int = 2025) -> Dict
 
 
 @a2a_agent(domain="finance")
-def route_expense_approval(employee_id: str, amount: float, reason: str = "") -> Dict[str, Any]:
+def route_expense_approval(employee_id: str, amount: float, reason: str = "") -> dict[str, Any]:
     """
     Route expense for approval (agent decorator).
     
@@ -143,7 +142,7 @@ tools:
 """
 
 
-def yaml_worker_get_expenses(employee_id: str, year: int = 2025) -> Dict[str, Any]:
+def yaml_worker_get_expenses(employee_id: str, year: int = 2025) -> dict[str, Any]:
     """Worker function for YAML-defined tool."""
     return {
         "employee_id": employee_id,
@@ -161,11 +160,11 @@ def yaml_worker_get_expenses(employee_id: str, year: int = 2025) -> Dict[str, An
 
 async def demo_all_three_methods():
     """Demonstrate registering tools via all three methods."""
-    
+
     print("\n" + "="*80)
     print("Example 23: Three Ways to Add Tools to ToolWeaver")
     print("="*80 + "\n")
-    
+
     # METHOD 1: Register template-based tool
     print("1. TEMPLATE APPROACH (Most verbose, most control)")
     print("-" * 80)
@@ -175,42 +174,42 @@ async def demo_all_three_methods():
     print(f"   Description: {template_def.description}")
     print(f"   Parameters: {[p.name for p in template_def.parameters]}")
     # Note: Template auto-registration happens in decorator
-    
+
     # Decorators already registered during import, let's verify
     print("\n2. DECORATOR APPROACH (Fast, automatic parameter extraction)")
     print("-" * 80)
-    
+
     # METHOD 2 & 3: Already registered via decorators during import
     available = get_available_tools()
     decorator_tools = [t for t in available if "decorator" in t.name.lower()]
     agent_tools = [t for t in available if "route" in t.name.lower()]
-    
+
     for tool in decorator_tools:
         print(f"   Tool: {tool.name}")
         print(f"   Description: {tool.description}")
         print(f"   Parameters: {[p.name for p in tool.parameters]}")
-        
+
         # Test search
         result = search_tools(query="expenses", use_semantic=False)
         print(f"   Search found: {len(result)} tools\n")
-    
+
     for tool in agent_tools:
         print(f"   Tool: {tool.name}")
         print(f"   Description: {tool.description}")
         print(f"   Type: {tool.type}")
-    
+
     # METHOD 3: Load YAML tools
     print("\n3. YAML APPROACH (Config-driven, DevOps-friendly)")
     print("-" * 80)
-    
+
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
         f.write(YAML_TOOLS_CONFIG)
         yaml_file = Path(f.name)
-    
+
     try:
         count = load_tools_from_yaml(yaml_file)
         print(f"   Loaded {count} tools from YAML")
-        
+
         yaml_tools = [t for t in get_available_tools() if "yaml" in t.name.lower()]
         for tool in yaml_tools:
             print(f"   Tool: {tool.name}")
@@ -218,7 +217,7 @@ async def demo_all_three_methods():
             print(f"   Domain: {tool.domain}")
     finally:
         yaml_file.unlink(missing_ok=True)
-    
+
     # Summary
     print("\n" + "="*80)
     print("SUMMARY: All Three Methods Produce Compatible Tools")

@@ -19,7 +19,7 @@ Usage:
 
 import asyncio
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 async def call_tool(
     server: str,
     tool_name: str,
-    parameters: Dict[str, Any],
+    parameters: dict[str, Any],
     timeout: int = 30
 ) -> Any:
     """
@@ -48,7 +48,7 @@ async def call_tool(
     """
     logger.info(f"Executing tool: {server}/{tool_name}")
     logger.debug(f"Parameters: {parameters}")
-    
+
     try:
         # Route to appropriate backend
         if server == "default" or server == "function":
@@ -57,14 +57,14 @@ async def call_tool(
         else:
             # MCP server
             result = await _execute_mcp_tool(server, tool_name, parameters, timeout)
-        
+
         logger.info(f"Tool {tool_name} executed successfully")
         return result
-        
+
     except asyncio.TimeoutError:
         logger.error(f"Tool {tool_name} timed out after {timeout}s")
         raise TimeoutError(f"Tool execution timed out after {timeout}s")
-        
+
     except Exception as e:
         logger.error(f"Tool {tool_name} failed: {e}")
         raise
@@ -72,18 +72,18 @@ async def call_tool(
 
 async def _execute_function(
     tool_name: str,
-    parameters: Dict[str, Any],
+    parameters: dict[str, Any],
     timeout: int
 ) -> Any:
     """Execute a programmatic Python function"""
     from orchestrator._internal.dispatch import functions
-    
+
     # Get function by name
     if not hasattr(functions, tool_name):
         raise AttributeError(f"Function not found: {tool_name}")
-    
+
     func = getattr(functions, tool_name)
-    
+
     # Execute with timeout
     try:
         result = await asyncio.wait_for(
@@ -104,7 +104,7 @@ async def _execute_function(
 async def _execute_mcp_tool(
     server: str,
     tool_name: str,
-    parameters: Dict[str, Any],
+    parameters: dict[str, Any],
     timeout: int
 ) -> Any:
     """Execute an MCP server tool"""

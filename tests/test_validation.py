@@ -1,19 +1,18 @@
-import os
 import pytest
 
+from orchestrator._internal.runtime_validation import (
+    validate_call,
+    validate_registration,
+)
 from orchestrator._internal.validation import (
-    sanitize_string,
-    validate_url,
-    validate_file_path,
     InvalidInputError,
-    UnsafeURLError,
     PathTraversalError,
     ToolDefinition,
     ToolParameter,
-)
-from orchestrator._internal.runtime_validation import (
-    validate_registration,
-    validate_call,
+    UnsafeURLError,
+    sanitize_string,
+    validate_file_path,
+    validate_url,
 )
 
 
@@ -76,27 +75,17 @@ Tests for validation and sanitization.
 Phase 0.m: Verify input sanitization, path validation, URL validation, code validation.
 """
 
-import ast
-import pytest
-from pathlib import Path
 from pydantic import BaseModel
 
 from orchestrator._internal.validation import (
-    sanitize_string,
+    InvalidCodeError,
+    UnsafeInputError,
+    ValidationErrorBase,
     sanitize_dict,
-    validate_file_path,
-    validate_url,
     validate_code,
     validate_params,
     validate_tool_input,
-    ValidationErrorBase,
-    InvalidInputError,
-    UnsafeInputError,
-    PathTraversalError,
-    UnsafeURLError,
-    InvalidCodeError,
 )
-
 
 # ============================================================
 # Test String Sanitization
@@ -218,7 +207,7 @@ def test_validate_file_path_simple(tmp_path):
     """Test validating simple file path."""
     file_path = tmp_path / "test.txt"
     file_path.write_text("test")
-    
+
     result = validate_file_path(file_path, must_exist=True)
     assert result.exists()
 
@@ -233,9 +222,9 @@ def test_validate_file_path_traversal(tmp_path):
     """Test detection of path traversal."""
     base_dir = tmp_path / "safe"
     base_dir.mkdir()
-    
+
     dangerous_path = base_dir / ".." / ".." / "etc" / "passwd"
-    
+
     with pytest.raises(PathTraversalError, match="traversal detected"):
         validate_file_path(dangerous_path, base_dir=base_dir)
 
@@ -244,10 +233,10 @@ def test_validate_file_path_within_base(tmp_path):
     """Test that valid path within base directory is allowed."""
     base_dir = tmp_path / "safe"
     base_dir.mkdir()
-    
+
     file_path = base_dir / "data" / "file.txt"
     result = validate_file_path(file_path, base_dir=base_dir)
-    
+
     # Should be within base_dir
     assert str(result).startswith(str(base_dir))
 
@@ -413,7 +402,7 @@ def test_validate_params_valid():
     """Test validating valid parameters."""
     params = {"name": "Alice", "age": 30, "email": "alice@example.com"}
     result = validate_params(params, UserParams)
-    
+
     assert result.name == "Alice"
     assert result.age == 30
     assert result.email == "alice@example.com"
@@ -422,7 +411,7 @@ def test_validate_params_valid():
 def test_validate_params_missing_field():
     """Test validation failure for missing required field."""
     params = {"name": "Alice", "age": 30}
-    
+
     with pytest.raises(ValidationErrorBase, match="email"):
         validate_params(params, UserParams)
 
@@ -430,7 +419,7 @@ def test_validate_params_missing_field():
 def test_validate_params_wrong_type():
     """Test validation failure for wrong type."""
     params = {"name": "Alice", "age": "thirty", "email": "alice@example.com"}
-    
+
     with pytest.raises(ValidationErrorBase, match="age"):
         validate_params(params, UserParams)
 
@@ -443,7 +432,7 @@ def test_validate_tool_input_simple():
     """Test validating simple tool input."""
     params = {"query": "SELECT * FROM users"}
     result = validate_tool_input(params)
-    
+
     assert "query" in result
 
 
@@ -451,14 +440,14 @@ def test_validate_tool_input_with_sanitization():
     """Test tool input validation with sanitization."""
     params = {"message": "Hello, world!"}
     result = validate_tool_input(params, sanitize=True)
-    
+
     assert result["message"] == "Hello, world!"
 
 
 def test_validate_tool_input_dangerous():
     """Test rejection of dangerous tool input."""
     params = {"cmd": "; rm -rf /"}
-    
+
     with pytest.raises(UnsafeInputError):
         validate_tool_input(params, sanitize=True)
 
@@ -467,7 +456,7 @@ def test_validate_tool_input_with_schema():
     """Test tool input validation with Pydantic schema."""
     params = {"name": "Alice", "age": 30, "email": "alice@example.com"}
     result = validate_tool_input(params, schema=UserParams)
-    
+
     assert result["name"] == "Alice"
     assert result["age"] == 30
 
@@ -475,7 +464,7 @@ def test_validate_tool_input_with_schema():
 def test_validate_tool_input_schema_validation_fails():
     """Test tool input validation failure with schema."""
     params = {"name": "Alice", "age": "thirty", "email": "alice@example.com"}
-    
+
     with pytest.raises(ValidationErrorBase):
         validate_tool_input(params, schema=UserParams)
 
@@ -489,19 +478,19 @@ def test_full_validation_workflow():
     # 1. Sanitize string
     safe_str = sanitize_string("Hello, world!")
     assert safe_str == "Hello, world!"
-    
+
     # 2. Sanitize dict
     safe_dict = sanitize_dict({"key": "value"})
     assert safe_dict == {"key": "value"}
-    
+
     # 3. Validate URL
     safe_url = validate_url("https://example.com")
     assert safe_url == "https://example.com"
-    
+
     # 4. Validate code
     safe_code = validate_code("x = 1 + 2")
     assert safe_code == "x = 1 + 2"
-    
+
     # 5. Validate params
     params = {"name": "Alice", "age": 30, "email": "alice@example.com"}
     validated = validate_tool_input(params, schema=UserParams)

@@ -9,7 +9,8 @@ Shows how adding usage examples to tool definitions improves LLM understanding:
 Result: 72% → 90%+ parameter accuracy
 """
 
-from orchestrator.shared.models import ToolDefinition, ToolParameter, ToolExample, ToolCatalog
+from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolExample, ToolParameter
+
 
 def create_receipt_ocr_tool_with_examples():
     """Receipt OCR tool with detailed usage examples."""
@@ -278,77 +279,77 @@ def main():
     print("=" * 80)
     print("DEMO: Tool Examples for Improved Parameter Accuracy (Phase 5)")
     print("=" * 80)
-    
+
     # Create catalog with examples
     catalog = ToolCatalog(source="receipt_processor_v2")
-    
+
     catalog.add_tool(create_receipt_ocr_tool_with_examples())
     catalog.add_tool(create_line_item_parser_with_examples())
     catalog.add_tool(create_expense_categorizer_with_examples())
-    
+
     print(f"\n✅ Created catalog with {len(catalog.tools)} tools")
     print(f"   Total examples: {sum(len(t.examples) for t in catalog.tools.values())}")
-    
+
     # Show LLM format without examples
     print("\n" + "=" * 80)
     print("WITHOUT EXAMPLES (Traditional Schema-Only Approach)")
     print("=" * 80)
-    
+
     llm_format_no_examples = catalog.to_llm_format(include_examples=False)
     ocr_tool_no_examples = next(t for t in llm_format_no_examples if t["name"] == "receipt_ocr")
-    
+
     print(f"\nTool: {ocr_tool_no_examples['name']}")
     print(f"Description: {ocr_tool_no_examples['description']}")
     print(f"Parameters: {len(ocr_tool_no_examples['parameters']['properties'])} params")
     print(f"Description length: {len(ocr_tool_no_examples['description'])} chars")
-    
+
     # Show LLM format with examples
     print("\n" + "=" * 80)
     print("WITH EXAMPLES (Phase 5 Enhancement)")
     print("=" * 80)
-    
+
     llm_format_with_examples = catalog.to_llm_format(include_examples=True)
     ocr_tool_with_examples = next(t for t in llm_format_with_examples if t["name"] == "receipt_ocr")
-    
+
     print(f"\nTool: {ocr_tool_with_examples['name']}")
-    print(f"Description preview:")
+    print("Description preview:")
     print("-" * 80)
     print(ocr_tool_with_examples['description'][:500] + "...")
     print("-" * 80)
     print(f"Description length: {len(ocr_tool_with_examples['description'])} chars")
-    
+
     # Show token impact
     print("\n" + "=" * 80)
     print("IMPACT ANALYSIS")
     print("=" * 80)
-    
+
     no_ex_chars = sum(len(t['description']) for t in llm_format_no_examples)
     with_ex_chars = sum(len(t['description']) for t in llm_format_with_examples)
-    
-    print(f"\n📊 Total description length:")
+
+    print("\n📊 Total description length:")
     print(f"   Without examples: {no_ex_chars:,} chars (~{no_ex_chars // 4} tokens)")
     print(f"   With examples:    {with_ex_chars:,} chars (~{with_ex_chars // 4} tokens)")
     print(f"   Increase:         {with_ex_chars - no_ex_chars:,} chars (+{((with_ex_chars - no_ex_chars) / no_ex_chars * 100):.0f}%)")
-    
-    print(f"\n✅ Benefits:")
-    print(f"   • Parameter accuracy: 72% → 90%+ (saves debugging time)")
-    print(f"   • Format ambiguity: High → Low (shows date/ID patterns)")
-    print(f"   • Optional params: Confusing → Clear (shows when to use)")
-    print(f"   • Edge cases: Undocumented → Documented (handles variations)")
-    
-    print(f"\n💡 Cost-Benefit:")
+
+    print("\n✅ Benefits:")
+    print("   • Parameter accuracy: 72% → 90%+ (saves debugging time)")
+    print("   • Format ambiguity: High → Low (shows date/ID patterns)")
+    print("   • Optional params: Confusing → Clear (shows when to use)")
+    print("   • Edge cases: Undocumented → Documented (handles variations)")
+
+    print("\n💡 Cost-Benefit:")
     print(f"   • Input tokens increase ~{((with_ex_chars - no_ex_chars) / no_ex_chars * 100):.0f}% per request")
-    print(f"   • But 18% fewer errors (90% vs 72% accuracy)")
-    print(f"   • Combined with Phase 3 search: Only send relevant tools with examples")
-    print(f"   • Combined with Phase 5 caching: 90% discount on cached examples")
-    
+    print("   • But 18% fewer errors (90% vs 72% accuracy)")
+    print("   • Combined with Phase 3 search: Only send relevant tools with examples")
+    print("   • Combined with Phase 5 caching: 90% discount on cached examples")
+
     # Show detailed example
     print("\n" + "=" * 80)
     print("DETAILED EXAMPLE: receipt_ocr")
     print("=" * 80)
-    
+
     print(f"\n{ocr_tool_with_examples['description']}")
-    
+
     print("\n" + "=" * 80)
     print("NEXT: Combine with semantic search (Phase 3) and prompt caching (Phase 5)")
     print("=" * 80)

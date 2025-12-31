@@ -3,13 +3,13 @@ Tests for tool composition.
 """
 
 import asyncio
+
 import pytest
 
 from orchestrator.tools.composition import (
-    CompositionStep,
     CompositionChain,
     CompositionExecutor,
-    CompositionResult,
+    CompositionStep,
     build_parameter_mapping,
     composite_tool,
 )

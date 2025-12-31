@@ -1,7 +1,7 @@
-import os
 import asyncio
 import json
-from typing import Any, Dict
+import os
+from typing import Any
 
 from external_mcp_adapter import AdapterConfig, ExternalMCPAdapter
 
@@ -19,7 +19,7 @@ async def main():
     tool_name = os.getenv("EXTERNAL_MCP_TOOL")
     raw_params = os.getenv("EXTERNAL_MCP_PARAMS", "{}")
     try:
-        params: Dict[str, Any] = json.loads(raw_params)
+        params: dict[str, Any] = json.loads(raw_params)
     except Exception:
         params = {}
 

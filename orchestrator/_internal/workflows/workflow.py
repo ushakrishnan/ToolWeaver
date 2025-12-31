@@ -6,12 +6,12 @@ for complex multi-tool workflows.
 """
 
 import asyncio
-import re
 import logging
-from typing import List, Dict, Any, Optional, Set, Tuple
+import re
+import time
 from dataclasses import dataclass, field
 from enum import Enum
-import time
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -39,12 +39,12 @@ class WorkflowStep:
     """
     step_id: str
     tool_name: str
-    parameters: Dict[str, Any]
-    depends_on: List[str] = field(default_factory=list)
-    condition: Optional[str] = None  # e.g., "{{step1.success}} == true"
+    parameters: dict[str, Any]
+    depends_on: list[str] = field(default_factory=list)
+    condition: str | None = None  # e.g., "{{step1.success}} == true"
     retry_count: int = 0
-    timeout_seconds: Optional[int] = None
-    
+    timeout_seconds: int | None = None
+
     def __post_init__(self) -> None:
         """Validate step configuration"""
         if not self.step_id:
@@ -84,30 +84,30 @@ class WorkflowTemplate:
     """
     name: str
     description: str
-    steps: List[WorkflowStep]
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    parallel_groups: Optional[List[List[str]]] = None
-    
+    steps: list[WorkflowStep]
+    metadata: dict[str, Any] = field(default_factory=dict)
+    parallel_groups: list[list[str]] | None = None
+
     def __post_init__(self) -> None:
         """Validate workflow configuration"""
         if not self.name:
             raise ValueError("name is required")
         if not self.steps:
             raise ValueError("workflow must have at least one step")
-        
+
         # Validate unique step IDs
         step_ids = [step.step_id for step in self.steps]
         if len(step_ids) != len(set(step_ids)):
             raise ValueError("step_ids must be unique")
-        
+
         # Validate dependencies exist
         valid_ids = set(step_ids)
         for step in self.steps:
             for dep in step.depends_on:
                 if dep not in valid_ids:
                     raise ValueError(f"Step '{step.step_id}' depends on non-existent step '{dep}'")
-    
-    def get_step(self, step_id: str) -> Optional[WorkflowStep]:
+
+    def get_step(self, step_id: str) -> WorkflowStep | None:
         """Get step by ID"""
         for step in self.steps:
             if step.step_id == step_id:
@@ -125,35 +125,35 @@ class WorkflowContext:
     - Variable substitution
     - Type-safe data access
     """
-    
-    def __init__(self, initial_variables: Optional[Dict[str, Any]] = None):
-        self.step_results: Dict[str, Any] = {}
-        self.step_status: Dict[str, StepStatus] = {}
-        self.variables: Dict[str, Any] = initial_variables or {}
-        self.errors: Dict[str, Exception] = {}
-    
+
+    def __init__(self, initial_variables: dict[str, Any] | None = None):
+        self.step_results: dict[str, Any] = {}
+        self.step_status: dict[str, StepStatus] = {}
+        self.variables: dict[str, Any] = initial_variables or {}
+        self.errors: dict[str, Exception] = {}
+
     def set_result(self, step_id: str, result: Any, status: StepStatus = StepStatus.SUCCESS) -> None:
         """Store result from a step execution"""
         self.step_results[step_id] = result
         self.step_status[step_id] = status
-    
+
     def set_error(self, step_id: str, error: Exception) -> None:
         """Store error from a failed step"""
         self.errors[step_id] = error
         self.step_status[step_id] = StepStatus.FAILED
-    
+
     def get_result(self, step_id: str) -> Any:
         """Retrieve result from a previous step"""
         return self.step_results.get(step_id)
-    
-    def get_status(self, step_id: str) -> Optional[StepStatus]:
+
+    def get_status(self, step_id: str) -> StepStatus | None:
         """Get status of a step"""
         return self.step_status.get(step_id)
-    
+
     def is_success(self, step_id: str) -> bool:
         """Check if a step completed successfully"""
         return self.step_status.get(step_id) == StepStatus.SUCCESS
-    
+
     def substitute(self, template: Any) -> Any:
         """
         Substitute variables in template.
@@ -177,11 +177,11 @@ class WorkflowContext:
             return [self.substitute(item) for item in template]
         else:
             return template
-    
+
     def _substitute_string(self, template: str) -> str:
         """Substitute variables in a string template"""
         pattern = r"\{\{([^}]+)\}\}"
-        
+
         def replacer(match: Any) -> str:
             expression = match.group(1).strip()
             try:
@@ -190,9 +190,9 @@ class WorkflowContext:
             except Exception as e:
                 logger.warning(f"Failed to substitute '{expression}': {e}")
                 return str(match.group(0))  # Return original if substitution fails
-        
+
         return re.sub(pattern, replacer, template)
-    
+
     def _evaluate_expression(self, expression: str) -> Any:
         """
         Evaluate a variable expression.
@@ -205,15 +205,15 @@ class WorkflowContext:
         # Check for direct variable first
         if expression in self.variables:
             return self.variables[expression]
-        
+
         # Check for step result access (step_id.field.nested)
         if "." in expression:
             parts = expression.split(".")
             step_id = parts[0]
-            
+
             if step_id in self.step_results:
                 value = self.step_results[step_id]
-                
+
                 # Navigate nested fields
                 for part in parts[1:]:
                     if isinstance(value, dict):
@@ -222,12 +222,12 @@ class WorkflowContext:
                         value = getattr(value, part)
                     else:
                         return None
-                
+
                 return value
-        
+
         return None
-    
-    def to_dict(self) -> Dict[str, Any]:
+
+    def to_dict(self) -> dict[str, Any]:
         """Export context as dictionary"""
         return {
             "step_results": self.step_results,
@@ -247,8 +247,8 @@ class WorkflowExecutor:
     - Error handling with retries
     - Context management
     """
-    
-    def __init__(self, tool_executor: Optional[Any] = None):
+
+    def __init__(self, tool_executor: Any | None = None):
         """
         Initialize workflow executor.
         
@@ -256,11 +256,11 @@ class WorkflowExecutor:
             tool_executor: Tool executor for running individual tools (optional)
         """
         self.tool_executor = tool_executor
-    
+
     async def execute(
         self,
         workflow: WorkflowTemplate,
-        initial_variables: Optional[Dict[str, Any]] = None
+        initial_variables: dict[str, Any] | None = None
     ) -> WorkflowContext:
         """
         Execute a workflow with dependency-aware parallel execution.
@@ -273,20 +273,20 @@ class WorkflowExecutor:
             WorkflowContext with execution results
         """
         context = WorkflowContext(initial_variables)
-        
+
         logger.info(f"Executing workflow: {workflow.name}")
         start_time = time.time()
-        
+
         try:
             # Resolve dependencies into execution levels
             levels = self._resolve_dependencies(workflow.steps)
-            
+
             logger.info(f"Workflow has {len(levels)} execution levels")
-            
+
             # Execute each level in parallel
             for level_num, level_steps in enumerate(levels):
                 logger.info(f"Executing level {level_num + 1} with {len(level_steps)} steps")
-                
+
                 # Check conditions and filter steps
                 executable_steps = []
                 for step in level_steps:
@@ -295,24 +295,24 @@ class WorkflowExecutor:
                     else:
                         context.set_result(step.step_id, None, StepStatus.SKIPPED)
                         logger.info(f"Skipping step '{step.step_id}' (condition not met)")
-                
+
                 if not executable_steps:
                     continue
-                
+
                 # Execute steps in parallel
                 tasks = [self._execute_step(step, context) for step in executable_steps]
                 await asyncio.gather(*tasks, return_exceptions=False)
-            
+
             duration = time.time() - start_time
             logger.info(f"Workflow completed in {duration:.2f}s")
-            
+
         except Exception as e:
             logger.error(f"Workflow execution failed: {e}")
             raise
-        
+
         return context
-    
-    def _resolve_dependencies(self, steps: List[WorkflowStep]) -> List[List[WorkflowStep]]:
+
+    def _resolve_dependencies(self, steps: list[WorkflowStep]) -> list[list[WorkflowStep]]:
         """
         Resolve dependencies using topological sort.
         
@@ -326,10 +326,10 @@ class WorkflowExecutor:
         # Build dependency graph
         step_map = {step.step_id: step for step in steps}
         in_degree = {step.step_id: len(step.depends_on) for step in steps}
-        
+
         levels = []
         remaining = set(step_map.keys())
-        
+
         while remaining:
             # Find steps with no unresolved dependencies
             current_level = [
@@ -337,26 +337,26 @@ class WorkflowExecutor:
                 for step_id in remaining
                 if in_degree[step_id] == 0
             ]
-            
+
             if not current_level:
                 # Circular dependency detected
                 raise ValueError(f"Circular dependency detected in workflow. Remaining steps: {remaining}")
-            
+
             levels.append(current_level)
-            
+
             # Remove current level from remaining
             for step in current_level:
                 remaining.remove(step.step_id)
-            
+
             # Decrease in-degree for dependent steps
             for step_id in remaining:
                 step = step_map[step_id]
                 for dep in step.depends_on:
                     if dep not in remaining:  # Dependency resolved
                         in_degree[step_id] -= 1
-        
+
         return levels
-    
+
     def _should_execute(self, step: WorkflowStep, context: WorkflowContext) -> bool:
         """
         Check if a step should be executed based on its condition and dependencies.
@@ -373,11 +373,11 @@ class WorkflowExecutor:
             if not context.is_success(dep):
                 logger.warning(f"Step '{step.step_id}' skipped: dependency '{dep}' failed")
                 return False
-        
+
         # If no condition specified, execute
         if not step.condition:
             return True
-        
+
         # Evaluate condition expression
         try:
             condition_str = context.substitute(step.condition)
@@ -386,7 +386,7 @@ class WorkflowExecutor:
         except Exception as e:
             logger.error(f"Failed to evaluate condition for '{step.step_id}': {e}")
             return False
-    
+
     async def _execute_step(self, step: WorkflowStep, context: WorkflowContext) -> None:
         """
         Execute a single workflow step with retry logic.
@@ -397,7 +397,7 @@ class WorkflowExecutor:
         """
         logger.info(f"Executing step: {step.step_id} (tool: {step.tool_name})")
         context.step_status[step.step_id] = StepStatus.RUNNING
-        
+
         # Substitute variables in parameters
         try:
             parameters = context.substitute(step.parameters)
@@ -405,39 +405,39 @@ class WorkflowExecutor:
             logger.error(f"Failed to substitute parameters for '{step.step_id}': {e}")
             context.set_error(step.step_id, e)
             return
-        
+
         # Execute with retries
         last_error = None
         for attempt in range(step.retry_count + 1):
             try:
                 if attempt > 0:
                     logger.info(f"Retrying step '{step.step_id}' (attempt {attempt + 1}/{step.retry_count + 1})")
-                
+
                 # Execute tool (mock if no executor provided)
                 if self.tool_executor:
                     result = await self._call_tool(step.tool_name, parameters, step.timeout_seconds)
                 else:
                     # Mock execution for testing
                     result = {"step_id": step.step_id, "parameters": parameters, "mock": True}
-                
+
                 context.set_result(step.step_id, result, StepStatus.SUCCESS)
                 logger.info(f"Step '{step.step_id}' completed successfully")
                 return
-                
+
             except Exception as e:
                 last_error = e
                 logger.warning(f"Step '{step.step_id}' failed (attempt {attempt + 1}): {e}")
-                
+
                 if attempt < step.retry_count:
                     # Exponential backoff
                     await asyncio.sleep(2 ** attempt)
-        
+
         # All retries failed - ensure last_error is not None
         error = last_error if last_error is not None else Exception(f"Step '{step.step_id}' failed")
         context.set_error(step.step_id, error)
         logger.error(f"Step '{step.step_id}' failed after {step.retry_count + 1} attempts")
-    
-    async def _call_tool(self, tool_name: str, parameters: Dict[str, Any], timeout: Optional[int]) -> Any:
+
+    async def _call_tool(self, tool_name: str, parameters: dict[str, Any], timeout: int | None) -> Any:
         """
         Call a tool with the given parameters.
         
@@ -451,7 +451,7 @@ class WorkflowExecutor:
         """
         if not self.tool_executor:
             raise RuntimeError("No tool executor configured")
-        
+
         # Call tool with optional timeout
         if timeout:
             return await asyncio.wait_for(
@@ -495,12 +495,12 @@ if __name__ == "__main__":
                 )
             ]
         )
-        
+
         # Execute workflow
         executor = WorkflowExecutor()
         context = await executor.execute(workflow, {"start_value": "hello"})
-        
+
         print("Workflow completed:")
         print(context.to_dict())
-    
+
     asyncio.run(main())

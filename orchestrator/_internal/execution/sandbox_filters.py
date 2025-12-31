@@ -23,12 +23,12 @@ Usage:
     token_map = tokenizer.get_token_map()  # For detokenization
 """
 
-import re
 import hashlib
 import logging
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+import re
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -47,9 +47,9 @@ class PIIType(Enum):
 @dataclass
 class FilterConfig:
     """Configuration for data filtering."""
-    max_bytes: Optional[int] = 50000  # 50KB max output
-    max_rows: Optional[int] = 1000  # Max rows for tabular data
-    max_items: Optional[int] = 1000  # Max items for lists/arrays
+    max_bytes: int | None = 50000  # 50KB max output
+    max_rows: int | None = 1000  # Max rows for tabular data
+    max_items: int | None = 1000  # Max items for lists/arrays
     truncate_strings: bool = True
     max_string_length: int = 1000  # Max length for individual strings
     summarize_truncated: bool = True  # Include summary of truncated data
@@ -59,7 +59,7 @@ class FilterConfig:
 @dataclass
 class TokenizationConfig:
     """Configuration for PII tokenization."""
-    enabled_types: Set[PIIType] = field(default_factory=lambda: {
+    enabled_types: set[PIIType] = field(default_factory=lambda: {
         PIIType.EMAIL,
         PIIType.PHONE,
         PIIType.SSN,
@@ -82,7 +82,7 @@ class PIITokenizer:
         # Later, detokenize if needed
         original = tokenizer.detokenize(sanitized)
     """
-    
+
     # PII detection patterns
     PATTERNS = {
         PIIType.EMAIL: re.compile(
@@ -101,12 +101,12 @@ class PIITokenizer:
             r'\b(?:\d{1,3}\.){3}\d{1,3}\b'
         ),
     }
-    
-    def __init__(self, config: Optional[TokenizationConfig] = None):
+
+    def __init__(self, config: TokenizationConfig | None = None):
         self.config = config or TokenizationConfig()
-        self._token_map: Dict[str, str] = {}  # token -> original
-        self._reverse_map: Dict[str, str] = {}  # original -> token
-    
+        self._token_map: dict[str, str] = {}  # token -> original
+        self._reverse_map: dict[str, str] = {}  # original -> token
+
     def tokenize(self, data: Any) -> Any:
         """Tokenize PII in data structure.
         
@@ -124,39 +124,39 @@ class PIITokenizer:
             return self._tokenize_string(data)
         else:
             return data
-    
+
     def _tokenize_string(self, text: str) -> str:
         """Tokenize PII in a string."""
         result = text
-        
+
         for pii_type in self.config.enabled_types:
             if pii_type not in self.PATTERNS:
                 continue
-            
+
             pattern = self.PATTERNS[pii_type]
-            
+
             # Find all matches and their full text
             for match in pattern.finditer(result):
                 original = match.group(0)  # Get the full matched text
                 token = self._get_or_create_token(original, pii_type)
                 result = result.replace(original, token)
-        
+
         return result
-    
+
     def _get_or_create_token(self, original: str, pii_type: PIIType) -> str:
         """Get existing token or create new one."""
         if original in self._reverse_map:
             return self._reverse_map[original]
-        
+
         # Create deterministic token from hash
         hash_val = hashlib.sha256(original.encode()).hexdigest()[:8]
         token = f"{self.config.token_prefix}{pii_type.value.upper()}_{hash_val}"
-        
+
         self._token_map[token] = original
         self._reverse_map[original] = token
-        
+
         return token
-    
+
     def detokenize(self, data: Any) -> Any:
         """Restore original values from tokens.
         
@@ -177,11 +177,11 @@ class PIITokenizer:
             return result
         else:
             return data
-    
-    def get_token_map(self) -> Dict[str, str]:
+
+    def get_token_map(self) -> dict[str, str]:
         """Get mapping of tokens to original values."""
         return self._token_map.copy()
-    
+
     def clear_tokens(self) -> None:
         """Clear all stored tokens."""
         self._token_map.clear()
@@ -197,8 +197,8 @@ class DataFilter:
         filtered = filter.apply(large_data)
         # Returns truncated data + summary
     """
-    
-    def __init__(self, config: Optional[FilterConfig] = None):
+
+    def __init__(self, config: FilterConfig | None = None):
         self.config = config or FilterConfig()
         self.stats = {
             "bytes_original": 0,
@@ -207,8 +207,8 @@ class DataFilter:
             "items_truncated": 0,
             "strings_truncated": 0,
         }
-    
-    def apply(self, data: Any) -> Dict[str, Any]:
+
+    def apply(self, data: Any) -> dict[str, Any]:
         """Apply filtering to data.
         
         Returns:
@@ -219,40 +219,40 @@ class DataFilter:
             - summary: Human-readable summary
         """
         import json
-        
+
         # Track original size
         try:
             self.stats["bytes_original"] = len(json.dumps(data))
         except Exception:
             self.stats["bytes_original"] = len(str(data))
-        
+
         # Apply filtering
         filtered_data = self._filter_recursive(data)
-        
+
         # Track filtered size
         try:
             self.stats["bytes_filtered"] = len(json.dumps(filtered_data))
         except Exception:
             self.stats["bytes_filtered"] = len(str(filtered_data))
-        
+
         truncated = any(v > 0 for k, v in self.stats.items() if k.endswith("_truncated"))
-        
+
         result = {
             "data": filtered_data,
             "truncated": truncated,
             "stats": self.stats.copy(),
         }
-        
+
         if truncated and self.config.summarize_truncated:
             result["summary"] = self._generate_summary()
-        
+
         return result
-    
+
     def _filter_recursive(self, data: Any, depth: int = 0) -> Any:
         """Recursively filter data structure."""
         if depth > 10:  # Prevent infinite recursion
             return "...[max depth exceeded]"
-        
+
         if isinstance(data, dict):
             return self._filter_dict(data, depth)
         elif isinstance(data, list):
@@ -261,8 +261,8 @@ class DataFilter:
             return self._filter_string(data)
         else:
             return data
-    
-    def _filter_dict(self, data: Dict, depth: int) -> Dict:
+
+    def _filter_dict(self, data: dict, depth: int) -> dict:
         """Filter dictionary, preserving structure."""
         if self.config.max_bytes:
             # Check if we're over budget
@@ -276,20 +276,20 @@ class DataFilter:
                             "_truncated": True,
                             "_keys": list(data.keys())[:20],
                             "_size": len(data),
-                            "_sample": {k: self._filter_recursive(v, depth + 1) 
+                            "_sample": {k: self._filter_recursive(v, depth + 1)
                                       for k, v in list(data.items())[:5]}
                         }
             except Exception:
                 pass
-        
+
         return {k: self._filter_recursive(v, depth + 1) for k, v in data.items()}
-    
-    def _filter_list(self, data: List, depth: int) -> List:
+
+    def _filter_list(self, data: list, depth: int) -> list:
         """Filter list, truncating if needed."""
         if self.config.max_rows and len(data) > self.config.max_rows:
             self.stats["rows_truncated"] = len(data) - self.config.max_rows
             truncated = data[:self.config.max_rows]
-            
+
             if self.config.summarize_truncated:
                 return truncated + [{
                     "_truncated": True,
@@ -298,9 +298,9 @@ class DataFilter:
                     "_omitted": len(data) - self.config.max_rows
                 }]
             return truncated
-        
+
         return [self._filter_recursive(item, depth + 1) for item in data]
-    
+
     def _filter_string(self, text: str) -> str:
         """Filter string, truncating if needed."""
         if self.config.truncate_strings and len(text) > self.config.max_string_length:
@@ -310,30 +310,30 @@ class DataFilter:
                 return f"{truncated}... [truncated {len(text) - self.config.max_string_length} chars]"
             return truncated
         return text
-    
+
     def _generate_summary(self) -> str:
         """Generate human-readable summary of filtering."""
         parts = []
-        
+
         if self.stats["bytes_original"] > 0:
             reduction = 100 * (1 - self.stats["bytes_filtered"] / self.stats["bytes_original"])
             parts.append(f"Reduced output by {reduction:.1f}%")
-        
+
         if self.stats["rows_truncated"] > 0:
             parts.append(f"Truncated {self.stats['rows_truncated']} rows")
-        
+
         if self.stats["strings_truncated"] > 0:
             parts.append(f"Truncated {self.stats['strings_truncated']} strings")
-        
+
         return "; ".join(parts) if parts else "No truncation applied"
 
 
 def filter_and_tokenize(
     data: Any,
-    filter_config: Optional[FilterConfig] = None,
-    tokenize_config: Optional[TokenizationConfig] = None,
+    filter_config: FilterConfig | None = None,
+    tokenize_config: TokenizationConfig | None = None,
     tokenize_pii: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Convenience function to filter and tokenize data in one call.
     
     Args:
@@ -357,12 +357,12 @@ def filter_and_tokenize(
     # Apply filtering first
     data_filter = DataFilter(filter_config)
     result = data_filter.apply(data)
-    
+
     # Then tokenize PII if enabled
     if tokenize_pii:
         tokenizer = PIITokenizer(tokenize_config)
         result["data"] = tokenizer.tokenize(result["data"])
         result["token_map"] = tokenizer.get_token_map()
         result["pii_detected"] = len(tokenizer.get_token_map()) > 0
-    
+
     return result

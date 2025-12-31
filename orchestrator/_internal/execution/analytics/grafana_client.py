@@ -8,12 +8,11 @@ Handles:
 - Real-time metric pushing to Grafana
 """
 
-import requests
 import logging
-import json
-from typing import Dict, List, Optional, Any
-from datetime import datetime
 from dataclasses import dataclass
+from typing import Any
+
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +49,9 @@ class GrafanaClient:
         self,
         method: str,
         endpoint: str,
-        data: Optional[Dict] = None,
-        params: Optional[Dict] = None,
-    ) -> Optional[Any]:
+        data: dict | None = None,
+        params: dict | None = None,
+    ) -> Any | None:
         """Make HTTP request to Grafana API.
 
         Args:
@@ -105,7 +104,7 @@ class GrafanaClient:
     # Data Source Management
     # ========================================================================
 
-    def get_datasources(self) -> List[Dict[Any, Any]]:
+    def get_datasources(self) -> list[dict[Any, Any]]:
         """Get list of data sources.
 
         Returns:
@@ -114,7 +113,7 @@ class GrafanaClient:
         result = self._make_request("GET", "datasources")
         return result if isinstance(result, list) else []
 
-    def get_datasource(self, name: str) -> Optional[Dict[str, Any]]:
+    def get_datasource(self, name: str) -> dict[str, Any] | None:
         """Get data source by name.
 
         Args:
@@ -131,7 +130,7 @@ class GrafanaClient:
         name: str,
         db_path: str,
         datasource_type: str = "sqlite",
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Create new data source.
 
         Args:
@@ -169,7 +168,7 @@ class GrafanaClient:
         self,
         name: str,
         db_path: str,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Update existing data source.
 
         Args:
@@ -207,7 +206,7 @@ class GrafanaClient:
     # Dashboard Management
     # ========================================================================
 
-    def get_dashboards(self) -> List[Dict[Any, Any]]:
+    def get_dashboards(self) -> list[dict[Any, Any]]:
         """Get list of dashboards.
 
         Returns:
@@ -216,7 +215,7 @@ class GrafanaClient:
         result = self._make_request("GET", "search", params={"type": "dash-db"})
         return result if isinstance(result, list) else []
 
-    def get_dashboard(self, uid: str) -> Optional[Dict[str, Any]]:
+    def get_dashboard(self, uid: str) -> dict[str, Any] | None:
         """Get dashboard by UID.
 
         Args:
@@ -231,9 +230,9 @@ class GrafanaClient:
     def create_dashboard(
         self,
         title: str,
-        panels: List[Dict],
-        uid: Optional[str] = None,
-    ) -> Optional[Dict[str, Any]]:
+        panels: list[dict],
+        uid: str | None = None,
+    ) -> dict[str, Any] | None:
         """Create new dashboard.
 
         Args:
@@ -295,7 +294,7 @@ class GrafanaClient:
         position: int = 0,
         height: int = 8,
         width: int = 12,
-    ) -> Dict:
+    ) -> dict:
         """Create a graph/time-series panel.
 
         Args:
@@ -342,7 +341,7 @@ class GrafanaClient:
         position: int = 0,
         height: int = 8,
         width: int = 12,
-    ) -> Dict:
+    ) -> dict:
         """Create a table panel.
 
         Args:
@@ -387,7 +386,7 @@ class GrafanaClient:
         position: int = 0,
         height: int = 4,
         width: int = 6,
-    ) -> Dict:
+    ) -> dict:
         """Create a stat/number panel.
 
         Args:
@@ -645,7 +644,7 @@ class GrafanaClient:
             )
         )
 
-    def create_all_dashboards(self, datasource: str) -> Dict[str, bool]:
+    def create_all_dashboards(self, datasource: str) -> dict[str, bool]:
         """Create all standard dashboards.
 
         Args:

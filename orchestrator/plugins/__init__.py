@@ -17,17 +17,17 @@ Usage (in ToolWeaver):
 """
 
 from orchestrator.plugins.registry import (
-    register_plugin,
-    unregister_plugin,
-    get_plugin,
-    list_plugins,
-    discover_plugins,
-    get_registry,
-    PluginRegistry,
+    InvalidPluginError,
+    PluginAlreadyRegisteredError,
     PluginError,
     PluginNotFoundError,
-    PluginAlreadyRegisteredError,
-    InvalidPluginError,
+    PluginRegistry,
+    discover_plugins,
+    get_plugin,
+    get_registry,
+    list_plugins,
+    register_plugin,
+    unregister_plugin,
 )
 
 __all__ = [

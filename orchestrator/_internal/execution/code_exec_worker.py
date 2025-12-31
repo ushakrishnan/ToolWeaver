@@ -1,9 +1,11 @@
 import multiprocessing
-from typing import Any, Dict, Optional, cast
+from typing import Any
+
 from orchestrator.shared.models import CodeExecInput, CodeExecOutput
 
+
 # NOTE: multiprocessing.Queue is not generic on some Python versions; keep queue typed as Any.
-def _exec_code(queue: Any, code_str: str, input_data: Dict[str, Any]) -> None:
+def _exec_code(queue: Any, code_str: str, input_data: dict[str, Any]) -> None:
     # Safe builtins for common operations
     safe_builtins = {
         "len": len,
@@ -26,14 +28,14 @@ def _exec_code(queue: Any, code_str: str, input_data: Dict[str, Any]) -> None:
         "sorted": sorted,
     }
     safe_globals = {"__builtins__": safe_builtins}
-    local_vars: Dict[str, Any] = {"input": input_data, "output": None}
+    local_vars: dict[str, Any] = {"input": input_data, "output": None}
     try:
         exec(code_str, safe_globals, local_vars)
         queue.put(local_vars.get("output"))
     except Exception as e:
         queue.put({"error": str(e)})
 
-async def code_exec_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
+async def code_exec_worker(payload: dict[str, Any]) -> dict[str, Any]:
     validated = CodeExecInput(**payload)
     queue: Any = multiprocessing.Queue()
     p = multiprocessing.Process(target=_exec_code, args=(queue, validated.code, validated.input_data))

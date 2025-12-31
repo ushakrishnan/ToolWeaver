@@ -19,7 +19,6 @@ Real-world results vary depending on:
   - Error rates and retry overhead (assumed 0%; real: 5-15% adds 10-15%)
 """
 
-import os
 import sys
 import time
 from pathlib import Path
@@ -98,31 +97,31 @@ def create_mock_tools():
 def phase1_discovery(use_cache: bool = True):
     """Phase 1: Tool Discovery with caching"""
     print_section("Phase 1: Tool Discovery")
-    
+
     start_time = time.time()
-    
+
     # Simulate discovery (in real scenario, would auto-discover from MCP servers, functions, etc.)
     tools = create_mock_tools()
-    
+
     elapsed = (time.time() - start_time) * 1000
     cache_status = "(from cache, 2ms)" if use_cache and elapsed < 10 else f"({elapsed:.0f}ms)"
-    
+
     print(f"✓ Discovered {len(tools)} tools {cache_status}")
-    print(f"  - 15 MCP tools")
-    print(f"  - 18 function tools")
-    print(f"  - 9 code execution patterns")
-    
+    print("  - 15 MCP tools")
+    print("  - 18 function tools")
+    print("  - 9 code execution patterns")
+
     return tools
 
 
 def phase2_search(query: str):
     """Phase 2: Semantic Search"""
     print_section("Phase 2: Semantic Search")
-    
+
     print(f'Query: "{query}"')
-    
+
     start_time = time.time()
-    
+
     # Mock search results (in real scenario, would use vector search)
     relevant_tools = [
         ("receipt_ocr", 0.95),
@@ -131,23 +130,23 @@ def phase2_search(query: str):
         ("calculate_stats", 0.78),
         ("validate_data", 0.72)
     ]
-    
+
     elapsed = (time.time() - start_time) * 1000
     token_reduction = 94  # Mock value
-    
+
     print(f"✓ Found {len(relevant_tools)} relevant tools in {elapsed:.0f}ms ({token_reduction}% token reduction)")
     for i, (tool_name, score) in enumerate(relevant_tools, 1):
         print(f"  {i}. {tool_name} ({score:.2f})")
-    
+
     return relevant_tools
 
 
 def phase3_planning(query: str, relevant_tools: list):
     """Phase 3: Multi-Step Planning with GPT-4"""
     print_section("Phase 3: Multi-Step Planning (GPT-4)")
-    
+
     start_time = time.time()
-    
+
     # Mock plan (in real scenario, would use Planner with GPT-4)
     plan = {
         "steps": [
@@ -158,79 +157,79 @@ def phase3_planning(query: str, relevant_tools: list):
             {"id": 5, "name": "stats", "tool": "calculate_stats", "parallel": False}
         ]
     }
-    
+
     elapsed = (time.time() - start_time) * 1000
     cost = 0.02
-    
+
     print(f"✓ Generated execution plan ({elapsed:.0f}ms, ${cost:.2f})")
     for step in plan["steps"]:
         parallel = " [parallel]" if step["parallel"] else ""
         step_id = f"Step {step['id']}" if not step["parallel"] else f"Step {step['id']}{chr(96 + step['id'] - 2)}"
         print(f"  {step_id}: {step['name']} ({step['tool']}){parallel}")
-    
+
     return plan
 
 
 def phase4_execution(plan: dict):
     """Phase 4: Hybrid Execution (GPT-4 + Phi-3 + Code)"""
     print_section("Phase 4: Hybrid Execution")
-    
+
     # Step 1: OCR (Azure CV)
     time.sleep(0.34)
     print("Step 1: extract_text (Azure CV) ✓ 340ms")
     print("  → Extracted 12 line items from receipt")
-    
+
     # Step 2: Parse (Phi-3 local)
     time.sleep(0.18)
     print("\nStep 2: parse_items (Phi-3 local) ✓ 180ms")
     print("  → Parsed: Burger $12.99, Fries $4.99, Drink $2.50...")
-    
+
     # Steps 3a & 3b: Parallel execution
     time.sleep(0.11)
     print("\nStep 3a: categorize (Phi-3 local) ✓ 95ms [parallel]")
     print("  → Food: $15.48, Beverages: $5.00")
-    
+
     print("\nStep 3b: validate (Code execution) ✓ 110ms [parallel]")
     print("  → Validation: PASSED (totals match)")
-    
+
     # Step 4: Stats (Code execution)
     time.sleep(0.045)
     print("\nStep 4: stats (Code execution) ✓ 45ms")
     print("  → Total: $20.48, Average: $1.71, Items: 12")
-    
+
     results = {
         "items": 12,
         "total": 20.48,
         "categories": {"Food": 15.48, "Beverages": 5.00},
         "validation": "PASSED"
     }
-    
+
     return results
 
 
 def phase5_batch_processing():
     """Phase 5: Batch Processing with Programmatic Executor"""
     print_section("Phase 5: Batch Processing (100 receipts)")
-    
+
     print("Using programmatic executor to avoid LLM overhead...\n")
-    
+
     batch_size = 10
     num_batches = 10
-    
+
     for batch in range(1, num_batches + 1):
         start = (batch - 1) * batch_size + 1
         end = batch * batch_size
-        
+
         # Simulate processing with increasing cache hit rate
         cache_rate = min(70 + batch * 2, 95)
         duration = max(2.1 - (batch * 0.05), 1.5)
-        
+
         time.sleep(duration)
         print(f"Processing batch {start}-{end}: ✓ {duration:.1f}s ({cache_rate}% from cache)")
-    
+
     total_time = 18.5
     print(f"\n✓ Processed 100 receipts in {total_time}s")
-    
+
     return {
         "processed": 100,
         "time": total_time,
@@ -241,9 +240,9 @@ def phase5_batch_processing():
 def phase6_monitoring(batch_results: dict):
     """Phase 6: Monitoring & Analytics"""
     print_section("Phase 6: Monitoring & Analytics")
-    
+
     print("WandB Dashboard: https://wandb.ai/usha-krishnan/ToolWeaver/runs/xyz123\n")
-    
+
     print("Metrics Summary:")
     print("  Total requests: 101 (1 plan + 100 executions)")
     print("  Success rate: 100% (101/101)")
@@ -251,13 +250,13 @@ def phase6_monitoring(batch_results: dict):
     print("  Total tokens: 45,890")
     print("  Total cost: $0.75")
     print("  Cache hit rate: 85%")
-    
+
     print("\nCost Breakdown:")
     print("  Planning (GPT-4): $0.02 (2.7%)")
     print("  Execution (Phi-3): $0.01 (1.3%)")
     print("  OCR (Azure CV): $0.10 (13.3%)")
     print("  Cached results: $0.62 saved (45% of operations)")
-    
+
     print("\nTool Usage:")
     print("  receipt_ocr: 100 calls (15 from cache)")
     print("  parse_items: 100 calls (85 from cache)")
@@ -267,37 +266,37 @@ def phase6_monitoring(batch_results: dict):
 
 def main():
     """Run the complete pipeline demo"""
-    
+
     print_header("COMPLETE END-TO-END PIPELINE DEMO")
-    
+
     # Phase 1: Discovery
     tools = phase1_discovery(use_cache=True)
-    
+
     # Phase 2: Semantic Search
     query = "Process receipt, categorize items, calculate statistics"
     relevant_tools = phase2_search(query)
-    
+
     # Phase 3: Planning
     plan = phase3_planning(query, relevant_tools)
-    
+
     # Phase 4: Execution
     results = phase4_execution(plan)
-    
+
     # Phase 5: Batch Processing
     batch_results = phase5_batch_processing()
-    
+
     # Phase 6: Monitoring
     phase6_monitoring(batch_results)
-    
+
     # Summary
     print_header("✓ Complete pipeline demo finished successfully!")
-    
+
     print("\nSummary:")
     print("  Without ToolWeaver: $15.00, 200s")
     print("  With ToolWeaver:    $0.75, 18.5s")
     print("\n  Savings: $14.25 (95% cost reduction)")
     print("  Speedup: 10.8x faster")
-    
+
     print("\nKey Optimizations:")
     print("  1. Semantic search: 70-90% token reduction (varies by catalog)")
     print("  2. Hybrid models: 60% cost reduction (GPT-4 → Phi-3)")

@@ -1,15 +1,13 @@
-from typing import Any, Dict
-
-import asyncio
+from typing import Any
 
 from orchestrator import (
-    tool,
     FunctionToolTemplate,
-    register_template,
     get_available_tools,
-    search_tools,
     get_tool_info,
     list_tools_by_domain,
+    register_template,
+    search_tools,
+    tool,
 )
 from orchestrator.plugins.registry import get_registry
 from orchestrator.shared.models import ToolParameter
@@ -20,11 +18,11 @@ def test_discovery_lists_decorator_and_template():
     registry.clear()
 
     @tool(description="Echo", parameters=[ToolParameter(name="text", type="string", description="", required=True)])
-    def echo(params: Dict[str, Any]) -> Dict[str, Any]:
+    def echo(params: dict[str, Any]) -> dict[str, Any]:
         return {"text": params["text"]}
 
     class EchoTemplate(FunctionToolTemplate):
-        def execute(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        def execute(self, params: dict[str, Any]) -> dict[str, Any]:
             return {"text": params["text"]}
 
     tmpl = EchoTemplate(name="echo_tpl", description="Echo template")
@@ -40,7 +38,7 @@ def test_search_and_get_info():
     registry.clear()
 
     @tool(description="Process order", metadata={"tags": ["order"]})
-    def process_order(params: Dict[str, Any]) -> Dict[str, Any]:
+    def process_order(params: dict[str, Any]) -> dict[str, Any]:
         return params
 
     results = search_tools(query="order")
@@ -55,7 +53,7 @@ def test_list_by_domain():
     registry.clear()
 
     @tool(description="Finance tool", metadata={"tags": ["finance"]})
-    def fin(params: Dict[str, Any]) -> Dict[str, Any]:
+    def fin(params: dict[str, Any]) -> dict[str, Any]:
         return params
 
     # Default domain is "general" per models

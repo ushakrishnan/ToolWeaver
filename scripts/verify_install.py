@@ -8,12 +8,11 @@ Usage:
     python scripts/verify_install.py
 """
 
-import sys
 import importlib
-from typing import List, Tuple
+import sys
 
 
-def check_imports(imports: List[Tuple[str, str]]) -> bool:
+def check_imports(imports: list[tuple[str, str]]) -> bool:
     """
     Check if all imports work.
     
@@ -24,7 +23,7 @@ def check_imports(imports: List[Tuple[str, str]]) -> bool:
         True if all imports succeed, False otherwise
     """
     all_ok = True
-    
+
     for module_name, package_name in imports:
         try:
             importlib.import_module(module_name)
@@ -32,7 +31,7 @@ def check_imports(imports: List[Tuple[str, str]]) -> bool:
         except ImportError as e:
             print(f"✗ {package_name:30s} ({module_name}) - {e}")
             all_ok = False
-    
+
     return all_ok
 
 
@@ -41,7 +40,7 @@ def main():
     print("="*70)
     print("🔍 Verifying ToolWeaver Dependencies")
     print("="*70)
-    
+
     # Core dependencies
     print("\n📦 Core Dependencies:")
     core_imports = [
@@ -60,7 +59,7 @@ def main():
         ('rank_bm25', 'rank-bm25'),
     ]
     core_ok = check_imports(core_imports)
-    
+
     # Dev dependencies
     print("\n🧪 Dev Dependencies:")
     dev_imports = [
@@ -73,7 +72,7 @@ def main():
         ('mypy', 'mypy'),
     ]
     dev_ok = check_imports(dev_imports)
-    
+
     # Optional dependencies
     print("\n🔧 Optional Dependencies:")
     optional_imports = [
@@ -83,7 +82,7 @@ def main():
         ('prometheus_client', 'prometheus-client'),
     ]
     optional_ok = check_imports(optional_imports)
-    
+
     # Summary
     print("\n" + "="*70)
     if core_ok and dev_ok:

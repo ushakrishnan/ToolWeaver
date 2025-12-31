@@ -6,8 +6,8 @@ This is the simplest example - shows tool registration and execution.
 """
 
 import asyncio
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -44,7 +44,7 @@ async def receipt_ocr(image_uri: str) -> dict:
     
     Thank you!
     """
-    
+
     return {
         "text": mock_receipt_text.strip(),
         "confidence": 0.95,
@@ -58,27 +58,27 @@ async def main():
     print("EXAMPLE 1: Basic Receipt Processing")
     print("=" * 60)
     print()
-    
+
     # Find the tool we just registered
     print("🔍 Searching for receipt tools...")
     tools = search_tools(query="receipt")
     print(f"   Found {len(tools)} tool(s)")
     print()
-    
+
     if not tools:
         print("[X] No receipt tools found")
         return
-    
+
     # Use the first tool
     tool_def = tools[0]
     print(f"📝 Using tool: {tool_def.name}")
     print(f"   Description: {tool_def.description}")
     print()
-    
+
     # Execute the tool function directly
     print("🚀 Processing receipt...")
     result = await receipt_ocr({"image_uri": "https://example.com/receipts/sample-receipt.jpg"})
-    
+
     print()
     print("[OK] Result:")
     print(f"   Confidence: {result['confidence']*100:.1f}%")

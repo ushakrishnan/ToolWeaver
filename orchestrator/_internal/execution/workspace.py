@@ -31,15 +31,13 @@ Usage:
     exec(skill.code)
 """
 
-import os
+import hashlib
 import json
 import logging
-import hashlib
-from pathlib import Path
-from typing import Any, Dict, List, Optional
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from enum import Enum
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -72,25 +70,25 @@ class WorkspaceSkill:
     version: int = 1
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    dependencies: List[str] = field(default_factory=list)
-    tags: List[str] = field(default_factory=list)
-    examples: List[str] = field(default_factory=list)
+    dependencies: list[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
+    examples: list[str] = field(default_factory=list)
     hash: str = ""  # Code hash for integrity
-    
+
     def __post_init__(self) -> None:
         """Calculate code hash after initialization."""
         if not self.hash:
             self.hash = hashlib.sha256(self.code.encode()).hexdigest()[:16]
-    
-    def to_dict(self) -> Dict[str, Any]:
+
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
-    
+
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "WorkspaceSkill":
+    def from_dict(cls, data: dict[str, Any]) -> "WorkspaceSkill":
         """Create from dictionary."""
         return cls(**data)
-    
+
     def to_markdown(self) -> str:
         """Convert to SKILL.md format.
         
@@ -98,33 +96,33 @@ class WorkspaceSkill:
         """
         md = f"# {self.name}\n\n"
         md += f"{self.description}\n\n"
-        
+
         if self.tags:
             md += f"**Tags**: {', '.join(self.tags)}\n\n"
-        
+
         if self.dependencies:
             md += "## Dependencies\n\n"
             for dep in self.dependencies:
                 md += f"- `{dep}`\n"
             md += "\n"
-        
+
         md += "## Code\n\n"
         md += f"```python\n{self.code}\n```\n\n"
-        
+
         if self.examples:
             md += "## Examples\n\n"
             for i, example in enumerate(self.examples, 1):
                 md += f"### Example {i}\n\n"
                 md += f"```python\n{example}\n```\n\n"
-        
+
         md += "## Metadata\n\n"
         md += f"- Version: {self.version}\n"
         md += f"- Created: {self.created_at}\n"
         md += f"- Updated: {self.updated_at}\n"
         md += f"- Hash: `{self.hash}`\n"
-        
+
         return md
-    
+
     @classmethod
     def from_markdown(cls, md: str) -> "WorkspaceSkill":
         """Parse from SKILL.md format.
@@ -132,50 +130,50 @@ class WorkspaceSkill:
         Basic parser that extracts code and metadata from markdown.
         """
         import re
-        
+
         # Extract name from # heading
         name_match = re.search(r'^# (.+)$', md, re.MULTILINE)
         name = name_match.group(1) if name_match else "unnamed"
-        
+
         # Extract description (text between heading and **Tags** or ##)
         # Try Tags first, then ## section
         desc_match = re.search(r'^# .+?\n+(.+?)\n+\*\*Tags\*\*', md, re.DOTALL | re.MULTILINE)
         if not desc_match:
             desc_match = re.search(r'^# .+?\n+(.+?)\n+##', md, re.DOTALL | re.MULTILINE)
         description = desc_match.group(1).strip() if desc_match else ""
-        
+
         # Extract code from ```python blocks
         code_blocks = re.findall(r'```python\n(.+?)\n```', md, re.DOTALL)
         code = code_blocks[0] if code_blocks else ""
-        
+
         # Extract dependencies
         deps_match = re.search(r'## Dependencies\n\n((?:- `.+`\n)+)', md)
         dependencies = []
         if deps_match:
             dependencies = re.findall(r'- `(.+)`', deps_match.group(1))
-        
+
         # Extract tags
         tags_match = re.search(r'\*\*Tags\*\*: (.+)', md)
         tags = []
         if tags_match:
             tags = [tag.strip() for tag in tags_match.group(1).split(',')]
-        
+
         # Extract examples (skip first code block which is the main code)
         examples = code_blocks[1:] if len(code_blocks) > 1 else []
-        
+
         # Extract metadata
         version_match = re.search(r'- Version: (\d+)', md)
         version = int(version_match.group(1)) if version_match else 1
-        
+
         created_match = re.search(r'- Created: (.+)', md)
         created_at = created_match.group(1) if created_match else datetime.now(timezone.utc).isoformat()
-        
+
         updated_match = re.search(r'- Updated: (.+)', md)
         updated_at = updated_match.group(1) if updated_match else datetime.now(timezone.utc).isoformat()
-        
+
         hash_match = re.search(r'- Hash: `(.+)`', md)
         hash_val = hash_match.group(1) if hash_match else ""
-        
+
         return cls(
             name=name,
             code=code,
@@ -212,12 +210,12 @@ class WorkspaceManager:
         # Load intermediate output
         data = workspace.load_intermediate("query_results")
     """
-    
+
     def __init__(
         self,
         session_id: str,
-        workspace_root: Optional[Path] = None,
-        quota: Optional[WorkspaceQuota] = None
+        workspace_root: Path | None = None,
+        quota: WorkspaceQuota | None = None
     ) -> None:
         """Initialize workspace manager.
         
@@ -228,32 +226,32 @@ class WorkspaceManager:
         """
         self.session_id = session_id
         self.quota = quota or WorkspaceQuota()
-        
+
         # Set workspace root
         if workspace_root is None:
             workspace_root = Path.cwd() / ".toolweaver" / "workspaces"
-        
+
         self.workspace_root = Path(workspace_root)
         self.workspace_dir = self.workspace_root / session_id
-        
+
         # Create workspace directories
         self.skills_dir = self.workspace_dir / "skills"
         self.intermediate_dir = self.workspace_dir / "intermediate"
         self.metadata_file = self.workspace_dir / "metadata.json"
-        
-        self.metadata: Dict[str, Any] = {}
+
+        self.metadata: dict[str, Any] = {}
         self._ensure_directories()
         self._load_metadata()
-    
+
     def _ensure_directories(self) -> None:
         """Create workspace directories if they don't exist."""
         self.skills_dir.mkdir(parents=True, exist_ok=True)
         self.intermediate_dir.mkdir(parents=True, exist_ok=True)
-    
+
     def _load_metadata(self) -> None:
         """Load workspace metadata."""
         if self.metadata_file.exists():
-            with open(self.metadata_file, 'r') as f:
+            with open(self.metadata_file) as f:
                 self.metadata = json.load(f)
         else:
             self.metadata = {
@@ -264,12 +262,12 @@ class WorkspaceManager:
                 "total_size": 0,
             }
             self._save_metadata()
-    
+
     def _save_metadata(self) -> None:
         """Save workspace metadata."""
         with open(self.metadata_file, 'w') as f:
             json.dump(self.metadata, f, indent=2)
-    
+
     def _check_quota(self, size: int, is_skill: bool = True) -> None:
         """Check if adding a file would exceed quota.
         
@@ -285,14 +283,14 @@ class WorkspaceManager:
             raise WorkspaceQuotaExceeded(
                 f"Workspace size limit exceeded: {self.quota.max_size_bytes} bytes"
             )
-        
+
         # Check file count
         total_files = self.metadata["skill_count"] + self.metadata["intermediate_count"]
         if total_files + 1 > self.quota.max_files:
             raise WorkspaceQuotaExceeded(
                 f"File count limit exceeded: {self.quota.max_files} files"
             )
-        
+
         # Check per-file size
         if is_skill and size > self.quota.max_skill_size:
             raise WorkspaceQuotaExceeded(
@@ -302,15 +300,15 @@ class WorkspaceManager:
             raise WorkspaceQuotaExceeded(
                 f"Intermediate file size limit exceeded: {self.quota.max_intermediate_size} bytes"
             )
-    
+
     def save_skill(
         self,
         name: str,
         code: str,
         description: str,
-        dependencies: Optional[List[str]] = None,
-        tags: Optional[List[str]] = None,
-        examples: Optional[List[str]] = None
+        dependencies: list[str] | None = None,
+        tags: list[str] | None = None,
+        examples: list[str] | None = None
     ) -> WorkspaceSkill:
         """Save a reusable skill to workspace.
         
@@ -334,9 +332,9 @@ class WorkspaceManager:
         if skill_file.exists():
             existing = self.load_skill(name)
             version = existing.version + 1
-        
+
         logger.debug(f"Saving skill '{name}' (version={version})")
-        
+
         # Create skill object
         skill = WorkspaceSkill(
             name=name,
@@ -347,28 +345,28 @@ class WorkspaceManager:
             tags=tags or [],
             examples=examples or []
         )
-        
+
         # Check quota
         skill_json = json.dumps(skill.to_dict())
         self._check_quota(len(skill_json.encode()), is_skill=True)
-        
+
         # Save JSON
         with open(skill_file, 'w') as f:
             f.write(skill_json)
-        
+
         # Save Markdown documentation
         md_file = self.skills_dir / f"{name}.md"
         with open(md_file, 'w') as f:
             f.write(skill.to_markdown())
-        
+
         # Update metadata
         if version == 1:
             self.metadata["skill_count"] += 1
         self.metadata["total_size"] += len(skill_json.encode())
         self._save_metadata()
-        
+
         logger.info(
-            f"Skill saved",
+            "Skill saved",
             extra={
                 "skill_name": name,
                 "skill_version": version,
@@ -379,7 +377,7 @@ class WorkspaceManager:
             }
         )
         return skill
-    
+
     def load_skill(self, name: str) -> WorkspaceSkill:
         """Load a skill from workspace.
         
@@ -393,19 +391,19 @@ class WorkspaceManager:
             SkillNotFound: If skill doesn't exist
         """
         skill_file = self.skills_dir / f"{name}.json"
-        
+
         logger.debug(f"Loading skill '{name}' from workspace")
-        
+
         if not skill_file.exists():
             logger.warning(f"Skill not found: {name}")
             raise SkillNotFound(f"Skill not found: {name}")
-        
-        with open(skill_file, 'r') as f:
+
+        with open(skill_file) as f:
             data = json.load(f)
-        
+
         skill = WorkspaceSkill.from_dict(data)
         logger.debug(
-            f"Skill loaded",
+            "Skill loaded",
             extra={
                 "skill_name": name,
                 "skill_version": skill.version,
@@ -414,8 +412,8 @@ class WorkspaceManager:
             }
         )
         return skill
-    
-    def list_skills(self, tags: Optional[List[str]] = None) -> List[WorkspaceSkill]:
+
+    def list_skills(self, tags: list[str] | None = None) -> list[WorkspaceSkill]:
         """List all skills in workspace.
         
         Args:
@@ -425,18 +423,18 @@ class WorkspaceManager:
             List of WorkspaceSkill objects
         """
         skills = []
-        
+
         for skill_file in self.skills_dir.glob("*.json"):
-            with open(skill_file, 'r') as f:
+            with open(skill_file) as f:
                 data = json.load(f)
             skill = WorkspaceSkill.from_dict(data)
-            
+
             # Filter by tags if provided
             if tags is None or any(tag in skill.tags for tag in tags):
                 skills.append(skill)
-        
+
         return sorted(skills, key=lambda s: s.updated_at, reverse=True)
-    
+
     def delete_skill(self, name: str) -> None:
         """Delete a skill from workspace.
         
@@ -448,25 +446,25 @@ class WorkspaceManager:
         """
         skill_file = self.skills_dir / f"{name}.json"
         md_file = self.skills_dir / f"{name}.md"
-        
+
         if not skill_file.exists():
             raise SkillNotFound(f"Skill not found: {name}")
-        
+
         # Get size before deleting
         size = skill_file.stat().st_size
-        
+
         # Delete files
         skill_file.unlink()
         if md_file.exists():
             md_file.unlink()
-        
+
         # Update metadata
         self.metadata["skill_count"] -= 1
         self.metadata["total_size"] -= size
         self._save_metadata()
-        
+
         logger.info(f"Deleted skill: {name}")
-    
+
     def save_intermediate(self, name: str, data: Any) -> None:
         """Save intermediate output to workspace.
         
@@ -478,30 +476,30 @@ class WorkspaceManager:
             WorkspaceQuotaExceeded: If quota would be exceeded
         """
         intermediate_file = self.intermediate_dir / f"{name}.json"
-        
+
         # Check if this is an update (file existed before)
         is_update = intermediate_file.exists()
-        
+
         logger.debug(f"Saving intermediate '{name}' (update={is_update})")
-        
+
         # Serialize data
         data_json = json.dumps(data, indent=2)
-        
+
         # Check quota
         self._check_quota(len(data_json.encode()), is_skill=False)
-        
+
         # Save
         with open(intermediate_file, 'w') as f:
             f.write(data_json)
-        
+
         # Update metadata
         if not is_update:
             self.metadata["intermediate_count"] += 1
         self.metadata["total_size"] += len(data_json.encode())
         self._save_metadata()
-        
+
         logger.info(
-            f"Intermediate saved",
+            "Intermediate saved",
             extra={
                 "intermediate_name": name,
                 "is_update": is_update,
@@ -509,7 +507,7 @@ class WorkspaceManager:
                 "session_id": self.session_id,
             }
         )
-    
+
     def load_intermediate(self, name: str) -> Any:
         """Load intermediate output from workspace.
         
@@ -523,18 +521,18 @@ class WorkspaceManager:
             FileNotFoundError: If file doesn't exist
         """
         intermediate_file = self.intermediate_dir / f"{name}.json"
-        
+
         logger.debug(f"Loading intermediate '{name}' from workspace")
-        
+
         if not intermediate_file.exists():
             logger.warning(f"Intermediate not found: {name}")
             raise FileNotFoundError(f"Intermediate file not found: {name}")
-        
-        with open(intermediate_file, 'r') as f:
+
+        with open(intermediate_file) as f:
             data = json.load(f)
-        
+
         logger.debug(
-            f"Intermediate loaded",
+            "Intermediate loaded",
             extra={
                 "intermediate_name": name,
                 "data_type": type(data).__name__,
@@ -542,16 +540,16 @@ class WorkspaceManager:
             }
         )
         return data
-    
-    def list_intermediates(self) -> List[str]:
+
+    def list_intermediates(self) -> list[str]:
         """List all intermediate files in workspace.
         
         Returns:
             List of intermediate file names
         """
         return [f.stem for f in self.intermediate_dir.glob("*.json")]
-    
-    def get_workspace_stats(self) -> Dict[str, Any]:
+
+    def get_workspace_stats(self) -> dict[str, Any]:
         """Get workspace statistics.
         
         Returns:
@@ -568,21 +566,21 @@ class WorkspaceManager:
             ),
             "created_at": self.metadata["created_at"],
         }
-    
+
     def clear_workspace(self) -> None:
         """Clear all files from workspace (keeps metadata)."""
         # Delete all skills
         for skill_file in self.skills_dir.glob("*"):
             skill_file.unlink()
-        
+
         # Delete all intermediates
         for intermediate_file in self.intermediate_dir.glob("*"):
             intermediate_file.unlink()
-        
+
         # Reset metadata
         self.metadata["skill_count"] = 0
         self.metadata["intermediate_count"] = 0
         self.metadata["total_size"] = 0
         self._save_metadata()
-        
+
         logger.info(f"Cleared workspace: {self.session_id}")

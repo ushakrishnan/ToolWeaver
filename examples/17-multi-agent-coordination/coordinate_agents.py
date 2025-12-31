@@ -5,17 +5,18 @@ Coordinates multiple agents sequentially to complete a complex task.
 """
 
 import asyncio
+
 from orchestrator._internal.infra.a2a_client import A2AClient, AgentDelegationRequest
 
 
 async def main():
     """Coordinate multiple agents to build and analyze data."""
-    
+
     async with A2AClient(config_path="examples/17-multi-agent-coordination/agents.yaml") as client:
-        
+
         total_cost = 0.0
         total_time = 0.0
-        
+
         # Step 1: Fetch raw data using data_fetcher agent
         print("Step 1: Fetching raw data...")
         request1 = AgentDelegationRequest(
@@ -27,7 +28,7 @@ async def main():
             },
             idempotency_key="fetch_q4_data"
         )
-        
+
         try:
             resp1 = await client.delegate_to_agent(request1)
             if resp1.success:
@@ -41,7 +42,7 @@ async def main():
         except Exception as e:
             print(f"  ✗ Error: {e}")
             return
-        
+
         # Step 2: Analyze the data
         print("Step 2: Analyzing data...")
         request2 = AgentDelegationRequest(
@@ -53,7 +54,7 @@ async def main():
             },
             idempotency_key="analyze_q4_spending"
         )
-        
+
         try:
             resp2 = await client.delegate_to_agent(request2)
             if resp2.success:
@@ -67,7 +68,7 @@ async def main():
         except Exception as e:
             print(f"  ✗ Error: {e}")
             return
-        
+
         # Step 3: Generate report
         print("Step 3: Generating report...")
         request3 = AgentDelegationRequest(
@@ -80,7 +81,7 @@ async def main():
             },
             idempotency_key="report_q4_executive"
         )
-        
+
         try:
             resp3 = await client.delegate_to_agent(request3)
             if resp3.success:
@@ -88,7 +89,7 @@ async def main():
                 total_time += resp3.execution_time
                 total_cost += resp3.cost or 0.0
                 print(f"  ✓ Report generated in {resp3.execution_time:.2f}s")
-                print(f"\n✓ Multi-agent workflow complete!")
+                print("\n✓ Multi-agent workflow complete!")
                 print(f"  Total time: {total_time:.2f}s")
                 print(f"  Total cost: ${total_cost:.4f}")
                 print(f"\nReport preview:\n{str(report)[:200]}...")

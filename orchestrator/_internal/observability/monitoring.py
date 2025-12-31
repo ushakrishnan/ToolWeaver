@@ -10,14 +10,11 @@ Supports pluggable backends:
 - Prometheus: Metrics export (optional)
 """
 
-import os
 import json
-import pickle
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Union, DefaultDict
-from datetime import datetime, timezone
 from collections import defaultdict
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
+from typing import Any
 
 
 @dataclass
@@ -27,8 +24,8 @@ class ToolCallMetric:
     tool_name: str
     success: bool
     latency: float
-    error: Optional[str] = None
-    execution_id: Optional[str] = None
+    error: str | None = None
+    execution_id: str | None = None
 
 
 @dataclass
@@ -66,13 +63,13 @@ class ToolUsageMonitor:
         # All backends
         monitor = ToolUsageMonitor(backends=["local", "wandb", "prometheus"])
     """
-    
+
     def __init__(
         self,
-        backends: Optional[Union[str, List[str]]] = None,
+        backends: str | list[str] | None = None,
         log_to_file: bool = True,
         log_dir: str = ".tool_logs",
-        backend_config: Optional[Dict[str, Any]] = None
+        backend_config: dict[str, Any] | None = None
     ):
         """
         Initialize monitoring with pluggable backends.
@@ -88,41 +85,47 @@ class ToolUsageMonitor:
             backends = ["local"]
         elif isinstance(backends, str):
             backends = [backends]
-        
-        self.backends: List[Any] = []
+
+        self.backends: list[Any] = []
         backend_config = backend_config or {}
-        
+
         # Initialize backends
         for backend_type in backends:
             try:
                 if backend_type == "local":
-                    from orchestrator._internal.observability.monitoring_backends import LocalBackend
+                    from orchestrator._internal.observability.monitoring_backends import (
+                        LocalBackend,
+                    )
                     config = backend_config.get("local", {"log_dir": log_dir})
                     self.backends.append(LocalBackend(**config))
-                
+
                 elif backend_type == "wandb":
-                    from orchestrator._internal.observability.monitoring_backends import WandbBackend
+                    from orchestrator._internal.observability.monitoring_backends import (
+                        WandbBackend,
+                    )
                     config = backend_config.get("wandb", {})
                     self.backends.append(WandbBackend(**config))
                     print("✅ W&B monitoring enabled")
-                
+
                 elif backend_type == "prometheus":
-                    from orchestrator._internal.observability.monitoring_backends import PrometheusBackend
+                    from orchestrator._internal.observability.monitoring_backends import (
+                        PrometheusBackend,
+                    )
                     config = backend_config.get("prometheus", {})
                     self.backends.append(PrometheusBackend(**config))
-                
+
                 else:
                     print(f"⚠️  Unknown backend type: {backend_type}")
-            
+
             except ImportError as e:
                 print(f"⚠️  Could not load {backend_type} backend: {e}")
-        
+
         # Backward compatibility
         self.log_to_file = log_to_file
         self.log_dir = log_dir
-        
+
         # In-memory metrics (for get_summary, etc.)
-        self.metrics: Dict[str, Any] = {
+        self.metrics: dict[str, Any] = {
             "tool_calls": defaultdict(int),
             "tool_errors": defaultdict(int),
             "tool_latency": defaultdict(list),
@@ -131,18 +134,18 @@ class ToolUsageMonitor:
             "cache_misses": 0,
             "token_usage": {"input": 0, "output": 0, "cached": 0}
         }
-        
+
         # Detailed logs (last 1000 events)
-        self.tool_call_log: List[ToolCallMetric] = []
-        self.search_log: List[SearchMetric] = []
-    
+        self.tool_call_log: list[ToolCallMetric] = []
+        self.search_log: list[SearchMetric] = []
+
     def log_tool_call(
         self,
         tool_name: str,
         success: bool,
         latency: float,
-        error: Optional[str] = None,
-        execution_id: Optional[str] = None
+        error: str | None = None,
+        execution_id: str | None = None
     ) -> None:
         """
         Log individual tool call.
@@ -157,10 +160,10 @@ class ToolUsageMonitor:
         # Update aggregated metrics
         self.metrics["tool_calls"][tool_name] += 1
         self.metrics["tool_latency"][tool_name].append(latency)
-        
+
         if not success:
             self.metrics["tool_errors"][tool_name] += 1
-        
+
         # Add to detailed log (keep last 1000)
         metric = ToolCallMetric(
             timestamp=datetime.now(timezone.utc).isoformat(),
@@ -173,14 +176,14 @@ class ToolUsageMonitor:
         self.tool_call_log.append(metric)
         if len(self.tool_call_log) > 1000:
             self.tool_call_log.pop(0)
-        
+
         # Send to all backends
         for backend in self.backends:
             try:
                 backend.log_tool_call(tool_name, success, latency, error, execution_id)
             except Exception as e:
                 print(f"⚠️  Backend error: {e}")
-    
+
     def log_search_query(
         self,
         query: str,
@@ -204,23 +207,23 @@ class ToolUsageMonitor:
             latency=latency,
             cache_hit=cache_hit
         )
-        
+
         self.search_log.append(metric)
         if len(self.search_log) > 1000:
             self.search_log.pop(0)
-        
+
         if cache_hit:
             self.metrics["cache_hits"] += 1
         else:
             self.metrics["cache_misses"] += 1
-        
+
         # Send to all backends
         for backend in self.backends:
             try:
                 backend.log_search_query(query, num_results, latency, cache_hit)
             except Exception as e:
                 print(f"⚠️  Backend error: {e}")
-    
+
     def log_token_usage(
         self,
         input_tokens: int,
@@ -238,15 +241,15 @@ class ToolUsageMonitor:
         self.metrics["token_usage"]["input"] += input_tokens
         self.metrics["token_usage"]["output"] += output_tokens
         self.metrics["token_usage"]["cached"] += cached_tokens
-        
+
         # Send to all backends
         for backend in self.backends:
             try:
                 backend.log_token_usage(input_tokens, output_tokens, cached_tokens)
             except Exception as e:
                 print(f"⚠️  Backend error: {e}")
-    
-    def get_tool_metrics(self, tool_name: str) -> Dict[str, Any]:
+
+    def get_tool_metrics(self, tool_name: str) -> dict[str, Any]:
         """
         Get aggregated metrics for a specific tool.
         
@@ -259,16 +262,16 @@ class ToolUsageMonitor:
         calls = self.metrics["tool_calls"].get(tool_name, 0)
         errors = self.metrics["tool_errors"].get(tool_name, 0)
         latencies = self.metrics["tool_latency"].get(tool_name, [])
-        
+
         if not calls:
             return {"error": f"No metrics for tool '{tool_name}'"}
-        
+
         # Calculate percentiles
         sorted_latencies = sorted(latencies)
         p50 = sorted_latencies[len(sorted_latencies) // 2] if sorted_latencies else 0
         p95 = sorted_latencies[int(len(sorted_latencies) * 0.95)] if sorted_latencies else 0
         p99 = sorted_latencies[int(len(sorted_latencies) * 0.99)] if sorted_latencies else 0
-        
+
         return {
             "tool_name": tool_name,
             "total_calls": calls,
@@ -284,8 +287,8 @@ class ToolUsageMonitor:
                 "p99": p99
             }
         }
-    
-    def get_summary(self) -> Dict[str, Any]:
+
+    def get_summary(self) -> dict[str, Any]:
         """
         Get overall monitoring summary.
         
@@ -294,10 +297,10 @@ class ToolUsageMonitor:
         """
         total_calls = sum(self.metrics["tool_calls"].values())
         total_errors = sum(self.metrics["tool_errors"].values())
-        
+
         cache_total = self.metrics["cache_hits"] + self.metrics["cache_misses"]
         cache_hit_rate = self.metrics["cache_hits"] / cache_total if cache_total else 0
-        
+
         return {
             "overview": {
                 "total_tool_calls": total_calls,
@@ -315,8 +318,8 @@ class ToolUsageMonitor:
                 "hit_rate": cache_hit_rate
             }
         }
-    
-    def get_recent_errors(self, limit: int = 10) -> List[Dict[str, Any]]:
+
+    def get_recent_errors(self, limit: int = 10) -> list[dict[str, Any]]:
         """
         Get recent tool errors.
         
@@ -331,7 +334,7 @@ class ToolUsageMonitor:
             if not m.success
         ]
         return errors[-limit:]
-    
+
     def export_metrics(self, filepath: str) -> None:
         """
         Export all metrics to JSON file.
@@ -349,10 +352,10 @@ class ToolUsageMonitor:
             "recent_calls": [asdict(m) for m in self.tool_call_log[-100:]],
             "recent_searches": [asdict(m) for m in self.search_log[-100:]]
         }
-        
+
         with open(filepath, 'w') as f:
             json.dump(export_data, f, indent=2)
-    
+
     def flush(self) -> None:
         """
         Flush all backends (useful for W&B, graceful shutdown).
@@ -363,8 +366,8 @@ class ToolUsageMonitor:
                 backend.flush()
             except Exception as e:
                 print(f"⚠️  Backend flush error: {e}")
-    
-    def _get_top_tools(self, limit: int = 5) -> List[Dict[str, Any]]:
+
+    def _get_top_tools(self, limit: int = 5) -> list[dict[str, Any]]:
         """Get top tools by call count."""
         tools = [
             {"tool": name, "calls": count}
@@ -383,11 +386,11 @@ def create_monitor(log_dir: str = ".tool_logs") -> ToolUsageMonitor:
 def print_metrics_report(monitor: ToolUsageMonitor) -> None:
     """Print formatted metrics report."""
     summary = monitor.get_summary()
-    
+
     print("=" * 80)
     print("TOOL USAGE MONITORING REPORT")
     print("=" * 80)
-    
+
     print("\n📊 Overview:")
     overview = summary["overview"]
     print(f"   Total tool calls:    {overview['total_tool_calls']:,}")
@@ -396,25 +399,25 @@ def print_metrics_report(monitor: ToolUsageMonitor) -> None:
     print(f"   Unique tools used:   {overview['unique_tools']}")
     print(f"   Search queries:      {overview['search_queries']:,}")
     print(f"   Cache hit rate:      {overview['cache_hit_rate']:.1%}")
-    
+
     print("\n🔧 Top Tools:")
     for tool in summary["top_tools"]:
         metrics = monitor.get_tool_metrics(tool["tool"])
         print(f"   {tool['tool']:<30} {tool['calls']:>5} calls  "
               f"(p50: {metrics['latency']['p50']*1000:.0f}ms, "
               f"errors: {metrics['error_rate']:.1%})")
-    
+
     print("\n💰 Token Usage:")
     tokens = summary["token_usage"]
     print(f"   Input tokens:   {tokens['input']:>10,}")
     print(f"   Output tokens:  {tokens['output']:>10,}")
     print(f"   Cached tokens:  {tokens['cached']:>10,}")
-    
+
     total_tokens = tokens['input'] + tokens['output']
     if tokens['cached'] > 0:
         savings = tokens['cached'] / (total_tokens + tokens['cached']) * 100
         print(f"   Cache savings:  {savings:>9.1f}%")
-    
+
     print("\n🚨 Recent Errors:")
     errors = monitor.get_recent_errors(5)
     if errors:
@@ -422,5 +425,5 @@ def print_metrics_report(monitor: ToolUsageMonitor) -> None:
             print(f"   [{err['timestamp']}] {err['tool_name']}: {err['error']}")
     else:
         print("   No recent errors")
-    
+
     print("\n" + "=" * 80)

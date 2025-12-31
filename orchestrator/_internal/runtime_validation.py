@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple, Type, cast
+from typing import Any, cast
 
 from pydantic import BaseModel, create_model
 
 from orchestrator._internal.logger import get_logger
 from orchestrator._internal.validation import (
+    InvalidInputError,
     ToolDefinition,
     ToolParameter,
     ValidationErrorBase,
-    InvalidInputError,
     validate_tool_input,
 )
-
 
 logger = get_logger(__name__)
 
@@ -27,8 +26,8 @@ ALLOWED_PARAM_TYPES = {
 }
 
 
-def _build_schema_from_tool(tool: ToolDefinition) -> Type[BaseModel]:
-    fields: Dict[str, Tuple[type, Any]] = {}
+def _build_schema_from_tool(tool: ToolDefinition) -> type[BaseModel]:
+    fields: dict[str, tuple[type, Any]] = {}
 
     for p in tool.parameters:
         if p.type not in ALLOWED_PARAM_TYPES:
@@ -45,7 +44,7 @@ def _build_schema_from_tool(tool: ToolDefinition) -> Type[BaseModel]:
     model = create_model(
         f"ToolInput__{tool.name}",
         __base__=BaseModel,
-        **cast(Dict[str, Any], fields),
+        **cast(dict[str, Any], fields),
     )
     return model
 

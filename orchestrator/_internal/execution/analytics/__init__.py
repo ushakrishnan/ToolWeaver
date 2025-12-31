@@ -45,24 +45,24 @@ Usage (OTLP/Grafana Cloud):
     metrics.record_skill_rating("my-skill", rating=5)
 """
 
-import os
 import logging
-from typing import Optional, Any
+import os
+from typing import Any, Optional
 
-from .sqlite_schema import SQLiteSchema, initialize_analytics_db
+from .grafana_client import GrafanaClient, GrafanaConfig, setup_grafana
 from .skill_analytics import (
-    SkillAnalytics,
-    SkillUsage,
-    SkillMetrics,
-    SkillRecommendation,
     MetricType,
     RecommendationType,
+    SkillAnalytics,
+    SkillMetrics,
+    SkillRecommendation,
+    SkillUsage,
 )
-from .grafana_client import GrafanaClient, GrafanaConfig, setup_grafana
+from .sqlite_schema import SQLiteSchema, initialize_analytics_db
 
 # Try to import OTLP metrics (optional dependency)
 try:
-    from .otlp_metrics import OTLPMetrics, MetricConfig, create_otlp_client
+    from .otlp_metrics import MetricConfig, OTLPMetrics, create_otlp_client
     OTLP_AVAILABLE = True
 except ImportError:
     OTLPMetrics = None  # type: ignore[assignment,misc]
@@ -73,7 +73,7 @@ except ImportError:
 
 # Try to import Prometheus metrics (optional dependency)
 try:
-    from .prometheus_metrics import PrometheusMetrics, PrometheusConfig, create_prometheus_exporter
+    from .prometheus_metrics import PrometheusConfig, PrometheusMetrics, create_prometheus_exporter
     PROMETHEUS_AVAILABLE = True
 except ImportError:
     PrometheusMetrics = None  # type: ignore[assignment,misc]
@@ -115,7 +115,7 @@ __version__ = "1.0.0"
 __phase__ = "5"
 
 
-def create_analytics_client(backend: Optional[str] = None) -> Any:
+def create_analytics_client(backend: str | None = None) -> Any:
     """
     Factory function to create analytics client based on backend selection.
     
@@ -134,7 +134,7 @@ def create_analytics_client(backend: Optional[str] = None) -> Any:
     """
     if backend is None:
         backend = os.getenv("ANALYTICS_BACKEND", "sqlite").lower()
-    
+
     if backend == "otlp":
         if not OTLP_AVAILABLE:
             raise RuntimeError(
@@ -143,7 +143,7 @@ def create_analytics_client(backend: Optional[str] = None) -> Any:
             )
         logging.info("Creating OTLP metrics client (Grafana Cloud)")
         return OTLPMetrics()  # type: ignore[misc]
-    
+
     elif backend == "prometheus":
         if not PROMETHEUS_AVAILABLE:
             raise RuntimeError(
@@ -152,10 +152,10 @@ def create_analytics_client(backend: Optional[str] = None) -> Any:
             )
         logging.info("Creating Prometheus metrics exporter (HTTP scraping)")
         return PrometheusMetrics()  # type: ignore[misc]
-    
+
     elif backend == "sqlite":
         logging.info("Creating SQLite analytics client (local database)")
         return SkillAnalytics()
-    
+
     else:
         raise ValueError(f"Unknown analytics backend: {backend}. Use 'sqlite', 'otlp', or 'prometheus'.")

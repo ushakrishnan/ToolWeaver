@@ -7,28 +7,27 @@ Supports multiple backends:
 - Prometheus: Metrics export for production monitoring (optional)
 """
 
-import os
 import json
-from pathlib import Path
-from typing import Dict, Any, Optional, Protocol
+import os
 from datetime import datetime, timezone
-from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import Any, Protocol
 
 
 class MonitoringBackend(Protocol):
     """Interface for monitoring backends."""
-    
+
     def log_tool_call(
         self,
         tool_name: str,
         success: bool,
         latency: float,
-        error: Optional[str] = None,
-        execution_id: Optional[str] = None
+        error: str | None = None,
+        execution_id: str | None = None
     ) -> None:
         """Log individual tool call."""
         ...
-    
+
     def log_search_query(
         self,
         query: str,
@@ -38,7 +37,7 @@ class MonitoringBackend(Protocol):
     ) -> None:
         """Log tool search query."""
         ...
-    
+
     def log_token_usage(
         self,
         input_tokens: int,
@@ -47,7 +46,7 @@ class MonitoringBackend(Protocol):
     ) -> None:
         """Log LLM token usage."""
         ...
-    
+
     def flush(self) -> None:
         """Flush any buffered data."""
         ...
@@ -60,18 +59,18 @@ class LocalBackend:
     Logs to JSONL files in log directory.
     Zero external dependencies, works offline.
     """
-    
+
     def __init__(self, log_dir: str = ".tool_logs"):
         self.log_dir = log_dir
         os.makedirs(log_dir, exist_ok=True)
-    
+
     def log_tool_call(
         self,
         tool_name: str,
         success: bool,
         latency: float,
-        error: Optional[str] = None,
-        execution_id: Optional[str] = None
+        error: str | None = None,
+        execution_id: str | None = None
      ) -> None:
         entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -82,7 +81,7 @@ class LocalBackend:
             "execution_id": execution_id
         }
         self._write_log("tool_calls", entry)
-    
+
     def log_search_query(
         self,
         query: str,
@@ -98,7 +97,7 @@ class LocalBackend:
             "cache_hit": cache_hit
         }
         self._write_log("search_queries", entry)
-    
+
     def log_token_usage(
         self,
         input_tokens: int,
@@ -112,16 +111,16 @@ class LocalBackend:
             "cached": cached_tokens
         }
         self._write_log("token_usage", entry)
-    
+
     def flush(self) -> None:
         """No buffering for local backend."""
         pass
-    
-    def _write_log(self, log_type: str, entry: Dict[str, Any]) -> None:
+
+    def _write_log(self, log_type: str, entry: dict[str, Any]) -> None:
         """Write log entry to daily JSONL file."""
         date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         log_file = Path(self.log_dir) / f"{log_type}_{date_str}.jsonl"
-        
+
         with open(log_file, 'a') as f:
             f.write(json.dumps(entry) + '\n')
 
@@ -139,13 +138,13 @@ class WandbBackend:
     - Team collaboration
     - Version tracking
     """
-    
+
     def __init__(
         self,
         project: str = "toolweaver",
-        entity: Optional[str] = None,
-        run_name: Optional[str] = None,
-        config: Optional[Dict[str, Any]] = None
+        entity: str | None = None,
+        run_name: str | None = None,
+        config: dict[str, Any] | None = None
     ):
         try:
             import wandb
@@ -155,7 +154,7 @@ class WandbBackend:
                 "W&B backend requires wandb package. "
                 "Install with: pip install wandb"
             )
-        
+
         # Initialize run
         self.run = wandb.init(
             project=project,
@@ -164,17 +163,17 @@ class WandbBackend:
             config=config or {},
             resume="allow"
         )
-        
+
         # Counters for aggregation
         self.step = 0
-    
+
     def log_tool_call(
         self,
         tool_name: str,
         success: bool,
         latency: float,
-        error: Optional[str] = None,
-        execution_id: Optional[str] = None
+        error: str | None = None,
+        execution_id: str | None = None
      ) -> None:
         self.wandb.log({
             f"tool/{tool_name}/latency": latency,
@@ -182,16 +181,16 @@ class WandbBackend:
             f"tool/{tool_name}/error": 0 if success else 1,
             "step": self.step
         })
-        
+
         if error:
             self.wandb.alert(
                 title=f"Tool Error: {tool_name}",
                 text=error,
                 level=self.wandb.AlertLevel.WARN
             )
-        
+
         self.step += 1
-    
+
     def log_search_query(
         self,
         query: str,
@@ -206,7 +205,7 @@ class WandbBackend:
             "step": self.step
         })
         self.step += 1
-    
+
     def log_token_usage(
         self,
         input_tokens: int,
@@ -214,7 +213,7 @@ class WandbBackend:
         cached_tokens: int = 0
      ) -> None:
         total = input_tokens + output_tokens
-        
+
         self.wandb.log({
             "tokens/input": input_tokens,
             "tokens/output": output_tokens,
@@ -224,7 +223,7 @@ class WandbBackend:
             "step": self.step
         })
         self.step += 1
-    
+
     def flush(self) -> None:
         """Flush W&B logs."""
         if self.run:
@@ -248,7 +247,7 @@ class PrometheusBackend:
     - toolweaver_cache_hits_total (counter)
     - toolweaver_tokens_total (counter)
     """
-    
+
     def __init__(self, port: int = 8000):
         try:
             from prometheus_client import Counter, Histogram, start_http_server
@@ -259,70 +258,70 @@ class PrometheusBackend:
                 "Prometheus backend requires prometheus-client package. "
                 "Install with: pip install prometheus-client"
             )
-        
+
         # Define metrics
         self.tool_calls = Counter(
             'toolweaver_tool_calls_total',
             'Total tool calls',
             ['tool_name', 'success']
         )
-        
+
         self.tool_errors = Counter(
             'toolweaver_tool_errors_total',
             'Total tool errors',
             ['tool_name']
         )
-        
+
         self.tool_latency = Histogram(
             'toolweaver_tool_latency_seconds',
             'Tool execution latency',
             ['tool_name'],
             buckets=[0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0]
         )
-        
+
         self.search_queries = Counter(
             'toolweaver_search_queries_total',
             'Total search queries',
             ['cache_hit']
         )
-        
+
         self.cache_hits = Counter(
             'toolweaver_cache_hits_total',
             'Cache hits',
             ['type']
         )
-        
+
         self.tokens = Counter(
             'toolweaver_tokens_total',
             'LLM tokens used',
             ['type']
         )
-        
+
         # Start HTTP server for Prometheus scraping
         try:
             start_http_server(port)
             print(f"✅ Prometheus metrics server started on port {port}")
         except OSError:
             print(f"⚠️  Port {port} already in use, metrics server not started")
-    
+
     def log_tool_call(
         self,
         tool_name: str,
         success: bool,
         latency: float,
-        error: Optional[str] = None,
-        execution_id: Optional[str] = None
+        error: str | None = None,
+        execution_id: str | None = None
     ) -> None:
         self.tool_calls.labels(
             tool_name=tool_name,
             success=str(success)
         ).inc()
-        
+
         if not success:
             self.tool_errors.labels(tool_name=tool_name).inc()
-        
+
         self.tool_latency.labels(tool_name=tool_name).observe(latency)
-    
+
     def log_search_query(
         self,
         query: str,
@@ -333,10 +332,10 @@ class PrometheusBackend:
         self.search_queries.labels(
             cache_hit=str(cache_hit)
         ).inc()
-        
+
         if cache_hit:
             self.cache_hits.labels(type="search").inc()
-    
+
     def log_token_usage(
         self,
         input_tokens: int,
@@ -346,7 +345,7 @@ class PrometheusBackend:
         self.tokens.labels(type="input").inc(input_tokens)
         self.tokens.labels(type="output").inc(output_tokens)
         self.tokens.labels(type="cached").inc(cached_tokens)
-    
+
     def flush(self) -> None:
         """Prometheus metrics are always available via HTTP."""
         pass

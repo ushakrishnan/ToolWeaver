@@ -13,13 +13,13 @@ Workflows are defined in YAML and support:
 
 from __future__ import annotations
 
-import json
 import asyncio
-from dataclasses import dataclass, asdict, field
-from typing import Dict, Any, List, Optional, Tuple
-from pathlib import Path
+import json
 import logging
 import time
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
+from typing import Any
 
 try:
     import yaml
@@ -40,11 +40,11 @@ class WorkflowStep:
     """A single step in a workflow."""
     name: str
     skill: str  # Skill name
-    version: Optional[str] = None  # Skill version (default: latest)
-    inputs: Dict[str, Any] = field(default_factory=dict)  # Input variables
+    version: str | None = None  # Skill version (default: latest)
+    inputs: dict[str, Any] = field(default_factory=dict)  # Input variables
     retry: int = 0  # Number of retries on failure
     timeout_seconds: float = 300.0  # Step timeout
-    on_error: Optional[str] = None  # "continue", "stop", or "retry"
+    on_error: str | None = None  # "continue", "stop", or "retry"
     parallel: bool = False  # Can execute in parallel with others
 
 
@@ -53,13 +53,13 @@ class Workflow:
     """A multi-step workflow."""
     name: str
     description: str = ""
-    steps: List[WorkflowStep] = field(default_factory=list)
+    steps: list[WorkflowStep] = field(default_factory=list)
     version: str = "0.1.0"
-    tags: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tags: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
-def create_workflow(name: str, description: str = "", tags: Optional[List[str]] = None) -> Workflow:
+def create_workflow(name: str, description: str = "", tags: list[str] | None = None) -> Workflow:
     """
     Create a new workflow.
     
@@ -83,9 +83,9 @@ def add_step(
     workflow: Workflow,
     name: str,
     skill: str,
-    inputs: Optional[Dict[str, Any]] = None,
+    inputs: dict[str, Any] | None = None,
     *,
-    version: Optional[str] = None,
+    version: str | None = None,
     retry: int = 0,
     timeout_seconds: float = 300.0,
     on_error: str = "stop",
@@ -127,13 +127,13 @@ def save_workflow(workflow: Workflow) -> None:
     """
     safe_name = "".join(c for c in workflow.name if c.isalnum() or c in ("-", "_"))
     workflow_file = _ROOT / f"{safe_name}.json"
-    
+
     data = asdict(workflow)
     workflow_file.write_text(json.dumps(data, indent=2))
     logger.info(f"Saved workflow: {safe_name}")
 
 
-def load_workflow(name: str) -> Optional[Workflow]:
+def load_workflow(name: str) -> Workflow | None:
     """
     Load workflow from disk.
     
@@ -145,10 +145,10 @@ def load_workflow(name: str) -> Optional[Workflow]:
     """
     safe_name = "".join(c for c in name if c.isalnum() or c in ("-", "_"))
     workflow_file = _ROOT / f"{safe_name}.json"
-    
+
     if not workflow_file.exists():
         return None
-    
+
     try:
         data = json.loads(workflow_file.read_text())
         steps = [WorkflowStep(**s) for s in data.get("steps", [])]
@@ -165,7 +165,7 @@ def load_workflow(name: str) -> Optional[Workflow]:
         return None
 
 
-async def execute_workflow(workflow: Workflow, inputs: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+async def execute_workflow(workflow: Workflow, inputs: dict[str, Any] | None = None) -> dict[str, Any]:
     """
     Execute a workflow end-to-end.
     
@@ -179,12 +179,12 @@ async def execute_workflow(workflow: Workflow, inputs: Optional[Dict[str, Any]] 
         Final output with all step results
     """
     context = inputs or {}
-    results: Dict[str, Any] = {}
-    
+    results: dict[str, Any] = {}
+
     # Group steps by parallel flag
-    sequential_groups: List[List[WorkflowStep]] = []
-    current_group: List[WorkflowStep] = []
-    
+    sequential_groups: list[list[WorkflowStep]] = []
+    current_group: list[WorkflowStep] = []
+
     for step in workflow.steps:
         if step.parallel and current_group:
             sequential_groups.append(current_group)
@@ -194,10 +194,10 @@ async def execute_workflow(workflow: Workflow, inputs: Optional[Dict[str, Any]] 
             sequential_groups.append([step])
         else:
             current_group.append(step)
-    
+
     if current_group:
         sequential_groups.append(current_group)
-    
+
     # Execute groups
     for group in sequential_groups:
         if len(group) == 1 and not group[0].parallel:
@@ -209,10 +209,10 @@ async def execute_workflow(workflow: Workflow, inputs: Optional[Dict[str, Any]] 
         else:
             # Parallel execution
             tasks = [_execute_step(step, context, retry_count=0) for step in group]
-            step_results: List[Any] = await asyncio.gather(*tasks, return_exceptions=True)
-            
+            step_results: list[Any] = await asyncio.gather(*tasks, return_exceptions=True)
+
             for step, result in zip(group, step_results):
-                result_dict: Dict[str, Any]
+                result_dict: dict[str, Any]
                 if isinstance(result, BaseException):
                     result_dict = {"error": str(result)}
                     if step.on_error == "stop":
@@ -221,11 +221,11 @@ async def execute_workflow(workflow: Workflow, inputs: Optional[Dict[str, Any]] 
                     result_dict = result if isinstance(result, dict) else {"result": result}
                 results[step.name] = result_dict
                 _update_context(context, step.name, result_dict)
-    
+
     return results
 
 
-async def _execute_step(step: WorkflowStep, context: Dict[str, Any], retry_count: int = 0) -> Dict[str, Any]:
+async def _execute_step(step: WorkflowStep, context: dict[str, Any], retry_count: int = 0) -> dict[str, Any]:
     """
     Execute a single workflow step.
     
@@ -243,19 +243,19 @@ async def _execute_step(step: WorkflowStep, context: Dict[str, Any], retry_count
             skill = get_skill_version(step.skill, step.version)
         else:
             skill = get_skill(step.skill)
-        
+
         if not skill:
             raise ValueError(f"Skill not found: {step.skill}")
-        
+
         # Interpolate inputs
         interpolated_inputs = _interpolate_inputs(step.inputs, context)
-        
+
         # Execute skill (simplified - in production would use orchestrator)
         start = time.time()
-        
+
         # Simulate async execution
         await asyncio.sleep(0)  # Yield control
-        
+
         # For now, return metadata (real implementation would execute code)
         result = {
             "skill": step.skill,
@@ -264,28 +264,28 @@ async def _execute_step(step: WorkflowStep, context: Dict[str, Any], retry_count
             "inputs": interpolated_inputs,
             "latency_ms": (time.time() - start) * 1000
         }
-        
+
         return result
-        
+
     except Exception as e:
         logger.error(f"Step {step.name} failed: {e}")
-        
+
         # Handle retries
         if retry_count < step.retry:
             retry_count += 1
             logger.info(f"Retrying {step.name} ({retry_count}/{step.retry})")
             await asyncio.sleep(1)  # Brief delay before retry
             return await _execute_step(step, context, retry_count)
-        
+
         # Handle error behavior
         if step.on_error == "continue":
             logger.warning(f"Continuing after {step.name} failure")
             return {"status": "skipped", "error": str(e)}
-        
+
         raise
 
 
-def _interpolate_inputs(inputs: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+def _interpolate_inputs(inputs: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
     """
     Interpolate variables in workflow inputs using context.
     
@@ -299,14 +299,14 @@ def _interpolate_inputs(inputs: Dict[str, Any], context: Dict[str, Any]) -> Dict
         Interpolated inputs
     """
     import re
-    
+
     def replace_var(match: Any) -> str:
         var_name = match.group(1)
         if var_name in context:
             return str(context[var_name])
         return str(match.group(0))
-    
-    result: Dict[str, Any] = {}
+
+    result: dict[str, Any] = {}
     for key, value in inputs.items():
         if isinstance(value, str):
             result[key] = re.sub(r"\$\{(\w+)\}", replace_var, value)
@@ -314,11 +314,11 @@ def _interpolate_inputs(inputs: Dict[str, Any], context: Dict[str, Any]) -> Dict
             result[key] = _interpolate_inputs(value, context)
         else:
             result[key] = value
-    
+
     return result
 
 
-def _update_context(context: Dict[str, Any], step_name: str, result: Dict[str, Any]) -> None:
+def _update_context(context: dict[str, Any], step_name: str, result: dict[str, Any]) -> None:
     """
     Update execution context with step results.
     
@@ -328,7 +328,7 @@ def _update_context(context: Dict[str, Any], step_name: str, result: Dict[str, A
         result: Step result
     """
     context[f"step_{step_name}"] = result
-    
+
     # Make result values available as top-level context
     if isinstance(result, dict):
         for key, value in result.items():
@@ -336,7 +336,7 @@ def _update_context(context: Dict[str, Any], step_name: str, result: Dict[str, A
                 context[f"{step_name}_{key}"] = value
 
 
-def list_workflows() -> List[str]:
+def list_workflows() -> list[str]:
     """
     List all saved workflows.
     
@@ -361,10 +361,10 @@ def delete_workflow(name: str) -> bool:
     """
     safe_name = "".join(c for c in name if c.isalnum() or c in ("-", "_"))
     workflow_file = _ROOT / f"{safe_name}.json"
-    
+
     if workflow_file.exists():
         workflow_file.unlink()
         logger.info(f"Deleted workflow: {safe_name}")
         return True
-    
+
     return False

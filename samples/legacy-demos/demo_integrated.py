@@ -9,16 +9,18 @@ Shows the complete Phase 2 + Phase 3 pipeline:
 """
 
 import asyncio
+
 from orchestrator.mcp_client import MCPClientShim
-from orchestrator._internal.dispatch import functions
-from orchestrator.tool_discovery import discover_tools
-from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 from orchestrator.planner import LargePlanner
+from orchestrator.tool_discovery import discover_tools
+
+from orchestrator._internal.dispatch import functions
+from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 
 
 async def create_large_catalog() -> ToolCatalog:
     """Create a catalog with 30+ tools by adding mock tools"""
-    
+
     # Start with real discovered tools
     mcp_client = MCPClientShim()
     catalog = await discover_tools(
@@ -27,9 +29,9 @@ async def create_large_catalog() -> ToolCatalog:
         include_code_exec=True,
         use_cache=True
     )
-    
+
     print(f"✓ Discovered {len(catalog.tools)} real tools")
-    
+
     # Add mock tools to exceed threshold (need 20+ for search)
     mock_tools = [
         ("slack_send_message", "Send a message to a Slack channel"),
@@ -49,7 +51,7 @@ async def create_large_catalog() -> ToolCatalog:
         ("http_get", "Make HTTP GET request"),
         ("http_post", "Make HTTP POST request"),
     ]
-    
+
     for name, description in mock_tools:
         catalog.add_tool(ToolDefinition(
             name=name,
@@ -61,10 +63,10 @@ async def create_large_catalog() -> ToolCatalog:
             source="mock",
             metadata={"mock": True}
         ))
-    
+
     print(f"✓ Added {len(mock_tools)} mock tools")
     print(f"✓ Total catalog size: {len(catalog.tools)} tools")
-    
+
     return catalog
 
 
@@ -72,12 +74,12 @@ async def main():
     print("=" * 70)
     print("ToolWeaver - Integrated Discovery + Search + Planning Demo")
     print("=" * 70)
-    
+
     # Step 1: Create large tool catalog
     print("\n1. Building Large Tool Catalog")
     print("-" * 70)
     catalog = await create_large_catalog()
-    
+
     # Step 2: Initialize planner with semantic search enabled
     print("\n2. Initializing Planner")
     print("-" * 70)
@@ -85,13 +87,13 @@ async def main():
     print("   - Semantic search: ENABLED")
     print("   - Search threshold: 20 tools")
     print("   - Search will activate automatically")
-    
+
     async with LargePlanner(
         tool_catalog=catalog,
         use_tool_search=True,
         search_threshold=20
     ) as planner:
-        
+
         # Step 3: Test various queries to show intelligent tool selection
         test_cases = [
             {
@@ -107,57 +109,57 @@ async def main():
                 "expected_tools": ["file_read", "email_send"]
             },
         ]
-        
+
         print("\n3. Testing Semantic Search with Planning")
         print("=" * 70)
-        
+
         for i, test_case in enumerate(test_cases, 1):
             request = test_case["request"]
             print(f"\nTest Case {i}: \"{request}\"")
             print("-" * 70)
-            
+
             # Generate plan (search will happen automatically)
             plan = await planner.generate_plan(request)
-            
+
             # Analyze the plan
             steps = plan.get("steps", [])
             tools_used = set()
             for step in steps:
                 if "tool_name" in step:
                     tools_used.add(step["tool_name"])
-            
+
             print(f"   Generated {len(steps)} steps")
             print(f"   Tools selected: {', '.join(sorted(tools_used)) if tools_used else 'None'}")
-            
+
             # Check if expected tools were found
             expected = test_case["expected_tools"]
             found = sum(1 for tool in expected if tool in tools_used)
             print(f"   Relevance: {found}/{len(expected)} expected tools found")
-    
+
     # Step 4: Show statistics
     print("\n" + "=" * 70)
     print("4. Performance Statistics")
     print("=" * 70)
-    
+
     total_tools = len(catalog.tools)
     typical_selected = 10
-    
+
     tokens_without_search = total_tools * 150
     tokens_with_search = typical_selected * 150
     savings = tokens_without_search - tokens_with_search
     savings_pct = (savings / tokens_without_search) * 100
-    
+
     print(f"   Total tools in catalog: {total_tools}")
     print(f"   Typical tools selected: {typical_selected}")
     print(f"   Token usage without search: ~{tokens_without_search:,} tokens")
     print(f"   Token usage with search: ~{tokens_with_search:,} tokens")
     print(f"   Token savings: ~{savings:,} tokens ({savings_pct:.1f}% reduction)")
-    
+
     cost_per_million = 2.50  # GPT-4o input tokens
     cost_savings = (savings / 1_000_000) * cost_per_million
     print(f"   Cost savings per request: ${cost_savings:.4f}")
     print(f"   Annual savings (1000 req/day): ${cost_savings * 1000 * 365:.2f}")
-    
+
     print("\n" + "=" * 70)
     print("Demo Complete! Phase 2 + Phase 3 Integration Working")
     print("=" * 70)

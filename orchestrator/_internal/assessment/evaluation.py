@@ -10,13 +10,12 @@ Usage:
     evaluator.save_baseline(results, "v1.0")
 """
 
-import asyncio
-import time
 import json
 import logging
-from dataclasses import dataclass, asdict
-from typing import List, Dict, Any, Optional, cast
+import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Any, cast
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +28,8 @@ class TaskResult:
     duration: float
     context_tokens: int
     steps_taken: int
-    error: Optional[str] = None
-    output: Optional[Any] = None
+    error: str | None = None
+    output: Any | None = None
 
 
 @dataclass
@@ -43,9 +42,9 @@ class BenchmarkResults:
     total_tasks: int
     successful_tasks: int
     failed_tasks: int
-    results: List[TaskResult]
-    
-    def to_dict(self) -> Dict[str, Any]:
+    results: list[TaskResult]
+
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization"""
         return {
             "completion_rate": self.completion_rate,
@@ -69,7 +68,7 @@ class AgentEvaluator:
     - Save baselines for regression testing
     - Compare against previous runs
     """
-    
+
     def __init__(self, orchestrator: Any, context_tracker: Any) -> None:
         """
         Initialize evaluator.
@@ -82,7 +81,7 @@ class AgentEvaluator:
         self.context_tracker = context_tracker
         self.results_dir = Path("benchmarks/results")
         self.results_dir.mkdir(parents=True, exist_ok=True)
-        
+
     async def run_benchmark(self, task_suite: str) -> BenchmarkResults:
         """
         Run benchmark suite and collect metrics.
@@ -94,21 +93,21 @@ class AgentEvaluator:
             BenchmarkResults with aggregated metrics
         """
         logger.info(f"Running benchmark suite: {task_suite}")
-        
+
         # Load tasks
         tasks = self._load_tasks(task_suite)
         if not tasks:
             raise ValueError(f"No tasks found in suite: {task_suite}")
-        
+
         logger.info(f"Loaded {len(tasks)} tasks")
-        
+
         # Execute each task
         results = []
         for i, task in enumerate(tasks, 1):
             logger.info(f"Executing task {i}/{len(tasks)}: {task['id']}")
             result = await self._evaluate_task(task)
             results.append(result)
-            
+
             # Log progress
             status = "✓" if result.success else "✗"
             logger.info(
@@ -117,11 +116,11 @@ class AgentEvaluator:
                 f"{result.context_tokens} tokens, "
                 f"{result.steps_taken} steps"
             )
-        
+
         # Aggregate results
         return self._aggregate_results(results)
-        
-    async def _evaluate_task(self, task: Dict) -> TaskResult:
+
+    async def _evaluate_task(self, task: dict) -> TaskResult:
         """
         Execute single task and measure performance.
         
@@ -133,28 +132,28 @@ class AgentEvaluator:
         """
         start_time = time.time()
         self.context_tracker.reset()
-        
+
         try:
             # Execute task
             result = await self.orchestrator.execute(
                 task["prompt"],
                 context=task.get("context", {})
             )
-            
+
             # Validate result
             success = self._validate_result(result, task.get("expected", {}))
             error = None
             output = result
-            
+
         except Exception as e:
             logger.error(f"Task {task['id']} failed: {e}")
             success = False
             error = str(e)
             output = None
             result = {}
-            
+
         duration = time.time() - start_time
-        
+
         return TaskResult(
             task_id=task["id"],
             success=success,
@@ -164,8 +163,8 @@ class AgentEvaluator:
             error=error,
             output=output
         )
-        
-    def _load_tasks(self, task_suite: str) -> List[Dict]:
+
+    def _load_tasks(self, task_suite: str) -> list[dict]:
         """
         Load task suite from JSON file.
         
@@ -181,19 +180,19 @@ class AgentEvaluator:
             Path(f"benchmarks/task_suites/{task_suite}"),
             Path(task_suite)
         ]
-        
+
         for path in suite_paths:
             if path.exists():
                 logger.debug(f"Loading tasks from {path}")
-                with open(path, 'r') as f:
+                with open(path) as f:
                     data = json.load(f)
                     tasks = data.get("tasks", [])
                     return list(tasks) if isinstance(tasks, list) else []
-        
+
         logger.error(f"Task suite not found: {task_suite}")
         return []
-        
-    def _validate_result(self, result: Any, expected: Dict) -> bool:
+
+    def _validate_result(self, result: Any, expected: dict) -> bool:
         """
         Validate task result against expected output.
         
@@ -207,7 +206,7 @@ class AgentEvaluator:
         if not expected:
             # No validation criteria, consider success if no exception
             return True
-        
+
         # Check result type
         if "type" in expected:
             expected_type = expected["type"]
@@ -215,34 +214,34 @@ class AgentEvaluator:
                 # Verify a function was called
                 if not isinstance(result, dict) or "function" not in result:
                     return False
-                    
+
                 # Check specific function if specified
                 if "function" in expected:
                     if result.get("function") != expected["function"]:
                         return False
-                        
+
                 # Check result contains expected string
                 if "result_contains" in expected:
                     result_str = str(result.get("result", ""))
                     if expected["result_contains"] not in result_str:
                         return False
-        
+
         # Check minimum steps
         if "min_steps" in expected:
             steps = len(result.get("steps", []))
             if steps < expected["min_steps"]:
                 return False
-        
+
         # Check tools used
         if "tools_used" in expected:
             tools = set(step.get("tool") for step in result.get("steps", []))
             expected_tools = set(expected["tools_used"])
             if not expected_tools.issubset(tools):
                 return False
-        
+
         return True
-        
-    def _aggregate_results(self, results: List[TaskResult]) -> BenchmarkResults:
+
+    def _aggregate_results(self, results: list[TaskResult]) -> BenchmarkResults:
         """
         Aggregate individual task results into summary metrics.
         
@@ -263,10 +262,10 @@ class AgentEvaluator:
                 failed_tasks=0,
                 results=[]
             )
-        
+
         successful = [r for r in results if r.success]
         total = len(results)
-        
+
         return BenchmarkResults(
             completion_rate=len(successful) / total,
             avg_context_usage=sum(r.context_tokens for r in results) / total,
@@ -277,7 +276,7 @@ class AgentEvaluator:
             failed_tasks=total - len(successful),
             results=results
         )
-        
+
     def save_baseline(self, results: BenchmarkResults, name: str) -> None:
         """
         Save results as baseline for regression testing.
@@ -286,7 +285,7 @@ class AgentEvaluator:
             name: Name for this baseline (e.g., "v1.0", "before_code_exec")
         """
         baseline_path = self.results_dir / f"{name}_baseline.json"
-        
+
         baseline_data = {
             "name": name,
             "timestamp": time.time(),
@@ -298,13 +297,13 @@ class AgentEvaluator:
             "successful_tasks": results.successful_tasks,
             "failed_tasks": results.failed_tasks
         }
-        
+
         with open(baseline_path, 'w') as f:
             json.dump(baseline_data, f, indent=2)
-        
+
         logger.info(f"Saved baseline to {baseline_path}")
-        
-    def load_baseline(self, name: str) -> Optional[Dict[str, Any]]:
+
+    def load_baseline(self, name: str) -> dict[str, Any] | None:
         """
         Load previously saved baseline.
         
@@ -315,20 +314,20 @@ class AgentEvaluator:
             Baseline data or None if not found
         """
         baseline_path = self.results_dir / f"{name}_baseline.json"
-        
+
         if not baseline_path.exists():
             logger.warning(f"Baseline not found: {name}")
             return None
-        
-        with open(baseline_path, 'r') as f:
+
+        with open(baseline_path) as f:
             data = json.load(f)
-            return cast(Optional[Dict[str, Any]], data if isinstance(data, dict) else None)
-            
+            return cast(dict[str, Any] | None, data if isinstance(data, dict) else None)
+
     def compare_to_baseline(
-        self, 
-        current: BenchmarkResults, 
+        self,
+        current: BenchmarkResults,
         baseline_name: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Compare current results to saved baseline.
         
@@ -340,10 +339,10 @@ class AgentEvaluator:
             Dictionary with comparison metrics
         """
         baseline = self.load_baseline(baseline_name)
-        
+
         if not baseline:
             return {"error": f"Baseline {baseline_name} not found"}
-        
+
         comparison = {
             "baseline_name": baseline_name,
             "completion_rate": {
@@ -351,7 +350,7 @@ class AgentEvaluator:
                 "baseline": baseline["completion_rate"],
                 "change": current.completion_rate - baseline["completion_rate"],
                 "pct_change": (
-                    (current.completion_rate - baseline["completion_rate"]) 
+                    (current.completion_rate - baseline["completion_rate"])
                     / baseline["completion_rate"] * 100
                     if baseline["completion_rate"] > 0 else 0
                 )
@@ -361,7 +360,7 @@ class AgentEvaluator:
                 "baseline": baseline["avg_context"],
                 "change": current.avg_context_usage - baseline["avg_context"],
                 "pct_change": (
-                    (current.avg_context_usage - baseline["avg_context"]) 
+                    (current.avg_context_usage - baseline["avg_context"])
                     / baseline["avg_context"] * 100
                     if baseline["avg_context"] > 0 else 0
                 )
@@ -371,16 +370,16 @@ class AgentEvaluator:
                 "baseline": baseline["avg_duration"],
                 "change": current.avg_duration - baseline["avg_duration"],
                 "pct_change": (
-                    (current.avg_duration - baseline["avg_duration"]) 
+                    (current.avg_duration - baseline["avg_duration"])
                     / baseline["avg_duration"] * 100
                     if baseline["avg_duration"] > 0 else 0
                 )
             }
         }
-        
+
         return comparison
-        
-    def print_comparison(self, comparison: Dict[str, Any]) -> None:
+
+    def print_comparison(self, comparison: dict[str, Any]) -> None:
         """
         Pretty print comparison results.
         
@@ -390,16 +389,16 @@ class AgentEvaluator:
         print("\n" + "="*60)
         print(f"Comparison to baseline: {comparison['baseline_name']}")
         print("="*60)
-        
+
         for metric, data in comparison.items():
             if metric == "baseline_name":
                 continue
-                
+
             print(f"\n{metric.replace('_', ' ').title()}:")
             print(f"  Current:  {data['current']:.2f}")
             print(f"  Baseline: {data['baseline']:.2f}")
             print(f"  Change:   {data['change']:+.2f} ({data['pct_change']:+.1f}%)")
-            
+
             # Determine if change is good or bad
             if metric == "context_usage":
                 status = "✓ Better" if data['change'] < 0 else "✗ Worse"
@@ -407,7 +406,7 @@ class AgentEvaluator:
                 status = "✓ Faster" if data['change'] < 0 else "✗ Slower"
             else:  # completion_rate
                 status = "✓ Better" if data['change'] > 0 else "✗ Worse"
-            
+
             print(f"  Status:   {status}")
-        
+
         print("\n" + "="*60)

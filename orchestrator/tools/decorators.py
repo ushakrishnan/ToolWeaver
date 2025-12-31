@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import inspect
 import logging
-from typing import Any, Callable, Dict, List, Literal, Optional, get_args, get_origin
+from collections.abc import Callable
+from typing import Any, Literal, get_args, get_origin
 
+from ..plugins.registry import get_registry, register_plugin
 from ..shared.models import ToolDefinition, ToolParameter
-from ..plugins.registry import PluginProtocol, register_plugin, get_registry
 
 logger = logging.getLogger(__name__)
 
@@ -14,15 +15,15 @@ class _FunctionDecoratorPlugin:
     """Collects functions decorated with @tool and exposes them via PluginProtocol."""
 
     def __init__(self) -> None:
-        self._functions: Dict[str, Callable[[Dict[str, Any]], Any]] = {}
-        self._defs: Dict[str, ToolDefinition] = {}
+        self._functions: dict[str, Callable[[dict[str, Any]], Any]] = {}
+        self._defs: dict[str, ToolDefinition] = {}
 
-    def get_tools(self) -> List[Dict[str, Any]]:
+    def get_tools(self) -> list[dict[str, Any]]:
         # Return ToolDefinitions as plain dicts for registry consumers
         # Use Pydantic model_dump for proper serialization of nested models
         return [td.model_dump() for td in self._defs.values()]
 
-    async def execute(self, tool_name: str, params: Dict[str, Any]) -> Any:
+    async def execute(self, tool_name: str, params: dict[str, Any]) -> Any:
         fn = self._functions.get(tool_name)
         if fn is None:
             raise ValueError(f"Unknown tool: {tool_name}")
@@ -31,7 +32,7 @@ class _FunctionDecoratorPlugin:
             return await result
         return result
 
-    def add(self, name: str, fn: Callable[[Dict[str, Any]], Any], td: ToolDefinition) -> None:
+    def add(self, name: str, fn: Callable[[dict[str, Any]], Any], td: ToolDefinition) -> None:
         if name in self._functions:
             logger.warning("Duplicate tool registration detected for '%s'; replacing previous entry", name)
         self._functions[name] = fn
@@ -52,14 +53,14 @@ def _ensure_plugin() -> _FunctionDecoratorPlugin:
 
 def tool(
     *,
-    name: Optional[str] = None,
+    name: str | None = None,
     description: str = "",
-    provider: Optional[str] = None,
+    provider: str | None = None,
     type: Literal["mcp", "function", "code_exec", "agent", "tool"] = "function",
-    parameters: Optional[List[ToolParameter]] = None,
-    input_schema: Optional[Dict[str, Any]] = None,
-    output_schema: Optional[Dict[str, Any]] = None,
-    metadata: Optional[Dict[str, Any]] = None,
+    parameters: list[ToolParameter] | None = None,
+    input_schema: dict[str, Any] | None = None,
+    output_schema: dict[str, Any] | None = None,
+    metadata: dict[str, Any] | None = None,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator to declare a function as a ToolWeaver tool.
 
@@ -90,14 +91,14 @@ def tool(
 
 def mcp_tool(
     *,
-    name: Optional[str] = None,
+    name: str | None = None,
     description: str = "",
-    provider: Optional[str] = "mcp",
+    provider: str | None = "mcp",
     domain: str = "general",
-    parameters: Optional[List[ToolParameter]] = None,
-    input_schema: Optional[Dict[str, Any]] = None,
-    output_schema: Optional[Dict[str, Any]] = None,
-    metadata: Optional[Dict[str, Any]] = None,
+    parameters: list[ToolParameter] | None = None,
+    input_schema: dict[str, Any] | None = None,
+    output_schema: dict[str, Any] | None = None,
+    metadata: dict[str, Any] | None = None,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator for MCP tools with auto parameter extraction from type hints."""
 
@@ -124,14 +125,14 @@ def mcp_tool(
 
 def a2a_agent(
     *,
-    name: Optional[str] = None,
+    name: str | None = None,
     description: str = "",
-    provider: Optional[str] = "a2a",
+    provider: str | None = "a2a",
     domain: str = "general",
-    parameters: Optional[List[ToolParameter]] = None,
-    input_schema: Optional[Dict[str, Any]] = None,
-    output_schema: Optional[Dict[str, Any]] = None,
-    metadata: Optional[Dict[str, Any]] = None,
+    parameters: list[ToolParameter] | None = None,
+    input_schema: dict[str, Any] | None = None,
+    output_schema: dict[str, Any] | None = None,
+    metadata: dict[str, Any] | None = None,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator for agent (A2A) tools with auto parameter extraction."""
 
@@ -161,12 +162,12 @@ def _register_bound_function(
     fn: Callable[..., Any],
     tool_def: ToolDefinition,
     expects_kwargs: bool,
-) -> Callable[[Dict[str, Any]], Any]:
+) -> Callable[[dict[str, Any]], Any]:
     plugin = _ensure_plugin()
 
     _validate_tool_signature(fn=fn, tool_def=tool_def, expects_kwargs=expects_kwargs)
 
-    async def bound(params: Dict[str, Any]) -> Any:
+    async def bound(params: dict[str, Any]) -> Any:
         call_params = params or {}
         try:
             result = fn(**call_params) if expects_kwargs else fn(call_params)
@@ -181,7 +182,7 @@ def _register_bound_function(
     bound.__tool_definition__ = tool_def  # type: ignore
 
     plugin.add(tool_def.name, bound, tool_def)
-    
+
     # Log tool registration
     logger.info(
         f"Tool registered: {tool_def.name}",
@@ -193,7 +194,7 @@ def _register_bound_function(
             "param_count": len(tool_def.parameters),
         }
     )
-    
+
     return bound
 
 
@@ -234,9 +235,9 @@ def _validate_tool_signature(*, fn: Callable[..., Any], tool_def: ToolDefinition
             )
 
 
-def _infer_parameters_from_signature(fn: Callable[..., Any]) -> List[ToolParameter]:
+def _infer_parameters_from_signature(fn: Callable[..., Any]) -> list[ToolParameter]:
     sig = inspect.signature(fn)
-    inferred: List[ToolParameter] = []
+    inferred: list[ToolParameter] = []
 
     for name, param in sig.parameters.items():
         if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
@@ -259,7 +260,7 @@ def _infer_parameters_from_signature(fn: Callable[..., Any]) -> List[ToolParamet
     return inferred
 
 
-def _infer_returns_schema(fn: Callable[..., Any]) -> Optional[Dict[str, Any]]:
+def _infer_returns_schema(fn: Callable[..., Any]) -> dict[str, Any] | None:
     annotation = getattr(fn, "__annotations__", {}).get("return", inspect._empty)
     if annotation is inspect._empty:
         return None
@@ -273,9 +274,9 @@ def _map_annotation_to_param_type(annotation: Any) -> str:
     origin = get_origin(annotation)
     args = get_args(annotation)
 
-    if origin is list or origin is List:
+    if origin is list or origin is list:
         return "array"
-    if origin is dict or origin is Dict:
+    if origin is dict or origin is dict:
         return "object"
     if origin in (tuple, set):
         return "array"
@@ -295,9 +296,9 @@ def _map_annotation_to_param_type(annotation: Any) -> str:
         return "number"
     if annotation in (bool,):
         return "boolean"
-    if annotation in (dict, Dict):
+    if annotation in (dict, dict):
         return "object"
-    if annotation in (list, List, tuple, set):
+    if annotation in (list, list, tuple, set):
         return "array"
 
     return "string"

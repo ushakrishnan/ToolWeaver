@@ -27,14 +27,15 @@ from __future__ import annotations
 
 import importlib
 import logging
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Literal, Optional
+from typing import Any
 
 import yaml
 from pydantic import ValidationError
 
-from ..shared.models import ToolDefinition, ToolParameter
 from ..plugins.registry import get_registry, register_plugin
+from ..shared.models import ToolDefinition, ToolParameter
 
 logger = logging.getLogger(__name__)
 
@@ -58,27 +59,27 @@ class _YAMLToolPlugin:
     """Plugin that loads tools from YAML configuration."""
 
     def __init__(self) -> None:
-        self._tools: Dict[str, ToolDefinition] = {}
-        self._workers: Dict[str, Callable[..., Any]] = {}
+        self._tools: dict[str, ToolDefinition] = {}
+        self._workers: dict[str, Callable[..., Any]] = {}
 
-    def get_tools(self) -> List[Dict[str, Any]]:
+    def get_tools(self) -> list[dict[str, Any]]:
         """Return all loaded tools as dicts."""
         return [td.model_dump() for td in self._tools.values()]
 
-    async def execute(self, tool_name: str, params: Dict[str, Any]) -> Any:
+    async def execute(self, tool_name: str, params: dict[str, Any]) -> Any:
         """Execute a YAML-loaded tool."""
         worker = self._workers.get(tool_name)
         if worker is None:
             raise ValueError(f"Unknown YAML tool: {tool_name}")
-        
+
         # Call worker with params
         result = worker(**params)
-        
+
         # Handle async workers
         import inspect
         if inspect.isawaitable(result):
             return await result
-        
+
         return result
 
     def add(self, tool_def: ToolDefinition, worker: Callable[..., Any]) -> None:
@@ -120,29 +121,29 @@ def load_tools_from_yaml(file_path: str | Path) -> int:
         >>> print(f"Loaded {count} tools")
     """
     file_path = Path(file_path)
-    
+
     logger.debug(f"Loading YAML tool definitions from {file_path}")
-    
+
     if not file_path.exists():
         raise YAMLLoaderError(f"YAML file not found: {file_path}")
-    
+
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             data = yaml.safe_load(f)
     except yaml.YAMLError as e:
         raise YAMLLoaderError(f"Failed to parse YAML: {e}") from e
-    
+
     if not isinstance(data, dict) or 'tools' not in data:
         raise YAMLValidationError("YAML must contain a 'tools' key with a list of tool definitions")
-    
+
     tools = data['tools']
     if not isinstance(tools, list):
         raise YAMLValidationError("'tools' must be a list")
-    
+
     plugin = _ensure_yaml_plugin()
     loaded = 0
     failed = 0
-    
+
     for tool_data in tools:
         try:
             tool_def, worker = _parse_tool_definition(tool_data)
@@ -161,9 +162,9 @@ def load_tools_from_yaml(file_path: str | Path) -> int:
             failed += 1
             logger.error(f"Failed to load tool '{tool_data.get('name', 'unknown')}': {e}")
             # Continue loading other tools
-    
+
     logger.info(
-        f"YAML tools loaded",
+        "YAML tools loaded",
         extra={
             "file_path": str(file_path),
             "loaded_count": loaded,
@@ -174,7 +175,7 @@ def load_tools_from_yaml(file_path: str | Path) -> int:
     return loaded
 
 
-def _parse_tool_definition(tool_data: Dict[str, Any]) -> tuple[ToolDefinition, Callable[..., Any]]:
+def _parse_tool_definition(tool_data: dict[str, Any]) -> tuple[ToolDefinition, Callable[..., Any]]:
     """
     Parse a single tool definition from YAML data.
     
@@ -191,10 +192,10 @@ def _parse_tool_definition(tool_data: Dict[str, Any]) -> tuple[ToolDefinition, C
     # Validate required fields
     if 'name' not in tool_data:
         raise YAMLValidationError("Tool definition must have a 'name' field")
-    
+
     if 'worker' not in tool_data:
         raise YAMLValidationError(f"Tool '{tool_data['name']}' must have a 'worker' field")
-    
+
     # Extract and validate parameters
     params = []
     if 'parameters' in tool_data:
@@ -215,7 +216,7 @@ def _parse_tool_definition(tool_data: Dict[str, Any]) -> tuple[ToolDefinition, C
                 raise YAMLValidationError(
                     f"Invalid parameter definition in tool '{tool_data['name']}': {e}"
                 ) from e
-    
+
     # Create ToolDefinition
     try:
         tool_def = ToolDefinition(
@@ -232,10 +233,10 @@ def _parse_tool_definition(tool_data: Dict[str, Any]) -> tuple[ToolDefinition, C
         )
     except ValidationError as e:
         raise YAMLValidationError(f"Invalid tool definition for '{tool_data['name']}': {e}") from e
-    
+
     # Resolve worker function
     worker = _resolve_worker(tool_data['worker'])
-    
+
     return tool_def, worker
 
 
@@ -273,26 +274,26 @@ def _resolve_worker(import_path: str) -> Callable[..., Any]:
             f"Invalid import path: {import_path}. "
             "Use 'module.function' or 'module:function' format"
         )
-    
+
     try:
         module = importlib.import_module(module_path)
     except ImportError as e:
         raise WorkerResolutionError(
             f"Failed to import module '{module_path}': {e}"
         ) from e
-    
+
     try:
         worker = getattr(module, func_name)
     except AttributeError as e:
         raise WorkerResolutionError(
             f"Module '{module_path}' has no function '{func_name}'"
         ) from e
-    
+
     if not callable(worker):
         raise WorkerResolutionError(
             f"'{import_path}' is not callable"
         )
-    
+
     # Cast worker to Callable to satisfy mypy
     return worker  # type: ignore[no-any-return]
 
@@ -313,21 +314,21 @@ def load_tools_from_directory(directory: str | Path, pattern: str = "*.yaml") ->
         >>> print(f"Loaded {count} tools from directory")
     """
     directory = Path(directory)
-    
+
     logger.debug(f"Loading YAML tools from directory: {directory} with pattern: {pattern}")
-    
+
     if not directory.exists():
         raise YAMLLoaderError(f"Directory not found: {directory}")
-    
+
     if not directory.is_dir():
         raise YAMLLoaderError(f"Not a directory: {directory}")
-    
+
     total_loaded = 0
     failed_files = 0
     yaml_files = list(directory.glob(pattern))
-    
+
     logger.debug(f"Found {len(yaml_files)} YAML files matching '{pattern}'")
-    
+
     for yaml_file in yaml_files:
         try:
             count = load_tools_from_yaml(yaml_file)
@@ -336,9 +337,9 @@ def load_tools_from_directory(directory: str | Path, pattern: str = "*.yaml") ->
             failed_files += 1
             logger.error(f"Failed to load {yaml_file}: {e}")
             # Continue with other files
-    
+
     logger.info(
-        f"YAML tools directory loaded",
+        "YAML tools directory loaded",
         extra={
             "directory": str(directory),
             "pattern": pattern,

@@ -29,15 +29,14 @@ Environment:
   AUDIT_LOG_RETENTION_DAYS - Keep audit logs (default: 365)
 """
 
+import difflib
 import json
 import logging
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Set
-from dataclasses import dataclass, asdict, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-import difflib
-import hashlib
+from pathlib import Path
+from typing import Any
 
 from .skill_library import Skill
 
@@ -97,7 +96,7 @@ class Comment:
     author_name: str
     timestamp: str  # ISO timestamp
     text: str
-    line_number: Optional[int] = None  # For code-specific comments
+    line_number: int | None = None  # For code-specific comments
     resolved: bool = False
 
 
@@ -111,7 +110,7 @@ class SkillChange:
     changed_by: str
     summary: str  # Brief change description
     code_diff: str = ""  # Unified diff format
-    metadata_diff: Dict[str, Any] = field(default_factory=dict)
+    metadata_diff: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -125,24 +124,24 @@ class ApprovalRequest:
     submitted_at: str  # ISO timestamp
     status: ApprovalStatus
     required_approvals: int = 1
-    approvals: List[Approval] = field(default_factory=list)
-    rejections: List[Approval] = field(default_factory=list)
-    comments: List[Comment] = field(default_factory=list)
+    approvals: list[Approval] = field(default_factory=list)
+    rejections: list[Approval] = field(default_factory=list)
+    comments: list[Comment] = field(default_factory=list)
     description: str = ""
     target_org: str = ""  # Registry org for publication
-    
+
     def approval_count(self) -> int:
         """Number of approvals received."""
         return len([a for a in self.approvals if a.approved])
-    
+
     def rejection_count(self) -> int:
         """Number of rejections."""
         return len(self.rejections)
-    
+
     def is_approved(self) -> bool:
         """Check if approval threshold met."""
         return self.approval_count() >= self.required_approvals
-    
+
     def is_rejected(self) -> bool:
         """Check if rejected."""
         return self.rejection_count() > 0
@@ -158,10 +157,10 @@ class AuditLogEntry:
     actor_name: str
     resource_type: str  # "skill", "approval", "comment"
     resource_id: str
-    details: Dict[str, Any] = field(default_factory=dict)
-    ip_address: Optional[str] = None
-    
-    def to_dict(self) -> Dict[str, Any]:
+    details: dict[str, Any] = field(default_factory=dict)
+    ip_address: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dict with action as string."""
         data = asdict(self)
         data['action'] = self.action.value
@@ -170,12 +169,12 @@ class AuditLogEntry:
 
 class ApprovalManager:
     """Manage skill approval workflows."""
-    
-    def __init__(self, min_approvals: int = 1, approver_roles: Optional[List[str]] = None):
+
+    def __init__(self, min_approvals: int = 1, approver_roles: list[str] | None = None):
         """Initialize approval manager."""
         self.min_approvals = min_approvals
         self.approver_roles = approver_roles or ["reviewer", "admin"]
-    
+
     def request_approval(self, skill: Skill, submitter_id: str, submitter_name: str,
                         description: str = "", target_org: str = "") -> ApprovalRequest:
         """
@@ -192,7 +191,7 @@ class ApprovalManager:
             ApprovalRequest with unique ID
         """
         import uuid
-        
+
         request = ApprovalRequest(
             id=str(uuid.uuid4()),
             skill_id=skill.name,
@@ -205,10 +204,10 @@ class ApprovalManager:
             description=description,
             target_org=target_org,
         )
-        
+
         # Save approval request
         self._save_approval(request)
-        
+
         # Audit log
         self._audit_log(
             AuditAction.APPROVAL_REQUESTED,
@@ -218,10 +217,10 @@ class ApprovalManager:
             request.id,
             {'skill': skill.name, 'version': skill.version}
         )
-        
+
         logger.info(f"Approval requested for {skill.name} v{skill.version}")
         return request
-    
+
     def provide_approval(self, approval_id: str, approver_id: str, approver_name: str,
                         approver_role: str, approved: bool, comment: str = "") -> ApprovalRequest:
         """
@@ -243,11 +242,11 @@ class ApprovalManager:
         """
         if approver_role not in self.approver_roles:
             raise ValueError(f"Invalid role: {approver_role}")
-        
+
         request = self._load_approval(approval_id)
         if not request:
             raise ValueError(f"Approval not found: {approval_id}")
-        
+
         approval = Approval(
             approver_id=approver_id,
             approver_name=approver_name,
@@ -256,21 +255,21 @@ class ApprovalManager:
             approved=approved,
             comment=comment,
         )
-        
+
         if approved:
             request.approvals.append(approval)
         else:
             request.rejections.append(approval)
-        
+
         # Update status
         if request.rejection_count() > 0:
             request.status = ApprovalStatus.REJECTED
         elif request.is_approved():
             request.status = ApprovalStatus.APPROVED
-        
+
         # Save updated request
         self._save_approval(request)
-        
+
         # Audit log
         action = AuditAction.APPROVAL_PROVIDED if approved else AuditAction.APPROVAL_REJECTED
         self._audit_log(
@@ -281,12 +280,12 @@ class ApprovalManager:
             approval_id,
             {'approved': approved, 'comment': comment}
         )
-        
+
         logger.info(f"Approval {'provided' if approved else 'rejected'} for {request.skill_id}")
         return request
-    
+
     def add_comment(self, approval_id: str, author_id: str, author_name: str,
-                   text: str, line_number: Optional[int] = None) -> Comment:
+                   text: str, line_number: int | None = None) -> Comment:
         """
         Add comment to approval request.
         
@@ -301,11 +300,11 @@ class ApprovalManager:
             Comment object
         """
         import uuid
-        
+
         request = self._load_approval(approval_id)
         if not request:
             raise ValueError(f"Approval not found: {approval_id}")
-        
+
         comment = Comment(
             id=str(uuid.uuid4()),
             author_id=author_id,
@@ -314,10 +313,10 @@ class ApprovalManager:
             text=text,
             line_number=line_number,
         )
-        
+
         request.comments.append(comment)
         self._save_approval(request)
-        
+
         # Audit log
         self._audit_log(
             AuditAction.COMMENT_ADDED,
@@ -327,14 +326,14 @@ class ApprovalManager:
             comment.id,
             {'approval_id': approval_id, 'text': text[:100]}
         )
-        
+
         return comment
-    
-    def get_approval(self, approval_id: str) -> Optional[ApprovalRequest]:
+
+    def get_approval(self, approval_id: str) -> ApprovalRequest | None:
         """Get approval request by ID."""
         return self._load_approval(approval_id)
-    
-    def get_pending_approvals(self) -> List[ApprovalRequest]:
+
+    def get_pending_approvals(self) -> list[ApprovalRequest]:
         """Get all pending approval requests."""
         approvals = []
         for path in _APPROVAL_DIR.glob("*.json"):
@@ -345,8 +344,8 @@ class ApprovalManager:
             except Exception as e:
                 logger.error(f"Failed to load approval {path}: {e}")
         return approvals
-    
-    def get_approvals_for_user(self, user_id: str) -> List[ApprovalRequest]:
+
+    def get_approvals_for_user(self, user_id: str) -> list[ApprovalRequest]:
         """Get approval requests submitted by user."""
         approvals = []
         for path in _APPROVAL_DIR.glob("*.json"):
@@ -357,7 +356,7 @@ class ApprovalManager:
             except Exception as e:
                 logger.error(f"Failed to load approval {path}: {e}")
         return approvals
-    
+
     def publish_approved_skill(self, approval_id: str) -> bool:
         """
         Mark approved skill as published.
@@ -371,14 +370,14 @@ class ApprovalManager:
         request = self._load_approval(approval_id)
         if not request:
             return False
-        
+
         if not request.is_approved():
             logger.warning(f"Approval {approval_id} not yet fully approved")
             return False
-        
+
         request.status = ApprovalStatus.PUBLISHED
         self._save_approval(request)
-        
+
         self._audit_log(
             AuditAction.SKILL_PUBLISHED,
             'system',
@@ -387,9 +386,9 @@ class ApprovalManager:
             request.skill_id,
             {'version': request.skill_version}
         )
-        
+
         return True
-    
+
     def _save_approval(self, request: ApprovalRequest) -> None:
         """Save approval request to disk."""
         path = _APPROVAL_DIR / f"{request.id}.json"
@@ -398,30 +397,30 @@ class ApprovalManager:
         data['approvals'] = [asdict(a) for a in request.approvals]
         data['rejections'] = [asdict(a) for a in request.rejections]
         data['comments'] = [asdict(c) for c in request.comments]
-        
+
         path.write_text(json.dumps(data, indent=2))
-    
-    def _load_approval(self, approval_id: str) -> Optional[ApprovalRequest]:
+
+    def _load_approval(self, approval_id: str) -> ApprovalRequest | None:
         """Load approval request from disk."""
         path = _APPROVAL_DIR / f"{approval_id}.json"
         return self._load_approval_from_file(path)
-    
-    def _load_approval_from_file(self, path: Path) -> Optional[ApprovalRequest]:
+
+    def _load_approval_from_file(self, path: Path) -> ApprovalRequest | None:
         """Load approval from file."""
         if not path.exists():
             return None
-        
+
         try:
             data = json.loads(path.read_text())
-            
+
             # Reconstruct objects
             approvals = [Approval(**a) for a in data.get('approvals', [])]
             rejections = [Approval(**r) for r in data.get('rejections', [])]
             comments = [Comment(**c) for c in data.get('comments', [])]
-            
+
             status_str = data.get('status', 'pending')
             status = ApprovalStatus[status_str.upper()] if isinstance(status_str, str) else ApprovalStatus(status_str)
-            
+
             return ApprovalRequest(
                 id=data['id'],
                 skill_id=data['skill_id'],
@@ -440,12 +439,12 @@ class ApprovalManager:
         except Exception as e:
             logger.error(f"Failed to load approval from {path}: {e}")
             return None
-    
+
     def _audit_log(self, action: AuditAction, actor_id: str, actor_name: str,
-                  resource_type: str, resource_id: str, details: Optional[Dict[str, Any]] = None) -> None:
+                  resource_type: str, resource_id: str, details: dict[str, Any] | None = None) -> None:
         """Create audit log entry."""
         import uuid
-        
+
         entry = AuditLogEntry(
             id=str(uuid.uuid4()),
             timestamp=datetime.utcnow().isoformat(),
@@ -456,16 +455,16 @@ class ApprovalManager:
             resource_id=resource_id,
             details=details or {},
         )
-        
+
         path = _AUDIT_DIR / f"{entry.id}.json"
         path.write_text(json.dumps(entry.to_dict(), indent=2))
-        
+
         logger.debug(f"Audit: {action.value} by {actor_name}")
 
 
 class ChangeTracker:
     """Track and diff skill changes."""
-    
+
     @staticmethod
     def record_change(skill: Skill, version_from: str, changed_by: str,
                      old_code: str = "", summary: str = "") -> SkillChange:
@@ -482,15 +481,14 @@ class ChangeTracker:
         Returns:
             SkillChange object
         """
-        import uuid
-        
+
         # Generate code diff
         old_lines = old_code.splitlines(keepends=True) if old_code else []
         new_lines = skill.code_path.splitlines(keepends=True) if isinstance(skill.code_path, str) else []
-        
+
         diff_lines = list(difflib.unified_diff(old_lines, new_lines, lineterm=''))
         code_diff = '\n'.join(diff_lines)
-        
+
         change = SkillChange(
             skill_id=skill.name,
             version_from=version_from,
@@ -500,21 +498,21 @@ class ChangeTracker:
             summary=summary or f"Updated to {skill.version}",
             code_diff=code_diff,
         )
-        
+
         # Save change record
         path = _CHANGE_DIR / f"{skill.name}_{skill.version}.json"
         data = asdict(change)
         path.write_text(json.dumps(data, indent=2))
-        
+
         logger.info(f"Recorded change for {skill.name}: {version_from} -> {skill.version}")
         return change
-    
+
     @staticmethod
-    def get_change_history(skill_id: str) -> List[SkillChange]:
+    def get_change_history(skill_id: str) -> list[SkillChange]:
         """Get all changes for a skill."""
         changes = []
         pattern = f"{skill_id}_*.json"
-        
+
         for path in _CHANGE_DIR.glob(pattern):
             try:
                 data = json.loads(path.read_text())
@@ -531,36 +529,36 @@ class ChangeTracker:
                 changes.append(change)
             except Exception as e:
                 logger.error(f"Failed to load change {path}: {e}")
-        
+
         # Sort by version date
         return sorted(changes, key=lambda c: c.changed_at, reverse=True)
-    
+
     @staticmethod
     def get_code_diff(skill_id: str, version1: str, version2: str) -> str:
         """Get diff between two skill versions."""
         path1 = _CHANGE_DIR / f"{skill_id}_{version1}.json"
         path2 = _CHANGE_DIR / f"{skill_id}_{version2}.json"
-        
+
         if not path1.exists() or not path2.exists():
             return ""
-        
+
         data1 = json.loads(path1.read_text())
         data2 = json.loads(path2.read_text())
-        
+
         # Return the diff from version1 to version2
         if data2.get('version_from') == version1:
             value = data2.get('code_diff', '')
             return value if isinstance(value, str) else ""
-        
+
         return ""
 
 
 class AuditLog:
     """Query and report audit logs."""
-    
+
     @staticmethod
-    def get_logs(resource_type: Optional[str] = None, action: Optional[AuditAction] = None,
-                actor_id: Optional[str] = None, days: int = 30) -> List[AuditLogEntry]:
+    def get_logs(resource_type: str | None = None, action: AuditAction | None = None,
+                actor_id: str | None = None, days: int = 30) -> list[AuditLogEntry]:
         """
         Query audit logs with filters.
         
@@ -575,28 +573,28 @@ class AuditLog:
         """
         cutoff_date = (datetime.utcnow() - timedelta(days=days)).isoformat()
         entries = []
-        
+
         for path in _AUDIT_DIR.glob("*.json"):
             try:
                 data = json.loads(path.read_text())
                 entry_date = data.get('timestamp', '')
-                
+
                 # Filter by date
                 if entry_date < cutoff_date:
                     continue
-                
+
                 # Filter by resource type
                 if resource_type and data.get('resource_type') != resource_type:
                     continue
-                
+
                 # Filter by action
                 if action and data.get('action') != action.value:
                     continue
-                
+
                 # Filter by actor
                 if actor_id and data.get('actor_id') != actor_id:
                     continue
-                
+
                 # Reconstruct entry
                 entry = AuditLogEntry(
                     id=data['id'],
@@ -611,26 +609,26 @@ class AuditLog:
                 entries.append(entry)
             except Exception as e:
                 logger.error(f"Failed to load audit log {path}: {e}")
-        
+
         # Sort by timestamp, most recent first
         return sorted(entries, key=lambda e: e.timestamp, reverse=True)
-    
+
     @staticmethod
-    def generate_report(days: int = 30) -> Dict[str, Any]:
+    def generate_report(days: int = 30) -> dict[str, Any]:
         """Generate audit report for specified period."""
         entries = AuditLog.get_logs(days=days)
-        
+
         # Count by action
-        action_counts: Dict[str, int] = {}
+        action_counts: dict[str, int] = {}
         for entry in entries:
             action = entry.action.value
             action_counts[action] = action_counts.get(action, 0) + 1
-        
+
         # Count by actor
-        actor_counts: Dict[str, int] = {}
+        actor_counts: dict[str, int] = {}
         for entry in entries:
             actor_counts[entry.actor_name] = actor_counts.get(entry.actor_name, 0) + 1
-        
+
         return {
             'period_days': days,
             'total_entries': len(entries),
@@ -668,22 +666,22 @@ def provide_approval(approval_id: str, approver_id: str, approver_name: str,
 
 
 def add_approval_comment(approval_id: str, author_id: str, author_name: str,
-                        text: str, line_number: Optional[int] = None) -> Comment:
+                        text: str, line_number: int | None = None) -> Comment:
     """Add comment to approval."""
     return _get_approval_manager().add_comment(approval_id, author_id, author_name, text, line_number)
 
 
-def get_approval(approval_id: str) -> Optional[ApprovalRequest]:
+def get_approval(approval_id: str) -> ApprovalRequest | None:
     """Get approval by ID."""
     return _get_approval_manager().get_approval(approval_id)
 
 
-def get_pending_approvals() -> List[ApprovalRequest]:
+def get_pending_approvals() -> list[ApprovalRequest]:
     """Get pending approvals."""
     return _get_approval_manager().get_pending_approvals()
 
 
-def get_my_approvals(user_id: str) -> List[ApprovalRequest]:
+def get_my_approvals(user_id: str) -> list[ApprovalRequest]:
     """Get approvals submitted by user."""
     return _get_approval_manager().get_approvals_for_user(user_id)
 
@@ -699,7 +697,7 @@ def record_skill_change(skill: Skill, version_from: str, changed_by: str,
     return ChangeTracker.record_change(skill, version_from, changed_by, old_code, summary)
 
 
-def get_skill_change_history(skill_id: str) -> List[SkillChange]:
+def get_skill_change_history(skill_id: str) -> list[SkillChange]:
     """Get change history for skill."""
     return ChangeTracker.get_change_history(skill_id)
 
@@ -709,12 +707,12 @@ def get_code_diff(skill_id: str, version1: str, version2: str) -> str:
     return ChangeTracker.get_code_diff(skill_id, version1, version2)
 
 
-def get_audit_logs(resource_type: Optional[str] = None, action: Optional[AuditAction] = None,
-                  actor_id: Optional[str] = None, days: int = 30) -> List[AuditLogEntry]:
+def get_audit_logs(resource_type: str | None = None, action: AuditAction | None = None,
+                  actor_id: str | None = None, days: int = 30) -> list[AuditLogEntry]:
     """Get audit logs."""
     return AuditLog.get_logs(resource_type, action, actor_id, days)
 
 
-def generate_audit_report(days: int = 30) -> Dict[str, Any]:
+def generate_audit_report(days: int = 30) -> dict[str, Any]:
     """Generate audit report."""
     return AuditLog.generate_report(days)

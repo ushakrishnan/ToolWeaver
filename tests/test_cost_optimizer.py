@@ -4,12 +4,10 @@ Tests for cost-benefit tool selection.
 
 import pytest
 
-from orchestrator.shared.models import ToolDefinition, ToolParameter
 from orchestrator.selection.cost_optimizer import (
     CostOptimizer,
-    ToolMetrics,
-    EfficiencyScore,
 )
+from orchestrator.shared.models import ToolDefinition
 
 
 @pytest.fixture

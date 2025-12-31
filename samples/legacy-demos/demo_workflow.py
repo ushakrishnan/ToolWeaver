@@ -11,19 +11,9 @@ Demonstrates Phase 8 workflow composition features:
 import asyncio
 from datetime import datetime, timezone
 
-from orchestrator.workflow import (
-    WorkflowTemplate,
-    WorkflowStep,
-    WorkflowContext,
-    WorkflowExecutor
-)
-from orchestrator.workflow_library import (
-    PatternDetector,
-    WorkflowLibrary,
-    ToolSequence
-)
 from orchestrator.monitoring import ToolCallMetric
-
+from orchestrator.workflow import WorkflowContext, WorkflowExecutor, WorkflowStep, WorkflowTemplate
+from orchestrator.workflow_library import PatternDetector, WorkflowLibrary
 
 # =============================================================================
 # Demo 1: Basic Workflow Execution
@@ -34,7 +24,7 @@ async def demo_basic_workflow():
     print("\n" + "=" * 80)
     print("DEMO 1: Basic Workflow Execution")
     print("=" * 80)
-    
+
     # Create a simple deployment workflow
     workflow = WorkflowTemplate(
         name="simple_deploy",
@@ -67,53 +57,53 @@ async def demo_basic_workflow():
             )
         ]
     )
-    
+
     print(f"\n> Created workflow: {workflow.name}")
     print(f"  Steps: {len(workflow.steps)}")
-    print(f"  Dependencies: build -> test -> push")
-    
+    print("  Dependencies: build -> test -> push")
+
     # Create context with variables
     context = WorkflowContext(initial_variables={
         "image_name": "myapp",
         "version": "1.2.3",
         "registry": "docker.io/myorg"
     })
-    
+
     print(f"\n> Created context with {len(context.variables)} variables")
-    
+
     # Mock tool execution (in real use, these would be actual tool calls)
     async def mock_tool_executor(step: WorkflowStep, context: WorkflowContext):
         """Mock tool execution for demo"""
         await asyncio.sleep(0.1)  # Simulate work
-        
+
         if step.tool_name == "docker_build":
             return {"image_id": "sha256:abc123", "size_mb": 125}
         elif step.tool_name == "run_tests":
             return {"passed": 42, "failed": 0, "duration": 15.3}
         elif step.tool_name == "docker_push":
             return {"pushed": True, "url": f"{context.variables['registry']}/myapp:1.2.3"}
-        
+
         return {}
-    
+
     # Execute workflow
     executor = WorkflowExecutor()
     print("\n> Executing workflow...")
-    
+
     # Note: In real usage, you'd pass tool_registry with actual tools
     # For demo, we'll manually execute steps
     for step in workflow.steps:
         print(f"  - Running: {step.step_id} ({step.tool_name})")
         result = await mock_tool_executor(step, context)
         context.set_result(step.step_id, result)
-    
+
     print("\n> Workflow completed successfully!")
-    
+
     # Show results
     build_result = context.get_result("build")
     test_result = context.get_result("test")
     push_result = context.get_result("push")
-    
-    print(f"\nResults:")
+
+    print("\nResults:")
     print(f"  Build: {build_result['image_id'][:16]}... ({build_result['size_mb']} MB)")
     print(f"  Tests: {test_result['passed']} passed, {test_result['failed']} failed")
     print(f"  Push: {push_result['url']}")
@@ -128,7 +118,7 @@ async def demo_parallel_execution():
     print("\n" + "=" * 80)
     print("DEMO 2: Parallel Execution")
     print("=" * 80)
-    
+
     workflow = WorkflowTemplate(
         name="multi_region_deploy",
         description="Deploy to multiple regions in parallel",
@@ -175,16 +165,16 @@ async def demo_parallel_execution():
             )
         ]
     )
-    
+
     print(f"\n> Created workflow: {workflow.name}")
     print(f"  Steps: {len(workflow.steps)}")
-    print(f"\nExecution plan:")
-    print(f"  Level 0: build")
-    print(f"  Level 1: deploy_us, deploy_eu, deploy_asia (parallel)")
-    print(f"  Level 2: verify")
-    
+    print("\nExecution plan:")
+    print("  Level 0: build")
+    print("  Level 1: deploy_us, deploy_eu, deploy_asia (parallel)")
+    print("  Level 2: verify")
+
     # In real execution, the 3 deploy steps would run concurrently
-    print(f"\n> Parallel execution saves ~66% time vs sequential!")
+    print("\n> Parallel execution saves ~66% time vs sequential!")
 
 
 # =============================================================================
@@ -196,16 +186,16 @@ def demo_pattern_detection():
     print("\n" + "=" * 80)
     print("DEMO 3: Pattern Detection")
     print("=" * 80)
-    
+
     # Create sample logs (simulating real usage)
     base_time = datetime.now(timezone.utc)
-    
+
     # Create logs for a common pattern (repeated 5 times)
     logs = []
     for i in range(5):
         session_id = f"session{i}"
         timestamp_offset = i * 60  # 1 minute apart
-        
+
         # Pattern: list_issues → create_pr → notify_slack
         logs.extend([
             ToolCallMetric(
@@ -230,21 +220,21 @@ def demo_pattern_detection():
                 execution_id=session_id
             )
         ])
-    
+
     print(f"\n> Created {len(logs)} simulated tool call logs")
-    print(f"  Sessions: 5")
-    print(f"  Pattern: github_list_issues -> github_create_pr -> slack_send_message")
-    
+    print("  Sessions: 5")
+    print("  Pattern: github_list_issues -> github_create_pr -> slack_send_message")
+
     # Detect patterns
     detector = PatternDetector(
         min_frequency=3,
         min_success_rate=0.8
     )
-    
+
     patterns = detector.analyze_logs(logs, max_sequence_length=3)
-    
+
     print(f"\n> Detected {len(patterns)} patterns")
-    
+
     # Show top patterns
     for i, pattern in enumerate(patterns[:3], 1):
         print(f"\n  Pattern {i}:")
@@ -252,16 +242,16 @@ def demo_pattern_detection():
         print(f"    Frequency: {pattern.frequency}")
         print(f"    Success rate: {pattern.success_rate:.1%}")
         print(f"    Avg duration: {pattern.avg_duration_ms:.0f}ms")
-    
+
     # Convert pattern to workflow
     if patterns:
         workflow = detector.suggest_workflow(
             tools=patterns[0].tools,
             patterns=patterns
         )
-        
+
         if workflow:
-            print(f"\n> Generated workflow from pattern:")
+            print("\n> Generated workflow from pattern:")
             print(f"  Name: {workflow.name}")
             print(f"  Steps: {len(workflow.steps)}")
 
@@ -275,28 +265,28 @@ def demo_workflow_library():
     print("\n" + "=" * 80)
     print("DEMO 4: Workflow Library")
     print("=" * 80)
-    
+
     # Create library
     library = WorkflowLibrary()
-    
-    print(f"\n> Created workflow library")
-    
+
+    print("\n> Created workflow library")
+
     # List built-in workflows
     workflows = library.list_all()
-    print(f"\nBuilt-in workflows:")
+    print("\nBuilt-in workflows:")
     for wf in workflows:
         print(f"  - {wf.name}")
         print(f"    {wf.description}")
         print(f"    Steps: {len(wf.steps)}")
-    
+
     # Search workflows
-    print(f"\nSearch for 'github' workflows:")
+    print("\nSearch for 'github' workflows:")
     results = library.search(query="github")
     for wf in results:
         print(f"  - {wf.name}")
-    
+
     # Suggest workflows for tools
-    print(f"\nSuggest workflows for tools: [github_list_issues, github_create_pr]")
+    print("\nSuggest workflows for tools: [github_list_issues, github_create_pr]")
     suggestions = library.suggest_for_tools([
         "github_list_issues",
         "github_create_pr"
@@ -304,7 +294,7 @@ def demo_workflow_library():
     for wf in suggestions:
         print(f"  - {wf.name}")
         print(f"    Matches {len(wf.steps)} of your tools")
-    
+
     # Register custom workflow
     custom_workflow = WorkflowTemplate(
         name="custom_deployment",
@@ -323,10 +313,10 @@ def demo_workflow_library():
             )
         ]
     )
-    
+
     library.register(custom_workflow)
     print(f"\n> Registered custom workflow: {custom_workflow.name}")
-    
+
     # Show updated library
     all_workflows = library.list_all()
     custom_workflows = [wf for wf in all_workflows if not wf.name.startswith("github_") and not wf.name.startswith("slack_")]
@@ -343,7 +333,7 @@ def demo_variable_substitution():
     print("\n" + "=" * 80)
     print("DEMO 5: Variable Substitution")
     print("=" * 80)
-    
+
     # Create context with nested data
     context = WorkflowContext(initial_variables={
         "env": "production",
@@ -353,7 +343,7 @@ def demo_variable_substitution():
             "retries": 3
         }
     })
-    
+
     # Add step results
     context.set_result("build", {
         "image_id": "sha256:abc123",
@@ -362,17 +352,17 @@ def demo_variable_substitution():
             "size": 125
         }
     })
-    
+
     print("\n> Context variables:")
     print(f"  env: {context.variables['env']}")
     print(f"  replicas: {context.variables['replicas']}")
     print(f"  config: {context.variables['config']}")
-    
+
     print("\n> Step results:")
     build_result = context.get_result('build')
     print(f"  build.image_id: {build_result['image_id']}")
     print(f"  build.metadata.version: {build_result['metadata']['version']}")
-    
+
     # Test substitution
     template = {
         "environment": "{{env}}",
@@ -381,13 +371,13 @@ def demo_variable_substitution():
         "replicas": "{{replicas}}",
         "timeout": "{{config.timeout}}s"
     }
-    
+
     print("\nTemplate:")
     for key, value in template.items():
         print(f"  {key}: {value}")
-    
+
     result = context.substitute(template)
-    
+
     print("\nAfter substitution:")
     for key, value in result.items():
         print(f"  {key}: {value}")
@@ -402,14 +392,14 @@ async def main():
     print("\n" + "=" * 80)
     print("WORKFLOW SYSTEM DEMO")
     print("=" * 80)
-    
+
     # Run demos
     await demo_basic_workflow()
     await demo_parallel_execution()
     demo_pattern_detection()
     demo_workflow_library()
     demo_variable_substitution()
-    
+
     # Summary
     print("\n" + "=" * 80)
     print("DEMO COMPLETE")
@@ -420,12 +410,12 @@ async def main():
     print("  3. Pattern detection from usage logs")
     print("  4. Workflow library management")
     print("  5. Variable substitution and data flow")
-    
+
     print("\nNext Steps:")
     print("  - Read docs/WORKFLOW_USAGE_GUIDE.md for complete API")
     print("  - Check docs/PHASE8_WORKFLOW_ARCHITECTURE.md for details")
     print("  - Run tests: pytest tests/test_workflow*.py -v")
-    
+
     print("\n" + "=" * 80 + "\n")
 
 

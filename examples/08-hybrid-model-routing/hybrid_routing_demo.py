@@ -12,15 +12,13 @@ Optimize cost and performance by routing tasks to appropriate models
 """
 
 import asyncio
-from pathlib import Path
 import sys
-from typing import Dict, List, Any
 from dataclasses import dataclass
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from orchestrator import mcp_tool, search_tools
-
 
 # ============================================================
 # Model Routing Infrastructure
@@ -38,11 +36,11 @@ class ModelRoute:
 
 class HybridRouter:
     """Route tasks to appropriate models."""
-    
+
     @staticmethod
     def analyze_task(task: str) -> ModelRoute:
         """Determine best model for a task."""
-        
+
         # Routing rules
         if any(x in task.lower() for x in ["plan", "strategy", "complex", "reasoning"]):
             return ModelRoute(
@@ -132,11 +130,11 @@ async def main():
     print("EXAMPLE 08: Hybrid Model Routing")
     print("="*70)
     print()
-    
+
     print("Scenario: Process 100 Receipts")
     print("-" * 70)
     print()
-    
+
     # Approach 1: Large model for everything
     print("Approach 1: Large Model (GPT-4o) for Everything")
     print("  Requests: 100")
@@ -145,36 +143,36 @@ async def main():
     print(f"  Cost: ${large_cost:.2f}")
     print(f"  Time: {large_time:.1f}s")
     print()
-    
+
     # Approach 2: Hybrid routing
     print("Approach 2: Hybrid Routing (GPT-4o Planner + Phi-3 Workers)")
     plan_cost = 0.03
     worker_cost = 100 * 4 * 0.0001  # 4 steps per receipt
     total_cost = plan_cost + worker_cost
     hybrid_time = 2.0 + (100 * 4 * 0.05)  # Plan + parallel steps
-    
+
     print(f"  Planning: 1 × GPT-4o = ${plan_cost:.2f}")
     print(f"  Execution: 400 × Phi-3 = ${worker_cost:.2f}")
     print(f"  Total cost: ${total_cost:.2f}")
     print(f"  Time: {hybrid_time:.1f}s")
     print()
-    
+
     # Comparison
     savings = large_cost - total_cost
     savings_pct = (savings / large_cost) * 100
     speedup = large_time / hybrid_time
-    
+
     print("Comparison:")
     print(f"  Cost savings: ${savings:.2f} ({savings_pct:.1f}%)")
     print(f"  Time speedup: {speedup:.1f}x faster")
     print()
-    
+
     # Routing decisions
     print("Routing Decisions:")
     print("-" * 70)
-    
+
     router = HybridRouter()
-    
+
     tasks = [
         "Create execution plan for processing",
         "Extract text from receipt image",
@@ -183,25 +181,25 @@ async def main():
         "Validate totals and amounts",
         "Handle complex edge case",
     ]
-    
+
     total_route_cost = 0.0
     large_model_count = 0
     small_model_count = 0
-    
+
     for task in tasks:
         route = router.analyze_task(task)
         total_route_cost += route.cost
-        
+
         if route.model == "GPT-4o":
             large_model_count += 1
         else:
             small_model_count += 1
-        
+
         print(f"\n  Task: {task}")
         print(f"    → Model: {route.model}")
         print(f"    → Reason: {route.reason}")
         print(f"    → Cost: ${route.cost:.4f}")
-    
+
     print()
     print()
     print("="*70)
@@ -212,7 +210,7 @@ async def main():
     print(f"  Small Models (Phi-3):    {small_model_count} tasks")
     print(f"  Cost per workflow:       ${total_route_cost:.4f}")
     print()
-    
+
     # Show tool discovery
     print("Available Tools:")
     print("-" * 70)
@@ -223,11 +221,11 @@ async def main():
         if domain not in by_domain:
             by_domain[domain] = 0
         by_domain[domain] += 1
-    
+
     for domain, count in sorted(by_domain.items()):
         print(f"  {domain:15} - {count} tools")
     print()
-    
+
     print("="*70)
     print("✓ Hybrid routing demonstration complete!")
     print("="*70)

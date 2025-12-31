@@ -1,21 +1,22 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any
 
 from ..plugins.registry import get_registry
-from ..shared.models import ToolDefinition, ToolCatalog
+from ..shared.models import ToolCatalog, ToolDefinition
 
 logger = logging.getLogger(__name__)
 
 
-def _collect_all_tool_defs() -> List[ToolDefinition]:
+def _collect_all_tool_defs() -> list[ToolDefinition]:
     """Collect all tool definitions from all plugins, normalized to ToolDefinition.
 
     Plugins return lists of dicts; we validate to ToolDefinition for consistent access.
     """
     registry = get_registry()
-    all_tools: List[ToolDefinition] = []
+    all_tools: list[ToolDefinition] = []
     for _, tools in registry.get_all_tools().items():
         for t in tools:
             try:
@@ -35,7 +36,7 @@ def _format_tool_view(
     *,
     detail_level: str = "summary",
     include_examples: bool = False,
-) -> Union[ToolDefinition, Dict[str, Any]]:
+) -> ToolDefinition | dict[str, Any]:
     """Project a tool definition to a lightweight view for progressive loading."""
     if detail_level is not None and detail_level not in DETAIL_LEVELS:
         raise ValueError(f"detail_level must be one of {sorted(DETAIL_LEVELS)}")
@@ -43,7 +44,7 @@ def _format_tool_view(
     if detail_level == "full" or detail_level is None:
         return tool
 
-    base_view: Dict[str, Any] = {
+    base_view: dict[str, Any] = {
         "name": tool.name,
         "type": tool.type,
         "domain": tool.domain,
@@ -55,7 +56,7 @@ def _format_tool_view(
     if detail_level == "name":
         return base_view
 
-    summary: Dict[str, Any] = {
+    summary: dict[str, Any] = {
         **base_view,
         "description": tool.description,
         "provider": tool.provider,
@@ -72,17 +73,17 @@ def _format_tool_view(
 
 def get_available_tools(
     *,
-    plugin: Optional[str] = None,
-    type_filter: Optional[str] = None,
-    domain: Optional[str] = None,
-) -> List[ToolDefinition]:
+    plugin: str | None = None,
+    type_filter: str | None = None,
+    domain: str | None = None,
+) -> list[ToolDefinition]:
     """List available tools across all plugins with optional filters."""
     registry = get_registry()
-    tool_dict: Dict[str, List[Dict[str, Any]]] = (
+    tool_dict: dict[str, list[dict[str, Any]]] = (
         {plugin: registry.get(plugin).get_tools()} if plugin else registry.get_all_tools()
     )
 
-    out: List[ToolDefinition] = []
+    out: list[ToolDefinition] = []
     for _, tools in tool_dict.items():
         for t in tools:
             try:
@@ -99,14 +100,14 @@ def get_available_tools(
 
 def browse_tools(
     *,
-    plugin: Optional[str] = None,
-    type_filter: Optional[str] = None,
-    domain: Optional[str] = None,
+    plugin: str | None = None,
+    type_filter: str | None = None,
+    domain: str | None = None,
     detail_level: str = "summary",
     offset: int = 0,
-    limit: Optional[int] = 50,
+    limit: int | None = 50,
     include_examples: bool = False,
-) -> Sequence[Union[ToolDefinition, Dict[str, Any]]]:
+) -> Sequence[ToolDefinition | dict[str, Any]]:
     """Browse tools with pagination and progressive detail levels.
 
     Uses lightweight projections to avoid loading full schemas when not needed.
@@ -127,18 +128,18 @@ def browse_tools(
 
 def search_tools(
     *,
-    query: Optional[str] = None,
-    domain: Optional[str] = None,
-    type_filter: Optional[str] = None,
+    query: str | None = None,
+    domain: str | None = None,
+    type_filter: str | None = None,
     use_semantic: bool = False,
     top_k: int = 10,
     min_score: float = 0.3,
-    detail_level: Optional[str] = None,
+    detail_level: str | None = None,
     include_examples: bool = False,
-) -> Sequence[Union[ToolDefinition, Dict[str, Any]]]:
+) -> Sequence[ToolDefinition | dict[str, Any]]:
     """Keyword or semantic search with optional progressive detail levels."""
     logger.debug(
-        f"Searching tools",
+        "Searching tools",
         extra={
             "query": query,
             "domain": domain,
@@ -147,8 +148,8 @@ def search_tools(
             "top_k": top_k,
         }
     )
-    
-    results: List[ToolDefinition] = []
+
+    results: list[ToolDefinition] = []
     semantic_attempted = False
 
     if use_semantic and query:
@@ -184,11 +185,11 @@ def search_tools(
             hay = f"{td.name} {td.description}".lower()
             if query_norm in hay:
                 results.append(td)
-        
+
         logger.debug(f"Keyword search found {len(results)} results")
 
     logger.info(
-        f"Tool search completed",
+        "Tool search completed",
         extra={
             "query": query,
             "domain": domain,
@@ -212,7 +213,7 @@ def get_tool_info(
     *,
     detail_level: str = "full",
     include_examples: bool = True,
-) -> Optional[Union[ToolDefinition, Dict[str, Any]]]:
+) -> ToolDefinition | dict[str, Any] | None:
     """Get tool definition by name with optional projection."""
     for td in _collect_all_tool_defs():
         if td.name == name:
@@ -220,7 +221,7 @@ def get_tool_info(
     return None
 
 
-def list_tools_by_domain(domain: str) -> List[ToolDefinition]:
+def list_tools_by_domain(domain: str) -> list[ToolDefinition]:
     return [td for td in _collect_all_tool_defs() if td.domain == domain]
 
 
@@ -228,10 +229,10 @@ def semantic_search_tools(
     query: str,
     *,
     top_k: int = 5,
-    domain: Optional[str] = None,
+    domain: str | None = None,
     min_score: float = 0.3,
     fallback_to_substring: bool = True
-) -> List[Tuple[ToolDefinition, float]]:
+) -> list[tuple[ToolDefinition, float]]:
     """
     Semantic search across tools using vector similarity.
     
@@ -264,19 +265,19 @@ def semantic_search_tools(
             # Cast to list of tuples with ToolDefinition type
             return [(tool, 1.0) for tool in substring_results if isinstance(tool, ToolDefinition)][:top_k]
         return []
-    
+
     # Build catalog from all tools
     all_tools = _collect_all_tool_defs()
     if domain:
         all_tools = [t for t in all_tools if t.domain == domain]
-    
+
     catalog = ToolCatalog(tools={t.name: t for t in all_tools})
-    
+
     # Initialize search engine with fallback enabled
     search_engine = VectorToolSearchEngine(
         fallback_to_memory=True
     )
-    
+
     # Index catalog (lazy, cached in Qdrant)
     try:
         search_engine.index_catalog(catalog, batch_size=32)
@@ -287,7 +288,7 @@ def semantic_search_tools(
             substring_results = search_tools(query=query, domain=domain, detail_level=None)
             return [(tool, 1.0) for tool in substring_results if isinstance(tool, ToolDefinition)][:top_k]
         return []
-    
+
     # Perform semantic search
     try:
         results = search_engine.search(

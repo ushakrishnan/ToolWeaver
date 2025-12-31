@@ -70,25 +70,25 @@ click>=8.0.0
 def create_requirements_files():
     """Create requirements.txt for examples"""
     examples_path = Path('examples')
-    
+
     print("=" * 70)
     print("CREATING requirements.txt FOR EXAMPLES")
     print("=" * 70)
-    
+
     created = 0
     skipped = 0
-    
+
     for example_dir in sorted(examples_path.iterdir()):
         if not example_dir.is_dir() or example_dir.name.startswith('.'):
             continue
-        
+
         req_path = example_dir / 'requirements.txt'
-        
+
         # Skip if already exists
         if req_path.exists():
             skipped += 1
             continue
-        
+
         # Decide which requirements to use
         # Full for complex examples, common for simple ones
         complex_examples = [
@@ -99,18 +99,18 @@ def create_requirements_files():
             '13-complete-pipeline',
             '22-end-to-end-showcase',
         ]
-        
+
         if example_dir.name in complex_examples:
             requirements = FULL_REQUIREMENTS
         else:
             requirements = COMMON_REQUIREMENTS
-        
+
         with open(req_path, 'w') as f:
             f.write(requirements)
-        
+
         created += 1
         print(f"✓ Created {example_dir.name}/requirements.txt")
-    
+
     print(f"\n✓ Created {created} requirements.txt files")
     print(f"⊘ Skipped {skipped} examples (already have requirements.txt)")
 

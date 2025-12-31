@@ -8,10 +8,9 @@ Demonstrates multi-step workflow using tool chaining:
 """
 
 import asyncio
-import json
-from typing import Dict, List, Any
+from typing import Any
 
-from orchestrator import mcp_tool, search_tools
+from orchestrator import mcp_tool
 
 
 # ============================================================
@@ -38,7 +37,7 @@ Tax (8%):           $ 3.51
 TOTAL:              $47.42
 
 Thank you!"""
-    
+
     return {
         "text": mock_receipt_text.strip(),
         "confidence": 0.96,
@@ -55,11 +54,11 @@ async def line_item_parser(text: str) -> dict:
     # Simple keyword-based parsing (could use LLM for smarter parsing)
     lines = text.split('\n')
     items = []
-    
+
     # Look for lines with prices (dollar sign + amount)
     import re
     price_pattern = r'\$\s*(\d+\.\d{2})'
-    
+
     for line in lines:
         price_match = re.search(price_pattern, line)
         if price_match and not any(keyword in line.lower() for keyword in ['subtotal', 'tax', 'total', 'thank']):
@@ -72,7 +71,7 @@ async def line_item_parser(text: str) -> dict:
                     "price": price,
                     "raw_line": line.strip()
                 })
-    
+
     return {
         "items": items,
         "item_count": len(items),
@@ -84,7 +83,7 @@ async def line_item_parser(text: str) -> dict:
 # Tool 3: Categorizer - Categorize expenses
 # ============================================================
 @mcp_tool(domain="receipts", description="Categorize expense items")
-async def expense_categorizer(items: List[Dict[str, Any]]) -> dict:
+async def expense_categorizer(items: list[dict[str, Any]]) -> dict:
     """Categorize expense items into food, household, etc."""
     # Simple rule-based categorization
     categories = {
@@ -92,27 +91,27 @@ async def expense_categorizer(items: List[Dict[str, Any]]) -> dict:
         "household": ["shampoo", "toothpaste", "soap", "detergent", "cleaner"],
         "other": []
     }
-    
+
     categorized_items = []
     category_totals = {"food": 0.0, "household": 0.0, "other": 0.0}
-    
+
     for item in items:
         name_lower = item["name"].lower()
         assigned_category = "other"
-        
+
         # Match against category keywords
         for category, keywords in categories.items():
             if any(keyword in name_lower for keyword in keywords):
                 assigned_category = category
                 break
-        
+
         categorized_item = {
             **item,
             "category": assigned_category
         }
         categorized_items.append(categorized_item)
         category_totals[assigned_category] += item["price"]
-    
+
     return {
         "items": categorized_items,
         "category_totals": category_totals,
@@ -124,7 +123,7 @@ async def expense_categorizer(items: List[Dict[str, Any]]) -> dict:
 # Tool 4: Statistics - Compute summary statistics
 # ============================================================
 @mcp_tool(domain="receipts", description="Compute receipt statistics")
-async def compute_statistics(items: List[Dict[str, Any]], category_totals: Dict[str, float]) -> dict:
+async def compute_statistics(items: list[dict[str, Any]], category_totals: dict[str, float]) -> dict:
     """Compute summary statistics for categorized items."""
     if not items:
         return {
@@ -133,11 +132,11 @@ async def compute_statistics(items: List[Dict[str, Any]], category_totals: Dict[
             "avg_amount": 0.0,
             "categories": {}
         }
-    
+
     total = sum(item["price"] for item in items)
     count = len(items)
     avg = total / count if count > 0 else 0.0
-    
+
     # Category breakdowns
     categories_detail = {}
     for category, cat_total in category_totals.items():
@@ -147,7 +146,7 @@ async def compute_statistics(items: List[Dict[str, Any]], category_totals: Dict[
             "count": len(cat_items),
             "percentage": (cat_total / total * 100) if total > 0 else 0.0
         }
-    
+
     return {
         "total_amount": total,
         "item_count": count,
@@ -165,32 +164,32 @@ async def main():
     print("EXAMPLE 2: Receipt with Categorization")
     print("=" * 60)
     print()
-    
+
     print("[doc] Workflow Overview:")
     print("   Step 1: Extract text from receipt (OCR)")
     print("   Step 2: Parse line items")
     print("   Step 3: Categorize expenses")
     print("   Step 4: Compute statistics")
     print()
-    
+
     # Step 1: OCR
     print("[?] Step 1: Extracting text from receipt...")
     ocr_result = await receipt_ocr({"image_uri": "https://example.com/receipts/grocery.jpg"})
     print(f"   ✓ Extracted {ocr_result['line_count']} lines (confidence: {ocr_result['confidence']*100:.1f}%)")
     print()
-    
+
     # Step 2: Parse items
     print("[list] Step 2: Parsing line items...")
     parse_result = await line_item_parser({"text": ocr_result["text"]})
     print(f"   ✓ Found {parse_result['item_count']} items")
     print()
-    
+
     # Step 3: Categorize
     print("[tag] Step 3: Categorizing expenses...")
     categorize_result = await expense_categorizer({"items": parse_result["items"]})
     print(f"   ✓ Categorized into {len(categorize_result['category_totals'])} categories")
     print()
-    
+
     # Step 4: Compute statistics
     print("[#] Step 4: Computing statistics...")
     stats_result = await compute_statistics({
@@ -199,18 +198,18 @@ async def main():
     })
     print("   ✓ Statistics computed")
     print()
-    
+
     # Display summary
     print("=" * 60)
     print("[OK] FINAL RESULTS")
     print("=" * 60)
     print()
-    
+
     print(f"💰 Total Amount: ${stats_result['total_amount']:.2f}")
     print(f"🧾 Item Count: {stats_result['item_count']}")
     print(f"📈 Average per Item: ${stats_result['avg_amount']:.2f}")
     print()
-    
+
     print("[#] By Category:")
     for category, details in stats_result['categories'].items():
         if details['count'] > 0:
@@ -218,7 +217,7 @@ async def main():
             print(f"      Total: ${details['total']:.2f} ({details['percentage']:.1f}%)")
             print(f"      Items: {details['count']}")
     print()
-    
+
     print("🛒 Item Details:")
     for item in categorize_result['items']:
         print(f"   • {item['name']:25} ${item['price']:6.2f}  [{item['category']}]")

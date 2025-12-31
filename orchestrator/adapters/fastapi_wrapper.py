@@ -21,16 +21,15 @@ Example:
 
 from __future__ import annotations
 
-import asyncio
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..shared.models import ToolDefinition
 
 
 class FastAPIAdapter:
     """Adapter to expose ToolWeaver tools as FastAPI REST endpoints."""
-    
-    def __init__(self, tools: List[ToolDefinition], base_url: str = "/api/v1") -> None:
+
+    def __init__(self, tools: list[ToolDefinition], base_url: str = "/api/v1") -> None:
         """
         Initialize adapter with tools.
         
@@ -41,7 +40,7 @@ class FastAPIAdapter:
         self.tools = tools
         self.base_url = base_url
         self._tool_map = {tool.name: tool for tool in tools}
-    
+
     def create_app(self) -> Any:
         """
         Create a FastAPI application with tool endpoints.
@@ -57,23 +56,24 @@ class FastAPIAdapter:
             >>> # Run with: uvicorn app:app --port 8000
         """
         try:
+            import json
+
             from fastapi import FastAPI, HTTPException
             from fastapi.responses import JSONResponse
-            import json
         except ImportError as e:
             raise ImportError(
                 "FastAPI and uvicorn required for REST wrapper. "
                 "Install with: pip install toolweaver[fastapi]"
             ) from e
-        
+
         app = FastAPI(
             title="ToolWeaver REST API",
             description="REST API for executing ToolWeaver tools",
             version="1.0.0",
         )
-        
+
         @app.get(f"{self.base_url}/tools")
-        async def list_tools() -> Dict[str, Any]:
+        async def list_tools() -> dict[str, Any]:
             """List all available tools."""
             return {
                 "count": len(self.tools),
@@ -95,14 +95,14 @@ class FastAPIAdapter:
                     for tool in self.tools
                 ],
             }
-        
+
         @app.get(f"{self.base_url}/tools/{{tool_name}}")
-        async def get_tool(tool_name: str) -> Dict[str, Any]:
+        async def get_tool(tool_name: str) -> dict[str, Any]:
             """Get details for a specific tool."""
             tool = self._tool_map.get(tool_name)
             if not tool:
                 raise HTTPException(status_code=404, detail=f"Tool '{tool_name}' not found")
-            
+
             return {
                 "name": tool.name,
                 "description": tool.description,
@@ -120,14 +120,14 @@ class FastAPIAdapter:
                 ],
                 "metadata": tool.metadata or {},
             }
-        
+
         @app.post(f"{self.base_url}/tools/{{tool_name}}/execute")
-        async def execute_tool(tool_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        async def execute_tool(tool_name: str, params: dict[str, Any]) -> dict[str, Any]:
             """Execute a tool with given parameters."""
             tool = self._tool_map.get(tool_name)
             if not tool:
                 raise HTTPException(status_code=404, detail=f"Tool '{tool_name}' not found")
-            
+
             # Validate required parameters
             required_params = {p.name for p in tool.parameters if p.required}
             provided_params = set(params.keys())
@@ -137,11 +137,11 @@ class FastAPIAdapter:
                     status_code=400,
                     detail=f"Missing required parameters: {', '.join(missing)}",
                 )
-            
+
             try:
                 # Execute tool - assumes tools are registered in plugin registry
                 from ..plugins.registry import get_registry
-                
+
                 registry = get_registry()
                 # Find plugin containing this tool
                 for plugin_name in registry.list():
@@ -154,7 +154,7 @@ class FastAPIAdapter:
                             "tool": tool_name,
                             "result": result,
                         }
-                
+
                 raise HTTPException(
                     status_code=404,
                     detail=f"Tool '{tool_name}' not registered in any plugin",
@@ -164,5 +164,5 @@ class FastAPIAdapter:
                     status_code=500,
                     detail=f"Tool execution failed: {str(e)}",
                 )
-        
+
         return app

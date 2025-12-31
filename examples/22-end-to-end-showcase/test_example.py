@@ -1,7 +1,7 @@
-import types
 # Dynamic import to handle dashed folder name
 import importlib.util
 import pathlib
+import types
 
 spec = importlib.util.spec_from_file_location(
     "workflow22",
@@ -33,7 +33,8 @@ def test_showcase_smoke(monkeypatch):
     store = {}
 
     def save_skill(name: str, code: str, metadata: dict):
-        import tempfile, os
+        import os
+        import tempfile
         fd, path = tempfile.mkstemp(suffix=".py")
         with os.fdopen(fd, "w", encoding="utf-8") as f:
             f.write(code)

@@ -1,15 +1,11 @@
-import asyncio
-import json
-from typing import Any, Dict, List
-
-import pytest
-from aiohttp import web
-
 # Load the example adapter module directly from file so it remains an example artifact
 import importlib.util
 import sys
 from pathlib import Path
+from typing import Any
 
+import pytest
+from aiohttp import web
 
 EXAMPLE_DIR = Path(__file__).parent.parent / "examples" / "24-external-mcp-adapter"
 ADAPTER_PATH = EXAMPLE_DIR / "external_mcp_adapter.py"
@@ -27,7 +23,7 @@ ExternalMCPAdapter = adapter_module.ExternalMCPAdapter
 @pytest.mark.asyncio
 async def test_external_mcp_adapter_http_mode(unused_tcp_port_factory):
     # Minimal in-process HTTP server implementing /tools and /execute
-    tools: List[Dict[str, Any]] = [
+    tools: list[dict[str, Any]] = [
         {"name": "ping", "description": "Ping tool"},
     ]
 

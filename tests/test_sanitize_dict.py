@@ -1,8 +1,8 @@
 import pytest
 
 from orchestrator._internal.validation import (
-    sanitize_dict,
     InvalidInputError,
+    sanitize_dict,
 )
 
 

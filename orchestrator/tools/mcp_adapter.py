@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import aiohttp
 
-from ..plugins.registry import PluginProtocol, register_plugin, get_registry
+from ..plugins.registry import register_plugin
 from ..shared.models import ToolDefinition
 
 
@@ -18,12 +18,12 @@ class MCPHttpAdapterPlugin:
 
     def __init__(self, base_url: str) -> None:
         self.base_url = base_url.rstrip("/")
-        self._defs: Dict[str, ToolDefinition] = {}
+        self._defs: dict[str, ToolDefinition] = {}
 
-    def get_tools(self) -> List[Dict[str, Any]]:
+    def get_tools(self) -> list[dict[str, Any]]:
         return [td.model_dump() for td in self._defs.values()]
 
-    async def execute(self, tool_name: str, params: Dict[str, Any]) -> Any:
+    async def execute(self, tool_name: str, params: dict[str, Any]) -> Any:
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 f"{self.base_url}/execute",
@@ -35,7 +35,7 @@ class MCPHttpAdapterPlugin:
                     return await resp.json()
                 return await resp.text()
 
-    async def discover(self) -> Dict[str, ToolDefinition]:
+    async def discover(self) -> dict[str, ToolDefinition]:
         async with aiohttp.ClientSession() as session:
             async with session.get(f"{self.base_url}/tools") as resp:
                 resp.raise_for_status()
@@ -51,7 +51,7 @@ class MCPHttpAdapterPlugin:
         return dict(self._defs)
 
     async def execute_stream(
-        self, tool_name: str, params: Dict[str, Any], protocol: str = "http"
+        self, tool_name: str, params: dict[str, Any], protocol: str = "http"
     ):
         """Stream responses from a tool as an async generator.
 
@@ -69,7 +69,7 @@ class MCPHttpAdapterPlugin:
         else:
             raise ValueError(f"Unsupported streaming protocol: {protocol}")
 
-    async def _stream_http(self, tool_name: str, params: Dict[str, Any]):
+    async def _stream_http(self, tool_name: str, params: dict[str, Any]):
         """Stream chunked response from HTTP endpoint."""
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -81,7 +81,7 @@ class MCPHttpAdapterPlugin:
                     if chunk:
                         yield chunk.decode()
 
-    async def _stream_sse(self, tool_name: str, params: Dict[str, Any]):
+    async def _stream_sse(self, tool_name: str, params: dict[str, Any]):
         """Stream SSE messages from endpoint."""
         async with aiohttp.ClientSession() as session:
             url = f"{self.base_url}/execute/sse"
@@ -105,7 +105,7 @@ class MCPHttpAdapterPlugin:
                         if data_lines:
                             yield "\n".join(data_lines)
 
-    async def _stream_websocket(self, tool_name: str, params: Dict[str, Any]):
+    async def _stream_websocket(self, tool_name: str, params: dict[str, Any]):
         """Stream messages via WebSocket connection."""
         from aiohttp import WSMsgType
 

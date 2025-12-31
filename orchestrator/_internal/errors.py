@@ -17,8 +17,9 @@ If wandb not installed, user sees:
     Install with: pip install toolweaver[monitoring]
 """
 
-from typing import Optional, Callable, Any, TypeVar
 import functools
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 F = TypeVar('F', bound=Callable[..., Any])
 
@@ -34,8 +35,8 @@ class ToolWeaverError(Exception):
 
 class MissingDependencyError(ToolWeaverError):
     """Raised when an optional dependency is required but not installed."""
-    
-    def __init__(self, package: str, extra: Optional[str] = None, suggestion: Optional[str] = None):
+
+    def __init__(self, package: str, extra: str | None = None, suggestion: str | None = None):
         """
         Args:
             package: Name of the missing package (e.g., "wandb")
@@ -44,7 +45,7 @@ class MissingDependencyError(ToolWeaverError):
         """
         self.package = package
         self.extra = extra
-        
+
         if suggestion:
             message = suggestion
         elif extra:
@@ -57,7 +58,7 @@ class MissingDependencyError(ToolWeaverError):
                 f"{package} not available.\n"
                 f"Install with: pip install {package}"
             )
-        
+
         super().__init__(message)
 
 
@@ -98,7 +99,7 @@ def check_package_available(package: str) -> bool:
         return False
 
 
-def require_package(package: str, extra: Optional[str] = None, suggestion: Optional[str] = None) -> Callable[[Callable], Callable]:
+def require_package(package: str, extra: str | None = None, suggestion: str | None = None) -> Callable[[Callable], Callable]:
     """
     Decorator to require an optional package for a function.
     
@@ -129,7 +130,7 @@ def require_package(package: str, extra: Optional[str] = None, suggestion: Optio
     return decorator
 
 
-def require_packages(*packages: str, extra: Optional[str] = None) -> Callable[[Callable], Callable]:
+def require_packages(*packages: str, extra: str | None = None) -> Callable[[Callable], Callable]:
     """
     Decorator to require multiple optional packages.
     
@@ -193,8 +194,8 @@ class optional_feature:
         
         # If wandb not available, logs warning and continues
     """
-    
-    def __init__(self, package: str, extra: Optional[str] = None, logger: Any = None) -> None:
+
+    def __init__(self, package: str, extra: str | None = None, logger: Any = None) -> None:
         """
         Args:
             package: Package name
@@ -205,7 +206,7 @@ class optional_feature:
         self.extra = extra
         self.logger = logger
         self.available = False
-    
+
     def __enter__(self) -> bool:
         self.available = check_package_available(self.package)
         if not self.available and self.logger:
@@ -218,8 +219,8 @@ class optional_feature:
                     f"{self.package} not available (install: pip install {self.package})"
                 )
         return self.available
-    
-    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> Optional[bool]:
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> bool | None:
         # Suppress ImportError if package not available
         if exc_type is ImportError and not self.available:
             return True
@@ -235,20 +236,20 @@ PACKAGE_EXTRAS_MAP = {
     # Monitoring
     "wandb": "monitoring",
     "prometheus_client": "monitoring",
-    
+
     # Vector databases
     "qdrant_client": "qdrant",
     "pinecone": "pinecone",
-    
+
     # Cache
     "redis": "redis",
     "hiredis": "redis",
-    
+
     # LLM providers
     "openai": "openai",
     "anthropic": "anthropic",
     "google.generativeai": "gemini",
-    
+
     # Local models
     "transformers": "local-models",
     "torch": "local-models",

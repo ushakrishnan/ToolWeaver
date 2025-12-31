@@ -13,8 +13,8 @@ Threats Mitigated:
 import hashlib
 import json
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
 from datetime import datetime, timedelta
+from typing import Any
 
 
 @dataclass
@@ -32,11 +32,11 @@ class AgentTask:
     """
     agent_name: str
     template: str
-    arguments: Dict[str, Any] = field(default_factory=dict)
-    idempotency_key: Optional[str] = field(default=None, init=False)
+    arguments: dict[str, Any] = field(default_factory=dict)
+    idempotency_key: str | None = field(default=None, init=False)
     max_retries: int = 3
     timeout: int = 300
-    
+
     def __post_init__(self):
         """Generate idempotency key after initialization."""
         if self.idempotency_key is None:
@@ -50,7 +50,7 @@ class AgentTask:
 def generate_idempotency_key(
     agent_name: str,
     template: str,
-    arguments: Dict[str, Any]
+    arguments: dict[str, Any]
 ) -> str:
     """
     Generate idempotency key from task components.
@@ -78,13 +78,13 @@ def generate_idempotency_key(
         'template': template,
         'arguments': arguments
     }
-    
+
     # Serialize to JSON with sorted keys for consistency
     canonical_json = json.dumps(canonical, sort_keys=True, ensure_ascii=True)
-    
+
     # Hash with SHA-256
     hash_obj = hashlib.sha256(canonical_json.encode('utf-8'))
-    
+
     # Return first 16 hex characters (64 bits)
     return hash_obj.hexdigest()[:16]
 
@@ -106,11 +106,11 @@ class IdempotencyRecord:
     created_at: datetime
     expires_at: datetime
     status: str = 'success'
-    
+
     def is_expired(self) -> bool:
         """Check if cache entry has expired."""
         return datetime.now() >= self.expires_at
-    
+
     def is_valid(self) -> bool:
         """Check if cache entry is valid (not expired and successful)."""
         return not self.is_expired() and self.status == 'success'
@@ -135,7 +135,7 @@ class IdempotencyCache:
         result = execute_task(task)
         cache.store(task.idempotency_key, result)
     """
-    
+
     def __init__(self, ttl_seconds: int = 3600):
         """
         Initialize idempotency cache.
@@ -143,9 +143,9 @@ class IdempotencyCache:
         Args:
             ttl_seconds: Time-to-live for cache entries (default: 1 hour)
         """
-        self._cache: Dict[str, IdempotencyRecord] = {}
+        self._cache: dict[str, IdempotencyRecord] = {}
         self._ttl_seconds = ttl_seconds
-    
+
     def store(
         self,
         key: str,
@@ -162,7 +162,7 @@ class IdempotencyCache:
         """
         now = datetime.now()
         expires_at = now + timedelta(seconds=self._ttl_seconds)
-        
+
         record = IdempotencyRecord(
             key=key,
             result=result,
@@ -170,10 +170,10 @@ class IdempotencyCache:
             expires_at=expires_at,
             status=status
         )
-        
+
         self._cache[key] = record
-    
-    def get(self, key: str) -> Optional[Any]:
+
+    def get(self, key: str) -> Any | None:
         """
         Get cached result.
         
@@ -184,21 +184,21 @@ class IdempotencyCache:
             Cached result if valid, None otherwise
         """
         record = self._cache.get(key)
-        
+
         if record is None:
             return None
-        
+
         # Check if expired
         if record.is_expired():
             del self._cache[key]
             return None
-        
+
         # Only return successful results
         if record.status != 'success':
             return None
-        
+
         return record.result
-    
+
     def has(self, key: str) -> bool:
         """
         Check if valid cached result exists.
@@ -210,7 +210,7 @@ class IdempotencyCache:
             True if valid cache entry exists
         """
         return self.get(key) is not None
-    
+
     def invalidate(self, key: str) -> None:
         """
         Remove entry from cache.
@@ -220,11 +220,11 @@ class IdempotencyCache:
         """
         if key in self._cache:
             del self._cache[key]
-    
+
     def clear(self) -> None:
         """Clear all cache entries."""
         self._cache.clear()
-    
+
     def cleanup_expired(self) -> int:
         """
         Remove expired entries.
@@ -237,17 +237,17 @@ class IdempotencyCache:
             key for key, record in self._cache.items()
             if record.expires_at <= now
         ]
-        
+
         for key in expired_keys:
             del self._cache[key]
-        
+
         return len(expired_keys)
-    
+
     def size(self) -> int:
         """Get current cache size."""
         return len(self._cache)
-    
-    def get_stats(self) -> Dict[str, int]:
+
+    def get_stats(self) -> dict[str, int]:
         """
         Get cache statistics.
         
@@ -258,7 +258,7 @@ class IdempotencyCache:
         expired = sum(1 for r in self._cache.values() if r.is_expired())
         success = sum(1 for r in self._cache.values() if r.status == 'success')
         failed = sum(1 for r in self._cache.values() if r.status == 'failed')
-        
+
         return {
             'total': total,
             'expired': expired,
@@ -277,7 +277,7 @@ def get_global_cache() -> IdempotencyCache:
     return _global_cache
 
 
-def check_idempotency(key: str) -> Optional[Any]:
+def check_idempotency(key: str) -> Any | None:
     """
     Check global cache for cached result.
     

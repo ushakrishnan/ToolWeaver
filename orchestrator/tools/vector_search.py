@@ -4,22 +4,18 @@ Vector Database Search Engine for ToolWeaver (Phase 7)
 Qdrant-based tool search for scaling to 1000+ tools with sub-100ms latency.
 """
 
-import os
 import logging
-from typing import List, Tuple, Optional, Dict, Any
-from pathlib import Path
-
 from typing import Any
 
 try:
     from qdrant_client import QdrantClient  # type: ignore[import-not-found]
     from qdrant_client.models import (  # type: ignore[import-not-found]
         Distance,
-        VectorParams,
-        PointStruct,
-        Filter,
         FieldCondition,
-        MatchValue
+        Filter,
+        MatchValue,
+        PointStruct,
+        VectorParams,
     )
     QDRANT_IMPORTED = True
 except Exception:
@@ -71,7 +67,7 @@ class VectorToolSearchEngine:
         # Search
         results = search_engine.search("create github PR", catalog, top_k=5)
     """
-    
+
     def __init__(
         self,
         qdrant_url: str = "http://localhost:6333",
@@ -101,24 +97,24 @@ class VectorToolSearchEngine:
         self.fallback_to_memory = fallback_to_memory
         self.use_gpu = use_gpu
         self.precompute_embeddings = precompute_embeddings
-        
+
         # Detect GPU availability
         self.device = self._detect_device()
-        
+
         # Lazy initialization
-        self.client: Optional[Any] = None
-        self.embedding_model: Optional[Any] = None
+        self.client: Any | None = None
+        self.embedding_model: Any | None = None
         self.qdrant_available = False
-        
+
         # Fallback in-memory search (if Qdrant unavailable)
-        self.memory_embeddings: Dict[str, np.ndarray] = {}
-        self.memory_tools: Dict[str, ToolDefinition] = {}
-        
+        self.memory_embeddings: dict[str, np.ndarray] = {}
+        self.memory_tools: dict[str, ToolDefinition] = {}
+
         # Pre-computed embeddings cache
-        self.embedding_cache: Dict[str, np.ndarray] = {}
-        
+        self.embedding_cache: dict[str, np.ndarray] = {}
+
         logger.info(f"VectorToolSearchEngine initialized (Qdrant: {qdrant_url}, Device: {self.device})")
-    
+
     def _detect_device(self) -> str:
         """
         Detect best available device for embedding generation.
@@ -129,22 +125,22 @@ class VectorToolSearchEngine:
         if not self.use_gpu:
             logger.info("GPU disabled by configuration, using CPU")
             return "cpu"
-        
+
         # Check for NVIDIA CUDA
         if TORCH_AVAILABLE and hasattr(torch, "cuda") and torch.cuda.is_available():
             gpu_name = torch.cuda.get_device_name(0)
             gpu_memory = torch.cuda.get_device_properties(0).total_memory / (1024**3)  # GB
             logger.info(f"GPU detected: {gpu_name} ({gpu_memory:.1f} GB)")
             return "cuda"
-        
+
         # Check for Apple Silicon MPS (Metal Performance Shaders)
         if TORCH_AVAILABLE and hasattr(torch, "backends") and hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
             logger.info("Apple Silicon GPU detected (MPS)")
             return "mps"
-        
+
         logger.info("No GPU available, using CPU")
         return "cpu"
-    
+
     def _init_qdrant_client(self) -> None:
         """Initialize Qdrant client with connection pooling"""
         if self.client is None:
@@ -168,7 +164,7 @@ class VectorToolSearchEngine:
                 if not self.fallback_to_memory:
                     raise
                 logger.info("Will use in-memory fallback for vector search")
-    
+
     def _init_embedding_model(self) -> None:
         """Lazy initialization of embedding model with GPU support"""
         if self.embedding_model is None:
@@ -177,7 +173,7 @@ class VectorToolSearchEngine:
                 return
             logger.info(f"Loading embedding model: {self.embedding_model_name}")
             self.embedding_model = SentenceTransformer(self.embedding_model_name)  # type: ignore[misc]
-            
+
             # Move model to GPU if available
             if self.device in ["cuda", "mps"] and self.embedding_model is not None:
                 try:
@@ -186,18 +182,18 @@ class VectorToolSearchEngine:
                 except Exception as e:
                     logger.warning(f"Failed to move model to {self.device}: {e}")
                     self.device = "cpu"
-            
+
             logger.info(f"Embedding model loaded (dim={self.embedding_dim}, device={self.device})")
-    
+
     def _ensure_collection_exists(self) -> None:
         """Create collection if it doesn't exist"""
         if not self.qdrant_available:
             return
-        
+
         try:
             collections = self.client.get_collections()  # type: ignore[union-attr]
             collection_names = [c.name for c in collections.collections]
-            
+
             if self.collection_name not in collection_names:
                 logger.info(f"Creating collection: {self.collection_name}")
                 self.client.create_collection(  # type: ignore[union-attr]
@@ -211,7 +207,7 @@ class VectorToolSearchEngine:
         except Exception as e:
             logger.error(f"Failed to create collection: {e}")
             self.qdrant_available = False
-    
+
     def index_catalog(self, catalog: ToolCatalog, batch_size: int = 32) -> bool:
         """
         Index entire tool catalog in Qdrant.
@@ -225,14 +221,14 @@ class VectorToolSearchEngine:
         """
         self._init_qdrant_client()
         self._init_embedding_model()
-        
+
         tools = list(catalog.tools.values())
         if len(tools) == 0:
             logger.warning("Empty catalog - nothing to index")
             return False
-        
+
         logger.info(f"Indexing {len(tools)} tools (batch_size={batch_size}, device={self.device})...")
-        
+
         # Generate embeddings in batches with GPU acceleration
         descriptions = [self._get_searchable_text(tool) for tool in tools]
         embeddings = self._generate_embeddings_batch(
@@ -240,11 +236,11 @@ class VectorToolSearchEngine:
             batch_size=batch_size,
             show_progress=True
         )
-        
+
         if self.qdrant_available:
             try:
                 self._ensure_collection_exists()
-                
+
                 # Create points for Qdrant
                 points = []
                 for i, tool in enumerate(tools):
@@ -261,7 +257,7 @@ class VectorToolSearchEngine:
                             }
                         )
                     )
-                
+
                 # Batch upsert to Qdrant
                 self.client.upsert(  # type: ignore[union-attr]
                     collection_name=self.collection_name,
@@ -272,7 +268,7 @@ class VectorToolSearchEngine:
             except Exception as e:
                 logger.error(f"Failed to index in Qdrant: {e}")
                 self.qdrant_available = False
-        
+
         # Fallback: Store in memory
         if self.fallback_to_memory:
             logger.info("Storing embeddings in memory (fallback mode)")
@@ -280,17 +276,17 @@ class VectorToolSearchEngine:
                 self.memory_embeddings[tool.name] = embeddings[i]
                 self.memory_tools[tool.name] = tool
             return True
-        
+
         return False
-    
+
     def search(
         self,
         query: str,
         catalog: ToolCatalog,
         top_k: int = 5,
-        domain: Optional[str] = None,
+        domain: str | None = None,
         min_score: float = 0.3
-    ) -> List[Tuple[ToolDefinition, float]]:
+    ) -> list[tuple[ToolDefinition, float]]:
         """
         Search for relevant tools using vector similarity.
         
@@ -306,7 +302,7 @@ class VectorToolSearchEngine:
         """
         self._init_qdrant_client()
         self._init_embedding_model()
-        
+
         # Generate query embedding (uses cache if available)
         query_embeddings = self._generate_embeddings_batch(
             [query],
@@ -314,7 +310,7 @@ class VectorToolSearchEngine:
             show_progress=False
         )
         query_embedding = query_embeddings[0]
-        
+
         # Try Qdrant search first
         if self.qdrant_available:
             try:
@@ -328,7 +324,7 @@ class VectorToolSearchEngine:
             except Exception as e:
                 logger.warning(f"Qdrant search failed: {e}, falling back to memory")
                 self.qdrant_available = False
-        
+
         # Fallback: In-memory cosine similarity
         if self.fallback_to_memory:
             return self._memory_search(
@@ -338,18 +334,18 @@ class VectorToolSearchEngine:
                 min_score,
                 domain
             )
-        
+
         logger.error("Vector search unavailable and fallback disabled")
         return []
-    
+
     def _qdrant_search(
         self,
         query_embedding: np.ndarray,
         catalog: ToolCatalog,
         top_k: int,
-        domain: Optional[str],
+        domain: str | None,
         min_score: float
-    ) -> List[Tuple[ToolDefinition, float]]:
+    ) -> list[tuple[ToolDefinition, float]]:
         """Perform search using Qdrant"""
         # Build filter for domain-based search
         search_filter = None
@@ -362,7 +358,7 @@ class VectorToolSearchEngine:
                     )
                 ]
             )
-        
+
         # Search in Qdrant
         search_results = self.client.search(  # type: ignore[union-attr]
             collection_name=self.collection_name,
@@ -371,7 +367,7 @@ class VectorToolSearchEngine:
             limit=top_k,
             score_threshold=min_score
         )
-        
+
         # Convert results to (ToolDefinition, score) tuples
         results = []
         for hit in search_results:
@@ -380,47 +376,47 @@ class VectorToolSearchEngine:
                 tool = catalog.tools[tool_name]
                 score = hit.score
                 results.append((tool, score))
-        
+
         logger.info(f"Qdrant search returned {len(results)} results (top_k={top_k}, domain={domain})")
         return results
-    
+
     def _memory_search(
         self,
         query_embedding: np.ndarray,
         catalog: ToolCatalog,
         top_k: int,
         min_score: float,
-        domain: Optional[str] = None
-    ) -> List[Tuple[ToolDefinition, float]]:
+        domain: str | None = None
+    ) -> list[tuple[ToolDefinition, float]]:
         """Fallback: In-memory cosine similarity search"""
         if not self.memory_embeddings:
             logger.warning("No embeddings in memory, indexing catalog...")
             self.index_catalog(catalog)
-        
+
         # Compute cosine similarity for all tools
         scores = []
         for tool_name, embedding in self.memory_embeddings.items():
             if tool_name in catalog.tools:
                 tool = catalog.tools[tool_name]
-                
+
                 # Apply domain filter if specified
                 if domain and tool.domain != domain:
                     continue
-                
+
                 similarity = np.dot(query_embedding, embedding)
                 if similarity >= min_score:
                     scores.append((tool, float(similarity)))
-        
+
         # Sort by score descending
         scores.sort(key=lambda x: x[1], reverse=True)
         results = scores[:top_k]
-        
+
         logger.info(f"In-memory search returned {len(results)} results")
         return results
-    
+
     def _generate_embeddings_batch(
         self,
-        texts: List[str],
+        texts: list[str],
         batch_size: int = 32,
         show_progress: bool = True
     ) -> np.ndarray:
@@ -439,7 +435,7 @@ class VectorToolSearchEngine:
         cached_embeddings = []
         texts_to_encode = []
         text_indices = []
-        
+
         for i, text in enumerate(texts):
             cache_key = self._get_cache_key(text)
             if cache_key in self.embedding_cache:
@@ -447,7 +443,7 @@ class VectorToolSearchEngine:
             else:
                 texts_to_encode.append(text)
                 text_indices.append(i)
-        
+
         # If all cached, return immediately
         if not texts_to_encode:
             logger.info(f"All {len(texts)} embeddings retrieved from cache")
@@ -455,14 +451,14 @@ class VectorToolSearchEngine:
             for idx, emb in cached_embeddings:
                 result[idx] = emb
             return result
-        
+
         logger.info(f"Generating {len(texts_to_encode)} embeddings ({len(cached_embeddings)} cached)")
-        
+
         # Adjust batch size for GPU (can handle larger batches)
         if self.device in ["cuda", "mps"]:
             batch_size = min(batch_size * 4, 128)  # 4x larger batches on GPU
             logger.debug(f"Using GPU batch size: {batch_size}")
-        
+
         # Generate embeddings
         if self.embedding_model is None:
             # Embeddings unavailable; return zeros
@@ -476,25 +472,25 @@ class VectorToolSearchEngine:
                 normalize_embeddings=True,
                 device=self.device
             )
-        
+
         # Cache new embeddings
         for i, text in enumerate(texts_to_encode):
             cache_key = self._get_cache_key(text)
             self.embedding_cache[cache_key] = new_embeddings[i]
-        
+
         # Combine cached and new embeddings
         result = np.zeros((len(texts), self.embedding_dim))
         for idx, emb in cached_embeddings:
             result[idx] = emb
         for i, idx in enumerate(text_indices):
             result[idx] = new_embeddings[i]
-        
+
         return result
-    
+
     def _get_cache_key(self, text: str) -> str:
         """Generate cache key from text (first 100 chars hash)"""
         return str(hash(text[:100]))
-    
+
     def precompute_catalog_embeddings(self, catalog: ToolCatalog):
         """
         Pre-compute embeddings for all tools in catalog at startup.
@@ -507,28 +503,28 @@ class VectorToolSearchEngine:
         if not self.precompute_embeddings:
             logger.debug("Embedding pre-computation disabled")
             return
-        
+
         tools = list(catalog.tools.values())
         if not tools:
             logger.warning("Empty catalog - nothing to pre-compute")
             return
-        
+
         logger.info(f"Pre-computing embeddings for {len(tools)} tools...")
         descriptions = [self._get_searchable_text(tool) for tool in tools]
-        
+
         # Generate and cache embeddings
         start_time = torch.cuda.Event(enable_timing=True) if (TORCH_AVAILABLE and self.device == "cuda") else None
         end_time = torch.cuda.Event(enable_timing=True) if (TORCH_AVAILABLE and self.device == "cuda") else None
-        
+
         if start_time:
             start_time.record()
-        
+
         embeddings = self._generate_embeddings_batch(
             descriptions,
             batch_size=64,  # Larger batch for pre-computation
             show_progress=False
         )
-        
+
         if end_time and start_time:
             end_time.record()
             if TORCH_AVAILABLE:
@@ -539,31 +535,31 @@ class VectorToolSearchEngine:
             logger.info(f"Pre-computed {len(tools)} embeddings in {elapsed_ms:.1f}ms on {self.device.upper()}")
         else:
             logger.info(f"Pre-computed {len(tools)} embeddings on {self.device.upper()}")
-        
+
         # Cache results
         for i, tool in enumerate(tools):
             cache_key = self._get_cache_key(self._get_searchable_text(tool))
             self.embedding_cache[cache_key] = embeddings[i]
-        
+
         logger.info(f"Embedding cache size: {len(self.embedding_cache)} entries")
-    
+
     def _get_searchable_text(self, tool: ToolDefinition) -> str:
         """Extract searchable text from tool definition"""
         parts = [tool.description]
-        
+
         # Add parameter names and descriptions
         for param in tool.parameters:
             parts.append(param.name)
             if param.description:
                 parts.append(param.description)
-        
+
         # Add examples
         for example in tool.examples:
             if hasattr(example, "scenario"):
                 parts.append(example.scenario)
-        
+
         return " ".join(parts)
-    
+
     def delete_tool(self, tool_name: str) -> bool:
         """
         Delete a tool from the index.
@@ -589,7 +585,7 @@ class VectorToolSearchEngine:
                     ),
                     limit=1
                 )
-                
+
                 if search_results[0]:
                     point_id = search_results[0][0].id
                     self.client.delete(  # type: ignore[union-attr]
@@ -600,15 +596,15 @@ class VectorToolSearchEngine:
                     return True
             except Exception as e:
                 logger.error(f"Failed to delete tool from Qdrant: {e}")
-        
+
         # Fallback: Delete from memory
         if tool_name in self.memory_embeddings:
             del self.memory_embeddings[tool_name]
             del self.memory_tools[tool_name]
             return True
-        
+
         return False
-    
+
     def clear_index(self) -> bool:
         """Clear all tools from the index"""
         if self.qdrant_available and self.client is not None:
@@ -618,7 +614,7 @@ class VectorToolSearchEngine:
                 return True
             except Exception as e:
                 logger.error(f"Failed to clear collection: {e}")
-        
+
         # Clear memory fallback
         self.memory_embeddings.clear()
         self.memory_tools.clear()

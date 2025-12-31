@@ -11,14 +11,13 @@ Usage:
 from __future__ import annotations
 
 import json
-import subprocess
-from dataclasses import dataclass, asdict
-from pathlib import Path
-from typing import List, Optional, Dict, Any
 import logging
+import subprocess
 import sys
+from dataclasses import asdict, dataclass
+from pathlib import Path
 
-from .skill_library import Skill, list_skills, get_skill
+from .skill_library import get_skill, list_skills
 from .validation import validate_stub
 
 logger = logging.getLogger(__name__)
@@ -33,12 +32,12 @@ class ApprovalRecord:
     skill_name: str
     approved_by: str
     approved_at: str
-    git_ref: Optional[str] = None  # commit hash after promotion
+    git_ref: str | None = None  # commit hash after promotion
     validation_passed: bool = False
     notes: str = ""
 
 
-def _load_approvals() -> Dict[str, ApprovalRecord]:
+def _load_approvals() -> dict[str, ApprovalRecord]:
     """Load approval manifest."""
     if not _APPROVAL_MANIFEST.exists():
         return {}
@@ -52,7 +51,7 @@ def _load_approvals() -> Dict[str, ApprovalRecord]:
         return {}
 
 
-def _save_approvals(approvals: Dict[str, ApprovalRecord]) -> None:
+def _save_approvals(approvals: dict[str, ApprovalRecord]) -> None:
     """Save approval manifest."""
     data = {name: asdict(record) for name, record in approvals.items()}
     _APPROVAL_MANIFEST.write_text(json.dumps(data, indent=2))
@@ -66,44 +65,44 @@ def review_pending_skills() -> None:
     """
     approvals = _load_approvals()
     all_skills = list_skills()
-    
+
     pending = [s for s in all_skills if s.name not in approvals]
-    
+
     if not pending:
         print("✓ No pending skills to review")
         return
-    
+
     print(f"\n📋 Reviewing {len(pending)} pending skill(s)\n")
-    
+
     for skill in pending:
         print(f"{'='*60}")
         print(f"Skill: {skill.name}")
         print(f"Description: {skill.description or '(none)'}")
         print(f"Tags: {', '.join(skill.tags or [])}")
         print(f"Code Path: {skill.code_path}")
-        
+
         # Run validation
         code = Path(skill.code_path).read_text()
         validation = validate_stub(code, check_syntax=True)  # Quick syntax check
-        
+
         is_valid = bool(validation.get('valid', False))
         print(f"\nValidation: {'✓ PASS' if is_valid else '✗ FAIL'}")
         if not is_valid:
             syntax = validation.get('syntax') or {}
             print(f"  Error: {syntax.get('error', 'Unknown error')}")
-        
+
         # Preview code (first 10 lines)
         lines = code.split("\n")[:10]
-        print(f"\nCode Preview:")
+        print("\nCode Preview:")
         for i, line in enumerate(lines, 1):
             print(f"  {i:2d} | {line}")
         if len(code.split("\n")) > 10:
             print(f"  ... ({len(code.split('\n')) - 10} more lines)")
-        
+
         # Prompt for approval
         print(f"\n{'='*60}")
         action = input(f"Approve '{skill.name}'? [y/n/q(uit)]: ").strip().lower()
-        
+
         if action == 'q':
             print("\nReview session ended")
             return
@@ -111,7 +110,7 @@ def review_pending_skills() -> None:
             # Create approval record
             import datetime
             import getpass
-            
+
             record = ApprovalRecord(
                 skill_name=skill.name,
                 approved_by=getpass.getuser(),
@@ -119,7 +118,7 @@ def review_pending_skills() -> None:
                 validation_passed=validation['passed'],
                 notes=input("Optional notes: ").strip()
             )
-            
+
             approvals[skill.name] = record
             _save_approvals(approvals)
             print(f"✓ Approved: {skill.name}\n")
@@ -127,7 +126,7 @@ def review_pending_skills() -> None:
             print(f"⊗ Skipped: {skill.name}\n")
 
 
-def promote_skill_to_git(skill_name: str, git_repo_path: Optional[str] = None) -> bool:
+def promote_skill_to_git(skill_name: str, git_repo_path: str | None = None) -> bool:
     """
     Promote an approved skill to a Git repository.
     
@@ -139,30 +138,30 @@ def promote_skill_to_git(skill_name: str, git_repo_path: Optional[str] = None) -
         True if promotion succeeded
     """
     approvals = _load_approvals()
-    
+
     if skill_name not in approvals:
         print(f"✗ Skill '{skill_name}' is not approved. Run 'review' first.")
         return False
-    
+
     skill = get_skill(skill_name)
     if not skill:
         print(f"✗ Skill '{skill_name}' not found")
         return False
-    
+
     # Determine Git repo path
     git_repo: Path = Path.cwd() if git_repo_path is None else Path(git_repo_path)
-    
+
     if not (git_repo / ".git").exists():
         print(f"✗ Not a Git repository: {git_repo}")
         return False
-    
+
     # Copy skill to Git repo
     dest_dir = git_repo / "skills"
     dest_dir.mkdir(exist_ok=True)
-    
+
     dest_file = dest_dir / f"{skill.name}.py"
     code = Path(skill.code_path).read_text()
-    
+
     # Add metadata header
     header = f"""# Skill: {skill.name}
 # Description: {skill.description or '(none)'}
@@ -172,7 +171,7 @@ def promote_skill_to_git(skill_name: str, git_repo_path: Optional[str] = None) -
 
 """
     dest_file.write_text(header + code)
-    
+
     # Git add and commit
     try:
         subprocess.run(
@@ -181,7 +180,7 @@ def promote_skill_to_git(skill_name: str, git_repo_path: Optional[str] = None) -
             check=True,
             capture_output=True
         )
-        
+
         commit_msg = f"Add approved skill: {skill.name}\n\n{skill.description or ''}"
         result = subprocess.run(
             ["git", "commit", "-m", commit_msg],
@@ -190,7 +189,7 @@ def promote_skill_to_git(skill_name: str, git_repo_path: Optional[str] = None) -
             capture_output=True,
             text=True
         )
-        
+
         # Extract commit hash
         git_ref = subprocess.run(
             ["git", "rev-parse", "HEAD"],
@@ -199,16 +198,16 @@ def promote_skill_to_git(skill_name: str, git_repo_path: Optional[str] = None) -
             capture_output=True,
             text=True
         ).stdout.strip()
-        
+
         # Update approval record
         approvals[skill_name].git_ref = git_ref
         _save_approvals(approvals)
-        
+
         print(f"✓ Promoted '{skill.name}' to Git")
         print(f"  Commit: {git_ref[:8]}")
         print(f"  File: {dest_file.relative_to(git_repo)}")
         return True
-        
+
     except subprocess.CalledProcessError as e:
         print(f"✗ Git operation failed: {e.stderr}")
         return False
@@ -221,9 +220,9 @@ def main() -> None:
         print("  python -m orchestrator.execution.skill_approval review")
         print("  python -m orchestrator.execution.skill_approval promote <skill_name> [repo_path]")
         sys.exit(1)
-    
+
     command = sys.argv[1]
-    
+
     if command == "review":
         review_pending_skills()
     elif command == "promote":

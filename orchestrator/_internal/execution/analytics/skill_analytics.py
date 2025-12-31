@@ -13,14 +13,13 @@ Features:
 - Grafana dashboard integration
 """
 
+import logging
 import os
 import sqlite3
-import logging
-from pathlib import Path
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Any
-from dataclasses import dataclass, asdict
 from enum import Enum
+from typing import Any
 
 from .sqlite_schema import SQLiteSchema
 
@@ -53,7 +52,7 @@ class SkillUsage:
 
     skill_id: str
     user_id: str
-    org_id: Optional[str] = None
+    org_id: str | None = None
     execution_count: int = 1
     success_count: int = 1
     failure_count: int = 0
@@ -76,8 +75,8 @@ class SkillMetrics:
     health_score: float = 100.0
     avg_latency_ms: float = 0.0
     success_rate: float = 1.0
-    last_used: Optional[str] = None
-    deprecation_status: Optional[str] = None
+    last_used: str | None = None
+    deprecation_status: str | None = None
 
     def to_dict(self) -> dict:
         """Convert to dictionary."""
@@ -104,7 +103,7 @@ class SkillRecommendation:
 class SkillAnalytics:
     """Main analytics backend for Phase 5."""
 
-    def __init__(self, db_path: Optional[str] = None):
+    def __init__(self, db_path: str | None = None):
         """Initialize analytics backend.
 
         Args:
@@ -128,7 +127,7 @@ class SkillAnalytics:
         self,
         skill_id: str,
         user_id: str,
-        org_id: Optional[str] = None,
+        org_id: str | None = None,
         success: bool = True,
         latency_ms: float = 0.0,
     ) -> bool:
@@ -171,8 +170,8 @@ class SkillAnalytics:
             return False
 
     def get_skill_usage(
-        self, skill_id: str, days: int = 30, org_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, skill_id: str, days: int = 30, org_id: str | None = None
+    ) -> dict[str, Any]:
         """Get usage statistics for a skill.
 
         Args:
@@ -240,7 +239,7 @@ class SkillAnalytics:
     # ========================================================================
 
     def rate_skill(
-        self, skill_id: str, rating: int, org_id: Optional[str] = None
+        self, skill_id: str, rating: int, org_id: str | None = None
     ) -> bool:
         """Record a skill rating.
 
@@ -321,7 +320,7 @@ class SkillAnalytics:
             logger.error(f"Error recording rating: {e}")
             return False
 
-    def get_skill_metrics(self, skill_id: str) -> Optional[SkillMetrics]:
+    def get_skill_metrics(self, skill_id: str) -> SkillMetrics | None:
         """Get comprehensive metrics for a skill.
 
         Args:
@@ -379,8 +378,8 @@ class SkillAnalytics:
         metric_type: MetricType = MetricType.USAGE_COUNT,
         period: str = "daily",
         limit: int = 10,
-        org_id: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+        org_id: str | None = None,
+    ) -> list[dict[str, Any]]:
         """Compute leaderboard rankings.
 
         Args:
@@ -465,9 +464,9 @@ class SkillAnalytics:
     def get_top_skills(
         self,
         limit: int = 10,
-        org_id: Optional[str] = None,
+        org_id: str | None = None,
         period_days: int = 30,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get top skills by usage.
 
         Args:
@@ -491,8 +490,8 @@ class SkillAnalytics:
         self,
         user_id: str,
         limit: int = 5,
-        org_id: Optional[str] = None,
-    ) -> List[SkillRecommendation]:
+        org_id: str | None = None,
+    ) -> list[SkillRecommendation]:
         """Generate recommendations for a user.
 
         Args:
@@ -586,7 +585,7 @@ class SkillAnalytics:
             return []
 
     def _log_recommendation(
-        self, recommendation: SkillRecommendation, org_id: Optional[str] = None
+        self, recommendation: SkillRecommendation, org_id: str | None = None
     ) -> None:
         """Log a recommendation to the database.
 
@@ -735,8 +734,8 @@ class SkillAnalytics:
         self,
         skill_id: str,
         period_days: int = 30,
-        org_id: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+        org_id: str | None = None,
+    ) -> list[dict[str, Any]]:
         """Get usage trends for a skill.
 
         Args:
@@ -799,8 +798,8 @@ class SkillAnalytics:
     def get_adoption_metrics(
         self,
         skill_id: str,
-        org_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        org_id: str | None = None,
+    ) -> dict[str, Any]:
         """Get adoption metrics for a skill.
 
         Args:
@@ -855,7 +854,7 @@ class SkillAnalytics:
         """
         return self.schema.cleanup_old_data(retention_days)
 
-    def get_db_stats(self) -> Dict[str, Any]:
+    def get_db_stats(self) -> dict[str, Any]:
         """Get database statistics.
 
         Returns:
@@ -870,8 +869,8 @@ class SkillAnalytics:
             True if healthy.
         """
         return self.schema.health_check()
-    
-    def get_config_summary(self) -> Dict[str, Any]:
+
+    def get_config_summary(self) -> dict[str, Any]:
         """Get configuration summary for debugging.
         
         Returns:

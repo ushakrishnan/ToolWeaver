@@ -27,12 +27,13 @@ Plugin Interface:
 
 from __future__ import annotations
 
+import builtins
 import sys
-from typing import Any, Optional, List, Protocol, runtime_checkable, Dict
 from threading import Lock
-from orchestrator._internal.logger import get_logger
-from orchestrator._internal.errors import ToolWeaverError
+from typing import Any, Protocol, runtime_checkable
 
+from orchestrator._internal.errors import ToolWeaverError
+from orchestrator._internal.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -72,8 +73,8 @@ class DuplicateToolNameError(PluginError):
 
 @runtime_checkable
 class PluginProtocol(Protocol):
-    def get_tools(self) -> List[Dict[str, Any]]: ...
-    async def execute(self, tool_name: str, params: Dict[str, Any]) -> Any: ...
+    def get_tools(self) -> list[dict[str, Any]]: ...
+    async def execute(self, tool_name: str, params: dict[str, Any]) -> Any: ...
 
 
 class PluginRegistry:
@@ -88,16 +89,16 @@ class PluginRegistry:
         >>> plugin = registry.get("jira")
         >>> tools = plugin.get_tools()
     """
-    
+
     def __init__(self) -> None:
         """Initialize empty registry."""
         self._plugins: dict[str, PluginProtocol] = {}
         self._lock = Lock()
         logger.debug("Initialized PluginRegistry")
-    
+
     def register(
-        self, 
-        name: str, 
+        self,
+        name: str,
         plugin: PluginProtocol,
         replace: bool = False
     ) -> None:
@@ -122,12 +123,12 @@ class PluginRegistry:
             raise InvalidPluginError(
                 f"Plugin '{name}' must implement get_tools() method"
             )
-        
+
         if not hasattr(plugin, "execute") or not callable(plugin.execute):
             raise InvalidPluginError(
                 f"Plugin '{name}' must implement execute() method"
             )
-        
+
         # Check for duplicate plugin name before validating tools
         # (to provide a clear PluginAlreadyRegisteredError instead of DuplicateToolNameError)
         with self._lock:
@@ -136,7 +137,7 @@ class PluginRegistry:
                     f"Plugin '{name}' already registered. "
                     f"Use replace=True to override."
                 )
-        
+
         # Validate tool definitions for uniqueness and shape
         self._validate_plugin_tools(name=name, plugin=plugin)
 
@@ -182,7 +183,7 @@ class PluginRegistry:
             raise DuplicateToolNameError(
                 f"Plugin '{name}' tool names collide with existing registry: {', '.join(sorted(dup))}"
             )
-    
+
     def unregister(self, name: str) -> None:
         """
         Unregister a plugin.
@@ -199,10 +200,10 @@ class PluginRegistry:
         with self._lock:
             if name not in self._plugins:
                 raise PluginNotFoundError(f"Plugin '{name}' not found")
-            
+
             del self._plugins[name]
             logger.info(f"Unregistered plugin: {name}")
-    
+
     def get(self, name: str) -> PluginProtocol:
         """
         Get a plugin by name.
@@ -226,9 +227,9 @@ class PluginRegistry:
                     f"Plugin '{name}' not found. "
                     f"Available plugins: {', '.join(self._plugins.keys())}"
                 )
-            
+
             return self._plugins[name]
-    
+
     def list(self) -> list[str]:
         """
         List all registered plugin names.
@@ -242,7 +243,7 @@ class PluginRegistry:
         """
         with self._lock:
             return list(self._plugins.keys())
-    
+
     def has(self, name: str) -> bool:
         """
         Check if plugin is registered.
@@ -259,7 +260,7 @@ class PluginRegistry:
         """
         with self._lock:
             return name in self._plugins
-    
+
     def clear(self) -> None:
         """
         Clear all plugins (mainly for testing).
@@ -271,8 +272,8 @@ class PluginRegistry:
         with self._lock:
             self._plugins.clear()
             logger.debug("Cleared all plugins")
-    
-    def get_all_tools(self) -> dict[str, List[Dict[str, Any]]]:
+
+    def get_all_tools(self) -> dict[str, builtins.list[dict[str, Any]]]:
         """
         Get all tools from all plugins.
         
@@ -296,7 +297,7 @@ class PluginRegistry:
                 except Exception as e:
                     logger.error(f"Error getting tools from plugin '{name}': {e}")
                     all_tools[name] = []
-            
+
             return all_tools
 
 
@@ -304,7 +305,7 @@ class PluginRegistry:
 # Global Registry Singleton
 # ============================================================
 
-_global_registry: Optional[PluginRegistry] = None
+_global_registry: PluginRegistry | None = None
 
 
 def get_registry() -> PluginRegistry:
@@ -319,10 +320,10 @@ def get_registry() -> PluginRegistry:
         >>> registry.register("jira", JiraPlugin())
     """
     global _global_registry
-    
+
     if _global_registry is None:
         _global_registry = PluginRegistry()
-    
+
     return _global_registry
 
 
@@ -331,7 +332,7 @@ def get_registry() -> PluginRegistry:
 # ============================================================
 
 def register_plugin(
-    name: str, 
+    name: str,
     plugin: PluginProtocol,
     replace: bool = False
 ) -> None:
@@ -426,44 +427,44 @@ def discover_plugins() -> dict[str, PluginProtocol]:
         jira = "toolweaver_jira:JiraPlugin"
     """
     discovered = {}
-    
+
     # Python 3.10+ has importlib.metadata
     if sys.version_info >= (3, 10):
         try:
             from importlib.metadata import entry_points
-            
+
             # Get entry points for toolweaver.plugins group
             eps = entry_points(group='toolweaver.plugins')
-            
+
             for ep in eps:
                 try:
                     # Load the entry point
                     plugin_class = ep.load()
-                    
+
                     # Instantiate if it's a class
                     if isinstance(plugin_class, type):
                         plugin: PluginProtocol = plugin_class()  # type: ignore[call-arg]
                     else:
                         plugin = plugin_class  # type: ignore[assignment]
-                    
+
                     # Register in global registry
                     register_plugin(ep.name, plugin)
                     discovered[ep.name] = plugin
-                    
+
                     logger.info(f"Discovered and registered plugin: {ep.name}")
-                
+
                 except Exception as e:
                     logger.error(f"Failed to load plugin '{ep.name}': {e}")
-        
+
         except Exception as e:
             logger.error(f"Failed to discover plugins: {e}")
-    
+
     else:
         logger.warning(
             "Plugin discovery requires Python 3.10+. "
             "Plugins must be registered manually."
         )
-    
+
     return discovered
 
 

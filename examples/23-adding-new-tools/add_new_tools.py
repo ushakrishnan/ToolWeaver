@@ -18,19 +18,18 @@ This example shows:
 import asyncio
 import json
 import logging
-from typing import Dict, Any, List
 from datetime import datetime
+from typing import Any
 
-from orchestrator.shared.models import (
-    ToolDefinition,
-    ToolParameter,
-    ToolExample,
-    ToolCatalog,
-)
-from orchestrator._internal.infra.mcp_client import MCPClientShim
 from orchestrator._internal.infra.a2a_client import A2AClient, AgentCapability
+from orchestrator._internal.infra.mcp_client import MCPClientShim
+from orchestrator.shared.models import (
+    ToolCatalog,
+    ToolDefinition,
+    ToolExample,
+    ToolParameter,
+)
 from orchestrator.tools.tool_discovery import discover_tools
-from orchestrator._internal.runtime.orchestrator import Orchestrator
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -160,7 +159,7 @@ def create_stock_price_mcp_tool() -> ToolDefinition:
 # ============================================================================
 
 
-async def weather_tool_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
+async def weather_tool_worker(payload: dict[str, Any]) -> dict[str, Any]:
     """
     MCP tool worker for weather service
     
@@ -171,9 +170,9 @@ async def weather_tool_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
     """
     city = payload.get("city", "Unknown")
     units = payload.get("units", "fahrenheit")
-    
+
     logger.info(f"Fetching weather for {city} in {units}")
-    
+
     # Simulate API call (in production, call real weather API)
     # Mock data based on city
     weather_data = {
@@ -182,26 +181,26 @@ async def weather_tool_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
         "London": {"temp": 5, "condition": "rainy", "humidity": 80},
         "Tokyo": {"temp": 12, "condition": "clear", "humidity": 50},
     }
-    
+
     data = weather_data.get(city, {"temp": 20, "condition": "unknown", "humidity": 60})
-    
+
     # Convert to Celsius if needed
     temp = data["temp"]
     if units == "celsius" and temp < 50:  # Assume temp is in Fahrenheit if > 50
         temp = (temp - 32) * 5 / 9
-    
+
     result = {
         "temperature": round(temp, 1),
         "condition": data["condition"],
         "humidity": data["humidity"],
         "wind_speed": 5 + (hash(city) % 10),  # Pseudo-random based on city
     }
-    
+
     logger.info(f"Weather result: {result}")
     return result
 
 
-async def stock_price_tool_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
+async def stock_price_tool_worker(payload: dict[str, Any]) -> dict[str, Any]:
     """
     MCP tool worker for stock price service
     
@@ -209,9 +208,9 @@ async def stock_price_tool_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
     """
     ticker = payload.get("ticker", "UNKNOWN").upper()
     include_history = payload.get("include_history", False)
-    
+
     logger.info(f"Fetching stock price for {ticker}")
-    
+
     # Mock stock prices
     prices = {
         "AAPL": 178.50,
@@ -220,10 +219,10 @@ async def stock_price_tool_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
         "AMZN": 156.30,
         "TSLA": 238.10,
     }
-    
+
     price = prices.get(ticker, 100.0)
     change = 2.5 if hash(ticker) % 2 == 0 else -1.5
-    
+
     result = {
         "ticker": ticker,
         "price": round(price, 2),
@@ -231,7 +230,7 @@ async def stock_price_tool_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
         "timestamp": datetime.utcnow().isoformat() + "Z",
         "change_percent": change,
     }
-    
+
     if include_history:
         # Add mock 5-day history
         result["history"] = [
@@ -241,7 +240,7 @@ async def stock_price_tool_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
             price,
             price + 2,
         ]
-    
+
     logger.info(f"Stock result: {result}")
     return result
 
@@ -294,26 +293,26 @@ async def setup_mcp_tools(mcp_client: MCPClientShim) -> ToolCatalog:
     logger.info("=" * 70)
     logger.info("STEP 1: Registering Custom MCP Tools")
     logger.info("=" * 70)
-    
+
     # Register tool workers
     mcp_client.tool_map["get_weather"] = weather_tool_worker
     mcp_client.tool_map["get_stock_price"] = stock_price_tool_worker
-    
+
     logger.info(f"✓ Registered {len(mcp_client.tool_map)} MCP tool workers")
     logger.info(f"  Available tools: {list(mcp_client.tool_map.keys())}")
-    
+
     # Create catalog with tool definitions
     catalog = ToolCatalog(source="custom-mcp", version="1.0")
-    
+
     weather_tool = create_weather_mcp_tool()
     stock_tool = create_stock_price_mcp_tool()
-    
+
     catalog.add_tool(weather_tool)
     catalog.add_tool(stock_tool)
-    
+
     logger.info(f"✓ Created catalog with {len(catalog.tools)} tool definitions")
     logger.info(f"  Tools: {list(catalog.tools.keys())}")
-    
+
     return catalog
 
 
@@ -326,17 +325,17 @@ async def setup_a2a_agents(a2a_client: A2AClient) -> None:
     logger.info("=" * 70)
     logger.info("STEP 2: Registering A2A Agents")
     logger.info("=" * 70)
-    
+
     # Register agent capabilities
     agents = [
         create_data_analyst_agent(),
         create_report_generator_agent(),
     ]
-    
+
     for agent in agents:
         a2a_client.register_agent(agent)
         logger.info(f"✓ Registered agent: {agent.agent_id} ({agent.name})")
-    
+
     logger.info(f"✓ Total agents registered: {len(agents)}")
 
 
@@ -350,34 +349,34 @@ async def discover_all_tools(mcp_client: MCPClientShim, a2a_client: A2AClient) -
     logger.info("=" * 70)
     logger.info("STEP 3: Unified Tool Discovery (MCP + A2A)")
     logger.info("=" * 70)
-    
+
     catalog = await discover_tools(
         mcp_client=mcp_client,
         a2a_client=a2a_client,
         use_cache=False,
     )
-    
+
     logger.info(f"✓ Discovered {len(catalog.tools)} total tools")
-    
+
     # Break down by type
     mcp_tools = catalog.get_by_type("mcp")
     agent_tools = catalog.get_by_type("agent")
-    
+
     logger.info(f"  - MCP Tools: {len(mcp_tools)}")
     for tool in mcp_tools:
         logger.info(f"    • {tool.name}: {tool.description[:50]}...")
-    
+
     logger.info(f"  - A2A Agents: {len(agent_tools)}")
     for tool in agent_tools:
         logger.info(f"    • {tool.name}: {tool.description[:50]}...")
-    
+
     return catalog
 
 
 async def demonstrate_tool_usage(
     mcp_client: MCPClientShim,
     catalog: ToolCatalog,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Step 4: Demonstrate using tools from catalog
     
@@ -386,39 +385,39 @@ async def demonstrate_tool_usage(
     logger.info("=" * 70)
     logger.info("STEP 4: Using Tools from Catalog")
     logger.info("=" * 70)
-    
+
     results = {}
-    
+
     # Example 1: Call weather tool
     logger.info("\n📍 Calling get_weather tool...")
     weather_tool = catalog.get_tool("get_weather")
-    
+
     if weather_tool:
         logger.info(f"Tool found: {weather_tool.name}")
         logger.info(f"Description: {weather_tool.description}")
         logger.info(f"Parameters: {[p.name for p in weather_tool.parameters]}")
-        
+
         # Call the tool
         weather_payload = {"city": "San Francisco", "units": "celsius"}
         weather_result = await weather_tool_worker(weather_payload)
         results["weather"] = weather_result
-        
+
         logger.info(f"✓ Result: {json.dumps(weather_result, indent=2)}")
-    
+
     # Example 2: Call stock price tool
     logger.info("\n📊 Calling get_stock_price tool...")
     stock_tool = catalog.get_tool("get_stock_price")
-    
+
     if stock_tool:
         logger.info(f"Tool found: {stock_tool.name}")
         logger.info(f"Description: {stock_tool.description}")
-        
+
         stock_payload = {"ticker": "AAPL", "include_history": True}
         stock_result = await stock_price_tool_worker(stock_payload)
         results["stock"] = stock_result
-        
+
         logger.info(f"✓ Result: {json.dumps(stock_result, indent=2)}")
-    
+
     return results
 
 
@@ -431,7 +430,7 @@ async def demonstrate_tool_metadata(catalog: ToolCatalog) -> None:
     logger.info("=" * 70)
     logger.info("STEP 5: Tool Metadata and LLM Format")
     logger.info("=" * 70)
-    
+
     # Show individual tool metadata
     for tool_name in ["get_weather", "get_stock_price"]:
         tool = catalog.get_tool(tool_name)
@@ -442,13 +441,13 @@ async def demonstrate_tool_metadata(catalog: ToolCatalog) -> None:
             logger.info(f"   Source: {tool.source}")
             logger.info(f"   Parameters: {len(tool.parameters)}")
             logger.info(f"   Examples: {len(tool.examples)}")
-            
+
             # Show LLM format
             llm_format = tool.to_llm_format(include_examples=False)
             logger.info(f"   LLM Format Keys: {list(llm_format.keys())}")
-    
+
     # Show catalog-level stats
-    logger.info(f"\n📊 Catalog Statistics:")
+    logger.info("\n📊 Catalog Statistics:")
     logger.info(f"   Total tools: {len(catalog.tools)}")
     logger.info(f"   MCP tools: {len(catalog.get_by_type('mcp'))}")
     logger.info(f"   Agent tools: {len(catalog.get_by_type('agent'))}")
@@ -469,40 +468,40 @@ async def main():
     print("\n" + "=" * 70)
     print("EXAMPLE 23: Adding New Tools to Catalog (MCP and A2A)".center(70))
     print("=" * 70 + "\n")
-    
+
     # Initialize clients
     mcp_client = MCPClientShim()
     a2a_client = A2AClient(config_path=None)  # No config file needed for demo
-    
+
     try:
         # Step 1: Register MCP tools
         mcp_catalog = await setup_mcp_tools(mcp_client)
-        
+
         # Step 2: Register A2A agents
         await setup_a2a_agents(a2a_client)
-        
+
         # Step 3: Unified discovery
         unified_catalog = await discover_all_tools(mcp_client, a2a_client)
-        
+
         # Step 4: Demonstrate tool usage
         results = await demonstrate_tool_usage(mcp_client, unified_catalog)
-        
+
         # Step 5: Show metadata and LLM format
         await demonstrate_tool_metadata(unified_catalog)
-        
+
         # Summary
         logger.info("\n" + "=" * 70)
         logger.info("SUMMARY".center(70))
         logger.info("=" * 70)
         logger.info(f"✓ Successfully added {len(mcp_catalog.tools)} MCP tools")
-        logger.info(f"✓ Successfully registered 2 A2A agents")
+        logger.info("✓ Successfully registered 2 A2A agents")
         logger.info(f"✓ Unified catalog contains {len(unified_catalog.tools)} total tools/agents")
         logger.info(f"✓ Called {len(results)} tools successfully")
         logger.info("\nAll tools are now ready for use in programmatic execution!")
         logger.info("=" * 70 + "\n")
-        
+
         return unified_catalog
-        
+
     except Exception as e:
         logger.error(f"Error in workflow: {e}", exc_info=True)
         raise

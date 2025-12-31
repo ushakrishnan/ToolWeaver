@@ -5,12 +5,14 @@ This module provides a high-level planner that uses large language models
 to convert natural language requests into structured execution plans.
 """
 
-import os
 import json
 import logging
-from typing import Dict, Any, List, Optional, Type, cast
+import os
 from types import TracebackType
+from typing import Any, cast
+
 from dotenv import load_dotenv
+
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 
 logger = logging.getLogger(__name__)
@@ -18,7 +20,7 @@ load_dotenv()
 
 # Optional imports - only loaded if needed (warnings shown when actually used)
 try:
-    from openai import AsyncOpenAI, AsyncAzureOpenAI
+    from openai import AsyncAzureOpenAI, AsyncOpenAI
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
@@ -46,12 +48,12 @@ class LargePlanner:
     - Dependency resolution (DAG structure)
     - Parallel vs sequential execution modes
     """
-    
+
     def __init__(
-        self, 
-            provider: Optional[str] = None, 
-            model: Optional[str] = None,
-        tool_catalog: Optional[ToolCatalog] = None,
+        self,
+            provider: str | None = None,
+            model: str | None = None,
+        tool_catalog: ToolCatalog | None = None,
         use_tool_search: bool = True,
         search_threshold: int = 20,
         use_programmatic_calling: bool = True
@@ -86,18 +88,18 @@ class LargePlanner:
         env_provider = os.getenv("PLANNER_PROVIDER", "openai")
         prov = provider if provider is not None else env_provider
         self.provider = prov.lower()
-        
+
         # Store tool catalog (will use default if None)
         self.tool_catalog = tool_catalog
-        
+
         # Phase 3: Semantic search configuration
         self.use_tool_search = use_tool_search
         self.search_threshold = search_threshold
-        self.search_engine: Optional[Any] = None  # Lazy init, initialized on first use
-        
+        self.search_engine: Any | None = None  # Lazy init, initialized on first use
+
         # Phase 4: Programmatic calling configuration
         self.use_programmatic_calling = use_programmatic_calling
-        
+
         if self.provider == "openai":
             if not OPENAI_AVAILABLE:
                 raise RuntimeError("OpenAI package not installed. Install with: pip install openai")
@@ -106,29 +108,29 @@ class LargePlanner:
                 raise ValueError("OPENAI_API_KEY environment variable not set")
             self.client = AsyncOpenAI(api_key=api_key)
             self.model = model or os.getenv("PLANNER_MODEL", "gpt-4o")
-            
+
         elif self.provider == "azure-openai":
             if not OPENAI_AVAILABLE:
                 raise RuntimeError("OpenAI package not installed. Install with: pip install openai")
-            
+
             endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
             api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-08-01-preview")
             use_ad = os.getenv("AZURE_OPENAI_USE_AD", "false").lower() == "true"
-            
+
             if not endpoint:
                 raise ValueError("AZURE_OPENAI_ENDPOINT environment variable required")
-            
+
             if use_ad:
                 # Use Azure AD (Entra ID) authentication
                 try:
                     from azure.identity.aio import DefaultAzureCredential
                     self.credential = DefaultAzureCredential()
-                    
+
                     # Token provider must be async and return just the token string
                     async def get_azure_token() -> str:
                         token = await self.credential.get_token("https://cognitiveservices.azure.com/.default")
                         return str(token.token)
-                    
+
                     self.client = AsyncAzureOpenAI(
                         azure_ad_token_provider=get_azure_token,
                         azure_endpoint=endpoint,
@@ -150,7 +152,7 @@ class LargePlanner:
                 )
                 logger.info("Using API key authentication for Azure OpenAI")
             self.model = model or os.getenv("PLANNER_MODEL", "gpt-4o")
-            
+
         elif self.provider == "anthropic":
             if not ANTHROPIC_AVAILABLE:
                 raise RuntimeError("Anthropic package not installed. Install with: pip install anthropic")
@@ -159,7 +161,7 @@ class LargePlanner:
                 raise ValueError("ANTHROPIC_API_KEY environment variable not set")
             self.client = AsyncAnthropic(api_key=api_key)
             self.model = model or os.getenv("PLANNER_MODEL", "claude-3-5-sonnet-20241022")
-            
+
         elif self.provider == "gemini":
             if not GEMINI_AVAILABLE:
                 raise RuntimeError("Google Gemini package not installed. Install with: pip install google-generativeai")
@@ -169,33 +171,33 @@ class LargePlanner:
             genai.configure(api_key=api_key)
             self.client = genai.GenerativeModel(model or os.getenv("PLANNER_MODEL", "gemini-1.5-pro"))
             self.model = model or os.getenv("PLANNER_MODEL", "gemini-1.5-pro")
-            
+
         else:
             raise ValueError(f"Unknown provider: {self.provider}. Use 'openai', 'azure-openai', 'anthropic', or 'gemini'")
-        
+
         logger.info(f"Initialized LargePlanner with {self.provider} ({self.model})")
-    
+
     async def close(self) -> None:
         """Clean up resources (Azure AD credential, HTTP clients)."""
         if hasattr(self, 'client') and hasattr(self.client, 'close'):
             await self.client.close()
-        
+
         if hasattr(self, 'credential') and self.credential is not None:
             await self.credential.close()
-    
+
     async def __aenter__(self) -> "LargePlanner":
         """Async context manager entry."""
         return self
-    
+
     async def __aexit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType]
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None
     ) -> None:
         """Async context manager exit."""
         await self.close()
-    
+
     def _get_default_catalog(self) -> ToolCatalog:
         """
         Create default tool catalog with legacy hardcoded tools.
@@ -205,7 +207,7 @@ class LargePlanner:
             ToolCatalog with receipt processing tools
         """
         catalog = ToolCatalog(source="legacy_hardcoded", version="1.0")
-        
+
         # MCP Tools
         catalog.add_tool(ToolDefinition(
             name="receipt_ocr",
@@ -218,7 +220,7 @@ class LargePlanner:
                 "output_schema": {"text": "string", "confidence": "float"}
             }
         ))
-        
+
         catalog.add_tool(ToolDefinition(
             name="line_item_parser",
             type="mcp",
@@ -230,7 +232,7 @@ class LargePlanner:
                 "output_schema": {"items": "array"}
             }
         ))
-        
+
         catalog.add_tool(ToolDefinition(
             name="expense_categorizer",
             type="mcp",
@@ -242,7 +244,7 @@ class LargePlanner:
                 "output_schema": {"categorized": "array"}
             }
         ))
-        
+
         # Function Tools
         catalog.add_tool(ToolDefinition(
             name="compute_tax",
@@ -256,7 +258,7 @@ class LargePlanner:
                 "output_type": "float"
             }
         ))
-        
+
         catalog.add_tool(ToolDefinition(
             name="merge_items",
             type="function",
@@ -268,7 +270,7 @@ class LargePlanner:
                 "output_schema": {"total_sum": "number", "count": "number", "avg_total": "number"}
             }
         ))
-        
+
         catalog.add_tool(ToolDefinition(
             name="apply_discount",
             type="function",
@@ -281,7 +283,7 @@ class LargePlanner:
                 "output_schema": {"original": "number", "discount": "number", "final": "number"}
             }
         ))
-        
+
         catalog.add_tool(ToolDefinition(
             name="filter_items_by_category",
             type="function",
@@ -294,7 +296,7 @@ class LargePlanner:
                 "output_type": "array"
             }
         ))
-        
+
         catalog.add_tool(ToolDefinition(
             name="compute_item_statistics",
             type="function",
@@ -306,7 +308,7 @@ class LargePlanner:
                 "output_schema": {"count": "number", "total_amount": "number", "categories": "object"}
             }
         ))
-        
+
         # Code Execution
         catalog.add_tool(ToolDefinition(
             name="code_exec",
@@ -322,10 +324,10 @@ class LargePlanner:
                 "output_variable": "output"
             }
         ))
-        
+
         return catalog
-    
-    def _get_tool_catalog(self, available_tools: Optional[List[ToolDefinition]] = None) -> ToolCatalog:
+
+    def _get_tool_catalog(self, available_tools: list[ToolDefinition] | None = None) -> ToolCatalog:
         """
         Get the tool catalog to use for planning.
         
@@ -347,15 +349,15 @@ class LargePlanner:
             for tool in available_tools:
                 catalog.add_tool(tool)
             return catalog
-        
+
         # Phase 1: Use injected catalog if provided
         if self.tool_catalog is not None:
             return self.tool_catalog
-        
+
         # Backward compatibility: Use default catalog
         return self._get_default_catalog()
-    
-    def _build_system_prompt(self, available_tools: Optional[List[ToolDefinition]] = None) -> str:
+
+    def _build_system_prompt(self, available_tools: list[ToolDefinition] | None = None) -> str:
         """
         Build the system prompt for the planner.
         
@@ -366,14 +368,14 @@ class LargePlanner:
             System prompt string with tool definitions in LLM format
         """
         tool_catalog = self._get_tool_catalog(available_tools)
-        
+
         # Group tools by type for better organization
         tools_by_type = {
             "mcp": tool_catalog.get_by_type("mcp"),
             "function": tool_catalog.get_by_type("function"),
             "code_exec": tool_catalog.get_by_type("code_exec")
         }
-        
+
         # Build tool descriptions
         tool_descriptions = {}
         for tool_type, tools in tools_by_type.items():
@@ -387,7 +389,7 @@ class LargePlanner:
                     }
                     for tool in tools
                 }
-        
+
         # Build programmatic calling section if enabled
         ptc_section = ""
         if self.use_programmatic_calling:
@@ -442,7 +444,7 @@ DON'T use programmatic calling when:
 ❌ Simple, straightforward workflows
 ❌ Tools have complex dependencies
 """
-        
+
         return f"""You are an execution planner for a hybrid orchestration system. Your job is to convert natural language requests into structured JSON execution plans.
 
 Available Tools:
@@ -479,9 +481,9 @@ Respond with only the JSON execution plan."""
     async def generate_plan(
         self,
         user_request: str,
-        context: Optional[Dict[str, Any]] = None,
-        available_tools: Optional[List[ToolDefinition]] = None
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None,
+        available_tools: list[ToolDefinition] | None = None
+    ) -> dict[str, Any]:
         """
         Generate an execution plan from a natural language request.
         
@@ -512,13 +514,13 @@ Respond with only the JSON execution plan."""
             # Automatically searches and uses only relevant tools
         """
         logger.info(f"Generating plan for request: {user_request[:100]}...")
-        
+
         # Phase 3: Adaptive tool selection with semantic search
         if available_tools is None:
             # Get or create tool catalog
             catalog = self._get_tool_catalog()
             total_tools = len(catalog.tools)
-            
+
             # Decide whether to use semantic search
             if self.use_tool_search and total_tools > self.search_threshold:
                 # Lazy init search engine
@@ -526,7 +528,7 @@ Respond with only the JSON execution plan."""
                     from orchestrator.tools.tool_search import ToolSearchEngine
                     self.search_engine = ToolSearchEngine()
                     logger.info("Initialized semantic search engine")
-                
+
                 # Search for relevant tools
                 search_results = self.search_engine.search(
                     query=user_request,
@@ -534,14 +536,14 @@ Respond with only the JSON execution plan."""
                     top_k=10,  # Get top 10 most relevant tools
                     min_score=0.3
                 )
-                
+
                 available_tools = [tool for tool, score in search_results]
-                
+
                 # Calculate token savings
                 tokens_without_search = total_tools * 150  # ~150 tokens per tool
                 tokens_with_search = len(available_tools) * 150
                 savings_pct = ((tokens_without_search - tokens_with_search) / tokens_without_search) * 100
-                
+
                 logger.info(
                     f"Semantic search: {total_tools} tools → {len(available_tools)} relevant tools "
                     f"(~{savings_pct:.1f}% token reduction, ~{tokens_without_search - tokens_with_search:,} tokens saved)"
@@ -556,12 +558,12 @@ Respond with only the JSON execution plan."""
         else:
             # Tools explicitly provided (e.g., from external search)
             logger.info(f"Using {len(available_tools)} explicitly provided tools")
-        
+
         # Build the user message
         user_message = f"User Request: {user_request}\n"
         if context:
             user_message += f"\nContext: {json.dumps(context, indent=2)}"
-        
+
         try:
             if self.provider in ["openai", "azure-openai"]:
                 response = await self.client.chat.completions.create(
@@ -574,7 +576,7 @@ Respond with only the JSON execution plan."""
                     temperature=0.1  # Low temperature for consistent planning
                 )
                 plan_json = response.choices[0].message.content
-                
+
             elif self.provider == "anthropic":
                 response = await self.client.messages.create(
                     model=self.model,
@@ -586,7 +588,7 @@ Respond with only the JSON execution plan."""
                     temperature=0.1
                 )
                 plan_json = response.content[0].text
-                
+
             elif self.provider == "gemini":
                 prompt = f"{self._build_system_prompt()}\n\n{user_message}"
                 response = await self.client.generate_content_async(
@@ -597,23 +599,23 @@ Respond with only the JSON execution plan."""
                     )
                 )
                 plan_json = response.text
-            
+
             # Parse and validate JSON
-            plan = cast(Dict[str, Any], json.loads(plan_json))
+            plan = cast(dict[str, Any], json.loads(plan_json))
             logger.info(f"Generated plan with {len(plan.get('steps', []))} steps")
-            
+
             return plan
-            
+
         except Exception as e:
             logger.error(f"Plan generation failed: {e}", exc_info=True)
             raise RuntimeError(f"Failed to generate execution plan: {e}")
-    
+
     async def refine_plan(
         self,
-        original_plan: Dict[str, Any],
+        original_plan: dict[str, Any],
         feedback: str,
-        available_tools: Optional[List[ToolDefinition]] = None
-    ) -> Dict[str, Any]:
+        available_tools: list[ToolDefinition] | None = None
+    ) -> dict[str, Any]:
         """
         Refine an existing plan based on feedback or errors.
         
@@ -626,7 +628,7 @@ Respond with only the JSON execution plan."""
             Updated execution plan
         """
         logger.info(f"Refining plan based on feedback: {feedback[:100]}...")
-        
+
         user_message = f"""Original Plan:
 {json.dumps(original_plan, indent=2)}
 
@@ -634,7 +636,7 @@ Feedback/Issues:
 {feedback}
 
 Please generate an improved plan that addresses the feedback."""
-        
+
         try:
             if self.provider in ["openai", "azure-openai"]:
                 response = await self.client.chat.completions.create(
@@ -647,7 +649,7 @@ Please generate an improved plan that addresses the feedback."""
                     temperature=0.1
                 )
                 plan_json = response.choices[0].message.content
-                
+
             elif self.provider == "anthropic":
                 response = await self.client.messages.create(
                     model=self.model,
@@ -659,7 +661,7 @@ Please generate an improved plan that addresses the feedback."""
                     temperature=0.1
                 )
                 plan_json = response.content[0].text
-                
+
             elif self.provider == "gemini":
                 prompt = f"{self._build_system_prompt(available_tools)}\n\n{user_message}"
                 response = await self.client.generate_content_async(
@@ -670,12 +672,12 @@ Please generate an improved plan that addresses the feedback."""
                     )
                 )
                 plan_json = response.text
-            
-            refined_plan = cast(Dict[str, Any], json.loads(plan_json))
+
+            refined_plan = cast(dict[str, Any], json.loads(plan_json))
             logger.info("Plan refinement completed")
-            
+
             return refined_plan
-            
+
         except Exception as e:
             logger.error(f"Plan refinement failed: {e}", exc_info=True)
             raise RuntimeError(f"Failed to refine execution plan: {e}")

@@ -1,12 +1,11 @@
 import asyncio
-import random
-from typing import Any, Dict
+from typing import Any
 
 from orchestrator.tools.sub_agent import dispatch_agents
 from orchestrator.tools.sub_agent_limits import DispatchResourceLimits
 
 
-async def simulated_executor(prompt: str, args: Dict[str, Any], agent_name: str, model: str) -> Any:
+async def simulated_executor(prompt: str, args: dict[str, Any], agent_name: str, model: str) -> Any:
     """Simulate variable runtime and return a simple dict with cost.
     If args contains delay > timeout, the dispatch will time out (handled upstream).
     """

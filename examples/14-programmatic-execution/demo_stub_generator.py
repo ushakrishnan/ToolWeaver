@@ -20,7 +20,7 @@ from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParamete
 def create_sample_catalog() -> ToolCatalog:
     """Create a sample tool catalog with diverse tools"""
     catalog = ToolCatalog(source="demo", version="1.0")
-    
+
     # Google Drive tools
     catalog.add_tool(ToolDefinition(
         name="get_document",
@@ -32,7 +32,7 @@ def create_sample_catalog() -> ToolCatalog:
             ToolParameter(name="format", type="string", description="Export format", required=False)
         ]
     ))
-    
+
     catalog.add_tool(ToolDefinition(
         name="create_document",
         type="function",
@@ -43,7 +43,7 @@ def create_sample_catalog() -> ToolCatalog:
             ToolParameter(name="content", type="string", description="Initial content", required=False)
         ]
     ))
-    
+
     # Jira tools
     catalog.add_tool(ToolDefinition(
         name="create_ticket",
@@ -56,7 +56,7 @@ def create_sample_catalog() -> ToolCatalog:
             ToolParameter(name="priority", type="integer", description="Priority (1-5)", required=False)
         ]
     ))
-    
+
     # Slack tools
     catalog.add_tool(ToolDefinition(
         name="send_message",
@@ -69,7 +69,7 @@ def create_sample_catalog() -> ToolCatalog:
             ToolParameter(name="thread_ts", type="string", description="Thread timestamp", required=False)
         ]
     ))
-    
+
     return catalog
 
 
@@ -77,7 +77,7 @@ def show_generated_structure(stub_dir: Path):
     """Display the generated file structure"""
     print("\n📁 Generated File Structure:")
     print("=" * 60)
-    
+
     for path in sorted(stub_dir.rglob("*.py")):
         rel_path = path.relative_to(stub_dir)
         indent = "  " * (len(rel_path.parts) - 1)
@@ -88,7 +88,7 @@ def show_stub_content(stub_dir: Path, tool_name: str):
     """Show content of a specific stub"""
     print(f"\n📄 Content of {tool_name}:")
     print("=" * 60)
-    
+
     # Find the stub file
     stub_files = list(stub_dir.rglob(f"{tool_name}.py"))
     if stub_files:
@@ -129,29 +129,29 @@ async def main():
     """Run the demo"""
     print("🚀 Code Stub Generation Demo")
     print("=" * 60)
-    
+
     # Create sample catalog
     print("\n1. Creating sample tool catalog...")
     catalog = create_sample_catalog()
     print(f"   ✓ Created catalog with {len(catalog.tools)} tools")
     print(f"   Domains: {', '.join(set(t.domain for t in catalog.tools.values()))}")
-    
+
     # Generate stubs
     with tempfile.TemporaryDirectory() as tmp:
         stub_dir = Path(tmp) / "stubs"
         print(f"\n2. Generating stubs in: {stub_dir}")
-        
+
         generator = StubGenerator(catalog, stub_dir)
         stubs = generator.generate_all()
-        
+
         print(f"   ✓ Generated {len(stubs)} stub files")
-        
+
         # Show structure
         show_generated_structure(stub_dir)
-        
+
         # Show sample stub
         show_stub_content(stub_dir, "get_document")
-        
+
         # Show generated stub info
         print("\n📊 Generated Stubs Info:")
         print("=" * 60)
@@ -164,25 +164,25 @@ async def main():
                 print(f"  Path: {Path(stub_info.file_path).relative_to(stub_dir)}")
                 print(f"  Classes: {', '.join(stub_info.classes)}")
                 print(f"  Imports: {len(stub_info.imports)} import statements")
-        
+
         # Show usage example
         show_usage_example()
-        
+
         # Show context reduction
         print("\n📉 Context Reduction Benefits:")
         print("=" * 60)
-        
+
         # Calculate tokens for full catalog
         full_format = catalog.to_llm_format()
         full_tokens = sum(len(str(tool)) for tool in full_format)
-        
+
         # Calculate tokens for file tree (just exploring)
         file_tree_tokens = len(str([d.name for d in stub_dir.glob("tools/*")]))
-        
+
         # Calculate tokens for single tool import
         single_stub = stub_dir / "tools" / "google_drive" / "get_document.py"
         single_tokens = len(single_stub.read_text()) if single_stub.exists() else 0
-        
+
         print(f"Full catalog in context: ~{full_tokens} tokens")
         print(f"File tree exploration: ~{file_tree_tokens} tokens ({100*file_tree_tokens/full_tokens:.1f}% of full)")
         print(f"Single tool import: ~{single_tokens} tokens ({100*single_tokens/full_tokens:.1f}% of full)")

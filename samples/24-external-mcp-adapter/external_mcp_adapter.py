@@ -1,7 +1,6 @@
-import asyncio
 import json
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import aiohttp
 
@@ -10,7 +9,7 @@ import aiohttp
 class AdapterConfig:
     endpoint: str
     timeout: float = 20.0
-    auth_token: Optional[str] = None
+    auth_token: str | None = None
 
 
 class ExternalMCPAdapter:
@@ -25,8 +24,8 @@ class ExternalMCPAdapter:
     def __init__(self, config: AdapterConfig) -> None:
         self.config = config
 
-    def _headers(self) -> Dict[str, str]:
-        h: Dict[str, str] = {"Content-Type": "application/json"}
+    def _headers(self) -> dict[str, str]:
+        h: dict[str, str] = {"Content-Type": "application/json"}
         if self.config.auth_token:
             h["Authorization"] = f"Bearer {self.config.auth_token}"
         return h
@@ -34,18 +33,18 @@ class ExternalMCPAdapter:
     def _is_ws(self) -> bool:
         return self.config.endpoint.startswith("ws://") or self.config.endpoint.startswith("wss://")
 
-    async def discover_tools(self) -> List[Dict[str, Any]]:
+    async def discover_tools(self) -> list[dict[str, Any]]:
         if self._is_ws():
             return await self._discover_ws()
         return await self._discover_http()
 
-    async def execute(self, name: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute(self, name: str, params: dict[str, Any]) -> dict[str, Any]:
         if self._is_ws():
             return await self._execute_ws(name, params)
         return await self._execute_http(name, params)
 
     # ---------------------- HTTP mode ----------------------
-    async def _discover_http(self) -> List[Dict[str, Any]]:
+    async def _discover_http(self) -> list[dict[str, Any]]:
         url = self.config.endpoint.rstrip("/") + "/tools"
         timeout = aiohttp.ClientTimeout(total=self.config.timeout)
         async with aiohttp.ClientSession(timeout=timeout, headers=self._headers()) as session:
@@ -59,7 +58,7 @@ class ExternalMCPAdapter:
                     return data
                 return []
 
-    async def _execute_http(self, name: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_http(self, name: str, params: dict[str, Any]) -> dict[str, Any]:
         url = self.config.endpoint.rstrip("/") + "/execute"
         payload = {"name": name, "params": params}
         timeout = aiohttp.ClientTimeout(total=self.config.timeout)
@@ -72,7 +71,7 @@ class ExternalMCPAdapter:
                 return {"result": data}
 
     # ---------------------- WebSocket mode ----------------------
-    async def _discover_ws(self) -> List[Dict[str, Any]]:
+    async def _discover_ws(self) -> list[dict[str, Any]]:
         timeout = aiohttp.ClientTimeout(total=self.config.timeout)
         async with aiohttp.ClientSession(timeout=timeout, headers=self._headers()) as session:
             async with session.ws_connect(self.config.endpoint) as ws:
@@ -89,7 +88,7 @@ class ExternalMCPAdapter:
                         return result
                 return []
 
-    async def _execute_ws(self, name: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_ws(self, name: str, params: dict[str, Any]) -> dict[str, Any]:
         timeout = aiohttp.ClientTimeout(total=self.config.timeout)
         async with aiohttp.ClientSession(timeout=timeout, headers=self._headers()) as session:
             async with session.ws_connect(self.config.endpoint) as ws:

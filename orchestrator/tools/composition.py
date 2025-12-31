@@ -8,10 +8,11 @@ Supports linear chains (sequential) and DAG-based execution (future).
 from __future__ import annotations
 
 import asyncio
-import time
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Protocol, Awaitable
 import functools
+import time
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from typing import Any, Protocol
 
 
 @dataclass
@@ -19,8 +20,8 @@ class CompositionStep:
     """Definition of a single step in a composition chain."""
     name: str
     tool_ref: str  # Reference to tool name or callable
-    input_schema: Dict[str, Any] = field(default_factory=dict)  # Expected input fields
-    output_mapping: Dict[str, str] = field(default_factory=dict)  # Map output field names
+    input_schema: dict[str, Any] = field(default_factory=dict)  # Expected input fields
+    output_mapping: dict[str, str] = field(default_factory=dict)  # Map output field names
     timeout_sec: int = 30
     retry_count: int = 0
     on_error: str = "raise"  # "raise", "continue", "fallback"
@@ -34,7 +35,7 @@ class CompositionStep:
 class CompositionChain:
     """A sequence of tool invocations forming a workflow."""
     name: str
-    steps: List[CompositionStep] = field(default_factory=list)
+    steps: list[CompositionStep] = field(default_factory=list)
     description: str = ""
     is_linear: bool = True  # True for sequential, False for DAG (future)
 
@@ -43,7 +44,7 @@ class CompositionChain:
         self.steps.append(step)
         return self
 
-    def validate(self) -> List[str]:
+    def validate(self) -> list[str]:
         """Validate chain for issues; return list of warnings/errors."""
         issues = []
         if not self.steps:
@@ -60,10 +61,10 @@ class CompositionChain:
 class CompositionResult:
     """Result of a composition execution."""
     chain_name: str
-    step_results: Dict[str, Any]  # step_name -> output
+    step_results: dict[str, Any]  # step_name -> output
     final_output: Any
     success: bool
-    error: Optional[str] = None
+    error: str | None = None
     total_duration_ms: float = 0.0
 
 
@@ -72,7 +73,7 @@ class StepExecutionError(Exception):
     """Error during step execution."""
     step_name: str
     error_msg: str
-    cause: Optional[Exception] = None
+    cause: Exception | None = None
 
 
 class ToolResolver(Protocol):
@@ -83,25 +84,25 @@ class ToolResolver(Protocol):
 
 class CompositionExecutor:
     """Executes tool composition chains sequentially (linear chains only)."""
-    
-    def __init__(self, tool_resolver: Optional[ToolResolver] = None):
+
+    def __init__(self, tool_resolver: ToolResolver | None = None):
         """
         Args:
             tool_resolver: Optional callable(tool_ref) -> Callable;
                           defaults to a simple lookup that expects callables as tool_refs
         """
         self.tool_resolver = tool_resolver or self._default_resolver
-    
+
     async def _default_resolver(self, tool_ref: str) -> Callable:
         """Default resolver: assumes tool_ref is callable or raises."""
         if callable(tool_ref):
             return tool_ref
         raise ValueError(f"Tool {tool_ref} is not callable and no resolver provided")
-    
+
     async def execute(
         self,
         chain: CompositionChain,
-        initial_input: Dict[str, Any],
+        initial_input: dict[str, Any],
     ) -> CompositionResult:
         """
         Execute a composition chain sequentially.
@@ -123,17 +124,17 @@ class CompositionExecutor:
                 error=f"Chain validation failed: {'; '.join(issues)}",
                 total_duration_ms=0.0,
             )
-        
+
         start = time.monotonic()
         step_results = {}
         current_input = initial_input.copy()
-        
+
         try:
             for step in chain.steps:
                 try:
                     step_output = await self._execute_step(step, current_input)
                     step_results[step.name] = step_output
-                    
+
                     # Prepare input for next step
                     current_input = build_parameter_mapping(
                         source_output=step_output,
@@ -144,7 +145,7 @@ class CompositionExecutor:
                         if chain.steps.index(step) + 1 < len(chain.steps)
                         else {},
                     )
-                except StepExecutionError as e:
+                except StepExecutionError:
                     if step.on_error == "raise":
                         raise
                     elif step.on_error == "continue":
@@ -152,7 +153,7 @@ class CompositionExecutor:
                         step_results[step.name] = None
                         current_input = {}
                     # "fallback" would be handled here later
-            
+
             duration_ms = (time.monotonic() - start) * 1000
             return CompositionResult(
                 chain_name=chain.name,
@@ -172,8 +173,8 @@ class CompositionExecutor:
                 error=str(e),
                 total_duration_ms=duration_ms,
             )
-    
-    async def _execute_step(self, step: CompositionStep, step_input: Dict[str, Any]) -> Any:
+
+    async def _execute_step(self, step: CompositionStep, step_input: dict[str, Any]) -> Any:
         """Execute a single step with timeout and retry logic."""
         for attempt in range(step.retry_count + 1):
             try:
@@ -182,14 +183,14 @@ class CompositionExecutor:
                     tool = await self.tool_resolver(step.tool_ref)
                 else:
                     tool = self.tool_resolver(step.tool_ref)
-                
+
                 # Call with timeout
                 async def _call():
                     if asyncio.iscoroutinefunction(tool):
                         return await tool(**step_input)
                     else:
                         return tool(**step_input)
-                
+
                 result = await asyncio.wait_for(_call(), timeout=step.timeout_sec)
                 return result
             except asyncio.TimeoutError as e:
@@ -236,10 +237,10 @@ def composite_tool(
 
 
 def build_parameter_mapping(
-    source_output: Dict[str, Any],
-    target_input_schema: Dict[str, Any],
-    explicit_mapping: Dict[str, str] = None,
-) -> Dict[str, Any]:
+    source_output: dict[str, Any],
+    target_input_schema: dict[str, Any],
+    explicit_mapping: dict[str, str] = None,
+) -> dict[str, Any]:
     """
     Auto-wire outputs from one step to inputs of the next.
 

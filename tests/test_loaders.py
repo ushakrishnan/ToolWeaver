@@ -4,32 +4,32 @@ Tests for YAML tool loader.
 Phase 3: Verify YAML-based tool registration works correctly.
 """
 
-import pytest
-from pathlib import Path
-import tempfile
 import sys
-from typing import Dict, Any
+import tempfile
+from pathlib import Path
+from typing import Any
+
+import pytest
 
 # Add current directory to path for importing test worker functions
 sys.path.insert(0, str(Path(__file__).parent))
 
+from orchestrator.plugins.registry import get_registry
 from orchestrator.tools.loaders import (
-    load_tools_from_yaml,
-    load_tools_from_directory,
     YAMLLoaderError,
     YAMLValidationError,
-    WorkerResolutionError,
+    load_tools_from_directory,
+    load_tools_from_yaml,
 )
-from orchestrator.plugins.registry import get_registry
 
 
 # Sample worker functions for testing - register them in a module-like way
-def sample_worker_sync(employee_id: str, year: int = 2025) -> Dict[str, Any]:
+def sample_worker_sync(employee_id: str, year: int = 2025) -> dict[str, Any]:
     """Sample synchronous worker function."""
     return {"employee_id": employee_id, "year": year, "expenses": []}
 
 
-async def sample_worker_async(repo: str, title: str) -> Dict[str, Any]:
+async def sample_worker_async(repo: str, title: str) -> dict[str, Any]:
     """Sample async worker function."""
     return {"repo": repo, "title": title, "pr_number": 123}
 
@@ -76,20 +76,20 @@ tools:
         default: 2025
 """
     temp_yaml_file.write_text(yaml_content)
-    
+
     count = load_tools_from_yaml(temp_yaml_file)
     assert count == 1
-    
+
     plugin = clean_registry.get("yaml_tools")
     tools = plugin.get_tools()
-    
+
     assert len(tools) == 1
     tool = tools[0]
     assert tool["name"] == "get_expenses"
     assert tool["type"] == "function"
     assert tool["domain"] == "finance"
     assert tool["source"] == "yaml"
-    
+
     # Check parameters
     params = {p["name"]: p for p in tool["parameters"]}
     assert "employee_id" in params
@@ -111,12 +111,12 @@ tools:
         required: true
 """
     temp_yaml_file.write_text(yaml_content)
-    
+
     load_tools_from_yaml(temp_yaml_file)
-    
+
     plugin = clean_registry.get("yaml_tools")
     result = await plugin.execute("get_expenses", {"employee_id": "E123", "year": 2024})
-    
+
     assert result["employee_id"] == "E123"
     assert result["year"] == 2024
     assert result["expenses"] == []
@@ -138,12 +138,12 @@ tools:
         required: true
 """
     temp_yaml_file.write_text(yaml_content)
-    
+
     load_tools_from_yaml(temp_yaml_file)
-    
+
     plugin = clean_registry.get("yaml_tools")
     result = await plugin.execute("create_pr", {"repo": "toolweaver", "title": "Fix bug"})
-    
+
     assert result["repo"] == "toolweaver"
     assert result["title"] == "Fix bug"
     assert result["pr_number"] == 123
@@ -159,14 +159,14 @@ tools:
     worker: test_loaders:sample_worker_async
 """
     temp_yaml_file.write_text(yaml_content)
-    
+
     count = load_tools_from_yaml(temp_yaml_file)
     assert count == 2
-    
+
     plugin = clean_registry.get("yaml_tools")
     tools = plugin.get_tools()
     assert len(tools) == 2
-    
+
     names = {t["name"] for t in tools}
     assert names == {"tool1", "tool2"}
 
@@ -178,7 +178,7 @@ tools:
   - worker: tests.test_loaders:sample_worker_sync
 """
     temp_yaml_file.write_text(yaml_content)
-    
+
     # Should load 0 tools (error logged but continues)
     count = load_tools_from_yaml(temp_yaml_file)
     assert count == 0
@@ -192,7 +192,7 @@ tools:
     description: "Missing worker"
 """
     temp_yaml_file.write_text(yaml_content)
-    
+
     count = load_tools_from_yaml(temp_yaml_file)
     assert count == 0
 
@@ -205,7 +205,7 @@ tools:
     worker: nonexistent.module:function
 """
     temp_yaml_file.write_text(yaml_content)
-    
+
     count = load_tools_from_yaml(temp_yaml_file)
     assert count == 0
 
@@ -219,7 +219,7 @@ def test_file_not_found():
 def test_invalid_yaml(temp_yaml_file):
     """Test error when YAML is malformed."""
     temp_yaml_file.write_text("{ invalid yaml [")
-    
+
     with pytest.raises(YAMLLoaderError, match="Failed to parse"):
         load_tools_from_yaml(temp_yaml_file)
 
@@ -227,7 +227,7 @@ def test_invalid_yaml(temp_yaml_file):
 def test_missing_tools_key(temp_yaml_file):
     """Test error when 'tools' key is missing."""
     temp_yaml_file.write_text("some_key: value")
-    
+
     with pytest.raises(YAMLValidationError, match="must contain a 'tools' key"):
         load_tools_from_yaml(temp_yaml_file)
 
@@ -235,7 +235,7 @@ def test_missing_tools_key(temp_yaml_file):
 def test_tools_not_list(temp_yaml_file):
     """Test error when 'tools' is not a list."""
     temp_yaml_file.write_text("tools: not_a_list")
-    
+
     with pytest.raises(YAMLValidationError, match="must be a list"):
         load_tools_from_yaml(temp_yaml_file)
 
@@ -243,7 +243,7 @@ def test_tools_not_list(temp_yaml_file):
 def test_load_from_directory(clean_registry, temp_yaml_file):
     """Test loading all YAML files from a directory."""
     temp_dir = temp_yaml_file.parent
-    
+
     # Create multiple YAML files
     file1 = temp_dir / "tools1.yaml"
     file1.write_text("""
@@ -251,19 +251,19 @@ tools:
   - name: tool1
     worker: test_loaders:sample_worker_sync
 """)
-    
+
     file2 = temp_dir / "tools2.yaml"
     file2.write_text("""
 tools:
   - name: tool2
     worker: test_loaders:sample_worker_async
 """)
-    
+
     try:
         count = load_tools_from_directory(temp_dir)
         # Should load at least our 2 tools (may load more if temp dir has other yamls)
         assert count >= 2
-        
+
         plugin = clean_registry.get("yaml_tools")
         tools = plugin.get_tools()
         names = {t["name"] for t in tools}
@@ -282,7 +282,7 @@ tools:
     worker: test_loaders:sample_worker_sync
 """
     temp_yaml_file.write_text(yaml_content)
-    
+
     count = load_tools_from_yaml(temp_yaml_file)
     assert count == 1
 
@@ -295,7 +295,7 @@ tools:
     worker: test_loaders.sample_worker_sync
 """
     temp_yaml_file.write_text(yaml_content)
-    
+
     count = load_tools_from_yaml(temp_yaml_file)
     assert count == 1
 
@@ -313,13 +313,13 @@ tools:
         - expenses
 """
     temp_yaml_file.write_text(yaml_content)
-    
+
     load_tools_from_yaml(temp_yaml_file)
-    
+
     plugin = clean_registry.get("yaml_tools")
     tools = plugin.get_tools()
     tool = tools[0]
-    
+
     assert tool["metadata"]["version"] == "1.0"
     assert tool["metadata"]["tags"] == ["finance", "expenses"]
 
@@ -332,13 +332,13 @@ tools:
     worker: test_loaders:sample_worker_sync
 """
     temp_yaml_file.write_text(yaml_content)
-    
+
     load_tools_from_yaml(temp_yaml_file)
-    
+
     plugin = clean_registry.get("yaml_tools")
     tools = plugin.get_tools()
     tool = tools[0]
-    
+
     assert tool["type"] == "function"  # default type
     assert tool["domain"] == "general"  # default domain
     assert tool["source"] == "yaml"

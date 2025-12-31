@@ -1,6 +1,6 @@
-from typing import Any, Dict
+from typing import Any
 
-from orchestrator import tool, FunctionToolTemplate, register_template
+from orchestrator import FunctionToolTemplate, register_template, tool
 from orchestrator.plugins.registry import get_registry
 
 
@@ -31,7 +31,7 @@ def test_decorator_supports_nested_input_schema():
     }
 
     @tool(description="Process nested user payload", input_schema=nested_schema)
-    def process(params: Dict[str, Any]) -> Dict[str, Any]:
+    def process(params: dict[str, Any]) -> dict[str, Any]:
         return params
 
     plugin = registry.get("decorators")
@@ -64,7 +64,7 @@ def test_template_supports_nested_input_schema():
     }
 
     class OrderTemplate(FunctionToolTemplate):
-        def execute(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        def execute(self, params: dict[str, Any]) -> dict[str, Any]:
             return params
 
     tmpl = OrderTemplate(name="order_process", description="Process order", input_schema=nested_schema)

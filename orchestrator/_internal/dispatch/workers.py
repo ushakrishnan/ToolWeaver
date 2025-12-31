@@ -1,8 +1,9 @@
 import asyncio
-import os
 import logging
-from typing import Any, Dict, Optional, TYPE_CHECKING, Literal, cast
-from ...shared.models import ReceiptOCROut, LineItemParserOut, LineItem, CategorizerOut
+import os
+from typing import TYPE_CHECKING, Any, Literal, Optional, cast
+
+from ...shared.models import CategorizerOut, LineItem, LineItemParserOut, ReceiptOCROut
 
 if TYPE_CHECKING:
     from ..execution.small_model_worker import SmallModelWorker
@@ -29,7 +30,7 @@ def _get_small_model_worker() -> Optional["SmallModelWorker"]:
                 _small_model_worker = False
         else:
             _small_model_worker = False
-    
+
     # Return the worker if available, None if failed or disabled
     if isinstance(_small_model_worker, bool):
         return None
@@ -37,39 +38,40 @@ def _get_small_model_worker() -> Optional["SmallModelWorker"]:
 
 # Local Azure CV wrapper provides stable imports + availability flag
 from .azure_cv import (
-    ImageAnalysisClient,
-    VisualFeatures,
+    AZURE_CV_AVAILABLE,
     AzureKeyCredential,
     DefaultAzureCredential,
-    AZURE_CV_AVAILABLE,
+    ImageAnalysisClient,
+    VisualFeatures,
 )
+
 if not AZURE_CV_AVAILABLE:
     logger.warning("Azure Computer Vision SDK not installed. Running in mock mode.")
 
-async def receipt_ocr_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
+async def receipt_ocr_worker(payload: dict[str, Any]) -> dict[str, Any]:
     """
     Extract text from receipt images using Azure Computer Vision OCR.
     Falls back to mock data if Azure is not configured.
     """
     image_uri = payload.get("image_uri")
     ocr_mode = os.getenv("OCR_MODE", "mock")
-    
+
     # Use Azure Computer Vision if configured and available
     if ocr_mode == "azure" and AZURE_CV_AVAILABLE:
         try:
             endpoint = os.getenv("AZURE_CV_ENDPOINT")
             key = os.getenv("AZURE_CV_KEY")
             use_azure_ad = os.getenv("AZURE_USE_AD", "false").lower() == "true"
-            
+
             if not endpoint:
                 logger.warning("Azure CV endpoint not configured. Using mock data.")
                 return _mock_ocr(image_uri if image_uri else "unknown")
             if not isinstance(image_uri, str) or not image_uri:
                 logger.warning("Invalid or missing image_uri. Using mock data.")
                 return _mock_ocr("unknown")
-            
+
             logger.info(f"Processing image with Azure Computer Vision: {image_uri}")
-            
+
             # Choose authentication method
             if use_azure_ad or not key:
                 # Use Azure AD authentication (DefaultAzureCredential)
@@ -79,34 +81,34 @@ async def receipt_ocr_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
                 # Use API key authentication
                 logger.info("Using API key authentication")
                 credential = AzureKeyCredential(key)
-            
+
             # Create the client
             client = ImageAnalysisClient(
                 endpoint=endpoint,
                 credential=credential
             )
-            
+
             # Analyze image for text (Read API)
             result = await asyncio.to_thread(
                 client.analyze_from_url,
                 image_url=image_uri,
                 visual_features=[VisualFeatures.READ]
             )
-            
+
             # Extract text from results
             extracted_text = []
             if result.read and result.read.blocks:
                 for block in result.read.blocks:
                     for line in block.lines:
                         extracted_text.append(line.text)
-            
+
             text = "\n".join(extracted_text) if extracted_text else "No text detected"
             confidence = 0.95  # Azure CV is typically high confidence
-            
+
             logger.info(f"Successfully extracted {len(extracted_text)} lines of text")
             from typing import cast
-            return cast(Dict[str, Any], ReceiptOCROut(text=text, confidence=confidence).model_dump())
-            
+            return cast(dict[str, Any], ReceiptOCROut(text=text, confidence=confidence).model_dump())
+
         except Exception as e:
             logger.error(f"Azure Computer Vision error: {e}. Falling back to mock data.")
             return _mock_ocr(image_uri if image_uri else "unknown")
@@ -114,13 +116,13 @@ async def receipt_ocr_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
         # Mock mode
         return _mock_ocr(image_uri if image_uri else "unknown")
 
-def _mock_ocr(image_uri: str) -> Dict[str, Any]:
+def _mock_ocr(image_uri: str) -> dict[str, Any]:
     """Generate mock OCR data for testing."""
     text = f"MOCK RECEIPT DATA (from {image_uri})\n\nCoffee Shop Receipt\n1x Coffee 3.50\n2x Bagel 5.00\nSubtotal: 8.50\nTax: 0.68\nTOTAL: 9.18"
     from typing import cast
-    return cast(Dict[str, Any], ReceiptOCROut(text=text, confidence=0.98).model_dump())
+    return cast(dict[str, Any], ReceiptOCROut(text=text, confidence=0.98).model_dump())
 
-async def line_item_parser_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
+async def line_item_parser_worker(payload: dict[str, Any]) -> dict[str, Any]:
     """
     Parse OCR text into structured line items.
     Uses small model (Phi-3) if configured, otherwise falls back to keyword matching.
@@ -129,7 +131,7 @@ async def line_item_parser_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
     # Handle case where ocr_text is a dict (from step reference)
     if isinstance(ocr_text, dict):
         ocr_text = ocr_text.get("text", "")
-    
+
     # Try small model first
     small_model = _get_small_model_worker()
     if small_model:
@@ -138,10 +140,10 @@ async def line_item_parser_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
             items_dicts = await small_model.parse_line_items(ocr_text)
             items = [LineItem(**item) for item in items_dicts]
             from typing import cast
-            return cast(Dict[str, Any], LineItemParserOut(items=items).model_dump())
+            return cast(dict[str, Any], LineItemParserOut(items=items).model_dump())
         except Exception as e:
             logger.warning(f"Small model parsing failed, falling back to keyword matching: {e}")
-    
+
     # Fallback: Simple keyword matching
     await asyncio.sleep(0.1)
     items = []
@@ -154,9 +156,9 @@ async def line_item_parser_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
         if 'bagel' in line.lower():
             items.append(LineItem(description='Bagel', quantity=2, unit_price=2.5, total=5.0))
     from typing import cast
-    return cast(Dict[str, Any], LineItemParserOut(items=items).model_dump())
+    return cast(dict[str, Any], LineItemParserOut(items=items).model_dump())
 
-async def expense_categorizer_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
+async def expense_categorizer_worker(payload: dict[str, Any]) -> dict[str, Any]:
     """
     Categorize items into expense categories.
     Uses small model (Phi-3) if configured, otherwise falls back to keyword matching.
@@ -165,7 +167,7 @@ async def expense_categorizer_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
     # Handle case where items is nested in a dict (from step reference)
     if isinstance(items, dict):
         items = items.get("items", [])
-    
+
     # Try small model first
     small_model = _get_small_model_worker()
     if small_model and items:
@@ -173,10 +175,10 @@ async def expense_categorizer_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
             logger.info("Using small model for expense categorization")
             categorized = await small_model.categorize_items(items)
             from typing import cast
-            return cast(Dict[str, Any], CategorizerOut(categorized=categorized).model_dump())
+            return cast(dict[str, Any], CategorizerOut(categorized=categorized).model_dump())
         except Exception as e:
             logger.warning(f"Small model categorization failed, falling back to keyword matching: {e}")
-    
+
     # Fallback: Simple keyword matching
     await asyncio.sleep(0.05)
     categorized = []
@@ -187,11 +189,11 @@ async def expense_categorizer_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
             category = "beverage"
         categorized.append({**it, "category": category})
     from typing import cast
-    return cast(Dict[str, Any], CategorizerOut(categorized=categorized).model_dump())
+    return cast(dict[str, Any], CategorizerOut(categorized=categorized).model_dump())
 
 # --- Minimal utility workers for advanced examples ---
 
-async def fetch_data_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
+async def fetch_data_worker(payload: dict[str, Any]) -> dict[str, Any]:
     """
     Fetch data from a source. For demo purposes, returns synthetic data
     without performing network I/O unless SOURCE_MODE=real and source scheme is supported.
@@ -202,7 +204,7 @@ async def fetch_data_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
     return {"data": {"source": source, "value": 42}}
 
 
-async def store_data_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
+async def store_data_worker(payload: dict[str, Any]) -> dict[str, Any]:
     """
     Store structured data to a destination. Demo writes to memory and echoes destination.
     """
@@ -214,7 +216,7 @@ async def store_data_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
     return {"ok": ok, "stored": destination}
 
 
-async def apply_changes_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
+async def apply_changes_worker(payload: dict[str, Any]) -> dict[str, Any]:
     """
     Apply a change to a target environment. Demo validates content and target.
     """
@@ -224,7 +226,7 @@ async def apply_changes_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
     return {"applied": bool(content), "target": target}
 
 
-async def process_resource_worker(payload: Dict[str, Any]) -> Dict[str, Any]:
+async def process_resource_worker(payload: dict[str, Any]) -> dict[str, Any]:
     """
     Process a named resource. If payload has force_fail=True, raise to simulate errors.
     """

@@ -1,9 +1,9 @@
 import asyncio
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 
-from orchestrator import tool, mcp_tool, a2a_agent
+from orchestrator import a2a_agent, mcp_tool, tool
 from orchestrator.plugins.registry import get_registry
 from orchestrator.shared.models import ToolParameter
 
@@ -20,7 +20,7 @@ def test_tool_decorator_registers_and_executes():
         ],
         metadata={"category": "testing"},
     )
-    def echo(params: Dict[str, Any]) -> Dict[str, Any]:
+    def echo(params: dict[str, Any]) -> dict[str, Any]:
         return {"text": params["text"]}
 
     # Decorating registers under the 'decorators' plugin
@@ -55,7 +55,7 @@ def test_tool_decorator_custom_name_and_provider():
             ToolParameter(name="text", type="string", description="Text to echo", required=True)
         ],
     )
-    def echo(params: Dict[str, Any]) -> Dict[str, Any]:
+    def echo(params: dict[str, Any]) -> dict[str, Any]:
         return {"text": params["text"]}
 
     plugin = registry.get("decorators")
@@ -74,7 +74,7 @@ def test_mcp_tool_auto_params_and_async_execution():
     registry.clear()
 
     @mcp_tool(domain="finance")
-    async def get_balance(account: str, include_pending: bool = False) -> Dict[str, Any]:
+    async def get_balance(account: str, include_pending: bool = False) -> dict[str, Any]:
         return {"account": account, "pending": include_pending}
 
     plugin = registry.get("decorators")
@@ -97,7 +97,7 @@ def test_a2a_agent_decorator_sync_function():
     registry.clear()
 
     @a2a_agent(description="Route work to agents")
-    def route(task: str, priority: int = 1) -> Dict[str, Any]:
+    def route(task: str, priority: int = 1) -> dict[str, Any]:
         return {"task": task, "priority": priority}
 
     plugin = registry.get("decorators")
@@ -122,10 +122,10 @@ def test_decorator_validates_function_signature():
     @tool()
     def no_docstring(x: int) -> int:
         return x
-    
+
     # Should register successfully despite warning
     assert registry.has("decorators")
-    
+
     # Clean up for next test
     registry.clear()
 
@@ -136,5 +136,5 @@ def test_decorator_rejects_signature_mismatch_for_kwargs():
 
     with pytest.raises(ValueError, match="parameter mismatch"):
         @mcp_tool(parameters=[ToolParameter(name="only_one", type="string", required=True, description="Test param")])
-        def expect_two(a: str, b: str) -> Dict[str, Any]:
+        def expect_two(a: str, b: str) -> dict[str, Any]:
             return {"a": a, "b": b}

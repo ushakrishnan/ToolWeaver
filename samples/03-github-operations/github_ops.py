@@ -12,10 +12,9 @@ Automate GitHub tasks through a unified tool interface
 """
 
 import asyncio
-from typing import List, Dict, Any
+from typing import Any
 
-from orchestrator import mcp_tool, search_tools, get_available_tools
-
+from orchestrator import mcp_tool, search_tools
 
 # ============================================================
 # GitHub Tools - Demonstrate API Integration Pattern
@@ -32,7 +31,7 @@ async def list_repositories(org: str, limit: int = 10) -> dict:
         {"name": "Cloud-SDK", "stars": 450, "language": "Go", "description": "Cloud utilities"},
         {"name": "Data-Pipeline", "stars": 320, "language": "Python", "description": "ETL framework"},
     ]
-    
+
     return {
         "organization": org,
         "repositories": mock_repos[:limit],
@@ -64,11 +63,11 @@ async def get_repository_info(org: str, repo: str) -> dict:
             "description": "Model Context Protocol implementation"
         }
     }
-    
+
     repo_data = repos.get(repo, {})
     if not repo_data:
         return {"error": f"Repository {repo} not found"}
-    
+
     return {
         "organization": org,
         "repository": repo,
@@ -93,11 +92,11 @@ async def search_repositories_by_language(language: str, org: str = None) -> dic
             {"name": "Cloud-SDK", "org": "ushakrishnan", "stars": 450},
         ]
     }
-    
+
     repos = lang_repos.get(language, [])
     if org:
         repos = [r for r in repos if r.get("org") == org]
-    
+
     return {
         "language": language,
         "organization": org or "all",
@@ -107,20 +106,20 @@ async def search_repositories_by_language(language: str, org: str = None) -> dic
 
 
 @mcp_tool(domain="github", description="Analyze repository statistics")
-async def analyze_repository_stats(repos: List[Dict[str, Any]]) -> dict:
+async def analyze_repository_stats(repos: list[dict[str, Any]]) -> dict:
     """Analyze statistics across multiple repositories."""
     if not repos:
         return {"error": "No repositories provided"}
-    
+
     total_stars = sum(r.get("stars", 0) for r in repos)
     total_forks = sum(r.get("forks", 0) for r in repos)
     avg_stars = total_stars // len(repos) if repos else 0
-    
+
     languages = {}
     for repo in repos:
         lang = repo.get("language", "Unknown")
         languages[lang] = languages.get(lang, 0) + 1
-    
+
     return {
         "repository_count": len(repos),
         "total_stars": total_stars,
@@ -140,11 +139,11 @@ async def main():
     print("EXAMPLE 03: GitHub Operations")
     print("=" * 70)
     print()
-    
+
     print("This example demonstrates GitHub repository operations")
     print("Note: Using mock data (no credentials needed)")
     print()
-    
+
     # Step 1: List repositories
     print("Step 1: Listing repositories for organization...")
     org_result = await list_repositories({"org": "ushakrishnan", "limit": 5})
@@ -152,7 +151,7 @@ async def main():
     for repo in org_result['repositories']:
         print(f"      • {repo['name']:20} ({repo['stars']:5} stars) - {repo['language']}")
     print()
-    
+
     # Step 2: Get specific repository info
     print("Step 2: Getting details for ToolWeaver repository...")
     repo_info = await get_repository_info({"org": "ushakrishnan", "repo": "ToolWeaver"})
@@ -162,7 +161,7 @@ async def main():
     print(f"   PRs: {repo_info['prs']}")
     print(f"   License: {repo_info['license']}")
     print()
-    
+
     # Step 3: Search by language
     print("Step 3: Searching for Python repositories...")
     lang_search = await search_repositories_by_language({"language": "Python", "org": "ushakrishnan"})
@@ -170,7 +169,7 @@ async def main():
     for repo in lang_search['repositories']:
         print(f"      • {repo['name']:20} ({repo['stars']:5} stars)")
     print()
-    
+
     # Step 4: Analyze stats
     print("Step 4: Analyzing repository statistics...")
     stats = await analyze_repository_stats({"repos": org_result['repositories']})
@@ -180,7 +179,7 @@ async def main():
     print(f"   Average stars: {stats['average_stars']}")
     print(f"   Languages: {', '.join(stats['languages'].keys())}")
     print()
-    
+
     # Step 5: Tool discovery
     print("Step 5: Discovering all GitHub tools...")
     github_tools = search_tools(domain="github")
@@ -188,7 +187,7 @@ async def main():
     for tool in github_tools:
         print(f"      • {tool.name:30} - {tool.description}")
     print()
-    
+
     print("=" * 70)
     print("✅ GitHub operations complete!")
     print("=" * 70)

@@ -11,7 +11,7 @@ Threats Mitigated:
 
 import logging
 import re
-from typing import List, Pattern
+from re import Pattern
 
 
 class SecretsRedactor(logging.Filter):
@@ -38,35 +38,35 @@ class SecretsRedactor(logging.Filter):
         # Now logging is safe
         logging.info(f"API Key: sk-abc123...")  # Logs as: API Key: [REDACTED_OPENAI_KEY]
     """
-    
+
     # Regex patterns for secret detection
-    PATTERNS: List[tuple[str, Pattern]] = [
+    PATTERNS: list[tuple[str, Pattern]] = [
         # OpenAI API keys (variable length after prefix)
         ('OPENAI_KEY', re.compile(r'\bsk-[A-Za-z0-9]{20,}\b')),
-        
+
         # GitHub tokens (multiple formats)
         ('GITHUB_TOKEN', re.compile(r'\bghp_[A-Za-z0-9]{20,}\b')),
         ('GITHUB_TOKEN', re.compile(r'\bgithub_pat_[A-Za-z0-9_]{20,}\b')),
-        
+
         # Generic bearer tokens
         ('BEARER_TOKEN', re.compile(r'[Bb]earer\s+[A-Za-z0-9_\-\.]{20,}')),
-        
+
         # AWS access keys
         ('AWS_KEY', re.compile(r'\bAKIA[0-9A-Z]{16}\b')),
-        
+
         # JWT tokens
         ('JWT', re.compile(r'\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b')),
-        
+
         # Generic API key patterns (api_key=..., apikey=..., 'api-key': '...')
         ('API_KEY', re.compile(r'(?i)(api[_-]?key|apikey)\s*[:=]\s*["\']?([A-Za-z0-9_\-]{20,})["\']?')),
-        
+
         # Password patterns (password=..., pwd=...)
         ('PASSWORD', re.compile(r'(?i)(password|passwd|pwd)\s*[:=]\s*["\']?([^"\'\s]{8,})["\']?')),
-        
+
         # Anthropic API keys (variable length)
         ('ANTHROPIC_KEY', re.compile(r'\bsk-ant-[A-Za-z0-9_-]{90,}\b')),
     ]
-    
+
     def filter(self, record: logging.LogRecord) -> bool:
         """
         Filter log record by redacting secrets.
@@ -79,7 +79,7 @@ class SecretsRedactor(logging.Filter):
         """
         if hasattr(record, 'msg') and isinstance(record.msg, str):
             record.msg = self.redact_secrets(record.msg)
-        
+
         # Also redact in args if present
         if hasattr(record, 'args') and record.args:
             if isinstance(record.args, dict):
@@ -92,9 +92,9 @@ class SecretsRedactor(logging.Filter):
                     self.redact_secrets(str(arg)) if isinstance(arg, str) else arg
                     for arg in record.args
                 )
-        
+
         return True
-    
+
     def redact_secrets(self, text: str) -> str:
         """
         Redact all secrets from text.
@@ -106,7 +106,7 @@ class SecretsRedactor(logging.Filter):
             Text with secrets replaced by [REDACTED_TYPE]
         """
         result = text
-        
+
         for secret_type, pattern in self.PATTERNS:
             # Handle patterns with capture groups
             if secret_type in ('API_KEY', 'PASSWORD'):
@@ -118,7 +118,7 @@ class SecretsRedactor(logging.Filter):
             else:
                 # Simple replacement
                 result = pattern.sub(f'[REDACTED_{secret_type}]', result)
-        
+
         return result
 
 
@@ -131,12 +131,12 @@ def install_secrets_redactor(logger: logging.Logger = None) -> None:
     """
     if logger is None:
         logger = logging.getLogger()
-    
+
     # Check if already installed
     for filter_obj in logger.filters:
         if isinstance(filter_obj, SecretsRedactor):
             return  # Already installed
-    
+
     logger.addFilter(SecretsRedactor())
 
 
@@ -149,7 +149,7 @@ def remove_secrets_redactor(logger: logging.Logger = None) -> None:
     """
     if logger is None:
         logger = logging.getLogger()
-    
+
     # Remove all SecretsRedactor instances
     logger.filters = [
         f for f in logger.filters

@@ -12,11 +12,9 @@ Usage:
 """
 
 import ast
+import subprocess
 import sys
 from pathlib import Path
-from collections import defaultdict
-import subprocess
-import json
 
 # Mapping of import names to PyPI package names (when they differ)
 IMPORT_TO_PACKAGE = {
@@ -64,9 +62,9 @@ STDLIB_MODULES = {
 def extract_imports(file_path: Path) -> set:
     """Extract all import statements from a Python file."""
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             tree = ast.parse(f.read(), filename=str(file_path))
-        
+
         imports = set()
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
@@ -76,7 +74,7 @@ def extract_imports(file_path: Path) -> set:
             elif isinstance(node, ast.ImportFrom):
                 if node.module:
                     imports.add(node.module.split('.')[0])
-        
+
         return imports
     except Exception as e:
         print(f"Warning: Could not parse {file_path}: {e}")
@@ -90,22 +88,22 @@ def scan_project(root_dir: Path) -> dict:
         'tests': set(),     # tests/
         'examples': set(),  # examples/
     }
-    
+
     # Scan orchestrator (core package)
     for py_file in (root_dir / 'orchestrator').rglob('*.py'):
         if py_file.name != '__init__.py':
             imports_by_category['core'].update(extract_imports(py_file))
-    
+
     # Scan tests
     if (root_dir / 'tests').exists():
         for py_file in (root_dir / 'tests').rglob('*.py'):
             imports_by_category['tests'].update(extract_imports(py_file))
-    
+
     # Scan examples
     if (root_dir / 'examples').exists():
         for py_file in (root_dir / 'examples').rglob('*.py'):
             imports_by_category['examples'].update(extract_imports(py_file))
-    
+
     return imports_by_category
 
 
@@ -113,7 +111,7 @@ def filter_imports(imports: set) -> dict:
     """Filter and categorize imports into stdlib vs external packages."""
     external = set()
     local = {'orchestrator'}  # Our package name
-    
+
     for imp in imports:
         # Skip local imports
         if imp in local:
@@ -124,11 +122,11 @@ def filter_imports(imports: set) -> dict:
         # Skip private/internal modules
         if imp.startswith('_'):
             continue
-        
+
         # Map to PyPI package name if different
         package = IMPORT_TO_PACKAGE.get(imp, imp)
         external.add(package)
-    
+
     return sorted(external)
 
 
@@ -152,19 +150,19 @@ def get_installed_version(package: str) -> str:
 def main():
     """Main entry point."""
     root_dir = Path(__file__).parent.parent
-    
+
     print("🔍 Scanning project for imports...")
     imports_by_category = scan_project(root_dir)
-    
+
     # Filter and categorize
     core_deps = filter_imports(imports_by_category['core'])
     test_deps = filter_imports(imports_by_category['tests'])
     example_deps = filter_imports(imports_by_category['examples'])
-    
+
     # Remove test/example deps that are already in core
     test_deps_only = sorted(set(test_deps) - set(core_deps))
     example_deps_only = sorted(set(example_deps) - set(core_deps) - set(test_deps_only))
-    
+
     print(f"\n📦 Core dependencies ({len(core_deps)}):")
     for dep in core_deps:
         version = get_installed_version(dep)
@@ -172,7 +170,7 @@ def main():
             print(f"  ✓ {dep}=={version}")
         else:
             print(f"  ✗ {dep} (not installed)")
-    
+
     print(f"\n🧪 Test-only dependencies ({len(test_deps_only)}):")
     for dep in test_deps_only:
         version = get_installed_version(dep)
@@ -180,7 +178,7 @@ def main():
             print(f"  ✓ {dep}=={version}")
         else:
             print(f"  ✗ {dep} (not installed)")
-    
+
     print(f"\n📚 Example-only dependencies ({len(example_deps_only)}):")
     for dep in example_deps_only:
         version = get_installed_version(dep)
@@ -188,12 +186,12 @@ def main():
             print(f"  ✓ {dep}=={version}")
         else:
             print(f"  ✗ {dep} (not installed)")
-    
+
     # Generate suggestions for pyproject.toml
     print("\n" + "="*60)
     print("📝 Suggested pyproject.toml updates:")
     print("="*60)
-    
+
     print("\n[project.dependencies]")
     for dep in core_deps:
         version = get_installed_version(dep)
@@ -202,7 +200,7 @@ def main():
             print(f'    "{dep}>={major_minor}.0",')
         else:
             print(f'    "{dep}",  # VERSION UNKNOWN - please install')
-    
+
     if test_deps_only:
         print("\n[project.optional-dependencies.dev]")
         print("    # Add these to existing dev dependencies:")

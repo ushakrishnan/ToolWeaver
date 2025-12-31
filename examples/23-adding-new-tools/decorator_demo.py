@@ -3,7 +3,7 @@ Minimal demo of using the ToolWeaver `@tool` decorator.
 
 This example declares a simple echo tool and executes it via the plugin registry.
 """
-from typing import Any, Dict
+from typing import Any
 
 from orchestrator import tool
 from orchestrator.plugins.registry import get_registry
@@ -17,7 +17,7 @@ from orchestrator.shared.models import ToolParameter
     ],
     metadata={"example": True},
 )
-def echo(params: Dict[str, Any]) -> Dict[str, Any]:
+def echo(params: dict[str, Any]) -> dict[str, Any]:
     """Echo the input text."""
     return {"text": params["text"]}
 

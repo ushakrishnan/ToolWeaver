@@ -19,15 +19,15 @@ Example:
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..shared.models import ToolDefinition, ToolParameter
 
 
 class ClaudeSkillsAdapter:
     """Adapter to convert ToolWeaver tools to Claude custom skills format."""
-    
-    def __init__(self, tools: List[ToolDefinition]) -> None:
+
+    def __init__(self, tools: list[ToolDefinition]) -> None:
         """
         Initialize adapter with tools.
         
@@ -35,8 +35,8 @@ class ClaudeSkillsAdapter:
             tools: List of ToolDefinition objects to adapt
         """
         self.tools = tools
-    
-    def to_claude_manifest(self) -> Dict[str, Any]:
+
+    def to_claude_manifest(self) -> dict[str, Any]:
         """
         Convert tools to Claude custom skills manifest.
         
@@ -52,8 +52,8 @@ class ClaudeSkillsAdapter:
             "schema_version": "1.0",
             "tools": [self._tool_to_claude_format(tool) for tool in self.tools],
         }
-    
-    def to_claude_functions(self) -> List[Dict[str, Any]]:
+
+    def to_claude_functions(self) -> list[dict[str, Any]]:
         """
         Convert tools to Claude function_tools format for API calls.
         
@@ -72,8 +72,8 @@ class ClaudeSkillsAdapter:
             }
             for tool in self.tools
         ]
-    
-    def _tool_to_claude_format(self, tool: ToolDefinition) -> Dict[str, Any]:
+
+    def _tool_to_claude_format(self, tool: ToolDefinition) -> dict[str, Any]:
         """Convert a single tool to Claude format."""
         return {
             "id": tool.name,
@@ -91,12 +91,12 @@ class ClaudeSkillsAdapter:
                 **(tool.metadata or {}),
             },
         }
-    
-    def _build_properties(self, parameters: List[ToolParameter]) -> Dict[str, Any]:
+
+    def _build_properties(self, parameters: list[ToolParameter]) -> dict[str, Any]:
         """Build JSON schema properties from parameters."""
-        properties: Dict[str, Any] = {}
+        properties: dict[str, Any] = {}
         for param in parameters:
-            param_schema: Dict[str, Any] = {
+            param_schema: dict[str, Any] = {
                 "type": self._map_type(param.type),
                 "description": param.description or f"Parameter: {param.name}",
             }
@@ -104,7 +104,7 @@ class ClaudeSkillsAdapter:
                 param_schema["enum"] = param.enum
             properties[param.name] = param_schema
         return properties
-    
+
     def _map_type(self, toolweaver_type: str) -> str:
         """Map ToolWeaver parameter type to JSON Schema type."""
         type_map = {
@@ -116,7 +116,7 @@ class ClaudeSkillsAdapter:
             "array": "array",
         }
         return type_map.get(toolweaver_type, "string")
-    
+
     def to_json(self, pretty: bool = True) -> str:
         """
         Serialize manifest to JSON string.

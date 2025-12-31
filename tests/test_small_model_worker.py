@@ -5,9 +5,10 @@ Tests the small model worker with real Ollama backend.
 Skips if Ollama is not available.
 """
 
-import pytest
 import os
-import asyncio
+
+import pytest
+
 from orchestrator._internal.execution.small_model_worker import SmallModelWorker
 
 
@@ -17,7 +18,7 @@ def ollama_worker():
     # Set environment variable for Ollama URL
     if not os.getenv("OLLAMA_API_URL"):
         os.environ["OLLAMA_API_URL"] = "http://localhost:11434"
-    
+
     # Use phi3:latest which is what's installed
     return SmallModelWorker(
         backend="ollama",
@@ -39,7 +40,7 @@ async def test_ollama_connection(ollama_worker):
         max_tokens=10,
         temperature=0.1
     )
-    
+
     assert response is not None
     assert len(response) > 0
     assert "hello" in response.lower()
@@ -58,7 +59,7 @@ async def test_ollama_json_mode(ollama_worker):
         max_tokens=50,
         temperature=0.1
     )
-    
+
     assert response is not None
     # Should contain JSON-like structure
     assert "{" in response and "}" in response
@@ -78,14 +79,14 @@ async def test_ollama_function_calling(ollama_worker):
         max_tokens=100,
         temperature=0.1
     )
-    
+
     assert response is not None
     assert len(response) > 0
     # Should mention weather or Paris
     assert "weather" in response.lower() or "paris" in response.lower()
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 @pytest.mark.skipif(
     os.getenv("SMALL_MODEL_BACKEND") != "ollama",
     reason="Ollama not configured"
@@ -96,7 +97,7 @@ async def test_ollama_streaming():
         backend="ollama",
         model_name=os.getenv("WORKER_MODEL", "phi3:latest")
     )
-    
+
     # Test basic generation works
     response = await worker.generate(
         prompt="Count to 5",
@@ -104,7 +105,7 @@ async def test_ollama_streaming():
         max_tokens=50,
         temperature=0.1
     )
-    
+
     assert response is not None
     assert len(response) > 0
 
@@ -120,13 +121,13 @@ async def test_ollama_batch_processing():
         backend="ollama",
         model_name=os.getenv("WORKER_MODEL", "phi3:latest")
     )
-    
+
     prompts = [
         "Say hello",
-        "Say goodbye", 
+        "Say goodbye",
         "Say thank you"
     ]
-    
+
     responses = []
     for prompt in prompts:
         response = await worker.generate(
@@ -136,7 +137,7 @@ async def test_ollama_batch_processing():
             temperature=0.1
         )
         responses.append(response)
-    
+
     assert len(responses) == 3
     assert all(r is not None for r in responses)
     assert all(len(r) > 0 for r in responses)
@@ -149,7 +150,7 @@ def test_ollama_initialization():
         backend="ollama",
         model_name=model_name
     )
-    
+
     assert worker.backend == "ollama"
     assert worker.model_name == model_name
 
@@ -167,7 +168,7 @@ async def test_ollama_error_handling(ollama_worker):
         max_tokens=5,  # Very short
         temperature=0.1
     )
-    
+
     # Should still return something, even if truncated
     assert response is not None
 
@@ -180,7 +181,7 @@ async def test_ollama_error_handling(ollama_worker):
 async def test_ollama_temperature_control(ollama_worker):
     """Test temperature parameter affects randomness"""
     prompt = "Give me a creative idea"
-    
+
     # Low temperature (more deterministic)
     response1 = await ollama_worker.generate(
         prompt=prompt,
@@ -188,7 +189,7 @@ async def test_ollama_temperature_control(ollama_worker):
         max_tokens=50,
         temperature=0.1
     )
-    
+
     # Higher temperature (more random)
     response2 = await ollama_worker.generate(
         prompt=prompt,
@@ -196,7 +197,7 @@ async def test_ollama_temperature_control(ollama_worker):
         max_tokens=50,
         temperature=0.9
     )
-    
+
     # Both should return something
     assert response1 is not None
     assert response2 is not None

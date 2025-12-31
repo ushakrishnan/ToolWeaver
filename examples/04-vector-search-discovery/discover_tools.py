@@ -12,13 +12,12 @@ Find the right tool among many registered tools using semantic understanding
 """
 
 import asyncio
-from pathlib import Path
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from orchestrator import mcp_tool, search_tools, semantic_search_tools, get_available_tools
-
+from orchestrator import get_available_tools, mcp_tool, search_tools, semantic_search_tools
 
 # ============================================================
 # Register a diverse set of tools across multiple domains
@@ -98,7 +97,7 @@ async def demo_keyword_search():
     print("DEMO 1: Keyword Search")
     print("="*70)
     print()
-    
+
     # Search by keyword
     print("Searching for 'currency'...")
     results = search_tools(query="currency")
@@ -116,7 +115,7 @@ async def demo_domain_search():
     print("DEMO 2: Domain-Based Search")
     print("="*70)
     print()
-    
+
     # Search by domain
     domains = ["finance", "data", "communication", "web", "receipts"]
     for domain in domains:
@@ -131,26 +130,26 @@ async def demo_semantic_search():
     print("DEMO 3: Semantic Search")
     print("="*70)
     print()
-    
+
     queries = [
         "I need to calculate investment returns",
         "How can I notify my team?",
         "Process receipt from restaurant",
         "Check if my website is working"
     ]
-    
+
     for query in queries:
         print(f"Query: \"{query}\"")
         try:
             # Semantic search uses embeddings for better matching
             results = semantic_search_tools(query=query, top_k=2)
-            print(f"   Best matches:")
+            print("   Best matches:")
             for i, tool in enumerate(results[:2], 1):
                 print(f"   {i}. {tool.name} ({tool.domain})")
                 print(f"      {tool.description}")
-        except Exception as e:
+        except Exception:
             # Fallback to keyword search if semantic search not configured
-            print(f"   WARNING: Semantic search not configured, using keyword search")
+            print("   WARNING: Semantic search not configured, using keyword search")
             results = search_tools(query=query.split()[-1])  # Use last word as keyword
             if results:
                 print(f"   Best match: {results[0].name}")
@@ -163,11 +162,11 @@ async def demo_compare_strategies():
     print("DEMO 4: Comparing Search Strategies")
     print("="*70)
     print()
-    
+
     test_query = "send notification"
-    
+
     print(f"Query: \"{test_query}\"\n")
-    
+
     # Strategy 1: Keyword search
     print("Strategy 1: Keyword Search")
     keyword_results = search_tools(query="send")
@@ -175,7 +174,7 @@ async def demo_compare_strategies():
     for tool in keyword_results[:3]:
         print(f"   • {tool.name}")
     print()
-    
+
     # Strategy 2: Domain filter
     print("Strategy 2: Domain Filter (communication)")
     domain_results = search_tools(query="", domain="communication")
@@ -183,7 +182,7 @@ async def demo_compare_strategies():
     for tool in domain_results:
         print(f"   • {tool.name}")
     print()
-    
+
     # Strategy 3: Semantic (if available)
     print("Strategy 3: Semantic Search")
     try:
@@ -202,16 +201,16 @@ async def demo_catalog_overview():
     print("DEMO 5: Catalog Overview")
     print("="*70)
     print()
-    
+
     all_tools = get_available_tools()
     print(f"Total Tools Registered: {len(all_tools)}\n")
-    
+
     # Group by domain
     domains = {}
     for tool in all_tools:
         domain = getattr(tool, 'domain', 'general')
         domains[domain] = domains.get(domain, 0) + 1
-    
+
     print("By Domain:")
     for domain, count in sorted(domains.items()):
         print(f"   {domain:15} : {count} tools")
@@ -231,14 +230,14 @@ async def main():
     print("This example demonstrates different strategies for finding tools")
     print("in a large catalog using keyword, domain, and semantic search.")
     print()
-    
+
     # Run all demos
     await demo_catalog_overview()
     await demo_keyword_search()
     await demo_domain_search()
     await demo_semantic_search()
     await demo_compare_strategies()
-    
+
     print("="*70)
     print("[OK] All demos complete!")
     print("="*70)

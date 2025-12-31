@@ -15,21 +15,20 @@ Features:
 - TLS support for Azure Redis
 """
 
-import os
-import json
-import pickle
 import hashlib
-import ssl
 import logging
+import os
+import pickle
+import ssl
 import time
-from typing import Any, Optional, Dict
 from pathlib import Path
-from functools import wraps
+from typing import Any
 
 try:
     import redis
     from redis.connection import ConnectionPool
-    from redis.exceptions import RedisError, ConnectionError as RedisConnectionError
+    from redis.exceptions import ConnectionError as RedisConnectionError
+    from redis.exceptions import RedisError
     REDIS_AVAILABLE = True
 except ImportError:
     REDIS_AVAILABLE = False
@@ -47,14 +46,14 @@ class CircuitBreaker:
     - OPEN: Redis failed, use fallback only
     - HALF_OPEN: Testing if Redis recovered
     """
-    
+
     def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 60):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.failures = 0
         self.last_failure_time: float = 0.0
         self.state = "CLOSED"
-    
+
     def call(self, func: Any, *args: Any, **kwargs: Any) -> Any:
         """Execute function with circuit breaker protection"""
         if self.state == "OPEN":
@@ -64,7 +63,7 @@ class CircuitBreaker:
                 logger.info("Circuit breaker: Attempting recovery (HALF_OPEN)")
             else:
                 raise RedisConnectionError("Circuit breaker OPEN")
-        
+
         try:
             result = func(*args, **kwargs)
             if self.state == "HALF_OPEN":
@@ -73,19 +72,19 @@ class CircuitBreaker:
         except Exception as e:
             self.record_failure()
             raise e
-    
+
     def record_failure(self) -> None:
         """Record a failure and potentially open circuit"""
         self.failures += 1
         self.last_failure_time = float(time.time())
-        
+
         if self.failures >= self.failure_threshold:
             self.state = "OPEN"
             logger.warning(
                 f"Circuit breaker OPEN after {self.failures} failures. "
                 f"Will retry in {self.recovery_timeout}s"
             )
-    
+
     def reset(self) -> None:
         """Reset circuit breaker to CLOSED state"""
         self.failures = 0
@@ -117,13 +116,13 @@ class RedisCache:
         cache.set("key", data, ttl=3600)
         data = cache.get("key")
     """
-    
+
     def __init__(
         self,
-        redis_url: Optional[str] = None,
-        password: Optional[str] = None,
+        redis_url: str | None = None,
+        password: str | None = None,
         ssl: bool = False,
-        cache_dir: Optional[Path] = None,
+        cache_dir: Path | None = None,
         enable_fallback: bool = True,
         pool_size: int = 10
     ):
@@ -143,27 +142,27 @@ class RedisCache:
         self.password = password or os.getenv("REDIS_PASSWORD")
         self.ssl = ssl or self.redis_url.startswith("rediss://")
         self.enable_fallback = enable_fallback
-        
+
         # File cache fallback
         self.cache_dir = cache_dir or Path.home() / ".toolweaver" / "cache"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Redis client and connection pool
-        self.client: Optional[redis.Redis] = None
-        self.pool: Optional[ConnectionPool] = None
+        self.client: redis.Redis | None = None
+        self.pool: ConnectionPool | None = None
         self.redis_available = False
-        
+
         # Circuit breaker
         self.circuit_breaker = CircuitBreaker(
             failure_threshold=5,
             recovery_timeout=60
         )
-        
+
         if REDIS_AVAILABLE:
             self._init_redis_client(pool_size)
         else:
             logger.warning("redis package not installed, using file cache only")
-    
+
     def _init_redis_client(self, pool_size: int) -> None:
         """Initialize Redis client with connection pooling"""
         try:
@@ -175,12 +174,12 @@ class RedisCache:
                 "retry_on_timeout": True,
                 "health_check_interval": 30
             }
-            
+
             # Add SSL/TLS for Azure Redis
             if self.ssl:
                 connection_kwargs["ssl"] = True
                 connection_kwargs["ssl_cert_reqs"] = ssl.CERT_NONE  # Don't verify cert for development
-            
+
             # Create connection pool
             self.pool = ConnectionPool.from_url(
                 self.redis_url,
@@ -188,24 +187,24 @@ class RedisCache:
                 decode_responses=False,  # Binary mode for pickle
                 **connection_kwargs
             )
-            
+
             # Create Redis client
             self.client = redis.Redis(connection_pool=self.pool)
-            
+
             # Test connection
             self.client.ping()
             self.redis_available = True
-            
+
             logger.info(f"Connected to Redis at {self.redis_url}")
-            
+
         except Exception as e:
             logger.warning(f"Failed to connect to Redis: {e}")
             self.redis_available = False
             if not self.enable_fallback:
                 raise
             logger.info("Will use file cache fallback")
-    
-    def get(self, key: str) -> Optional[Any]:
+
+    def get(self, key: str) -> Any | None:
         """
         Get value from cache.
         
@@ -226,13 +225,13 @@ class RedisCache:
             except Exception as e:
                 logger.warning(f"Redis get failed: {e}")
                 self.redis_available = False
-        
+
         # Fallback to file cache
         if self.enable_fallback:
             return self._file_get(key)
-        
+
         return None
-    
+
     def set(self, key: str, value: Any, ttl: int = 3600) -> bool:
         """
         Set value in cache with TTL.
@@ -256,26 +255,26 @@ class RedisCache:
                     serialized
                 )
                 logger.debug(f"Redis cache SET: {key} (TTL={ttl}s)")
-                
+
                 # Also write to file cache for redundancy
                 if self.enable_fallback:
                     self._file_set(key, value, ttl)
-                
+
                 return True
             except Exception as e:
                 logger.warning(f"Redis set failed: {e}")
                 self.redis_available = False
-        
+
         # Fallback to file cache
         if self.enable_fallback:
             return self._file_set(key, value, ttl)
-        
+
         return False
-    
+
     def delete(self, key: str) -> bool:
         """Delete key from cache"""
         success = False
-        
+
         # Delete from Redis
         if self.redis_available and self.client is not None:
             try:
@@ -283,18 +282,18 @@ class RedisCache:
                 success = True
             except Exception as e:
                 logger.warning(f"Redis delete failed: {e}")
-        
+
         # Delete from file cache
         if self.enable_fallback:
             self._file_delete(key)
             success = True
-        
+
         return success
-    
+
     def clear(self) -> bool:
         """Clear entire cache"""
         success = False
-        
+
         # Clear Redis
         if self.redis_available and self.client is not None:
             try:
@@ -303,42 +302,42 @@ class RedisCache:
                 success = True
             except Exception as e:
                 logger.warning(f"Redis clear failed: {e}")
-        
+
         # Clear file cache
         if self.enable_fallback:
             for cache_file in self.cache_dir.glob("*"):
                 cache_file.unlink()
             logger.info("File cache cleared")
             success = True
-        
+
         return success
-    
-    def _file_get(self, key: str) -> Optional[Any]:
+
+    def _file_get(self, key: str) -> Any | None:
         """Get from file cache"""
         cache_file = self.cache_dir / f"{self._hash_key(key)}.cache"
-        
+
         if not cache_file.exists():
             return None
-        
+
         try:
             with open(cache_file, "rb") as f:
                 data = pickle.load(f)
-            
+
             # Check expiration
             if data["expires_at"] < time.time():
                 cache_file.unlink()
                 return None
-            
+
             logger.debug(f"File cache HIT: {key}")
             return data["value"]
         except Exception as e:
             logger.warning(f"File cache read failed: {e}")
             return None
-    
+
     def _file_set(self, key: str, value: Any, ttl: int) -> bool:
         """Set in file cache"""
         cache_file = self.cache_dir / f"{self._hash_key(key)}.cache"
-        
+
         try:
             data = {
                 "value": value,
@@ -351,18 +350,18 @@ class RedisCache:
         except Exception as e:
             logger.warning(f"File cache write failed: {e}")
             return False
-    
+
     def _file_delete(self, key: str) -> None:
         """Delete from file cache"""
         cache_file = self.cache_dir / f"{self._hash_key(key)}.cache"
         if cache_file.exists():
             cache_file.unlink()
-    
+
     def _hash_key(self, key: str) -> str:
         """Hash key for filename"""
         return hashlib.sha256(key.encode()).hexdigest()[:16]
-    
-    def health_check(self) -> Dict[str, Any]:
+
+    def health_check(self) -> dict[str, Any]:
         """
         Check cache health status.
         
@@ -376,7 +375,7 @@ class RedisCache:
             "fallback_enabled": self.enable_fallback,
             "cache_dir": str(self.cache_dir) if self.enable_fallback else None
         }
-        
+
         # Try ping if Redis available
         if self.redis_available and self.client is not None:
             try:
@@ -385,7 +384,7 @@ class RedisCache:
             except Exception as e:
                 status["redis_ping"] = f"FAILED: {e}"
                 status["redis_available"] = False
-        
+
         return status
 
 
@@ -399,52 +398,52 @@ class ToolCache:
     3. Embeddings (7d TTL) - Text embeddings
     4. Tool Metadata (24h TTL) - Individual tools
     """
-    
+
     def __init__(self, redis_cache: RedisCache):
         self.cache = redis_cache
-        
+
         # TTL values (seconds)
         self.CATALOG_TTL = 24 * 3600  # 24 hours
         self.SEARCH_TTL = 1 * 3600    # 1 hour
         self.EMBEDDING_TTL = 7 * 24 * 3600  # 7 days
         self.TOOL_TTL = 24 * 3600     # 24 hours
-    
-    def get_catalog(self, catalog_hash: str) -> Optional[Dict]:
+
+    def get_catalog(self, catalog_hash: str) -> dict | None:
         """Get cached tool catalog"""
         key = f"catalog:v2:{catalog_hash}"
         return self.cache.get(key)
-    
-    def set_catalog(self, catalog_hash: str, catalog_data: Dict) -> bool:
+
+    def set_catalog(self, catalog_hash: str, catalog_data: dict) -> bool:
         """Cache tool catalog"""
         key = f"catalog:v2:{catalog_hash}"
         return self.cache.set(key, catalog_data, ttl=self.CATALOG_TTL)
-    
-    def get_search_results(self, query_hash: str, catalog_version: str, top_k: int) -> Optional[list]:
+
+    def get_search_results(self, query_hash: str, catalog_version: str, top_k: int) -> list | None:
         """Get cached search results"""
         key = f"search:{query_hash}:{catalog_version}:{top_k}"
         return self.cache.get(key)
-    
+
     def set_search_results(self, query_hash: str, catalog_version: str, top_k: int, results: list) -> bool:
         """Cache search results"""
         key = f"search:{query_hash}:{catalog_version}:{top_k}"
         return self.cache.set(key, results, ttl=self.SEARCH_TTL)
-    
+
     def get_embedding(self, text_hash: str, model_name: str) -> Any:
         """Get cached embedding"""
         key = f"embedding:{text_hash}:{model_name}"
         return self.cache.get(key)
-    
+
     def set_embedding(self, text_hash: str, model_name: str, embedding: Any) -> bool:
         """Cache embedding"""
         key = f"embedding:{text_hash}:{model_name}"
         return self.cache.set(key, embedding, ttl=self.EMBEDDING_TTL)
-    
-    def get_tool(self, tool_name: str, version: str) -> Optional[Dict]:
+
+    def get_tool(self, tool_name: str, version: str) -> dict | None:
         """Get cached tool metadata"""
         key = f"tool:{tool_name}:v{version}"
         return self.cache.get(key)
-    
-    def set_tool(self, tool_name: str, version: str, tool_data: Dict) -> bool:
+
+    def set_tool(self, tool_name: str, version: str, tool_data: dict) -> bool:
         """Cache tool metadata"""
         key = f"tool:{tool_name}:v{version}"
         return self.cache.set(key, tool_data, ttl=self.TOOL_TTL)

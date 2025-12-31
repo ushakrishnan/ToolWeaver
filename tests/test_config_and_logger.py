@@ -1,7 +1,5 @@
-import os
-from typing import List
 
-from orchestrator import get_config, reset_config, validate_config, set_log_level, get_logger
+from orchestrator import get_config, get_logger, reset_config, set_log_level, validate_config
 
 
 def test_config_defaults_and_reset(monkeypatch):

@@ -8,7 +8,7 @@ Adds metadata fields to ToolDefinition and provides selection algorithms.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Any
+
 from orchestrator.shared.models import ToolDefinition
 
 
@@ -18,8 +18,8 @@ class ToolMetrics:
     cost_per_call: float = 0.0  # USD per invocation
     expected_latency_ms: int = 100  # Expected execution time
     success_rate: float = 1.0  # 0-1, based on historical data
-    capabilities: List[str] = None  # e.g., ["text", "vision", "code"]
-    
+    capabilities: list[str] = None  # e.g., ["text", "vision", "code"]
+
     def __post_init__(self):
         if self.capabilities is None:
             self.capabilities = []
@@ -44,7 +44,7 @@ class CostOptimizer:
     
     Weights can be tuned to prioritize cost vs. speed vs. reliability.
     """
-    
+
     def __init__(
         self,
         cost_weight: float = 0.5,
@@ -61,7 +61,7 @@ class CostOptimizer:
         self.cost_weight = cost_weight / total
         self.latency_weight = latency_weight / total
         self.reliability_weight = reliability_weight / total
-    
+
     def extract_metrics(self, tool_def: ToolDefinition) -> ToolMetrics:
         """Extract metrics from ToolDefinition metadata."""
         meta = tool_def.metadata or {}
@@ -71,47 +71,47 @@ class CostOptimizer:
             success_rate=float(meta.get("success_rate", 1.0)),
             capabilities=meta.get("capabilities", []),
         )
-    
+
     def calculate_efficiency(
         self,
         tool_def: ToolDefinition,
-        cost_budget: Optional[float] = None,
-        latency_budget: Optional[int] = None,
-    ) -> Optional[EfficiencyScore]:
+        cost_budget: float | None = None,
+        latency_budget: int | None = None,
+    ) -> EfficiencyScore | None:
         """
         Calculate efficiency score for a tool.
         
         Returns None if tool violates hard constraints (cost_budget, latency_budget).
         """
         metrics = self.extract_metrics(tool_def)
-        
+
         # Check hard constraints
         if cost_budget is not None and metrics.cost_per_call > cost_budget:
             return None
         if latency_budget is not None and metrics.expected_latency_ms > latency_budget:
             return None
-        
+
         # Normalize metrics to 0-1 range (using max values as bounds)
         # Assumes: cost up to $1, latency up to 10s, success_rate 0-1
         cost_norm = min(metrics.cost_per_call / 1.0, 1.0)
         latency_norm = min(metrics.expected_latency_ms / 10000.0, 1.0)
-        
+
         # Cost: lower is better (invert)
         cost_score = 1.0 - cost_norm if cost_norm > 0 else 1.0
-        
+
         # Latency: lower is better (invert)
         latency_score = 1.0 - latency_norm
-        
+
         # Reliability: higher is better (use as-is)
         reliability_score = metrics.success_rate
-        
+
         # Combined efficiency score
         score = (
             self.cost_weight * cost_score +
             self.latency_weight * latency_score +
             self.reliability_weight * reliability_score
         )
-        
+
         return EfficiencyScore(
             tool_name=tool_def.name,
             score=score,
@@ -119,14 +119,14 @@ class CostOptimizer:
             latency_component=self.latency_weight * latency_score,
             reliability_component=self.reliability_weight * reliability_score,
         )
-    
+
     def select_best_tool(
         self,
-        tools: List[ToolDefinition],
-        cost_budget: Optional[float] = None,
-        latency_budget: Optional[int] = None,
-        capability_filter: Optional[str] = None,
-    ) -> Optional[ToolDefinition]:
+        tools: list[ToolDefinition],
+        cost_budget: float | None = None,
+        latency_budget: int | None = None,
+        capability_filter: str | None = None,
+    ) -> ToolDefinition | None:
         """
         Select the best tool based on efficiency score.
         
@@ -140,57 +140,57 @@ class CostOptimizer:
             Best tool or None if none qualify
         """
         candidates = tools
-        
+
         # Filter by capability if specified
         if capability_filter:
             candidates = [
                 t for t in candidates
                 if capability_filter in self.extract_metrics(t).capabilities
             ]
-        
+
         if not candidates:
             return None
-        
+
         # Score all candidates
         scores = []
         for tool in candidates:
             score = self.calculate_efficiency(tool, cost_budget, latency_budget)
             if score is not None:
                 scores.append((tool, score))
-        
+
         if not scores:
             return None
-        
+
         # Return tool with highest score
         best_tool, _ = max(scores, key=lambda x: x[1].score)
         return best_tool
-    
+
     def rank_tools(
         self,
-        tools: List[ToolDefinition],
-        cost_budget: Optional[float] = None,
-        latency_budget: Optional[int] = None,
-        capability_filter: Optional[str] = None,
-    ) -> List[tuple[ToolDefinition, EfficiencyScore]]:
+        tools: list[ToolDefinition],
+        cost_budget: float | None = None,
+        latency_budget: int | None = None,
+        capability_filter: str | None = None,
+    ) -> list[tuple[ToolDefinition, EfficiencyScore]]:
         """
         Rank tools by efficiency score (highest first).
         
         Returns list of (tool, score) tuples.
         """
         candidates = tools
-        
+
         # Filter by capability if specified
         if capability_filter:
             candidates = [
                 t for t in candidates
                 if capability_filter in self.extract_metrics(t).capabilities
             ]
-        
+
         scores = []
         for tool in candidates:
             score = self.calculate_efficiency(tool, cost_budget, latency_budget)
             if score is not None:
                 scores.append((tool, score))
-        
+
         # Sort by score descending
         return sorted(scores, key=lambda x: x[1].score, reverse=True)
