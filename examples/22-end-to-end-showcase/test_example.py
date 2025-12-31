@@ -44,9 +44,15 @@ def test_showcase_smoke(monkeypatch):
     def get_skill(name: str):
         return types.SimpleNamespace(name=name, code_path=store[name], version="0.0.1")
 
-    from orchestrator._internal.execution import skill_library as sl
-    monkeypatch.setattr(sl, "save_skill", save_skill)
-    monkeypatch.setattr(sl, "get_skill", get_skill)
+    # Legacy internal import - not part of public API
+    # from orchestrator._internal.execution import skill_library as sl
+    # Using mock instead since sl is None in workflow
+    import workflow as workflow22
+    if workflow22.sl is None:
+        workflow22.sl = types.SimpleNamespace(save_skill=save_skill, get_skill=get_skill)
+    else:
+        monkeypatch.setattr(workflow22.sl, "save_skill", save_skill)
+        monkeypatch.setattr(workflow22.sl, "get_skill", get_skill)
 
     # Run
     import asyncio

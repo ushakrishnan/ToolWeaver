@@ -7,9 +7,12 @@ except Exception:
     _CoreOrchestrator = None
 
 try:
-    from orchestrator._internal.observability.monitoring import (
-        ToolUsageMonitor as MonitoringBackend,  # type: ignore
-    )
+    # Legacy internal import - not part of public API
+    # from orchestrator._internal.observability.monitoring import (
+    #     ToolUsageMonitor as MonitoringBackend,  # type: ignore
+    # )
+    MonitoringBackend = None  # type: ignore
+    raise ImportError("Using fallback")
 except Exception:  # Minimal no-op fallback
     class MonitoringBackend:  # type: ignore
         def log_tool_call(self, *_, **__):

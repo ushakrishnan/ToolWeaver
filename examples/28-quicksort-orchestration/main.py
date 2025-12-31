@@ -9,7 +9,7 @@ This example demonstrates:
 import asyncio
 import time
 
-from orchestrator._internal.infra.a2a_client import (
+from orchestrator import (
     A2AClient,
 )
 

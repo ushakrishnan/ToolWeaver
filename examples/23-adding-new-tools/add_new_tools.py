@@ -21,8 +21,7 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from orchestrator._internal.infra.a2a_client import A2AClient, AgentCapability
-from orchestrator._internal.infra.mcp_client import MCPClientShim
+from orchestrator import A2AClient, AgentCapability
 from orchestrator.shared.models import (
     ToolCatalog,
     ToolDefinition,

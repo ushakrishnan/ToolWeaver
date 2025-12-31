@@ -7,7 +7,8 @@ import asyncio
 from orchestrator.mcp_client import MCPClientShim
 from orchestrator.tool_discovery import discover_tools
 
-from orchestrator._internal.dispatch import functions
+# Legacy import - no longer available in public API
+# from orchestrator._internal.dispatch import functions
 
 
 async def main():

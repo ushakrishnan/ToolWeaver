@@ -12,9 +12,7 @@ In this example:
 
 import asyncio
 
-from orchestrator._internal.infra.a2a_client import A2AClient
-from orchestrator._internal.infra.mcp_client import MCPClientShim
-from orchestrator._internal.runtime.orchestrator import run_step
+from orchestrator import A2AClient
 
 
 async def main():

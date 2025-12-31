@@ -14,7 +14,8 @@ from orchestrator.mcp_client import MCPClientShim
 from orchestrator.planner import LargePlanner
 from orchestrator.tool_discovery import discover_tools
 
-from orchestrator._internal.dispatch import functions
+# Legacy import - no longer available in public API
+# from orchestrator._internal.dispatch import functions
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 
 

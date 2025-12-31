@@ -6,7 +6,7 @@ Demonstrates how to discover agents and filter by capability or tags.
 
 import asyncio
 
-from orchestrator._internal.infra.a2a_client import A2AClient
+from orchestrator import A2AClient
 
 
 async def main():

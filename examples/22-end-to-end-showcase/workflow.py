@@ -10,7 +10,9 @@ except Exception:  # fallback for tests
         async def execute_agent_step(self, agent_name: str, request: dict[str, Any], stream: bool = False):
             return {"summary": f"Analysis of {request.get('text','')}"}
 
-from orchestrator._internal.execution import skill_library as sl
+# Legacy internal import - not part of public API
+# from orchestrator._internal.execution import skill_library as sl
+sl = None  # type: ignore
 
 
 async def main():

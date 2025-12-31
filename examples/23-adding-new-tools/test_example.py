@@ -6,8 +6,7 @@ Smoke tests for the add_new_tools example.
 
 import pytest
 
-from orchestrator._internal.infra.a2a_client import A2AClient
-from orchestrator._internal.infra.mcp_client import MCPClientShim
+from orchestrator import A2AClient
 from orchestrator.shared.models import ToolCatalog
 
 
