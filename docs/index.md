@@ -20,7 +20,7 @@ Planner outputs a DAG; the orchestrator discovers tools, narrows via hybrid sear
 
 ### 10-Minute Quickstart
 !!! success "Your first tool and parallel run"
-	1. Install: `pip install toolweaver`
+	1. Install: `pip install toolweaver` (add `[openai]`, `[azure]`, or `[anthropic]` for LLM providers)
 	2. Define a tool:
 	   ```python
 	   from orchestrator import mcp_tool

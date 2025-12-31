@@ -31,13 +31,16 @@ Natural Language → Large Model (Planning) → Tool Search → Workflow Executi
 - Stay flexible: decorators, templates, or YAML
 
 ## Quickstart
-- Install: `pip install toolweaver`
+- Install: `pip install toolweaver` (add extras like `[openai]`, `[azure]`, `[anthropic]` for LLM providers)
 - Define a tool and run a parallel demo: see [Get Started / Quickstart](../get-started/quickstart.md)
 
 ## Package Extras (what/when/why)
+- `azure`: Azure AI Vision + Identity — for Azure Computer Vision tools
+- `openai`: OpenAI Python SDK — for GPT-4, ChatGPT models
+- `anthropic`: Anthropic SDK — for Claude 3, 3.5 models
 - `redis`: distributed cache — shared, faster than file cache
-- `vector`: Qdrant + client — semantic tool search at scale
-- `monitoring`: Prometheus/OTLP/Grafana — production observability
+- `vector-db`: Qdrant + client — semantic tool search at scale
+- `monitoring`: WandB + Prometheus — production observability
 - `all`: everything above — one-shot setup
 
 See details: [Get Started / Installation](../get-started/installation.md)
