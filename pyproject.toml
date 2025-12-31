@@ -35,14 +35,18 @@ dependencies = [
     "numpy>=1.24.0",               # Numerical computing
     "sentence-transformers>=2.2.0", # Semantic embeddings
     "rank-bm25>=0.2.2",            # BM25 ranking algorithm
-    "openai>=1.0.0",               # OpenAI API
-    "anthropic>=0.18.0",           # Anthropic API
-    "azure-ai-vision-imageanalysis>=1.0.0", # Azure vision
-    "azure-identity>=1.15.0",      # Azure authentication
 ]
 
 [project.optional-dependencies]
 # Phase 0 Structure: Clean optionals with no core bloat
+
+# Cloud Providers (optional - opt-in per provider)
+azure = [
+    "azure-ai-vision-imageanalysis>=1.0.0",
+    "azure-identity>=1.15.0",
+]
+openai = ["openai>=1.0.0"]
+anthropic = ["anthropic>=0.18.0"]
 
 # Observability - Monitoring (opt-in only)
 wandb = ["wandb>=0.16.0"]
@@ -62,9 +66,7 @@ vector-db = ["qdrant-client>=1.7.0"]
 # Cache (optional for performance)
 redis = ["redis>=5.0.0", "hiredis>=2.3.0"]
 
-# LLM Providers (optional for different models)
-openai = ["openai>=1.0.0"]
-anthropic = ["anthropic>=0.18.0"]
+# Additional LLM Providers
 gemini = ["google-generativeai>=0.3.0"]
 
 # Local inference (optional, heavy dependencies)
@@ -97,18 +99,17 @@ all = [
     "wandb>=0.16.0",
     "prometheus-client>=0.19.0",
     "qdrant-client>=1.7.0",
+    "pinecone-client>=3.0.0",
     "redis>=5.0.0",
     "hiredis>=2.3.0",
     "openai>=1.0.0",
     "anthropic>=0.18.0",
+    "azure-ai-vision-imageanalysis>=1.0.0",
+    "azure-identity>=1.15.0",
     "google-generativeai>=0.3.0",
     "transformers>=4.36.0",
     "torch>=2.1.0",
     "accelerate>=0.25.0",
-    "qdrant-client>=1.7.0",
-    "pinecone-client>=3.0.0",
-    "redis>=5.0.0",
-    "hiredis>=2.3.0",
     "pytest>=9.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-mock>=3.12.0",

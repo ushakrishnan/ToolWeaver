@@ -137,9 +137,12 @@ Natural Language → Large Model (Planning) → Tool Search → Workflow Executi
 pip install toolweaver
 
 # With optional features
+pip install toolweaver[azure]       # Add Azure AI services
+pip install toolweaver[openai]      # Add OpenAI
+pip install toolweaver[anthropic]   # Add Anthropic/Claude
 pip install toolweaver[monitoring]  # Add W&B monitoring
 pip install toolweaver[redis]       # Add Redis caching
-pip install toolweaver[vector]      # Add vector search
+pip install toolweaver[vector-db]   # Add vector search
 pip install toolweaver[all]         # Everything
 ```
 
