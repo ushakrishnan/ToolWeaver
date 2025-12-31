@@ -11,8 +11,7 @@ from orchestrator.mcp_client import MCPClientShim
 from orchestrator.tool_discovery import discover_tools
 from orchestrator.tool_search import ToolSearchEngine
 
-# Legacy import - no longer available in public API
-# from orchestrator._internal.dispatch import functions
+# Legacy import removed - not available in public API
 
 
 async def main():

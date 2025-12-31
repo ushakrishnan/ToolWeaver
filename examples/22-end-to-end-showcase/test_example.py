@@ -44,9 +44,7 @@ def test_showcase_smoke(monkeypatch):
     def get_skill(name: str):
         return types.SimpleNamespace(name=name, code_path=store[name], version="0.0.1")
 
-    # Legacy internal import - not part of public API
-    # from orchestrator._internal.execution import skill_library as sl
-    # Using mock instead since sl is None in workflow
+    # Skill library not available in public API - using mock instead
     import workflow as workflow22
     if workflow22.sl is None:
         workflow22.sl = types.SimpleNamespace(save_skill=save_skill, get_skill=get_skill)

@@ -7,10 +7,7 @@ except Exception:
     _CoreOrchestrator = None
 
 try:
-    # Legacy internal import - not part of public API
-    # from orchestrator._internal.observability.monitoring import (
-    #     ToolUsageMonitor as MonitoringBackend,  # type: ignore
-    # )
+    # Monitoring backend not available in public API - using fallback
     MonitoringBackend = None  # type: ignore
     raise ImportError("Using fallback")
 except Exception:  # Minimal no-op fallback
