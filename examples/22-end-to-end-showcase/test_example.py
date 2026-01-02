@@ -27,7 +27,7 @@ class DummyOrchestrator:
 
 def test_showcase_smoke(monkeypatch):
     dummy = DummyOrchestrator()
-    monkeypatch.setattr(workflow22, "Orchestrator", lambda: dummy)
+    monkeypatch.setattr(workflow22, "Orchestrator", lambda: dummy)  # noqa: F823
 
     # In-memory skill library stubs
     store = {}

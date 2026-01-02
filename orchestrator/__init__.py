@@ -19,7 +19,7 @@ Contributors:
 """
 
 from collections.abc import Awaitable, Callable, Iterable
-from typing import Any, Dict, List, Optional, Protocol, Tuple, Union
+from typing import Any, Optional, Protocol, Union
 
 __version__ = "0.10.2"
 

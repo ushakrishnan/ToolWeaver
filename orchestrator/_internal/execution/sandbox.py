@@ -13,7 +13,7 @@ import sys
 import time
 import traceback
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Optional  # noqa: F823
 
 logger = logging.getLogger(__name__)
 
@@ -173,7 +173,7 @@ class SandboxEnvironment:
             Safe globals dictionary
         """
         # Start with empty builtins
-        safe_globals: dict[str, Any] = {'__builtins__': {}}
+        safe_globals: dict[str, Any] = {'__builtins__': {}}  # noqa: F823
 
         # Add safe builtins
         import builtins

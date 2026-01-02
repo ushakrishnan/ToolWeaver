@@ -111,8 +111,9 @@ class SecretsRedactor(logging.Filter):
             # Handle patterns with capture groups
             if secret_type in ('API_KEY', 'PASSWORD'):
                 # These patterns have capture groups for key=value format
+                # Use default argument to capture secret_type value at loop time
                 result = pattern.sub(
-                    lambda m: f"{m.group(1)}=[REDACTED_{secret_type}]",
+                    lambda m, st=secret_type: f"{m.group(1)}=[REDACTED_{st}]",
                     result
                 )
             else:

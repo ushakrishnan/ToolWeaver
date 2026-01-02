@@ -185,13 +185,14 @@ class CompositionExecutor:
                     tool = self.tool_resolver(step.tool_ref)
 
                 # Call with timeout
-                async def _call():
-                    if asyncio.iscoroutinefunction(tool):
-                        return await tool(**step_input)
+                # Use factory function to properly capture tool at this iteration
+                async def _make_call(current_tool=tool, current_input=step_input):
+                    if asyncio.iscoroutinefunction(current_tool):
+                        return await current_tool(**current_input)
                     else:
-                        return tool(**step_input)
+                        return current_tool(**current_input)
 
-                result = await asyncio.wait_for(_call(), timeout=step.timeout_sec)
+                result = await asyncio.wait_for(_make_call(), timeout=step.timeout_sec)
                 return result
             except asyncio.TimeoutError as e:
                 if attempt == step.retry_count:

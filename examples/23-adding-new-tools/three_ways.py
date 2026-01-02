@@ -12,7 +12,7 @@ All three approaches produce identical tools and can be used together.
 import asyncio
 import tempfile
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from orchestrator import (
     FunctionToolTemplate,
@@ -56,7 +56,7 @@ class ExpensesFunctionTool(FunctionToolTemplate):
         )
 
     @staticmethod
-    def worker(employee_id: str, year: int = 2025) -> Dict[str, Any]:
+    def worker(employee_id: str, year: int = 2025) -> dict[str, Any]:
         """Template worker implementation."""
         return {
             "employee_id": employee_id,
@@ -74,7 +74,7 @@ class ExpensesFunctionTool(FunctionToolTemplate):
 # ============================================================================
 
 @mcp_tool(domain="finance", description="Fetch employee expenses (decorator approach)")
-async def get_expenses_via_decorator(employee_id: str, year: int = 2025) -> Dict[str, Any]:
+async def get_expenses_via_decorator(employee_id: str, year: int = 2025) -> dict[str, Any]:
     """
     Fetch employee expenses using the decorator approach.
 
@@ -105,7 +105,7 @@ async def get_expenses_via_decorator(employee_id: str, year: int = 2025) -> Dict
 
 
 @a2a_agent(domain="finance")
-def route_expense_approval(employee_id: str, amount: float, reason: str = "") -> Dict[str, Any]:
+def route_expense_approval(employee_id: str, amount: float, reason: str = "") -> dict[str, Any]:
     """
     Route expense for approval (agent decorator).
 
@@ -150,7 +150,7 @@ tools:
 """
 
 
-def yaml_worker_get_expenses(employee_id: str, year: int = 2025) -> Dict[str, Any]:
+def yaml_worker_get_expenses(employee_id: str, year: int = 2025) -> dict[str, Any]:
     """Worker function for YAML-defined tool."""
     return {
         "employee_id": employee_id,
