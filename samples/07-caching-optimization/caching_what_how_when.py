@@ -11,8 +11,6 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
 from orchestrator._internal.infra.idempotency import IdempotencyCache, generate_idempotency_key
 from orchestrator._internal.infra.redis_cache import RedisCache, ToolCache
 

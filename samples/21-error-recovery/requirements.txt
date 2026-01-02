@@ -1,0 +1,7 @@
+# ToolWeaver Example Dependencies
+
+# Core ToolWeaver
+toolweaver>=0.10.2
+
+# Utilities
+python-dotenv>=1.0.0
