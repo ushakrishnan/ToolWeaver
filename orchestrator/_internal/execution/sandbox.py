@@ -116,7 +116,7 @@ class SandboxEnvironment:
         try:
             tree = ast.parse(code)
         except SyntaxError as e:
-            raise SandboxSecurityError(f"Syntax error: {e}")
+            raise SandboxSecurityError(f"Syntax error: {e}") from e
 
         for node in ast.walk(tree):
             # Check for forbidden imports
@@ -250,7 +250,7 @@ class SandboxEnvironment:
                 try:
                     compiled = compile(code, '<sandbox>', 'exec')
                 except SyntaxError as e:
-                    raise SandboxSecurityError(f"Compilation error: {e}")
+                    raise SandboxSecurityError(f"Compilation error: {e}") from e
 
                 # Execute
                 exec(compiled, safe_globals, local_vars)

@@ -242,7 +242,7 @@ results = await asyncio.gather(*[
             code = pattern.code_template.format(**params)
             return code
         except KeyError as e:
-            raise ValueError(f"Invalid parameter: {e}")
+            raise ValueError(f"Invalid parameter: {e}") from e
 
     @classmethod
     def detect_pattern_need(cls, task_description: str) -> PatternType | None:

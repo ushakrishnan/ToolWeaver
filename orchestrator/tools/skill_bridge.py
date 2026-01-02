@@ -75,7 +75,7 @@ def save_tool_as_skill(
 
     except (TypeError, OSError) as e:
         logger.error(f"Cannot extract source for {tool_def.name}: {e}")
-        raise ValueError("Cannot save tool as skill: unable to extract source code")
+        raise ValueError("Cannot save tool as skill: unable to extract source code") from e
 
     # Prepare skill metadata
     skill_tags = tags or []
@@ -210,7 +210,7 @@ def load_tool_from_skill(
         exec(code, namespace)
     except Exception as e:
         logger.error(f"Failed to execute skill code for '{skill_name}': {e}")
-        raise ValueError(f"Cannot execute skill code: {e}")
+        raise ValueError(f"Cannot execute skill code: {e}") from e
 
     # Find the main function (same name as skill or first callable)
     func = namespace.get(skill_name)

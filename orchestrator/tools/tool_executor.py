@@ -61,9 +61,9 @@ async def call_tool(
         logger.info(f"Tool {tool_name} executed successfully")
         return result
 
-    except asyncio.TimeoutError:
+    except asyncio.TimeoutError as e:
         logger.error(f"Tool {tool_name} timed out after {timeout}s")
-        raise TimeoutError(f"Tool execution timed out after {timeout}s")
+        raise TimeoutError(f"Tool execution timed out after {timeout}s") from e
 
     except Exception as e:
         logger.error(f"Tool {tool_name} failed: {e}")

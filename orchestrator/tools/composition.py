@@ -195,11 +195,11 @@ class CompositionExecutor:
                 return result
             except asyncio.TimeoutError as e:
                 if attempt == step.retry_count:
-                    raise StepExecutionError(step.name, f"Timeout after {step.timeout_sec}s", e)
+                    raise StepExecutionError(step.name, f"Timeout after {step.timeout_sec}s", e) from e
                 await asyncio.sleep(0.1 * (2 ** attempt))  # Exponential backoff
             except Exception as e:
                 if attempt == step.retry_count:
-                    raise StepExecutionError(step.name, str(e), e)
+                    raise StepExecutionError(step.name, str(e), e) from e
                 await asyncio.sleep(0.1 * (2 ** attempt))
 
 

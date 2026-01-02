@@ -246,7 +246,7 @@ class SkillRegistry:
 
         except requests.RequestException as e:
             logger.error(f"Failed to publish skill {skill_id}: {e}")
-            raise ConnectionError(f"Registry error: {e}")
+            raise ConnectionError(f"Registry error: {e}") from e
 
     def search(self, query: str = "", tags: list[str] | None = None,
               org: str | None = None, min_rating: float = 0.0,
@@ -390,7 +390,7 @@ class SkillRegistry:
 
         except Exception as e:
             logger.error(f"Failed to download skill {skill_id}: {e}")
-            raise ConnectionError(f"Download failed: {e}")
+            raise ConnectionError(f"Download failed: {e}") from e
 
     def rate_skill(self, skill_id: str, rating: float,
                   review: str | None = None) -> bool:

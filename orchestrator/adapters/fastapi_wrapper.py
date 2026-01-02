@@ -163,6 +163,4 @@ class FastAPIAdapter:
                 raise HTTPException(
                     status_code=500,
                     detail=f"Tool execution failed: {str(e)}",
-                )
-
-        return app
+                  ) from e

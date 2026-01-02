@@ -76,7 +76,7 @@ async def function_call_worker(payload: dict[str, Any]) -> dict[str, Any]:
         return cast(dict[str, Any], FunctionCallOutput(result=result).model_dump())
     except Exception as e:
         logger.error(f"Function call failed: {validated.name}", exc_info=True)
-        raise RuntimeError(f"Function '{validated.name}' execution failed: {e}")
+        raise RuntimeError(f"Function '{validated.name}' execution failed: {e}") from e
 
 
 async def dispatch_step(

@@ -97,7 +97,8 @@ def show_stub_content(stub_dir: Path, tool_name: str):
         lines = content.split("\n")[:40]
         print("\n".join(lines))
         if len(content.split("\n")) > 40:
-            print(f"\n... ({len(content.split('\n')) - 40} more lines)")
+            lines_count = len(content.split("\n")) - 40
+            print(f"\n... ({lines_count} more lines)")
 
 
 def show_usage_example():

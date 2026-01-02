@@ -264,10 +264,10 @@ def validate_file_path(
         base = Path(base_dir).resolve()
         try:
             path.relative_to(base)
-        except ValueError:
-            raise PathTraversalError(
-                f"Path traversal detected: {file_path} is outside {base_dir}"
-            )
+except ValueError as e:
+              raise PathTraversalError(
+                  f"Path traversal detected: {file_path} is outside {base_dir}"
+              ) from e
 
     # Check existence
     if must_exist and not path.exists():
@@ -417,7 +417,7 @@ def validate_code(
     try:
         tree = ast.parse(code)
     except SyntaxError as e:
-        raise InvalidCodeError(f"Syntax error in code: {e}")
+        raise InvalidCodeError(f"Syntax error in code: {e}") from e
 
     # Check for dangerous node types
     for node in ast.walk(tree):
@@ -492,9 +492,7 @@ def validate_params(
 
         raise ValidationErrorBase(
             "Parameter validation failed:\n" + "\n".join(error_msgs)
-        )
-
-
+          ) from None
 # ============================================================
 # Bulk Validation
 # ============================================================

@@ -137,8 +137,8 @@ class LargePlanner:
                         api_version=api_version
                     )
                     logger.info("Using Azure AD authentication for Azure OpenAI")
-                except ImportError:
-                    raise RuntimeError("azure-identity package not installed. Install with: pip install azure-identity")
+                except ImportError as e:
+                    raise RuntimeError("azure-identity package not installed. Install with: pip install azure-identity") from e
             else:
                 # Use API key authentication
                 self.credential = None
@@ -608,7 +608,7 @@ Respond with only the JSON execution plan."""
 
         except Exception as e:
             logger.error(f"Plan generation failed: {e}", exc_info=True)
-            raise RuntimeError(f"Failed to generate execution plan: {e}")
+            raise RuntimeError(f"Failed to generate execution plan: {e}") from e
 
     async def refine_plan(
         self,
@@ -680,4 +680,4 @@ Please generate an improved plan that addresses the feedback."""
 
         except Exception as e:
             logger.error(f"Plan refinement failed: {e}", exc_info=True)
-            raise RuntimeError(f"Failed to refine execution plan: {e}")
+            raise RuntimeError(f"Failed to refine execution plan: {e}") from e
