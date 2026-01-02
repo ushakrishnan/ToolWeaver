@@ -23,24 +23,34 @@ Complete showcase of ToolWeaver capabilities through real-world scenarios using 
 
 **New to ToolWeaver?** Start with [Example 13: Complete End-to-End Pipeline](13-complete-pipeline/) for a full demonstration of all features in action.
 
-### Setup
+### Platform-Specific Setup
 
-```bash
-# Clone and install the published package
-git clone https://github.com/ushakrishnan/ToolWeaver.git
-cd ToolWeaver
+For detailed cross-platform instructions (Windows, macOS, Linux), see **[CROSS_PLATFORM_SETUP.md](CROSS_PLATFORM_SETUP.md)**.
+
+Quick commands by OS:
+
+**Windows (PowerShell):**
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install toolweaver
-
-# Navigate to a sample
 cd samples/01-basic-receipt-processing
-
-# Configure environment
 cp .env.example .env
-# Edit .env with your API keys
-
-# Run
+$env:PYTHONIOENCODING='utf-8'  # Fix encoding if needed
 python process_receipt.py
 ```
+
+**macOS/Linux (Bash):**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install toolweaver
+cd samples/01-basic-receipt-processing
+cp .env.example .env
+python process_receipt.py
+```
+
+**Environment Configuration:** See [ENV_CONFIGURATION.md](ENV_CONFIGURATION.md) for detailed setup of API keys and optional services.
 
 ### Troubleshooting
 
@@ -55,6 +65,8 @@ Or add to your PowerShell profile permanently:
 ```powershell
 [Environment]::SetEnvironmentVariable("PYTHONIOENCODING", "utf-8", "User")
 ```
+
+**Other issues?** See [CROSS_PLATFORM_SETUP.md](CROSS_PLATFORM_SETUP.md#common-issues--solutions) for solutions.
 
 ## 📚 Example Index
 
@@ -355,3 +367,26 @@ Optional dependencies for advanced features:
 - WandB, Redis, Qdrant: `pip install "toolweaver[all]"`
 
 See main [requirements.txt](../requirements.txt) for complete dependencies.
+
+---
+
+## 💻 Platform Support
+
+All samples are **fully tested and supported** on:
+- **Windows 10/11** (PowerShell 7+)
+- **macOS 13+** (Intel & Apple Silicon)
+- **Linux** (Ubuntu 20.04+, CentOS 8+, Rocky Linux 8+)
+- **Docker** (any Linux image with Python 3.10+)
+
+For **platform-specific setup instructions**, **troubleshooting**, and **environment variable configuration**, see **[CROSS_PLATFORM_SETUP.md](CROSS_PLATFORM_SETUP.md)**.
+
+### Quick Reference by OS
+
+| Task | Windows | macOS/Linux |
+|------|---------|-------------|
+| Activate venv | `.\.venv\Scripts\Activate.ps1` | `source .venv/bin/activate` |
+| Set API key | `$env:VAR="value"` | `export VAR="value"` |
+| Copy config | `cp .env.example .env` | `cp .env.example .env` |
+| Run sample | `python example.py` | `python example.py` |
+
+All paths use `pathlib.Path` for automatic cross-platform compatibility.
