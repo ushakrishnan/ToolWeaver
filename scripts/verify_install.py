@@ -15,10 +15,10 @@ import sys
 def check_imports(imports: list[tuple[str, str]]) -> bool:
     """
     Check if all imports work.
-    
+
     Args:
         imports: List of (module_name, package_name) tuples
-    
+
     Returns:
         True if all imports succeed, False otherwise
     """

@@ -44,7 +44,7 @@ def test_optional_feature_logs_and_continues(caplog):
         assert available is False
         # Any ImportError inside should be suppressed
         try:
-            import not_installed_pkg_zz  # type: ignore
+            __import__("not_installed_pkg_zz")  # noqa: F401
         except ImportError:
             # Context manager __exit__ should suppress this if used within 'with'
             pass

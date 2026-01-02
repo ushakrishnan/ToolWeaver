@@ -412,11 +412,11 @@ async def __main__():
     async def task1():
         await asyncio.sleep(0.01)
         return "task1"
-    
+
     async def task2():
         await asyncio.sleep(0.01)
         return "task2"
-    
+
     results = await asyncio.gather(task1(), task2())
     return results
 """

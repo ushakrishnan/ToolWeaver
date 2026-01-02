@@ -60,11 +60,11 @@ def benchmark():
 def generate_large_catalog(size: int, domains: list[str] = None) -> ToolCatalog:
     """
     Generate a large synthetic tool catalog for benchmarking.
-    
+
     Args:
         size: Number of tools to generate
         domains: List of domains to distribute tools across
-    
+
     Returns:
         ToolCatalog with `size` synthetic tools
     """

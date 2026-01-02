@@ -9,10 +9,10 @@ from orchestrator.adapters import ClaudeSkillsAdapter, ClineAdapter
 
 # Try to import FastAPI adapter (optional dependency)
 try:
-    import fastapi
-
-    from orchestrator.adapters import FastAPIAdapter
-    HAS_FASTAPI = True
+    import importlib.util
+    HAS_FASTAPI = importlib.util.find_spec("fastapi") is not None
+    if HAS_FASTAPI:
+        from orchestrator.adapters import FastAPIAdapter
 except ImportError:
     HAS_FASTAPI = False
 
@@ -21,11 +21,11 @@ except ImportError:
 @tool(name="test_calculator", description="Basic calculator")
 def add(x: int, y: int) -> int:
     """Add two numbers.
-    
+
     Args:
         x: First number
         y: Second number
-        
+
     Returns:
         Sum of x and y
     """
@@ -35,11 +35,11 @@ def add(x: int, y: int) -> int:
 @tool(name="test_greet", description="Greet a person")
 def greet(name: str, age: int = 0) -> str:
     """Greet someone by name.
-    
+
     Args:
         name: Person's name
         age: Person's age (optional)
-        
+
     Returns:
         Greeting message
     """

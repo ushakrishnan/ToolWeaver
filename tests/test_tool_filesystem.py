@@ -229,11 +229,11 @@ class TestToolFileSystem:
         """Test parameter extraction from docstrings"""
         docstring = '''
         Test function
-        
+
         Args:
             param1 (string, required): First parameter
             param2 (integer, optional): Second parameter
-        
+
         Returns:
             Result
         '''
