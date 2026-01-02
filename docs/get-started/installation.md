@@ -4,6 +4,13 @@
 - Python 3.10+
 - Optional: Redis for distributed cache (fallback file cache included)
 
+## Platform-Specific Setup
+
+For detailed setup instructions for your platform, see:
+- **Windows, macOS, Linux:** [Cross-Platform Setup Guide](../../samples/CROSS_PLATFORM_SETUP.md)
+- **All Environment Variables:** [Configuration Reference](../../samples/ENV_CONFIGURATION.md)
+- **Verify Setup:** Run `python samples/verify_cross_platform.py` after installation
+
 ## Install from PyPI
 ```bash
 pip install toolweaver

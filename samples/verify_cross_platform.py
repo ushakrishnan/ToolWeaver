@@ -9,10 +9,11 @@ Usage:
     python verify_cross_platform.py
 """
 
-import sys
-import platform
 import os
+import platform
+import sys
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 
@@ -90,11 +91,11 @@ def main():
     try:
         current_dir = Path(__file__).parent
         env_path = current_dir / ".env.example"
-        
+
         if env_path.exists():
             check_passed = True
             print_check(".env.example exists", check_passed, str(env_path))
-            
+
             # Try loading
             load_dotenv(env_path, override=True)
             print_check(".env loading", True, "dotenv.load_dotenv() works")
@@ -116,7 +117,7 @@ def main():
         ("pydantic", "pydantic"),
         ("requests", "requests"),
     ]
-    
+
     for import_name, package_name in core_deps:
         try:
             __import__(import_name)
@@ -131,7 +132,7 @@ def main():
     print_header("6. Subprocess Support (for code execution)")
     try:
         import subprocess
-        
+
         # Test basic execution
         result = subprocess.run(
             [sys.executable, "-c", "print('Hello')"],
@@ -151,11 +152,11 @@ def main():
     print_header("7. Async/Await Support")
     try:
         import asyncio
-        
+
         async def test_async():
             await asyncio.sleep(0)
             return True
-        
+
         result = asyncio.run(test_async())
         print_check("asyncio.run()", result)
         all_passed = all_passed and result
@@ -174,7 +175,7 @@ def main():
             ("UTF-8", "Hello 世界 🌍"),
             ("Special chars", "Café, naïve, résumé"),
         ]
-        
+
         for name, text in test_strings:
             try:
                 encoded = text.encode('utf-8')
@@ -185,7 +186,7 @@ def main():
             except Exception as e:
                 print_check(f"Encoding: {name:25}", False, str(e))
                 all_passed = False
-                
+
     except Exception as e:
         print_check("Encoding support", False, str(e))
         all_passed = False
@@ -201,7 +202,7 @@ def main():
         ("azure.identity", "azure-identity"),
         ("openai", "openai"),
     ]
-    
+
     for import_name, package_name in optional_deps:
         try:
             __import__(import_name)
@@ -213,7 +214,7 @@ def main():
     # Summary
     # ============================================================
     print_header("VERIFICATION SUMMARY")
-    
+
     if all_passed:
         print("✅ All required checks passed!")
         print("\nNext steps:")

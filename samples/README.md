@@ -1,15 +1,15 @@
 # ToolWeaver Samples (PyPI)
 
-> **\ud83d\udc64 New User?** See [samples/](../samples/) for ready-to-run examples using the installed package.  
-> **\ud83d\udccc Current status:** PyPI package refresh is in progress; treat `examples/` as the canonical, up-to-date source. We'll regenerate `samples/` after the package is finalized.
-> **\ud83d\udee0\ufe0f For Developers:** Use `examples/` to work against local source.  
-> **\ud83d\udc64 End Users:** These samples run against the published package `toolweaver==0.5.0`.  
-> **\ud83d\udccc Status:** Samples mirror `examples/` and import the installed package (no local path hacks).
+> **👤 New User?** See [samples/](../samples/) for ready-to-run examples using the installed package.  
+> **📋 Current status:** PyPI package refresh is in progress; treat `examples/` as the canonical, up-to-date source. We'll regenerate `samples/` after the package is finalized.
+> **🔧 For Developers:** Use `examples/` to work against local source.  
+> **👤 End Users:** These samples run against the published package `toolweaver==0.5.0`.  
+> **📋 Status:** Samples mirror `examples/` and import the installed package (no local path hacks).
 
 Complete showcase of ToolWeaver capabilities through real-world scenarios using the installed package.
 ➡️ **Status:** Mirrored from `examples/`; see [EXAMPLES_TESTING_REPORT.md](../docs/internal/EXAMPLES_TESTING_REPORT.md) for validated runs.
 
-## \ud83d\udd04 Examples vs Samples
+## 🔄 Examples vs Samples
 
 | Feature | **examples/** (Here) | **[samples/](../samples/)** |
 |---------|---------------------|---------------------------|
@@ -19,7 +19,7 @@ Complete showcase of ToolWeaver capabilities through real-world scenarios using 
 | **Modify** | Yes - edit source directly | No - use as reference |
 | **Use When** | Contributing to ToolWeaver | Building with ToolWeaver |
 
-## \ud83d\ude80 Quick Start
+## 🚀 Quick Start
 
 **New to ToolWeaver?** Start with [Example 13: Complete End-to-End Pipeline](13-complete-pipeline/) for a full demonstration of all features in action.
 
