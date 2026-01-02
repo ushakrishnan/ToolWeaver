@@ -21,7 +21,11 @@ class MonitoringBackend(Protocol):
         self,
         tool_name: str,
         success: bool,
-        latency: float,
+        *,
+        latency: float = 0.0,
+        latency_ms: float | None = None,
+        input_tokens: int | None = None,
+        output_tokens: int | None = None,
         error: str | None = None,
         execution_id: str | None = None
     ) -> None:
@@ -68,15 +72,22 @@ class LocalBackend:
         self,
         tool_name: str,
         success: bool,
-        latency: float,
+        *,
+        latency: float = 0.0,
+        latency_ms: float | None = None,
+        input_tokens: int | None = None,
+        output_tokens: int | None = None,
         error: str | None = None,
         execution_id: str | None = None
      ) -> None:
+        effective_latency = latency_ms / 1000 if latency_ms is not None else latency
         entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "tool_name": tool_name,
             "success": success,
-            "latency": latency,
+            "latency": effective_latency,
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
             "error": error,
             "execution_id": execution_id
         }
@@ -171,12 +182,17 @@ class WandbBackend:
         self,
         tool_name: str,
         success: bool,
-        latency: float,
+        *,
+        latency: float = 0.0,
+        latency_ms: float | None = None,
+        input_tokens: int | None = None,
+        output_tokens: int | None = None,
         error: str | None = None,
         execution_id: str | None = None
      ) -> None:
+        effective_latency = latency_ms / 1000 if latency_ms is not None else latency
         self.wandb.log({
-            f"tool/{tool_name}/latency": latency,
+            f"tool/{tool_name}/latency": effective_latency,
             f"tool/{tool_name}/success": 1 if success else 0,
             f"tool/{tool_name}/error": 0 if success else 1,
             "step": self.step
@@ -308,10 +324,15 @@ class PrometheusBackend:
         self,
         tool_name: str,
         success: bool,
-        latency: float,
+        *,
+        latency: float = 0.0,
+        latency_ms: float | None = None,
+        input_tokens: int | None = None,
+        output_tokens: int | None = None,
         error: str | None = None,
         execution_id: str | None = None
     ) -> None:
+        effective_latency = latency_ms / 1000 if latency_ms is not None else latency
         self.tool_calls.labels(
             tool_name=tool_name,
             success=str(success)
@@ -320,7 +341,7 @@ class PrometheusBackend:
         if not success:
             self.tool_errors.labels(tool_name=tool_name).inc()
 
-        self.tool_latency.labels(tool_name=tool_name).observe(latency)
+        self.tool_latency.labels(tool_name=tool_name).observe(effective_latency)
 
     def log_search_query(
         self,

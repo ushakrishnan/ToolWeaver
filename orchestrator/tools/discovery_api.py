@@ -10,11 +10,15 @@ from ..shared.models import ToolCatalog, ToolDefinition
 logger = logging.getLogger(__name__)
 
 
-def _collect_all_tool_defs() -> list[ToolDefinition]:
+def _collect_all_tool_defs(catalog: ToolCatalog | None = None) -> list[ToolDefinition]:
     """Collect all tool definitions from all plugins, normalized to ToolDefinition.
 
     Plugins return lists of dicts; we validate to ToolDefinition for consistent access.
     """
+    if catalog is not None:
+        tools_list: list[Any] = catalog.tools if isinstance(catalog.tools, list) else list(catalog.tools.values())
+        return [ToolDefinition.model_validate(t) for t in tools_list]
+
     registry = get_registry()
     all_tools: list[ToolDefinition] = []
     for _, tools in registry.get_all_tools().items():
@@ -131,6 +135,7 @@ def search_tools(
     query: str | None = None,
     domain: str | None = None,
     type_filter: str | None = None,
+    catalog: ToolCatalog | None = None,
     use_semantic: bool = False,
     top_k: int = 10,
     min_score: float = 0.3,
@@ -174,7 +179,7 @@ def search_tools(
 
     if not semantic_attempted or not results:
         query_norm = (query or "").strip().lower()
-        for td in _collect_all_tool_defs():
+        for td in _collect_all_tool_defs(catalog):
             if type_filter and td.type != type_filter:
                 continue
             if domain and td.domain != domain:
@@ -213,16 +218,17 @@ def get_tool_info(
     *,
     detail_level: str = "full",
     include_examples: bool = True,
+    catalog: ToolCatalog | None = None,
 ) -> ToolDefinition | dict[str, Any] | None:
     """Get tool definition by name with optional projection."""
-    for td in _collect_all_tool_defs():
+    for td in _collect_all_tool_defs(catalog):
         if td.name == name:
             return _format_tool_view(td, detail_level=detail_level, include_examples=include_examples)
     return None
 
 
-def list_tools_by_domain(domain: str) -> list[ToolDefinition]:
-    return [td for td in _collect_all_tool_defs() if td.domain == domain]
+def list_tools_by_domain(domain: str, *, catalog: ToolCatalog | None = None) -> list[ToolDefinition]:
+    return [td for td in _collect_all_tool_defs(catalog) if td.domain == domain]
 
 
 def semantic_search_tools(

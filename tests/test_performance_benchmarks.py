@@ -227,7 +227,7 @@ class TestScalabilityBenchmarks:
         # Simulate concurrent operations
         def concurrent_search():
             return search_tools(
-                query="test query",
+                query=None,  # empty query returns all tools
                 catalog=catalog,
                 top_k=5
             )

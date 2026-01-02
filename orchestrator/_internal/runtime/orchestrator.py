@@ -7,7 +7,7 @@ from datetime import datetime
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
-from ...shared.models import PlanModel
+from ...shared.models import PlanModel, ToolCatalog
 from ..dispatch.hybrid_dispatcher import dispatch_step
 from ..infra.a2a_client import A2AClient, AgentDelegationRequest
 from ..infra.mcp_client import MCPClientShim
@@ -285,14 +285,23 @@ class Orchestrator:
     - Logs via ToolUsageMonitor when available
     """
 
-    def __init__(self, *, agents_config_path: str | None = None, registry_url: str | None = None):
+    def __init__(
+        self,
+        catalog: ToolCatalog | None = None,
+        *,
+        agents_config_path: str | None = None,
+        registry_url: str | None = None,
+        monitoring: ToolUsageMonitor | None = None
+    ):
+        # catalog is accepted for backward compatibility; discovery still uses registry by default.
+        self._catalog = catalog
         self.mcp = MCPClientShim()
         self.registry_url = registry_url or os.getenv("MCP_REGISTRY_URL")
         cfg = agents_config_path or os.getenv("AGENTS_CONFIG")
         if cfg is None and os.path.exists("agents.yaml"):
             cfg = "agents.yaml"
         self.a2a = A2AClient(config_path=cfg) if cfg else None
-        self._monitor = get_monitor()
+        self._monitor = monitoring or get_monitor()
 
     async def discover_tools(self, *, use_cache: bool = True) -> list[Any]:
         try:

@@ -180,7 +180,13 @@ class ToolUsageMonitor:
         # Send to all backends
         for backend in self.backends:
             try:
-                backend.log_tool_call(tool_name, success, latency, error, execution_id)
+                backend.log_tool_call(
+                    tool_name,
+                    success,
+                    latency=latency,
+                    error=error,
+                    execution_id=execution_id,
+                )
             except Exception as e:
                 print(f"⚠️  Backend error: {e}")
 
