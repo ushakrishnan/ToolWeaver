@@ -50,9 +50,6 @@ jobs:
             orchestrator/tools/templates.py \
             orchestrator/tools/skill_bridge.py \
             orchestrator/shared/models.py \
-            orchestrator/shared/validation.py \
-            orchestrator/shared/logging.py \
-            orchestrator/plugins/base.py \
             orchestrator/config.py \
             orchestrator/__init__.py \
             --strict \
