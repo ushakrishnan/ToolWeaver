@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 from aiohttp import web
 
-EXAMPLE_DIR = Path(__file__).parent.parent / "examples" / "24-external-mcp-adapter"
+EXAMPLE_DIR = Path(__file__).parent.parent / "samples" / "24-external-mcp-adapter"
 ADAPTER_PATH = EXAMPLE_DIR / "external_mcp_adapter.py"
 
 spec = importlib.util.spec_from_file_location("external_mcp_adapter", ADAPTER_PATH.as_posix())

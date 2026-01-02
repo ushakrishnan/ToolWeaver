@@ -7,7 +7,7 @@ from aiohttp import web
 
 from orchestrator.tools.mcp_adapter import register_mcp_http_adapter
 
-server_path = Path("examples/24-external-mcp-adapter/server.py")
+server_path = Path("samples/24-external-mcp-adapter/server.py")
 spec = spec_from_file_location("mcp_server", server_path)
 module = module_from_spec(spec)
 assert spec and spec.loader, "Failed to load server module spec"
