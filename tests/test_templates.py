@@ -1,9 +1,8 @@
-import asyncio
 from typing import Any
 
-from orchestrator import FunctionToolTemplate, register_template
 import pytest
 
+from orchestrator import FunctionToolTemplate, register_template
 from orchestrator.plugins.registry import get_registry
 from orchestrator.shared.models import ToolParameter
 
