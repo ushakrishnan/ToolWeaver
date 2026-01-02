@@ -7,7 +7,6 @@ This demonstrates exactly what is cached, how it's cached, and when caching occu
 import asyncio
 import hashlib
 import json
-import sys
 import time
 from pathlib import Path
 

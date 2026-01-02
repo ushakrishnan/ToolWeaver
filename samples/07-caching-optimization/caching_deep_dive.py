@@ -5,7 +5,6 @@ This demonstrates the caching architecture with Redis + file fallback
 """
 
 import asyncio
-import sys
 import time
 from pathlib import Path
 

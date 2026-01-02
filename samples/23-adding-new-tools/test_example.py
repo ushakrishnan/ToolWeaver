@@ -9,10 +9,6 @@ import pytest
 from orchestrator import (
     A2AClient,
     MCPClientShim,
-    get_available_tools,
-    mcp_tool,
-    search_tools,
-    semantic_search_tools,
 )
 from orchestrator.shared.models import ToolCatalog
 

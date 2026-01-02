@@ -34,6 +34,13 @@ __version__ = "0.10.2"
 # Phase 2: Decorators available for function, MCP, and agent tools
 # === Agent-to-Agent (A2A) Client (Phase 1.7) ===
 # ✅ DONE: Agent delegation and discovery
+# === Skill Bridge (Phase 1.5) ===
+# ✅ DONE: Phase 1.5 complete - Connect tools to skill library
+from ._internal.execution import skill_library
+
+# === Sandbox Execution (Phase 1.8) ===
+# ✅ DONE: Sandboxed code execution
+from ._internal.execution.sandbox import SandboxEnvironment
 from ._internal.infra.a2a_client import (
     A2AClient,
     AgentCapability,
@@ -76,14 +83,6 @@ from .tools.loaders import (
     load_tools_from_directory,
     load_tools_from_yaml,
 )
-
-# === Sandbox Execution (Phase 1.8) ===
-# ✅ DONE: Sandboxed code execution
-from ._internal.execution.sandbox import SandboxEnvironment
-
-# === Skill Bridge (Phase 1.5) ===
-# ✅ DONE: Phase 1.5 complete - Connect tools to skill library
-from ._internal.execution import skill_library
 from .tools.skill_bridge import (
     get_skill_backed_tools,
     get_tool_skill,
@@ -167,13 +166,13 @@ __all__ = [
     "AgentDelegationRequest",
     "AgentDelegationResponse",
     "A2AClient",
-    
+
     # MCP Client (Phase 1)
     "MCPClientShim",
-    
+
     # Skill Library (Phase 1.5)
     "skill_library",
-    
+
     # Sandbox Execution (Phase 1.8)
     "SandboxEnvironment",
 ]
