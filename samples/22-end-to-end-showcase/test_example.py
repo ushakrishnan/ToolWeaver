@@ -44,7 +44,7 @@ def test_showcase_smoke(monkeypatch):
     def get_skill(name: str):
         return types.SimpleNamespace(name=name, code_path=store[name], version="0.0.1")
 
-    from orchestrator._internal.execution import skill_library as sl
+    from orchestrator import skill_library as sl
     monkeypatch.setattr(sl, "save_skill", save_skill)
     monkeypatch.setattr(sl, "get_skill", get_skill)
 

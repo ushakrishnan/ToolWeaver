@@ -1,6 +1,16 @@
 # Legacy Demo Applications
 
-This folder contains original demo and test scripts from ToolWeaver's development. For new users, we recommend starting with the structured examples in the parent directory ([01-12](../)).
+**⚠️ DEPRECATION NOTICE:** These demos use old import patterns from before the Phase 0 (Package-First) restructure. Many imports are **broken** and won't work with the current package. 
+
+**For current, maintained examples, see the main [samples folder](../)** (01-32).
+
+## Migration to Current Samples
+
+This folder contains original demo and test scripts from ToolWeaver's development. **New users should start with the structured samples in the parent directory** ([01-basic-receipt-processing](../01-basic-receipt-processing/) through [32-idempotency-retry](../32-idempotency-retry/)).
+
+### What Changed?
+
+The package was restructured with a clean public API. Old imports like `from orchestrator.orchestrator import execute_plan` no longer work. See [PACKAGE_COMPLIANCE_REVIEW.md](../PACKAGE_COMPLIANCE_REVIEW.md) for migration guide.
 
 ## Quick Reference
 

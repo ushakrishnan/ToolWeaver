@@ -7,7 +7,7 @@ Demonstrates discovering and delegating tasks to external agents.
 import asyncio
 from pathlib import Path
 
-from orchestrator._internal.infra.a2a_client import A2AClient, AgentDelegationRequest
+from orchestrator import A2AClient, AgentDelegationRequest
 
 
 async def main():

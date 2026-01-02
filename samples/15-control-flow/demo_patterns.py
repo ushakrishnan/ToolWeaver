@@ -11,7 +11,7 @@ Demonstrates how control flow patterns enable advanced agentic workflows:
 
 import asyncio
 
-from orchestrator._internal.execution.sandbox import SandboxEnvironment
+from orchestrator import SandboxEnvironment
 from orchestrator._internal.workflows.control_flow_patterns import (
     ControlFlowPatterns,
     create_conditional_code,

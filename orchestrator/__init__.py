@@ -41,6 +41,10 @@ from ._internal.infra.a2a_client import (
     AgentDelegationResponse,
 )
 
+# === MCP Client (Phase 1) ===
+# ✅ DONE: MCP tool execution and registration
+from ._internal.infra.mcp_client import MCPClientShim
+
 # === Logging (Phase 0.l) ===
 # ✅ DONE: Phase 0.l complete
 from ._internal.logger import enable_debug_mode, get_logger, set_log_level
@@ -73,8 +77,13 @@ from .tools.loaders import (
     load_tools_from_yaml,
 )
 
+# === Sandbox Execution (Phase 1.8) ===
+# ✅ DONE: Sandboxed code execution
+from ._internal.execution.sandbox import SandboxEnvironment
+
 # === Skill Bridge (Phase 1.5) ===
 # ✅ DONE: Phase 1.5 complete - Connect tools to skill library
+from ._internal.execution import skill_library
 from .tools.skill_bridge import (
     get_skill_backed_tools,
     get_tool_skill,
@@ -158,6 +167,15 @@ __all__ = [
     "AgentDelegationRequest",
     "AgentDelegationResponse",
     "A2AClient",
+    
+    # MCP Client (Phase 1)
+    "MCPClientShim",
+    
+    # Skill Library (Phase 1.5)
+    "skill_library",
+    
+    # Sandbox Execution (Phase 1.8)
+    "SandboxEnvironment",
 ]
 
 # Auto-install secrets redaction on root logger to prevent credential leakage in logs.
