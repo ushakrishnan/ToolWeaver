@@ -7,8 +7,8 @@
 ## Platform-Specific Setup
 
 For detailed setup instructions for your platform, see:
-- **Windows, macOS, Linux:** [Cross-Platform Setup Guide](../../samples/CROSS_PLATFORM_SETUP.md)
-- **All Environment Variables:** [Configuration Reference](../../samples/ENV_CONFIGURATION.md)
+- **Windows, macOS, Linux:** [Cross-Platform Setup Guide](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/CROSS_PLATFORM_SETUP.md)
+- **All Environment Variables:** [Configuration Reference](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/ENV_CONFIGURATION.md)
 - **Verify Setup:** Run `python samples/verify_cross_platform.py` after installation
 
 ## Install from PyPI

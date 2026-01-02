@@ -27,10 +27,10 @@ jobs:
         with:
           python-version: "3.13"
       
-      - name: Install package without dependencies
+      - name: Install package with dependencies
         run: |
-          echo "=== Installing ToolWeaver with --no-deps ==="
-          pip install -e . --no-deps
+          echo "=== Installing ToolWeaver with dependencies ==="
+          pip install -e .
           echo "✅ Fresh install succeeded"
       
       - name: Test core public API imports

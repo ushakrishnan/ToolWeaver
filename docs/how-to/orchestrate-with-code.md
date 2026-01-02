@@ -410,4 +410,4 @@ print(json.dumps(report))
 ## See Also
 
 - [Programmatic Execution Tutorial](../tutorials/programmatic-execution.md) - Conceptual overview
-- [Sample 14: Progressive Discovery](../../samples/14-programmatic-execution/) - Full working example
+- [Sample 14: Progressive Discovery](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/14-programmatic-execution/) - Full working example

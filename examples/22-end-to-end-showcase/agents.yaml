@@ -1,4 +1,0 @@
-agents:
-  - agent_id: analyze
-    protocol: http
-    endpoint: http://127.0.0.1:8089/analyze

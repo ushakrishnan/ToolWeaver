@@ -8,8 +8,8 @@ Run these curated samples to see core features in action.
 - Contributors (optional): `pip install -e .` to test against local source
 
 **Setup Help:**
-- **All Platforms:** [CROSS_PLATFORM_SETUP.md](../../samples/CROSS_PLATFORM_SETUP.md) — Windows, macOS, Linux setup guides
-- **Environment Config:** [ENV_CONFIGURATION.md](../../samples/ENV_CONFIGURATION.md) — Complete reference for API keys and settings
+- **All Platforms:** [CROSS_PLATFORM_SETUP.md](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/CROSS_PLATFORM_SETUP.md) — Windows, macOS, Linux setup guides
+- **Environment Config:** [ENV_CONFIGURATION.md](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/ENV_CONFIGURATION.md) — Complete reference for API keys and settings
 - **Verification:** Run `python samples/verify_cross_platform.py` to test your setup
 
 Note: `samples/` are the maintained, runnable demos. `examples/` contains older/extended scenarios—start with `samples/` unless you need legacy material.
