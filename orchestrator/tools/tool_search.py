@@ -22,7 +22,7 @@ try:
     from sentence_transformers import SentenceTransformer  # type: ignore[import-not-found]
     SENTENCE_AVAILABLE = True
 except Exception:  # ImportError or runtime env issues
-    SentenceTransformer = None  # type: ignore[assignment]
+    SentenceTransformer = None  # type: ignore[assignment,misc]
     SENTENCE_AVAILABLE = False
 
 try:

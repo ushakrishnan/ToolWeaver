@@ -27,7 +27,7 @@ try:
     from sentence_transformers import SentenceTransformer  # type: ignore[import-not-found]
     SENTENCE_AVAILABLE = True
 except Exception:
-    SentenceTransformer = None  # type: ignore[assignment]
+    SentenceTransformer = None  # type: ignore[assignment,misc]
     SENTENCE_AVAILABLE = False
 
 import numpy as np  # type: ignore[import-not-found]
