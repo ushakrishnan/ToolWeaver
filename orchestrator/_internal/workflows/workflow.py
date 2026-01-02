@@ -29,7 +29,7 @@ class StepStatus(Enum):
 class WorkflowStep:
     """
     A single step in a workflow.
-    
+
     Features:
     - Tool name reference
     - Parameter templates with variable substitution
@@ -59,7 +59,7 @@ class WorkflowStep:
 class WorkflowTemplate:
     """
     A reusable workflow template with multiple steps.
-    
+
     Example:
         github_pr_workflow = WorkflowTemplate(
             name="github_pr_workflow",
@@ -118,7 +118,7 @@ class WorkflowTemplate:
 class WorkflowContext:
     """
     Shared context for workflow execution.
-    
+
     Features:
     - Store step results
     - Share data between steps
@@ -157,15 +157,15 @@ class WorkflowContext:
     def substitute(self, template: Any) -> Any:
         """
         Substitute variables in template.
-        
+
         Supports:
         - {{variable}} - Direct variable substitution
         - {{step_id.field}} - Access step result fields
         - {{step_id.field.nested}} - Nested field access
-        
+
         Args:
             template: String template or dict with templates
-        
+
         Returns:
             Substituted value (same type as input)
         """
@@ -196,7 +196,7 @@ class WorkflowContext:
     def _evaluate_expression(self, expression: str) -> Any:
         """
         Evaluate a variable expression.
-        
+
         Examples:
             "repo" -> self.variables["repo"]
             "step1.result" -> self.step_results["step1"]["result"]
@@ -240,7 +240,7 @@ class WorkflowContext:
 class WorkflowExecutor:
     """
     Execute workflows with dependency resolution and parallel execution.
-    
+
     Features:
     - Topological sort for dependency resolution
     - Parallel execution of independent steps
@@ -251,7 +251,7 @@ class WorkflowExecutor:
     def __init__(self, tool_executor: Any | None = None):
         """
         Initialize workflow executor.
-        
+
         Args:
             tool_executor: Tool executor for running individual tools (optional)
         """
@@ -264,11 +264,11 @@ class WorkflowExecutor:
     ) -> WorkflowContext:
         """
         Execute a workflow with dependency-aware parallel execution.
-        
+
         Args:
             workflow: Workflow template to execute
             initial_variables: Initial variables for context
-        
+
         Returns:
             WorkflowContext with execution results
         """
@@ -315,10 +315,10 @@ class WorkflowExecutor:
     def _resolve_dependencies(self, steps: list[WorkflowStep]) -> list[list[WorkflowStep]]:
         """
         Resolve dependencies using topological sort.
-        
+
         Returns list of lists, where each inner list contains steps that can
         be executed in parallel (same dependency level).
-        
+
         Example:
             Steps: A, B(depends A), C(depends A), D(depends B,C)
             Result: [[A], [B, C], [D]]
@@ -360,11 +360,11 @@ class WorkflowExecutor:
     def _should_execute(self, step: WorkflowStep, context: WorkflowContext) -> bool:
         """
         Check if a step should be executed based on its condition and dependencies.
-        
+
         Args:
             step: Step to check
             context: Workflow context
-        
+
         Returns:
             True if step should execute, False if should be skipped
         """
@@ -390,7 +390,7 @@ class WorkflowExecutor:
     async def _execute_step(self, step: WorkflowStep, context: WorkflowContext) -> None:
         """
         Execute a single workflow step with retry logic.
-        
+
         Args:
             step: Step to execute
             context: Workflow context
@@ -440,12 +440,12 @@ class WorkflowExecutor:
     async def _call_tool(self, tool_name: str, parameters: dict[str, Any], timeout: int | None) -> Any:
         """
         Call a tool with the given parameters.
-        
+
         Args:
             tool_name: Name of tool to call
             parameters: Tool parameters
             timeout: Timeout in seconds
-        
+
         Returns:
             Tool execution result
         """

@@ -27,7 +27,7 @@ class ToolCatalog:
 class ShardedCatalog:
     """
     Catalog that shards tools for efficient searching.
-    
+
     Instead of searching all 1000+ tools, split into shards and search only relevant ones.
     This reduces tokens, cost, and latency while maintaining relevance.
     """

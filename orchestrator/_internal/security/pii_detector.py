@@ -26,19 +26,19 @@ class PIIFinding:
 class PIIDetector:
     """
     Detects personally identifiable information using regex patterns.
-    
+
     Patterns:
     - SSN: 123-45-6789
     - Email: user@example.com
     - Credit Card: 4111-1111-1111-1111
     - Phone: (555) 123-4567, 555-123-4567
     - API Keys: sk-..., ghp_..., etc.
-    
+
     Usage:
         detector = PIIDetector()
         findings = detector.scan("My SSN is 123-45-6789")
         # [PIIFinding(type='ssn', match='123-45-6789', ...)]
-        
+
         redacted = detector.redact("My SSN is 123-45-6789")
         # "My SSN is [REDACTED_SSN]"
     """
@@ -58,10 +58,10 @@ class PIIDetector:
     def scan(self, text: str) -> list[PIIFinding]:
         """
         Scan text for PII instances.
-        
+
         Args:
             text: Text to scan
-            
+
         Returns:
             List of PII findings
         """
@@ -83,10 +83,10 @@ class PIIDetector:
     def redact(self, text: str) -> str:
         """
         Redact all PII from text.
-        
+
         Args:
             text: Text to redact
-            
+
         Returns:
             Text with PII replaced by [REDACTED_TYPE]
         """
@@ -103,10 +103,10 @@ class PIIDetector:
     def has_pii(self, text: str) -> bool:
         """
         Quick check if text contains any PII.
-        
+
         Args:
             text: Text to check
-            
+
         Returns:
             True if PII detected
         """
@@ -116,12 +116,12 @@ class PIIDetector:
 class ResponseFilter:
     """
     Filters agent responses to remove sensitive data.
-    
+
     Features:
     - Remove sensitive field keys (password, secret, token, etc.)
     - Redact PII in string values
     - Add metadata about what was filtered
-    
+
     Usage:
         filter = ResponseFilter()
         response = {
@@ -149,10 +149,10 @@ class ResponseFilter:
     def filter_response(self, response: dict[str, Any]) -> dict[str, Any]:
         """
         Filter sensitive data from response dictionary.
-        
+
         Args:
             response: Agent response dictionary
-            
+
         Returns:
             Filtered response with metadata
         """
@@ -208,15 +208,15 @@ class ResponseFilter:
     def filter_string(self, text: str) -> tuple[str, list[str]]:
         """
         Filter PII from a string and return what was found.
-        
+
         Args:
             text: String to filter
-            
+
         Returns:
             Tuple of (filtered_text, pii_types_found)
         """
         findings = self.pii_detector.scan(text)
-        pii_types = sorted(set(f.type for f in findings))
+        pii_types = sorted({f.type for f in findings})
 
         if findings:
             filtered = self.pii_detector.redact(text)

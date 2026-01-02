@@ -114,24 +114,24 @@ def sanitize_string(
 ) -> str:
     """
     Sanitize string input by removing dangerous patterns.
-    
+
     Args:
         input_str: Input string to sanitize
         max_length: Maximum allowed length
         allow_newlines: Whether to allow newline characters
         allow_special_chars: Whether to allow special characters
-        
+
     Returns:
         Sanitized string
-        
+
     Raises:
         InvalidInputError: If input is too long
         UnsafeInputError: If dangerous patterns detected
-        
+
     Example:
         >>> sanitize_string("Hello, world!")
         'Hello, world!'
-        
+
         >>> sanitize_string("; rm -rf /")
         UnsafeInputError: Dangerous pattern detected: ; rm -rf
     """
@@ -170,18 +170,18 @@ def sanitize_dict(
 ) -> dict[str, Any]:
     """
     Recursively sanitize dictionary values.
-    
+
     Args:
         input_dict: Input dictionary
         max_keys: Maximum number of keys allowed
         max_depth: Maximum nesting depth
-        
+
     Returns:
         Sanitized dictionary
-        
+
     Raises:
         InvalidInputError: If dict too large or too deep
-        
+
     Example:
         >>> sanitize_dict({"name": "test", "cmd": "ls"})
         {'name': 'test', 'cmd': 'ls'}
@@ -227,24 +227,24 @@ def validate_file_path(
 ) -> Path:
     """
     Validate file path and prevent directory traversal attacks.
-    
+
     Args:
         file_path: Path to validate
         base_dir: Base directory that path must be within
         must_exist: If True, path must exist
         allow_symlinks: If False, reject symbolic links
-        
+
     Returns:
         Resolved absolute path
-        
+
     Raises:
         PathTraversalError: If path attempts traversal
         InvalidInputError: If path doesn't exist (when must_exist=True)
-        
+
     Example:
         >>> validate_file_path("data/file.txt", base_dir="/app")
         PosixPath('/app/data/file.txt')
-        
+
         >>> validate_file_path("../../../etc/passwd", base_dir="/app")
         PathTraversalError: Path traversal detected
     """
@@ -290,22 +290,22 @@ def validate_url(
 ) -> str:
     """
     Validate URL and ensure it uses safe protocols.
-    
+
     Args:
         url: URL to validate
         allowed_schemes: Set of allowed schemes (default: http, https)
         block_private_ips: If True, block private/local IPs
-        
+
     Returns:
         Validated URL
-        
+
     Raises:
         UnsafeURLError: If URL uses unsafe scheme or targets private IP
-        
+
     Example:
         >>> validate_url("https://example.com/api")
         'https://example.com/api'
-        
+
         >>> validate_url("file:///etc/passwd")
         UnsafeURLError: Unsafe URL scheme: file
     """
@@ -385,23 +385,23 @@ def validate_code(
 ) -> str:
     """
     Validate Python code for dangerous constructs.
-    
+
     Args:
         code: Python code to validate
         allow_imports: If False, reject import statements
         allow_file_io: If False, reject file I/O operations
         max_length: Maximum code length
-        
+
     Returns:
         Validated code
-        
+
     Raises:
         InvalidCodeError: If code contains dangerous constructs
-        
+
     Example:
         >>> validate_code("x = 1 + 2")
         'x = 1 + 2'
-        
+
         >>> validate_code("import os; os.system('rm -rf /')")
         InvalidCodeError: Dangerous construct: import statement
     """
@@ -462,17 +462,17 @@ def validate_params(
 ) -> BaseModel:
     """
     Validate parameters against Pydantic schema.
-    
+
     Args:
         params: Parameters to validate
         schema: Pydantic model class
-        
+
     Returns:
         Validated Pydantic model instance
-        
+
     Raises:
         ValidationErrorBase: If validation fails
-        
+
     Example:
         >>> from pydantic import BaseModel
         >>> class UserParams(BaseModel):
@@ -506,20 +506,20 @@ def validate_tool_input(
 ) -> dict[str, Any]:
     """
     Comprehensive validation for tool inputs.
-    
+
     Combines sanitization and schema validation.
-    
+
     Args:
         params: Tool parameters
         schema: Optional Pydantic schema
         sanitize: If True, sanitize string values
-        
+
     Returns:
         Validated (and possibly sanitized) parameters
-        
+
     Raises:
         ValidationErrorBase: If validation fails
-        
+
     Example:
         >>> validate_tool_input({"query": "SELECT * FROM users"})
         {'query': 'SELECT * FROM users'}

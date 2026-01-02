@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 class CircuitBreaker:
     """
     Circuit breaker to prevent hammering failed Redis connection.
-    
+
     States:
     - CLOSED: Normal operation, requests go to Redis
     - OPEN: Redis failed, use fallback only
@@ -95,23 +95,23 @@ class CircuitBreaker:
 class RedisCache:
     """
     Distributed cache using Redis with automatic fallback to file cache.
-    
+
     Supports:
     - Local Redis (Docker/WSL): redis://localhost:6379
     - Azure Cache for Redis: rediss://cache.redis.cache.windows.net:6380
     - Redis Cloud: rediss://endpoint:port
-    
+
     Usage:
         # Local Redis
         cache = RedisCache(redis_url="redis://localhost:6379")
-        
+
         # Azure Redis (with password)
         cache = RedisCache(
             redis_url="rediss://myapp.redis.cache.windows.net:6380",
             password="your-access-key",
             ssl=True
         )
-        
+
         # Store/retrieve
         cache.set("key", data, ttl=3600)
         data = cache.get("key")
@@ -128,7 +128,7 @@ class RedisCache:
     ):
         """
         Initialize Redis cache with fallback to file cache.
-        
+
         Args:
             redis_url: Redis URL (redis://host:port or rediss://host:port for TLS)
             password: Redis password (for Azure/Cloud)
@@ -207,10 +207,10 @@ class RedisCache:
     def get(self, key: str) -> Any | None:
         """
         Get value from cache.
-        
+
         Args:
             key: Cache key
-        
+
         Returns:
             Cached value or None if not found
         """
@@ -235,12 +235,12 @@ class RedisCache:
     def set(self, key: str, value: Any, ttl: int = 3600) -> bool:
         """
         Set value in cache with TTL.
-        
+
         Args:
             key: Cache key
             value: Value to cache (must be picklable)
             ttl: Time to live in seconds
-        
+
         Returns:
             True if successful
         """
@@ -364,7 +364,7 @@ class RedisCache:
     def health_check(self) -> dict[str, Any]:
         """
         Check cache health status.
-        
+
         Returns:
             Dict with status info
         """
@@ -391,7 +391,7 @@ class RedisCache:
 class ToolCache:
     """
     High-level cache for ToolWeaver with multi-tier strategy.
-    
+
     Cache Layers:
     1. Tool Catalog (24h TTL) - Full catalog snapshot
     2. Search Results (1h TTL) - Query results

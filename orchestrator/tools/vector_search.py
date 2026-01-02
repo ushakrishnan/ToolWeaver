@@ -46,24 +46,24 @@ logger = logging.getLogger(__name__)
 class VectorToolSearchEngine:
     """
     Vector database search engine using Qdrant.
-    
+
     Features:
     - Sub-10ms similarity search at 1000+ tools
     - Domain-based filtering for focused search
     - Automatic fallback to in-memory if Qdrant unavailable
     - Batch indexing for fast catalog loading
     - Connection pooling and retry logic
-    
+
     Usage:
         # Initialize
         search_engine = VectorToolSearchEngine(
             qdrant_url="http://localhost:6333",
             collection_name="toolweaver_tools"
         )
-        
+
         # Index catalog
         await search_engine.index_catalog(catalog)
-        
+
         # Search
         results = search_engine.search("create github PR", catalog, top_k=5)
     """
@@ -80,7 +80,7 @@ class VectorToolSearchEngine:
     ):
         """
         Initialize vector search engine.
-        
+
         Args:
             qdrant_url: Qdrant server URL
             collection_name: Collection name for tool embeddings
@@ -118,7 +118,7 @@ class VectorToolSearchEngine:
     def _detect_device(self) -> str:
         """
         Detect best available device for embedding generation.
-        
+
         Returns:
             Device string: 'cuda', 'mps', or 'cpu'
         """
@@ -211,11 +211,11 @@ class VectorToolSearchEngine:
     def index_catalog(self, catalog: ToolCatalog, batch_size: int = 32) -> bool:
         """
         Index entire tool catalog in Qdrant.
-        
+
         Args:
             catalog: Tool catalog to index
             batch_size: Batch size for embedding generation
-        
+
         Returns:
             True if indexing succeeded, False otherwise
         """
@@ -289,14 +289,14 @@ class VectorToolSearchEngine:
     ) -> list[tuple[ToolDefinition, float]]:
         """
         Search for relevant tools using vector similarity.
-        
+
         Args:
             query: User's natural language query
             catalog: Tool catalog (used for fallback)
             top_k: Number of results to return
             domain: Optional domain filter (e.g., "github", "slack")
             min_score: Minimum similarity score (0-1)
-        
+
         Returns:
             List of (ToolDefinition, score) tuples, sorted by relevance
         """
@@ -422,12 +422,12 @@ class VectorToolSearchEngine:
     ) -> np.ndarray:
         """
         Generate embeddings in batches with GPU acceleration.
-        
+
         Args:
             texts: List of text strings to encode
             batch_size: Batch size for encoding (larger for GPU)
             show_progress: Show progress bar
-        
+
         Returns:
             Numpy array of embeddings (shape: [num_texts, embedding_dim])
         """
@@ -494,9 +494,9 @@ class VectorToolSearchEngine:
     def precompute_catalog_embeddings(self, catalog: ToolCatalog):
         """
         Pre-compute embeddings for all tools in catalog at startup.
-        
+
         This eliminates cold-start latency by caching embeddings in memory.
-        
+
         Args:
             catalog: Tool catalog to pre-compute embeddings for
         """
@@ -563,10 +563,10 @@ class VectorToolSearchEngine:
     def delete_tool(self, tool_name: str) -> bool:
         """
         Delete a tool from the index.
-        
+
         Args:
             tool_name: Name of tool to delete
-        
+
         Returns:
             True if deletion succeeded
         """

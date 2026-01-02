@@ -6,7 +6,7 @@ that require optional dependencies they haven't installed.
 
 Usage:
     from orchestrator._internal.errors import require_package
-    
+
     @require_package("wandb", extra="monitoring")
     def enable_wandb_tracking():
         import wandb
@@ -79,13 +79,13 @@ class ValidationError(ToolWeaverError):
 def check_package_available(package: str) -> bool:
     """
     Check if a package is available for import.
-    
+
     Args:
         package: Package name (e.g., "wandb", "redis")
-        
+
     Returns:
         True if package can be imported, False otherwise
-        
+
     Example:
         >>> check_package_available("wandb")
         False
@@ -102,21 +102,21 @@ def check_package_available(package: str) -> bool:
 def require_package(package: str, extra: str | None = None, suggestion: str | None = None) -> Callable[[Callable], Callable]:
     """
     Decorator to require an optional package for a function.
-    
+
     Args:
         package: Package name that must be installed
         extra: Optional extra name from pyproject.toml
         suggestion: Optional custom error message
-        
+
     Returns:
         Decorator function
-        
+
     Example:
         @require_package("wandb", extra="monitoring")
         def enable_wandb():
             import wandb
             wandb.init()
-        
+
         # If wandb not installed:
         enable_wandb()  # Raises MissingDependencyError with helpful message
     """
@@ -133,14 +133,14 @@ def require_package(package: str, extra: str | None = None, suggestion: str | No
 def require_packages(*packages: str, extra: str | None = None) -> Callable[[Callable], Callable]:
     """
     Decorator to require multiple optional packages.
-    
+
     Args:
         *packages: Package names that must be installed
         extra: Optional extra name from pyproject.toml
-        
+
     Returns:
         Decorator function
-        
+
     Example:
         @require_packages("redis", "hiredis", extra="redis")
         def enable_redis_cache():
@@ -179,19 +179,19 @@ def require_packages(*packages: str, extra: str | None = None) -> Callable[[Call
 class optional_feature:
     """
     Context manager for optional features.
-    
+
     If package is not available, logs a warning instead of raising an error.
-    
+
     Example:
         from orchestrator._internal.logger import get_logger
         from orchestrator._internal.errors import optional_feature
-        
+
         logger = get_logger(__name__)
-        
+
         with optional_feature("wandb", "monitoring", logger):
             import wandb
             wandb.init()
-        
+
         # If wandb not available, logs warning and continues
     """
 
@@ -260,13 +260,13 @@ PACKAGE_EXTRAS_MAP = {
 def get_install_suggestion(package: str) -> str:
     """
     Get helpful install suggestion for a package.
-    
+
     Args:
         package: Package name
-        
+
     Returns:
         Install command suggestion
-        
+
     Example:
         >>> get_install_suggestion("wandb")
         "pip install toolweaver[monitoring]"

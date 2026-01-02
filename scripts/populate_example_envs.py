@@ -10,7 +10,7 @@ def extract_env_keys_from_file(file_path):
     try:
         with open(file_path, encoding='utf-8') as f:
             content = f.read()
-    except:
+    except Exception:
         return []
 
     # Find all ENV_VAR_NAME patterns (uppercase with underscores)
@@ -41,7 +41,7 @@ def get_value_from_root_env(key):
                     # Get everything after the first =
                     value = line.split('=', 1)[1]
                     return value
-    except:
+    except Exception:
         pass
 
     return None
@@ -53,7 +53,7 @@ def read_env_example(example_path):
         try:
             with open(env_example, encoding='utf-8') as f:
                 return f.read()
-        except:
+        except Exception:
             return None
     return None
 

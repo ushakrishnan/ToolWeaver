@@ -22,7 +22,7 @@ _full_catalog: ToolCatalog | None = None
 def initialize_tool_search(catalog: ToolCatalog) -> None:
     """
     Initialize the tool search engine with the full tool catalog.
-    
+
     Args:
         catalog: Complete tool catalog with all available tools
     """
@@ -40,32 +40,32 @@ def initialize_tool_search(catalog: ToolCatalog) -> None:
 def tool_search_tool(query: str, top_k: int = 5) -> dict[str, Any]:
     """
     Search for tools by capability description.
-    
-    This tool allows the LLM to dynamically discover tools that aren't 
-    currently loaded in context. Use this when you need a tool but don't 
+
+    This tool allows the LLM to dynamically discover tools that aren't
+    currently loaded in context. Use this when you need a tool but don't
     see it in your available tools.
-    
+
     Args:
         query: Natural language description of what you want to do.
                Examples: "create a pull request on github", "send slack message",
                "parse JSON data", "categorize expenses"
         top_k: Number of relevant tools to return (default: 5)
-    
+
     Returns:
         Dictionary with:
         - tools: List of tool definitions that match the query
         - query: The search query used
         - total_available: Total number of tools in catalog
-    
+
     Examples:
         1. Search for GitHub tools:
            Input: {"query": "create pull request", "top_k": 3}
            Output: {"tools": [github.createPR, github.listIssues, ...]}
-        
+
         2. Search for communication tools:
            Input: {"query": "send message to team", "top_k": 5}
            Output: {"tools": [slack.sendMessage, teams.postMessage, ...]}
-        
+
         3. Search for data processing:
            Input: {"query": "parse and transform data", "top_k": 3}
            Output: {"tools": [parse_json, transform_data, ...]}
@@ -111,7 +111,7 @@ def tool_search_tool(query: str, top_k: int = 5) -> dict[str, Any]:
 def get_tool_search_definition() -> ToolDefinition:
     """
     Get the ToolDefinition for tool_search_tool.
-    
+
     This tool should always be loaded in the initial context.
     """
     from ..shared.models import ToolExample, ToolParameter

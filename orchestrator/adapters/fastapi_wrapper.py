@@ -6,13 +6,13 @@ Exposes ToolWeaver tools as a REST API using FastAPI.
 Example:
     from orchestrator import get_available_tools
     from orchestrator.adapters import FastAPIAdapter
-    
+
     tools = get_available_tools()
     adapter = FastAPIAdapter(tools)
     app = adapter.create_app()
-    
+
     # Run: uvicorn main:app --reload --port 8000
-    
+
     # API Endpoints:
     # GET  /tools - List all available tools
     # GET  /tools/{tool_name} - Get tool details
@@ -32,7 +32,7 @@ class FastAPIAdapter:
     def __init__(self, tools: list[ToolDefinition], base_url: str = "/api/v1") -> None:
         """
         Initialize adapter with tools.
-        
+
         Args:
             tools: List of ToolDefinition objects to expose
             base_url: Base path for API routes (default: /api/v1)
@@ -44,13 +44,13 @@ class FastAPIAdapter:
     def create_app(self) -> Any:
         """
         Create a FastAPI application with tool endpoints.
-        
+
         Returns:
             FastAPI app instance
-            
+
         Requires:
             pip install fastapi uvicorn
-            
+
         Example:
             >>> app = adapter.create_app()
             >>> # Run with: uvicorn app:app --port 8000

@@ -29,7 +29,7 @@ _function_map: dict[str, Callable] = {}
 def register_function(name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Decorator to register a function for structured function calls.
-    
+
     Usage:
         @register_function("my_function")
         def my_function(arg1: str, arg2: int) -> dict:
@@ -50,13 +50,13 @@ def get_registered_functions() -> dict[str, Callable]:
 async def function_call_worker(payload: dict[str, Any]) -> dict[str, Any]:
     """
     Execute a registered function with validated inputs.
-    
+
     Args:
         payload: Dict containing 'name' and 'args' keys
-        
+
     Returns:
         Dict with 'result' key containing function output
-        
+
     Raises:
         RuntimeError: If function name is not registered
     """
@@ -88,15 +88,15 @@ async def dispatch_step(
 ) -> dict[str, Any]:
     """
     Main hybrid dispatcher that routes to appropriate worker based on tool type.
-    
+
     Args:
         step: Step definition containing tool type and input
         step_outputs: Dictionary of previous step outputs for reference resolution
         mcp_client: MCP client instance for deterministic tools
-        
+
     Returns:
         Result dictionary from the executed worker
-        
+
     Raises:
         RuntimeError: If tool type is unknown or execution fails
     """

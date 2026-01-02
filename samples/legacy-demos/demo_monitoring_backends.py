@@ -16,7 +16,7 @@ from orchestrator.monitoring import ToolUsageMonitor
 def example_local_monitoring():
     """
     Local file-based monitoring.
-    
+
     Benefits:
     - Zero dependencies
     - Works offline
@@ -62,18 +62,18 @@ def example_local_monitoring():
 def example_wandb_monitoring():
     """
     W&B monitoring for experiment tracking.
-    
+
     Setup:
     1. pip install wandb
     2. wandb login
     3. Set WANDB_API_KEY in .env
-    
+
     Benefits:
     - Beautiful dashboards
     - Experiment comparison
     - Team collaboration
     - Version tracking
-    
+
     Good for: ML teams, A/B testing, research
     """
     print("\n" + "="*80)
@@ -135,18 +135,18 @@ def example_wandb_monitoring():
 def example_prometheus_monitoring():
     """
     Prometheus metrics for production monitoring.
-    
+
     Setup:
     1. pip install prometheus-client
     2. Set PROMETHEUS_PORT in .env (default: 8000)
     3. Configure Prometheus to scrape endpoint
-    
+
     Benefits:
     - Production-grade monitoring
     - Integrates with Grafana
     - Kubernetes/Docker friendly
     - AlertManager support
-    
+
     Good for: Production deployments, DevOps, SRE teams
     """
     print("\n" + "="*80)
@@ -204,7 +204,7 @@ def example_prometheus_monitoring():
 def example_multi_backend_monitoring():
     """
     Use multiple backends simultaneously.
-    
+
     Useful for:
     - Development: Local files + W&B for experiments
     - Staging: Local + Prometheus for pre-prod testing

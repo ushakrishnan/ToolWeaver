@@ -21,7 +21,7 @@ from typing import Any
 class AgentTask:
     """
     Represents a task for agent dispatch with idempotency support.
-    
+
     Attributes:
         agent_name: Name of the agent to invoke
         template: Prompt template string
@@ -54,20 +54,20 @@ def generate_idempotency_key(
 ) -> str:
     """
     Generate idempotency key from task components.
-    
+
     Creates a deterministic hash based on:
     - Agent name
     - Template string
     - Arguments (sorted for consistency)
-    
+
     Args:
         agent_name: Name of agent to invoke
         template: Prompt template
         arguments: Template arguments
-        
+
     Returns:
         16-character hex string (64 bits of SHA-256 hash)
-        
+
     Example:
         >>> generate_idempotency_key("agent1", "Hello {name}", {"name": "Alice"})
         'a3f5c8d2e1b4f7a9'
@@ -93,7 +93,7 @@ def generate_idempotency_key(
 class IdempotencyRecord:
     """
     Cache record for idempotent operations.
-    
+
     Attributes:
         key: Idempotency key
         result: Cached result from previous execution
@@ -119,18 +119,18 @@ class IdempotencyRecord:
 class IdempotencyCache:
     """
     In-memory cache for idempotent operations.
-    
+
     Stores results of agent dispatch operations to prevent duplicate execution.
     Entries expire after a configurable TTL to prevent unbounded memory growth.
-    
+
     Usage:
         cache = IdempotencyCache(ttl_seconds=3600)
-        
+
         # Check if task already executed
         if cache.has(task.idempotency_key):
             result = cache.get(task.idempotency_key)
             return result
-        
+
         # Execute and store result
         result = execute_task(task)
         cache.store(task.idempotency_key, result)
@@ -139,7 +139,7 @@ class IdempotencyCache:
     def __init__(self, ttl_seconds: int = 3600):
         """
         Initialize idempotency cache.
-        
+
         Args:
             ttl_seconds: Time-to-live for cache entries (default: 1 hour)
         """
@@ -154,7 +154,7 @@ class IdempotencyCache:
     ) -> None:
         """
         Store result in cache.
-        
+
         Args:
             key: Idempotency key
             result: Result to cache
@@ -176,10 +176,10 @@ class IdempotencyCache:
     def get(self, key: str) -> Any | None:
         """
         Get cached result.
-        
+
         Args:
             key: Idempotency key
-            
+
         Returns:
             Cached result if valid, None otherwise
         """
@@ -202,10 +202,10 @@ class IdempotencyCache:
     def has(self, key: str) -> bool:
         """
         Check if valid cached result exists.
-        
+
         Args:
             key: Idempotency key
-            
+
         Returns:
             True if valid cache entry exists
         """
@@ -214,7 +214,7 @@ class IdempotencyCache:
     def invalidate(self, key: str) -> None:
         """
         Remove entry from cache.
-        
+
         Args:
             key: Idempotency key to invalidate
         """
@@ -228,7 +228,7 @@ class IdempotencyCache:
     def cleanup_expired(self) -> int:
         """
         Remove expired entries.
-        
+
         Returns:
             Number of entries removed
         """
@@ -250,7 +250,7 @@ class IdempotencyCache:
     def get_stats(self) -> dict[str, int]:
         """
         Get cache statistics.
-        
+
         Returns:
             Dictionary with cache stats
         """
@@ -280,10 +280,10 @@ def get_global_cache() -> IdempotencyCache:
 def check_idempotency(key: str) -> Any | None:
     """
     Check global cache for cached result.
-    
+
     Args:
         key: Idempotency key
-        
+
     Returns:
         Cached result if available, None otherwise
     """
@@ -297,7 +297,7 @@ def store_idempotent_result(
 ) -> None:
     """
     Store result in global cache.
-    
+
     Args:
         key: Idempotency key
         result: Result to store

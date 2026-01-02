@@ -80,7 +80,7 @@ class MCPToolDiscoverer(ToolDiscoveryService):
     async def discover(self) -> dict[str, ToolDefinition]:
         """
         Discover tools from MCP client's tool_map.
-        
+
         Since MCPClientShim has a tool_map dict, we can introspect
         the registered workers to build ToolDefinitions.
         """
@@ -362,14 +362,14 @@ class MCPRegistryDiscoverer(ToolDiscoveryService):
 class ToolDiscoveryOrchestrator:
     """
     Orchestrates multiple discovery services and manages caching.
-    
+
     This is the main entry point for tool discovery in the system.
     """
 
     def __init__(self, cache_dir: Path | None = None, cache_ttl_hours: int = 24):
         """
         Args:
-            cache_dir: Directory to cache discovered tools. 
+            cache_dir: Directory to cache discovered tools.
                       Defaults to ~/.toolweaver/
         """
         self.discoverers: list[ToolDiscoveryService] = []
@@ -385,11 +385,11 @@ class ToolDiscoveryOrchestrator:
     async def discover_all(self, use_cache: bool = True, cache_ttl_hours: int | None = None) -> ToolCatalog:
         """
         Run all registered discoverers and build a unified ToolCatalog.
-        
+
         Args:
             use_cache: Whether to use cached results if available
             cache_ttl_hours: Cache time-to-live in hours
-        
+
         Returns:
             ToolCatalog with all discovered tools
         """
@@ -418,7 +418,7 @@ class ToolDiscoveryOrchestrator:
 
         metrics = DiscoveryMetrics()
 
-        for discoverer, result in zip(self.discoverers, results):
+        for discoverer, result in zip(self.discoverers, results, strict=False):
             if isinstance(result, Exception):
                 error_msg = f"Discoverer '{discoverer.source_name}' failed: {result}"
                 print(f"Warning: {error_msg}")
@@ -427,7 +427,7 @@ class ToolDiscoveryOrchestrator:
 
             # Add tools to catalog
             if isinstance(result, dict):
-                for tool_name, tool_def in result.items():
+                for _tool_name, tool_def in result.items():
                     catalog.add_tool(tool_def)
                     metrics.total_tools_found += 1
                     metrics.sources[discoverer.source_name] = \
@@ -501,16 +501,16 @@ async def discover_tools(
 ) -> ToolCatalog:
     """
     Convenience function to discover tools from common sources.
-    
+
     Args:
         mcp_client: MCPClientShim instance to discover MCP tools
         function_modules: List of Python modules to scan for functions
         include_code_exec: Whether to include code execution capability
         use_cache: Whether to use cached discovery results
-    
+
     Returns:
         ToolCatalog with all discovered tools
-    
+
     Example:
         from orchestrator._internal.dispatch import workers
         from orchestrator._internal.dispatch import functions

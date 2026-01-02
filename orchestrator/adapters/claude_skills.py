@@ -8,10 +8,10 @@ Reference: https://platform.openai.com/docs/guides/function-calling
 Example:
     from orchestrator import get_available_tools
     from orchestrator.adapters import ClaudeSkillsAdapter
-    
+
     tools = get_available_tools()
     adapter = ClaudeSkillsAdapter(tools)
-    
+
     manifest = adapter.to_claude_manifest()
     # Use manifest with Claude API or in custom skills UI
 """
@@ -30,7 +30,7 @@ class ClaudeSkillsAdapter:
     def __init__(self, tools: list[ToolDefinition]) -> None:
         """
         Initialize adapter with tools.
-        
+
         Args:
             tools: List of ToolDefinition objects to adapt
         """
@@ -39,10 +39,10 @@ class ClaudeSkillsAdapter:
     def to_claude_manifest(self) -> dict[str, Any]:
         """
         Convert tools to Claude custom skills manifest.
-        
+
         Returns:
             Dict with schema version and tools array
-            
+
         Example:
             >>> adapter = ClaudeSkillsAdapter(tools)
             >>> manifest = adapter.to_claude_manifest()
@@ -56,7 +56,7 @@ class ClaudeSkillsAdapter:
     def to_claude_functions(self) -> list[dict[str, Any]]:
         """
         Convert tools to Claude function_tools format for API calls.
-        
+
         Returns:
             List of tool dicts compatible with Claude API
         """
@@ -120,10 +120,10 @@ class ClaudeSkillsAdapter:
     def to_json(self, pretty: bool = True) -> str:
         """
         Serialize manifest to JSON string.
-        
+
         Args:
             pretty: If True, format with indentation
-            
+
         Returns:
             JSON string
         """

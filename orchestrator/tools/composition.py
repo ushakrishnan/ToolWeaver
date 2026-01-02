@@ -106,11 +106,11 @@ class CompositionExecutor:
     ) -> CompositionResult:
         """
         Execute a composition chain sequentially.
-        
+
         Args:
             chain: CompositionChain to execute
             initial_input: Initial input dict for first step
-            
+
         Returns:
             CompositionResult with step outputs and final result
         """

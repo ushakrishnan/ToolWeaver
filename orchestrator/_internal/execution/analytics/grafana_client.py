@@ -489,7 +489,7 @@ class GrafanaClient:
                 "Top Skills by Usage",
                 datasource,
                 """
-                SELECT 
+                SELECT
                     ROW_NUMBER() OVER (ORDER BY SUM(execution_count) DESC) as Rank,
                     skill_id as 'Skill ID',
                     SUM(execution_count) as 'Executions',
@@ -505,7 +505,7 @@ class GrafanaClient:
                 "Top Skills by Rating",
                 datasource,
                 """
-                SELECT 
+                SELECT
                     ROW_NUMBER() OVER (ORDER BY rating_avg DESC) as Rank,
                     skill_id as 'Skill ID',
                     rating_avg as 'Avg Rating',
@@ -585,7 +585,7 @@ class GrafanaClient:
                 "New Users Over Time",
                 datasource,
                 """
-                SELECT 
+                SELECT
                     DATE(MIN(timestamp)) as time,
                     COUNT(*) as count
                 FROM (
@@ -624,7 +624,7 @@ class GrafanaClient:
                 "Skills Health Status",
                 datasource,
                 """
-                SELECT 
+                SELECT
                     skill_id,
                     health_score,
                     rating_avg,

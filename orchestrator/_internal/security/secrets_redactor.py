@@ -17,7 +17,7 @@ from re import Pattern
 class SecretsRedactor(logging.Filter):
     """
     Logging filter that redacts secrets from log messages.
-    
+
     Automatically detects and redacts:
     - OpenAI API keys (sk-...)
     - GitHub tokens (ghp_..., github_pat_...)
@@ -26,15 +26,15 @@ class SecretsRedactor(logging.Filter):
     - Passwords (password=..., pwd=...)
     - AWS access keys (AKIA...)
     - JWT tokens (eyJ...)
-    
+
     Usage:
         # Install on root logger
         import logging
         logging.getLogger().addFilter(SecretsRedactor())
-        
+
         # Or install via helper
         install_secrets_redactor()
-        
+
         # Now logging is safe
         logging.info(f"API Key: sk-abc123...")  # Logs as: API Key: [REDACTED_OPENAI_KEY]
     """
@@ -70,10 +70,10 @@ class SecretsRedactor(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         """
         Filter log record by redacting secrets.
-        
+
         Args:
             record: Log record to filter
-            
+
         Returns:
             True (always pass the record, just modify it)
         """
@@ -98,10 +98,10 @@ class SecretsRedactor(logging.Filter):
     def redact_secrets(self, text: str) -> str:
         """
         Redact all secrets from text.
-        
+
         Args:
             text: Text to redact
-            
+
         Returns:
             Text with secrets replaced by [REDACTED_TYPE]
         """
@@ -125,7 +125,7 @@ class SecretsRedactor(logging.Filter):
 def install_secrets_redactor(logger: logging.Logger = None) -> None:
     """
     Install secrets redactor on a logger.
-    
+
     Args:
         logger: Logger to install on (defaults to root logger)
     """
@@ -143,7 +143,7 @@ def install_secrets_redactor(logger: logging.Logger = None) -> None:
 def remove_secrets_redactor(logger: logging.Logger = None) -> None:
     """
     Remove secrets redactor from a logger.
-    
+
     Args:
         logger: Logger to remove from (defaults to root logger)
     """

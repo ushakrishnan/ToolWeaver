@@ -5,6 +5,7 @@ Phase 0.m: Verify input sanitization, path validation, URL validation, code vali
 """
 
 import pytest
+from pydantic import BaseModel
 
 from orchestrator._internal.validation import (
     InvalidCodeError,
@@ -21,7 +22,6 @@ from orchestrator._internal.validation import (
     validate_tool_input,
     validate_url,
 )
-from pydantic import BaseModel
 
 # ============================================================
 # Test String Sanitization

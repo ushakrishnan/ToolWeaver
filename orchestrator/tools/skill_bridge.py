@@ -29,21 +29,21 @@ def save_tool_as_skill(
 ) -> Skill:
     """
     Save a tool's implementation as a skill in the skill library.
-    
+
     Args:
         tool_def: Tool definition to save
         function: The actual function implementation
         tags: Optional tags for skill categorization
         bump_type: Version bump type ("major", "minor", "patch") if updating
-    
+
     Returns:
         Skill object representing the saved skill
-    
+
     Example:
         >>> @tool(name="process_data", description="Process data")
         >>> def process_data(data: dict) -> dict:
         >>>     return {"processed": True}
-        >>> 
+        >>>
         >>> tool_def = get_tool_info("process_data")
         >>> skill = save_tool_as_skill(tool_def, process_data, tags=["data"])
     """
@@ -157,20 +157,20 @@ def load_tool_from_skill(
 ) -> tuple[ToolDefinition, Callable[..., Any]]:
     """
     Load a tool from a skill in the skill library.
-    
+
     Args:
         skill_name: Name of the skill to load
         version: Optional specific version (defaults to latest)
         tool_type: Type of tool to create (default: "function")
         provider: Provider name (default: "skill")
-    
+
     Returns:
         Tuple of (ToolDefinition, callable function)
-    
+
     Raises:
         KeyError: If skill not found
         ValueError: If skill code cannot be executed
-    
+
     Example:
         >>> tool_def, func = load_tool_from_skill("process_data")
         >>> result = func({"input": "test"})
@@ -266,10 +266,10 @@ def load_tool_from_skill(
 def get_tool_skill(tool_name: str) -> Skill | None:
     """
     Get the skill backing a tool (if any).
-    
+
     Args:
         tool_name: Name of the tool
-    
+
     Returns:
         Skill object if tool has a skill reference, None otherwise
     """
@@ -279,13 +279,13 @@ def get_tool_skill(tool_name: str) -> Skill | None:
 def sync_tool_with_skill(tool_name: str) -> tuple[ToolDefinition, Callable[..., Any]] | None:
     """
     Sync a tool with the latest version of its backing skill.
-    
+
     Args:
         tool_name: Name of the tool to sync
-    
+
     Returns:
         Updated (ToolDefinition, callable) tuple, or None if no skill reference
-    
+
     Example:
         >>> # Tool is outdated, skill was updated
         >>> tool_def, func = sync_tool_with_skill("process_data")
@@ -304,7 +304,7 @@ def sync_tool_with_skill(tool_name: str) -> tuple[ToolDefinition, Callable[..., 
 def get_skill_backed_tools() -> list[str]:
     """
     Get list of all tools that are backed by skills.
-    
+
     Returns:
         List of tool names that have corresponding skills
     """

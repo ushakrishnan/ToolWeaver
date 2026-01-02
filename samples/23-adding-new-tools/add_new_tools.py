@@ -44,10 +44,10 @@ logger = logging.getLogger(__name__)
 def create_weather_mcp_tool() -> ToolDefinition:
     """
     Define a Weather MCP Tool
-    
+
     This is a deterministic tool that fetches weather data.
     In production, this would connect to a real weather API via MCP server.
-    
+
     Returns:
         ToolDefinition: Tool definition ready for catalog
     """
@@ -102,7 +102,7 @@ def create_weather_mcp_tool() -> ToolDefinition:
 def create_stock_price_mcp_tool() -> ToolDefinition:
     """
     Define a Stock Price MCP Tool
-    
+
     This is another deterministic tool for financial data.
     """
     return ToolDefinition(
@@ -162,10 +162,10 @@ def create_stock_price_mcp_tool() -> ToolDefinition:
 async def weather_tool_worker(payload: dict[str, Any]) -> dict[str, Any]:
     """
     MCP tool worker for weather service
-    
+
     This worker is registered with MCPClientShim and called when
     get_weather tool is invoked.
-    
+
     In production, this would call a real weather API.
     """
     city = payload.get("city", "Unknown")
@@ -203,7 +203,7 @@ async def weather_tool_worker(payload: dict[str, Any]) -> dict[str, Any]:
 async def stock_price_tool_worker(payload: dict[str, Any]) -> dict[str, Any]:
     """
     MCP tool worker for stock price service
-    
+
     Simulates fetching stock market data.
     """
     ticker = payload.get("ticker", "UNKNOWN").upper()
@@ -253,7 +253,7 @@ async def stock_price_tool_worker(payload: dict[str, Any]) -> dict[str, Any]:
 def create_data_analyst_agent() -> AgentCapability:
     """
     Define a Data Analyst Agent for A2A
-    
+
     This is an external agent that performs complex analysis.
     In production, this would be a running service with its own endpoint.
     """
@@ -268,7 +268,7 @@ def create_data_analyst_agent() -> AgentCapability:
 def create_report_generator_agent() -> AgentCapability:
     """
     Define a Report Generator Agent for A2A
-    
+
     This agent creates formatted reports from analysis.
     """
     return AgentCapability(
@@ -287,7 +287,7 @@ def create_report_generator_agent() -> AgentCapability:
 async def setup_mcp_tools(mcp_client: MCPClientShim) -> ToolCatalog:
     """
     Step 1: Register MCP tools with MCPClientShim
-    
+
     This demonstrates how to register custom MCP tool workers.
     """
     logger.info("=" * 70)
@@ -319,7 +319,7 @@ async def setup_mcp_tools(mcp_client: MCPClientShim) -> ToolCatalog:
 async def setup_a2a_agents(a2a_client: A2AClient) -> None:
     """
     Step 2: Register A2A agents
-    
+
     This demonstrates how to register agent capabilities.
     """
     logger.info("=" * 70)
@@ -342,7 +342,7 @@ async def setup_a2a_agents(a2a_client: A2AClient) -> None:
 async def discover_all_tools(mcp_client: MCPClientShim, a2a_client: A2AClient) -> ToolCatalog:
     """
     Step 3: Unified discovery of all tools (MCP + A2A)
-    
+
     This demonstrates how both MCP tools and A2A agents appear
     in a unified catalog.
     """
@@ -379,7 +379,7 @@ async def demonstrate_tool_usage(
 ) -> dict[str, Any]:
     """
     Step 4: Demonstrate using tools from catalog
-    
+
     Shows how to call MCP tools directly.
     """
     logger.info("=" * 70)
@@ -424,7 +424,7 @@ async def demonstrate_tool_usage(
 async def demonstrate_tool_metadata(catalog: ToolCatalog) -> None:
     """
     Step 5: Show tool metadata and LLM-format conversion
-    
+
     Demonstrates how tools are formatted for LLM consumption.
     """
     logger.info("=" * 70)

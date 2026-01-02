@@ -325,12 +325,12 @@ async def demo_when_caching_happens():
 2. Check cache (file-based):
    KEY: ~/.toolweaver/tool_cache.json
    TTL: 24 hours (default)
-   
+
    IF CACHE HIT:
      ✓ Return cached catalog immediately
      ✓ No network calls
      ✓ ~5ms response time
-   
+
    IF CACHE MISS:
      ⤷ Run all discoverers (MCP, filesystem, A2A)
      ⤷ Aggregate results
@@ -348,21 +348,21 @@ Location: orchestrator/tools/tool_discovery.py:397-452
 2. Generate embedding:
    TEXT: "process receipt"
    HASH: sha256(text)[:16]
-   
+
    Check cache:
    KEY: embedding:{hash}:ada-002
    TTL: 7 days
-   
+
    IF HIT: Use cached embedding
    IF MISS: Call OpenAI API → CACHE result
 
 3. Search vector database:
    QUERY_HASH: sha256(query + filters)
-   
+
    Check cache:
    KEY: search:{query_hash}:v2:10
    TTL: 1 hour
-   
+
    IF HIT: Return cached results
    IF MISS: Execute search → CACHE results
 
@@ -376,17 +376,17 @@ Location: orchestrator/_internal/infra/redis_cache.py:423-440
 
 2. For each task:
    GENERATE KEY: hash(agent_name + template + arguments)
-   
+
    Check cache:
    KEY: {idempotency_key}
    TTL: 1 hour
-   
+
    IF HIT:
      ✓ Return cached result
      ✓ Skip agent execution
      ✓ Cost: $0.00
      ✓ Time: ~0.1ms
-   
+
    IF MISS:
      ⤷ Execute agent
      ⤷ Get result
@@ -405,7 +405,7 @@ Location: orchestrator/tools/sub_agent.py:135-181
 2. Check cache (if enabled):
    KEY: tool:process_receipt:v1.0
    TTL: 24 hours
-   
+
    IF HIT: Return cached tool definition
    IF MISS: Load from registry → CACHE
 
@@ -435,7 +435,7 @@ async def demo_cache_invalidation():
     print("""
 Each cache entry expires after its TTL:
   • Catalog: 24h → Invalidated daily
-  • Search: 1h → Invalidated hourly  
+  • Search: 1h → Invalidated hourly
   • Embeddings: 7d → Invalidated weekly
   • Idempotency: 1h → Invalidated after retries unlikely
 

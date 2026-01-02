@@ -29,11 +29,6 @@ async def main():
 
         # Step 1: Tool - Fetch data (mock for demo)
         print("Step 1: Fetching data with MCP tool...")
-        tool_step1 = {
-            "tool": "fetch_csv",
-            "input": {"file": "customer_data.csv"},
-            "timeout_s": 30,
-        }
 
         try:
             # Simulate tool response

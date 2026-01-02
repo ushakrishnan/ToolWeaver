@@ -39,11 +39,11 @@ logger = logging.getLogger(__name__)
 class ToolSearchEngine:
     """
     Hybrid search engine for tool discovery.
-    
+
     Combines:
     - BM25 (keyword matching) for exact/technical terms
     - Embeddings (semantic similarity) for conceptual matches
-    
+
     Features:
     - Smart routing: Skip search for small catalogs (<20 tools)
     - Embedding caching: Avoid recomputation
@@ -60,7 +60,7 @@ class ToolSearchEngine:
     ):
         """
         Initialize search engine.
-        
+
         Args:
             embedding_model: SentenceTransformer model name
             bm25_weight: Weight for BM25 keyword scores (0-1)
@@ -105,16 +105,16 @@ class ToolSearchEngine:
     ) -> list[tuple[ToolDefinition, float]]:
         """
         Search for relevant tools using hybrid approach.
-        
+
         Args:
             query: User's natural language request
             catalog: Tool catalog to search
             top_k: Number of tools to return
             min_score: Minimum relevance score (0-1)
-        
+
         Returns:
             List of (ToolDefinition, score) tuples, sorted by relevance
-        
+
         Example:
             results = search_engine.search(
                 "Send a Slack message",
@@ -181,7 +181,7 @@ class ToolSearchEngine:
     def _bm25_search(self, query: str, tools: list[ToolDefinition]) -> np.ndarray:
         """
         BM25 keyword-based search (good for exact matches).
-        
+
         Tokenizes tool descriptions and uses TF-IDF-like scoring
         to find tools matching query keywords.
         """
@@ -214,7 +214,7 @@ class ToolSearchEngine:
     def _embedding_search(self, query: str, tools: list[ToolDefinition]) -> np.ndarray:
         """
         Embedding-based semantic search (good for conceptual matches).
-        
+
         Uses SentenceTransformer to encode query and tools into dense
         vectors, then computes cosine similarity.
         """
@@ -248,7 +248,7 @@ class ToolSearchEngine:
     def _get_or_compute_embedding(self, text: str) -> np.ndarray:
         """
         Get cached embedding or compute and cache it.
-        
+
         Uses MD5 hash of text as cache key to avoid recomputing
         embeddings for the same tool descriptions.
         """
@@ -323,7 +323,7 @@ class ToolSearchEngine:
     ) -> str:
         """
         Generate human-readable explanation of why tools were selected.
-        
+
         Useful for debugging and understanding search results.
         """
         lines = [f"Search results for: '{query}'\n"]
@@ -366,7 +366,7 @@ def search_tools(
 ) -> list[ToolDefinition]:
     """
     Convenience function to search tools and return only ToolDefinitions.
-    
+
     Args:
         query: Natural language query
         catalog: Tool catalog to search
@@ -374,10 +374,10 @@ def search_tools(
         domain: Optional domain filter
         type_filter: Optional tool type filter
         **kwargs: Additional arguments for ToolSearchEngine
-    
+
     Returns:
         List of ToolDefinitions (without scores)
-    
+
     Example:
         tools = search_tools("send slack message", catalog, top_k=3)
         for tool in tools:

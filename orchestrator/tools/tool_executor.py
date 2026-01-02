@@ -32,16 +32,16 @@ async def call_tool(
 ) -> Any:
     """
     Execute a tool call, routing to the appropriate backend.
-    
+
     Args:
         server: Server/domain name (e.g., "google_drive", "default")
         tool_name: Name of tool to execute
         parameters: Tool parameters
         timeout: Execution timeout in seconds
-        
+
     Returns:
         Tool execution result
-        
+
     Raises:
         TimeoutError: If execution exceeds timeout
         Exception: If tool execution fails

@@ -35,7 +35,7 @@ class ToolSequence:
 class PatternDetector:
     """
     Analyze tool usage patterns and suggest workflows.
-    
+
     Features:
     - Sequence mining (find common tool chains)
     - Frequency analysis (identify popular patterns)
@@ -46,7 +46,7 @@ class PatternDetector:
     def __init__(self, min_frequency: int = 3, min_success_rate: float = 0.7):
         """
         Initialize pattern detector.
-        
+
         Args:
             min_frequency: Minimum occurrences to consider a pattern
             min_success_rate: Minimum success rate to consider a pattern
@@ -61,18 +61,18 @@ class PatternDetector:
     ) -> list[ToolSequence]:
         """
         Find common patterns in tool usage logs.
-        
+
         Algorithm:
         1. Group logs by session/request_id
         2. Extract tool sequences (A → B → C)
         3. Count frequency of sequences
         4. Calculate success rate
         5. Return patterns sorted by (frequency * success_rate)
-        
+
         Args:
             logs: List of tool usage logs
             max_sequence_length: Maximum length of sequences to detect
-        
+
         Returns:
             List of ToolSequence objects sorted by relevance
         """
@@ -130,7 +130,7 @@ class PatternDetector:
     ) -> list[tuple[list[str], bool, float]]:
         """
         Extract tool sequences from session logs.
-        
+
         Returns list of (tools, success, duration) tuples
         """
         # Sort logs by timestamp
@@ -203,11 +203,11 @@ class PatternDetector:
     ) -> WorkflowTemplate | None:
         """
         Suggest a workflow based on tool names and detected patterns.
-        
+
         Args:
             tools: List of tool names
             patterns: List of detected patterns
-        
+
         Returns:
             WorkflowTemplate if a pattern matches, None otherwise
         """
@@ -274,7 +274,7 @@ class PatternDetector:
 class WorkflowLibrary:
     """
     Library of workflow templates.
-    
+
     Features:
     - Pre-built workflow templates
     - Custom workflow registration
@@ -285,7 +285,7 @@ class WorkflowLibrary:
     def __init__(self, storage_path: Path | None = None):
         """
         Initialize workflow library.
-        
+
         Args:
             storage_path: Path to store workflow templates (optional)
         """
@@ -373,7 +373,7 @@ class WorkflowLibrary:
     def register(self, workflow: WorkflowTemplate) -> None:
         """
         Register a workflow template in the library.
-        
+
         Args:
             workflow: Workflow template to register
         """
@@ -383,10 +383,10 @@ class WorkflowLibrary:
     def get(self, name: str) -> WorkflowTemplate | None:
         """
         Retrieve a workflow by name.
-        
+
         Args:
             name: Workflow name
-        
+
         Returns:
             WorkflowTemplate if found, None otherwise
         """
@@ -404,12 +404,12 @@ class WorkflowLibrary:
     ) -> list[WorkflowTemplate]:
         """
         Search for workflows.
-        
+
         Args:
             query: Search query (matches name or description)
             category: Filter by category
             tool_name: Filter by tool name used in workflow
-        
+
         Returns:
             List of matching workflows
         """
@@ -443,10 +443,10 @@ class WorkflowLibrary:
     def suggest_for_tools(self, tool_names: list[str]) -> list[WorkflowTemplate]:
         """
         Suggest workflows that use the given tools.
-        
+
         Args:
             tool_names: List of tool names
-        
+
         Returns:
             List of workflows that use any of the tools
         """
@@ -461,7 +461,7 @@ class WorkflowLibrary:
 
         # Sort by number of matching tools
         suggestions.sort(
-            key=lambda w: len(set(step.tool_name for step in w.steps) & set(tool_names)),
+            key=lambda w: len({step.tool_name for step in w.steps} & set(tool_names)),
             reverse=True
         )
 

@@ -41,7 +41,7 @@ tools:
         type: string
         required: false
         default: C
-  
+
   - name: format_report
     description: Format data into a report
     type: mcp
@@ -55,7 +55,7 @@ tools:
         description: Output format (json, csv, html)
         type: string
         required: true
-  
+
   - name: send_notification
     description: Send notification via email or Slack
     type: mcp

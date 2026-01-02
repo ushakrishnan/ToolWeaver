@@ -18,7 +18,7 @@ from dataclasses import dataclass
 class DispatchResourceLimits:
     """
     Aggregate resource limits for parallel agent dispatch.
-    
+
     These limits prevent resource exhaustion and attacks during multi-agent orchestration.
     """
 
@@ -54,14 +54,14 @@ class DispatchQuotaExceeded(Exception):
 class DispatchLimitTracker:
     """
     Tracks and enforces resource limits during agent dispatch.
-    
+
     Usage:
         limits = DispatchResourceLimits(max_total_cost_usd=10.0)
         tracker = DispatchLimitTracker(limits)
-        
+
         # Pre-check before dispatch
         tracker.check_pre_dispatch(num_agents=100)
-        
+
         # Track during execution
         tracker.record_agent_completion(cost=0.05, success=True)
     """
@@ -83,7 +83,7 @@ class DispatchLimitTracker:
     def check_pre_dispatch(self, num_agents: int) -> None:
         """
         Validate dispatch request BEFORE starting.
-        
+
         Raises:
             DispatchQuotaExceeded: If dispatch would exceed limits
         """
@@ -119,12 +119,12 @@ class DispatchLimitTracker:
     ) -> None:
         """
         Track agent completion and enforce runtime limits.
-        
+
         Args:
             cost: Actual cost in USD
             success: Whether agent succeeded
             duration: Agent execution time in seconds
-            
+
         Raises:
             DispatchQuotaExceeded: If limits exceeded during execution
         """

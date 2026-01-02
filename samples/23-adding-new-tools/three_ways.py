@@ -76,7 +76,7 @@ class ExpensesFunctionTool(FunctionToolTemplate):
 async def get_expenses_via_decorator(employee_id: str, year: int = 2025) -> dict[str, Any]:
     """
     Fetch employee expenses (decorator approach).
-    
+
     Decorator automatically:
     - Extracts parameters from type hints (employee_id: required, year: optional with default)
     - Sets function name as tool name
@@ -100,7 +100,7 @@ async def get_expenses_via_decorator(employee_id: str, year: int = 2025) -> dict
 def route_expense_approval(employee_id: str, amount: float, reason: str = "") -> dict[str, Any]:
     """
     Route expense for approval (agent decorator).
-    
+
     Agent decorators work identically to mcp_tool but indicate
     this tool is agent-to-agent communication.
     """
@@ -226,13 +226,13 @@ async def demo_all_three_methods():
     ✓ Templates:  Programmatic, maximum control, verbose
     ✓ Decorators: Fast registration, automatic parameter extraction, clean
     ✓ YAML:       Config-driven, DevOps-friendly, version-controllable
-    
+
     All three approaches:
     - Produce identical ToolDefinition objects
     - Work with the same discovery API
     - Can be mixed in the same application
     - Support the same execution model
-    
+
     Choose based on your needs:
     - Individual developer? → Decorators (fastest)
     - Full control needed? → Templates

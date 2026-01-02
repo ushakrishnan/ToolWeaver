@@ -12,33 +12,33 @@ import time
 class RateLimiter:
     """
     Token bucket rate limiter for async operations.
-    
+
     Features:
     - Smooth rate limiting (requests per second)
     - Burst capacity for temporary spikes
     - Thread-safe with asyncio.Lock
     - Context manager support
-    
+
     Usage:
         rate_limiter = RateLimiter(requests_per_second=10.0, burst_size=20)
-        
+
         # Option 1: Context manager
         async with rate_limiter:
             await make_api_call()
-        
+
         # Option 2: Explicit acquire
         await rate_limiter.acquire()
         await make_api_call()
-    
+
     Example:
         # Limit to 10 requests/second with burst of 20
         limiter = RateLimiter(10.0, 20)
-        
+
         # These 20 requests happen immediately (burst)
         for _ in range(20):
             async with limiter:
                 await api_call()
-        
+
         # 21st request waits for token refill
         async with limiter:
             await api_call()  # Waits ~0.1s
@@ -51,7 +51,7 @@ class RateLimiter:
     ):
         """
         Initialize rate limiter.
-        
+
         Args:
             requests_per_second: Maximum sustained request rate
             burst_size: Maximum burst capacity (defaults to 2x rate)
@@ -72,7 +72,7 @@ class RateLimiter:
     async def acquire(self, tokens: int = 1) -> None:
         """
         Acquire tokens (blocks until available).
-        
+
         Args:
             tokens: Number of tokens to acquire (default: 1)
         """
@@ -116,7 +116,7 @@ class RateLimiter:
     def get_available_tokens(self) -> float:
         """
         Get current available tokens (non-blocking check).
-        
+
         Returns:
             Number of tokens currently available
         """

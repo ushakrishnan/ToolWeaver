@@ -26,7 +26,7 @@ from typing import List
 def summarize_lengths(items: List[str]) -> int:
     return sum(len(x) for x in items)
 """
-    ref = sl.save_skill(name="summarize_lengths", code=skill_code, metadata={"tags": ["utility", "summary"]})
+    sl.save_skill(name="summarize_lengths", code=skill_code, metadata={"tags": ["utility", "summary"]})
 
     sk = sl.get_skill("summarize_lengths")
     code = Path(sk.code_path).read_text()

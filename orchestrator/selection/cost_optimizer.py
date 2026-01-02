@@ -38,10 +38,10 @@ class EfficiencyScore:
 class CostOptimizer:
     """
     Optimizes tool selection based on cost and performance constraints.
-    
+
     Scoring algorithm:
         efficiency = (1/cost_normalized) * success_rate / (1 + latency_normalized)
-    
+
     Weights can be tuned to prioritize cost vs. speed vs. reliability.
     """
 
@@ -80,7 +80,7 @@ class CostOptimizer:
     ) -> EfficiencyScore | None:
         """
         Calculate efficiency score for a tool.
-        
+
         Returns None if tool violates hard constraints (cost_budget, latency_budget).
         """
         metrics = self.extract_metrics(tool_def)
@@ -129,13 +129,13 @@ class CostOptimizer:
     ) -> ToolDefinition | None:
         """
         Select the best tool based on efficiency score.
-        
+
         Args:
             tools: List of tools to choose from
             cost_budget: Max cost per call (hard constraint)
             latency_budget: Max latency in ms (hard constraint)
             capability_filter: Optional capability to filter on
-            
+
         Returns:
             Best tool or None if none qualify
         """
@@ -174,7 +174,7 @@ class CostOptimizer:
     ) -> list[tuple[ToolDefinition, EfficiencyScore]]:
         """
         Rank tools by efficiency score (highest first).
-        
+
         Returns list of (tool, score) tuples.
         """
         candidates = tools

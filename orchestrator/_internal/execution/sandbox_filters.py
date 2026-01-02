@@ -12,11 +12,11 @@ Features:
 
 Usage:
     from orchestrator._internal.execution import DataFilter, PIITokenizer
-    
+
     # Filter large output
     filter = DataFilter(max_bytes=10000, max_rows=100)
     filtered = filter.apply(large_data)
-    
+
     # Tokenize PII
     tokenizer = PIITokenizer()
     sanitized = tokenizer.tokenize(data_with_pii)
@@ -72,13 +72,13 @@ class TokenizationConfig:
 
 class PIITokenizer:
     """Detects and tokenizes PII in data structures.
-    
+
     Example:
         tokenizer = PIITokenizer()
         data = {"email": "user@example.com", "phone": "555-1234"}
         sanitized = tokenizer.tokenize(data)
         # {"email": "TOKEN_EMAIL_a1b2c3", "phone": "TOKEN_PHONE_d4e5f6"}
-        
+
         # Later, detokenize if needed
         original = tokenizer.detokenize(sanitized)
     """
@@ -109,10 +109,10 @@ class PIITokenizer:
 
     def tokenize(self, data: Any) -> Any:
         """Tokenize PII in data structure.
-        
+
         Args:
             data: Data to tokenize (dict, list, str, or primitive)
-        
+
         Returns:
             Data with PII replaced by tokens
         """
@@ -159,10 +159,10 @@ class PIITokenizer:
 
     def detokenize(self, data: Any) -> Any:
         """Restore original values from tokens.
-        
+
         Args:
             data: Tokenized data
-        
+
         Returns:
             Data with tokens replaced by original values
         """
@@ -190,7 +190,7 @@ class PIITokenizer:
 
 class DataFilter:
     """Filters and truncates data to reduce token usage.
-    
+
     Example:
         filter = DataFilter(max_bytes=10000, max_rows=100)
         large_data = {"records": [...1000 records...]}
@@ -210,7 +210,7 @@ class DataFilter:
 
     def apply(self, data: Any) -> dict[str, Any]:
         """Apply filtering to data.
-        
+
         Returns:
             Dict with:
             - data: Filtered data
@@ -335,20 +335,20 @@ def filter_and_tokenize(
     tokenize_pii: bool = True,
 ) -> dict[str, Any]:
     """Convenience function to filter and tokenize data in one call.
-    
+
     Args:
         data: Data to process
         filter_config: Filter configuration
         tokenize_config: Tokenization configuration
         tokenize_pii: Whether to tokenize PII (default: True)
-    
+
     Returns:
         Dict with:
         - data: Processed data
         - truncated: Whether truncation occurred
         - stats: Processing statistics
         - token_map: PII token mapping (if tokenization enabled)
-    
+
     Example:
         result = filter_and_tokenize(large_data, tokenize_pii=True)
         processed_data = result["data"]

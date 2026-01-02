@@ -9,7 +9,7 @@ Not a framework—you control your architecture.
 
 Package Users:
     from orchestrator import mcp_tool, search_tools
-    
+
     @mcp_tool(domain="finance")
     async def get_balance(account: str) -> dict: ...
 

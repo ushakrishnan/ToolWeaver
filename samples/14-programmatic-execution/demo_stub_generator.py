@@ -134,7 +134,7 @@ async def main():
     print("\n1. Creating sample tool catalog...")
     catalog = create_sample_catalog()
     print(f"   ✓ Created catalog with {len(catalog.tools)} tools")
-    print(f"   Domains: {', '.join(set(t.domain for t in catalog.tools.values()))}")
+    print(f"   Domains: {', '.join({t.domain for t in catalog.tools.values()})}")
 
     # Generate stubs
     with tempfile.TemporaryDirectory() as tmp:

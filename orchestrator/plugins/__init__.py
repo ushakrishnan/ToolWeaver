@@ -6,12 +6,12 @@ Allows 3rd-party packages to register tools without modifying ToolWeaver source.
 Usage (in your package):
     from orchestrator.plugins import register_plugin
     from .my_tools import MyToolPlugin
-    
+
     register_plugin("my-tools", MyToolPlugin)
 
 Usage (in ToolWeaver):
     from orchestrator.plugins import get_plugin, list_plugins
-    
+
     plugin = get_plugin("my-tools")
     all_plugins = list_plugins()
 """

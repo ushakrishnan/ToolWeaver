@@ -19,7 +19,7 @@ Plugin Interface:
         def get_tools(self) -> list[dict]:
             '''Return list of tool definitions'''
             return [{"name": "...", "description": "...", "parameters": {...}}]
-        
+
         async def execute(self, tool_name: str, params: dict) -> dict:
             '''Execute a tool by name'''
             ...
@@ -28,7 +28,6 @@ Plugin Interface:
 from __future__ import annotations
 
 import builtins
-import sys
 from threading import Lock
 from typing import Any, Protocol, runtime_checkable
 
@@ -80,9 +79,9 @@ class PluginProtocol(Protocol):
 class PluginRegistry:
     """
     Thread-safe registry for tool plugins.
-    
+
     Plugins can be registered at runtime or discovered via entry points.
-    
+
     Example:
         >>> registry = PluginRegistry()
         >>> registry.register("jira", JiraPlugin())
@@ -104,16 +103,16 @@ class PluginRegistry:
     ) -> None:
         """
         Register a plugin.
-        
+
         Args:
             name: Unique plugin identifier
             plugin: Plugin instance (must have get_tools() and execute() methods)
             replace: If True, replace existing plugin with same name
-            
+
         Raises:
             PluginAlreadyRegisteredError: If plugin exists and replace=False
             InvalidPluginError: If plugin missing required methods
-            
+
         Example:
             >>> from my_package import JiraPlugin
             >>> registry.register("jira", JiraPlugin())
@@ -187,13 +186,13 @@ class PluginRegistry:
     def unregister(self, name: str) -> None:
         """
         Unregister a plugin.
-        
+
         Args:
             name: Plugin identifier
-            
+
         Raises:
             PluginNotFoundError: If plugin not found
-            
+
         Example:
             >>> registry.unregister("jira")
         """
@@ -207,16 +206,16 @@ class PluginRegistry:
     def get(self, name: str) -> PluginProtocol:
         """
         Get a plugin by name.
-        
+
         Args:
             name: Plugin identifier
-            
+
         Returns:
             Plugin instance
-            
+
         Raises:
             PluginNotFoundError: If plugin not found
-            
+
         Example:
             >>> plugin = registry.get("jira")
             >>> tools = plugin.get_tools()
@@ -233,10 +232,10 @@ class PluginRegistry:
     def list(self) -> list[str]:
         """
         List all registered plugin names.
-        
+
         Returns:
             List of plugin names
-            
+
         Example:
             >>> registry.list()
             ['jira', 'slack', 'github']
@@ -247,13 +246,13 @@ class PluginRegistry:
     def has(self, name: str) -> bool:
         """
         Check if plugin is registered.
-        
+
         Args:
             name: Plugin identifier
-            
+
         Returns:
             True if plugin exists
-            
+
         Example:
             >>> if registry.has("jira"):
             ...     plugin = registry.get("jira")
@@ -264,7 +263,7 @@ class PluginRegistry:
     def clear(self) -> None:
         """
         Clear all plugins (mainly for testing).
-        
+
         Example:
             >>> registry.clear()
             >>> assert registry.list() == []
@@ -276,10 +275,10 @@ class PluginRegistry:
     def get_all_tools(self) -> dict[str, builtins.list[dict[str, Any]]]:
         """
         Get all tools from all plugins.
-        
+
         Returns:
             Dict mapping plugin name to list of tools
-            
+
         Example:
             >>> tools = registry.get_all_tools()
             >>> print(tools)
@@ -311,10 +310,10 @@ _global_registry: PluginRegistry | None = None
 def get_registry() -> PluginRegistry:
     """
     Get the global plugin registry.
-    
+
     Returns:
         Global PluginRegistry instance
-        
+
     Example:
         >>> registry = get_registry()
         >>> registry.register("jira", JiraPlugin())
@@ -338,16 +337,16 @@ def register_plugin(
 ) -> None:
     """
     Register a plugin in the global registry.
-    
+
     Args:
         name: Unique plugin identifier
         plugin: Plugin instance
         replace: If True, replace existing plugin
-        
+
     Example:
         >>> from orchestrator.plugins import register_plugin
         >>> from my_package import JiraPlugin
-        >>> 
+        >>>
         >>> register_plugin("jira", JiraPlugin())
     """
     registry = get_registry()
@@ -357,10 +356,10 @@ def register_plugin(
 def unregister_plugin(name: str) -> None:
     """
     Unregister a plugin from the global registry.
-    
+
     Args:
         name: Plugin identifier
-        
+
     Example:
         >>> from orchestrator.plugins import unregister_plugin
         >>> unregister_plugin("jira")
@@ -372,13 +371,13 @@ def unregister_plugin(name: str) -> None:
 def get_plugin(name: str) -> PluginProtocol:
     """
     Get a plugin from the global registry.
-    
+
     Args:
         name: Plugin identifier
-        
+
     Returns:
         Plugin instance
-        
+
     Example:
         >>> from orchestrator.plugins import get_plugin
         >>> plugin = get_plugin("jira")
@@ -391,10 +390,10 @@ def get_plugin(name: str) -> PluginProtocol:
 def list_plugins() -> list[str]:
     """
     List all registered plugins.
-    
+
     Returns:
         List of plugin names
-        
+
     Example:
         >>> from orchestrator.plugins import list_plugins
         >>> plugins = list_plugins()
@@ -411,17 +410,17 @@ def list_plugins() -> list[str]:
 def discover_plugins() -> dict[str, PluginProtocol]:
     """
     Discover and load plugins via entry points.
-    
+
     Looks for entry points in the 'toolweaver.plugins' group.
-    
+
     Returns:
         Dict mapping plugin name to plugin instance
-        
+
     Example:
         >>> from orchestrator.plugins import discover_plugins
         >>> discovered = discover_plugins()
         >>> print(f"Found {len(discovered)} plugins")
-        
+
     Entry Point Example (pyproject.toml):
         [project.entry-points."toolweaver.plugins"]
         jira = "toolweaver_jira:JiraPlugin"
@@ -429,41 +428,34 @@ def discover_plugins() -> dict[str, PluginProtocol]:
     discovered = {}
 
     # Python 3.10+ has importlib.metadata
-    if sys.version_info >= (3, 10):
-        try:
-            from importlib.metadata import entry_points
+    try:
+        from importlib.metadata import entry_points
 
-            # Get entry points for toolweaver.plugins group
-            eps = entry_points(group='toolweaver.plugins')
+        # Get entry points for toolweaver.plugins group
+        eps = entry_points(group='toolweaver.plugins')
 
-            for ep in eps:
-                try:
-                    # Load the entry point
-                    plugin_class = ep.load()
+        for ep in eps:
+            try:
+                # Load the entry point
+                plugin_class = ep.load()
 
-                    # Instantiate if it's a class
-                    if isinstance(plugin_class, type):
-                        plugin: PluginProtocol = plugin_class()  # type: ignore[call-arg]
-                    else:
-                        plugin = plugin_class  # type: ignore[assignment]
+                # Instantiate if it's a class
+                if isinstance(plugin_class, type):
+                    plugin: PluginProtocol = plugin_class()  # type: ignore[call-arg]
+                else:
+                    plugin = plugin_class  # type: ignore[assignment]
 
-                    # Register in global registry
-                    register_plugin(ep.name, plugin)
-                    discovered[ep.name] = plugin
+                # Register in global registry
+                register_plugin(ep.name, plugin)
+                discovered[ep.name] = plugin
 
-                    logger.info(f"Discovered and registered plugin: {ep.name}")
+                logger.info(f"Discovered and registered plugin: {ep.name}")
 
-                except Exception as e:
-                    logger.error(f"Failed to load plugin '{ep.name}': {e}")
+            except Exception as e:
+                logger.error(f"Failed to load plugin '{ep.name}': {e}")
 
-        except Exception as e:
-            logger.error(f"Failed to discover plugins: {e}")
-
-    else:
-        logger.warning(
-            "Plugin discovery requires Python 3.10+. "
-            "Plugins must be registered manually."
-        )
+    except Exception as e:
+        logger.error(f"Failed to discover plugins: {e}")
 
     return discovered
 

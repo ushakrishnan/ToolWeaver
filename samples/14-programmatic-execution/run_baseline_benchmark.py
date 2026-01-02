@@ -6,7 +6,7 @@ baseline metrics before implementing code execution improvements.
 
 Usage:
     python examples/run_baseline_benchmark.py
-    
+
 Output:
     - benchmarks/results/current_baseline.json
     - Console report with metrics
@@ -28,7 +28,7 @@ from orchestrator._internal.observability.context_tracker import ContextTracker
 class SimpleOrchestrator:
     """
     Simple orchestrator wrapper for baseline benchmarking.
-    
+
     Maps prompts to function calls based on keywords.
     This simulates the current ToolWeaver behavior for testing.
     """
@@ -46,11 +46,11 @@ class SimpleOrchestrator:
     async def execute(self, prompt: str, context: dict = None):
         """
         Execute task based on prompt.
-        
+
         Args:
             prompt: User prompt
             context: Additional context data
-            
+
         Returns:
             Execution result
         """
@@ -152,7 +152,7 @@ class SimpleOrchestrator:
                 }
 
             elif "email" in prompt_lower and "validate" in prompt_lower:
-                email = context.get("email", "")
+                context.get("email", "")
 
                 return {
                     "function": "send_email",
@@ -249,7 +249,7 @@ async def main():
         total_tool_defs = 0
         total_results = 0
 
-        for task_result in results.results:
+        for _task_result in results.results:
             # Simulated breakdown (in real integration, would track per task)
             total_tool_defs += results.avg_context_usage * 0.7  # ~70% tool definitions
             total_results += results.avg_context_usage * 0.3     # ~30% results

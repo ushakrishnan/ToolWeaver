@@ -92,7 +92,7 @@ async def demo_traditional_approach(catalog: ToolCatalog):
     print(f"  Estimated tokens: ~{full_tokens}")
 
     # Execute with traditional approach (stubs disabled)
-    executor = ProgrammaticToolExecutor(
+    ProgrammaticToolExecutor(
         catalog,
         enable_stubs=False
     )
@@ -268,7 +268,7 @@ results = []
 for amount in amounts:
     input_data = ComputeTaxInput(amount=amount, rate=0.08)
     result = await compute_tax(input_data)
-    
+
     if result.success:
         results.append(result.result)
 

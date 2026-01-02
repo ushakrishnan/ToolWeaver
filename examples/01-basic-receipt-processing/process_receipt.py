@@ -20,10 +20,10 @@ from orchestrator import mcp_tool, search_tools
 async def receipt_ocr(image_uri: str) -> dict:
     """
     Extract text from a receipt image using OCR.
-    
+
     Args:
         image_uri: URL or path to receipt image
-        
+
     Returns:
         dict with 'text' and 'confidence' keys
     """
@@ -32,7 +32,7 @@ async def receipt_ocr(image_uri: str) -> dict:
     mock_receipt_text = """
     RESTAURANT XYZ
     Date: 2024-01-15
-    
+
     Burger       $12.99
     Fries        $ 4.50
     Soda         $ 2.50
@@ -41,7 +41,7 @@ async def receipt_ocr(image_uri: str) -> dict:
     Tax (8%):    $ 1.60
     -------------
     TOTAL:       $21.59
-    
+
     Thank you!
     """
 

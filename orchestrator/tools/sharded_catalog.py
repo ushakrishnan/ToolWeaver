@@ -50,23 +50,23 @@ DOMAIN_KEYWORDS: dict[str, DomainConfig] = {
 class ShardedCatalog:
     """
     Tool catalog organized by domain for optimized search.
-    
+
     Features:
     - Domain-based sharding (10x smaller search space)
     - Automatic domain detection from query
     - Fallback to global search
     - Maintains global catalog for comprehensive search
-    
+
     Usage:
         catalog = ShardedCatalog()
         catalog.add_tool(github_tool)  # Auto-assigned to 'github' shard
-        
+
         # Domain-specific search (fast, ~100 tools)
         results = catalog.search_by_domain("create PR", domain="github")
-        
+
         # Auto-detect domain (smart routing)
         results = catalog.search_with_detection("create slack channel")
-        
+
         # Global search (fallback, ~1000 tools)
         results = catalog.search_global("general task")
     """
@@ -83,10 +83,10 @@ class ShardedCatalog:
     def add_tool(self, tool: ToolDefinition) -> str:
         """
         Add tool to appropriate domain shard and global catalog.
-        
+
         Args:
             tool: Tool definition with optional domain field
-            
+
         Returns:
             Domain where tool was added
         """
@@ -129,10 +129,10 @@ class ShardedCatalog:
     def detect_domain(self, query: str) -> str | None:
         """
         Detect most likely domain from query using keyword matching.
-        
+
         Args:
             query: Search query text
-            
+
         Returns:
             Domain name or None if no clear match
         """
@@ -162,10 +162,10 @@ class ShardedCatalog:
     def _detect_tool_domain(self, tool: ToolDefinition) -> str:
         """
         Detect domain from tool name/description.
-        
+
         Args:
             tool: Tool definition
-            
+
         Returns:
             Detected domain name (defaults to 'general')
         """
@@ -209,12 +209,12 @@ class ShardedCatalog:
     ) -> tuple[ToolCatalog, str | None]:
         """
         Search within specific domain with fallback to global.
-        
+
         Args:
             query: Search query
             domain: Domain to search in
             min_results: Minimum results before fallback
-            
+
         Returns:
             Tuple of (results, domain_used)
             - results: Search results
@@ -241,11 +241,11 @@ class ShardedCatalog:
     ) -> tuple[ToolCatalog, str | None]:
         """
         Auto-detect domain and search with fallback.
-        
+
         Args:
             query: Search query
             min_results: Minimum results before fallback
-            
+
         Returns:
             Tuple of (catalog, domain_used)
         """

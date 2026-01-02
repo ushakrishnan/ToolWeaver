@@ -64,7 +64,7 @@ async def main():
     # LLM call 2: Summarize
     print("  3. LLM: Summarize results")
     llm_calls += 1
-    summary = {
+    {
         "total": sum(r["processed"] for r in results),
         "count": len(results)
     }

@@ -15,10 +15,10 @@ Backends:
 
 Usage (SQLite):
     from orchestrator._internal.execution.analytics import SkillAnalytics, setup_grafana
-    
+
     # Initialize analytics with SQLite
     analytics = SkillAnalytics(db_path="~/.toolweaver/analytics.db")
-    
+
     # Record skill usage
     analytics.record_skill_usage(
         skill_id="my-skill",
@@ -26,7 +26,7 @@ Usage (SQLite):
         success=True,
         latency_ms=245.5
     )
-    
+
     # Setup Grafana dashboards
     setup_grafana(
         url="https://grafana.example.com",
@@ -36,10 +36,10 @@ Usage (SQLite):
 
 Usage (OTLP/Grafana Cloud):
     from orchestrator._internal.execution.analytics import OTLPMetrics
-    
+
     # Initialize OTLP client (reads from env: OTLP_ENDPOINT, OTLP_INSTANCE_ID, OTLP_TOKEN)
     metrics = OTLPMetrics()
-    
+
     # Record metrics (pushed to Grafana Cloud automatically)
     metrics.record_skill_execution("my-skill", success=True, latency_ms=245.5)
     metrics.record_skill_rating("my-skill", rating=5)
@@ -118,17 +118,17 @@ __phase__ = "5"
 def create_analytics_client(backend: str | None = None) -> Any:
     """
     Factory function to create analytics client based on backend selection.
-    
+
     Args:
         backend: 'sqlite', 'otlp', or 'prometheus'. If None, reads from ANALYTICS_BACKEND env var.
-    
+
     Returns:
         SkillAnalytics (SQLite), OTLPMetrics (OTLP), or PrometheusMetrics (Prometheus) instance
-    
+
     Examples:
         # Auto-detect from environment
         analytics = create_analytics_client()
-        
+
         # Explicit backend
         analytics = create_analytics_client(backend='prometheus')
     """

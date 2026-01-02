@@ -6,13 +6,13 @@ This is the classic Prometheus model where Prometheus scrapes your application.
 
 Usage:
     from orchestrator._internal.execution.analytics import PrometheusMetrics
-    
+
     # Start metrics server
     metrics = PrometheusMetrics(port=8000)
-    
+
     # Record metrics
     metrics.record_skill_execution("skill_123", success=True, latency_ms=150)
-    
+
     # Prometheus scrapes http://localhost:8000/metrics
 
 Environment Variables:
@@ -47,14 +47,14 @@ class PrometheusConfig:
 class PrometheusMetrics:
     """
     Prometheus metrics exporter for ToolWeaver.
-    
+
     Exposes metrics via HTTP endpoint for Prometheus scraping.
     """
 
     def __init__(self, config: PrometheusConfig | None = None):
         """
         Initialize Prometheus metrics exporter.
-        
+
         Args:
             config: PrometheusConfig object, or None to load from environment
         """
@@ -100,7 +100,7 @@ class PrometheusMetrics:
                 self.skill_rating = REGISTRY._names_to_collectors['toolweaver_skill_rating']
                 self.skill_health_score = REGISTRY._names_to_collectors['toolweaver_skill_health_score']
                 return
-        except:
+        except Exception:
             pass
 
         # Counters (monotonically increasing)
@@ -156,7 +156,7 @@ class PrometheusMetrics:
     ) -> None:
         """
         Record a skill execution event.
-        
+
         Args:
             skill_id: Unique skill identifier
             success: Whether execution succeeded
@@ -191,7 +191,7 @@ class PrometheusMetrics:
     ) -> None:
         """
         Record a skill rating (1-5 stars).
-        
+
         Args:
             skill_id: Unique skill identifier
             rating: Rating value (1-5)
@@ -212,7 +212,7 @@ class PrometheusMetrics:
     def update_health_score(self, skill_id: str, score: float) -> None:
         """
         Update health score for a skill (0-100).
-        
+
         Args:
             skill_id: Unique skill identifier
             score: Health score (0-100)
@@ -226,7 +226,7 @@ class PrometheusMetrics:
     def health_check(self) -> bool:
         """
         Check if Prometheus metrics are healthy.
-        
+
         Returns:
             True if metrics are working
         """
@@ -239,7 +239,7 @@ class PrometheusMetrics:
     def get_config_summary(self) -> dict:
         """
         Get configuration summary (for debugging).
-        
+
         Returns:
             Dictionary with config info
         """
@@ -260,11 +260,11 @@ def create_prometheus_exporter(
 ) -> PrometheusMetrics:
     """
     Create Prometheus metrics exporter with explicit config or from environment.
-    
+
     Args:
         port: Optional port (uses PROMETHEUS_PORT env if None)
         host: Optional host (uses PROMETHEUS_HOST env if None)
-    
+
     Returns:
         PrometheusMetrics instance
     """

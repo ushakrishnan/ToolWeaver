@@ -35,15 +35,15 @@ def get_monitor() -> ToolUsageMonitor:
 async def retry(coro_func: Callable[[], Awaitable[Any]], retries: int = 1, backoff_s: float = 1) -> Any:
     """
     Retry a coroutine function with exponential backoff.
-    
+
     Args:
         coro_func: Async function to retry
         retries: Number of retry attempts
         backoff_s: Base backoff time in seconds
-        
+
     Returns:
         Result from successful execution
-        
+
     Raises:
         Last exception if all retries fail
     """
@@ -135,16 +135,16 @@ def _normalize_step_for_dispatch(step: dict[str, Any], step_outputs: dict[str, A
 async def run_step(step: dict[str, Any], step_outputs: dict[str, Any], mcp_client: MCPClientShim, monitor: ToolUsageMonitor | None = None, a2a_client: A2AClient | None = None) -> Any:
     """
     Execute a single step using the hybrid dispatcher.
-    
+
     Supports retry policy and delegates to hybrid_dispatcher for tool routing.
-    
+
     Args:
         step: Step definition with tool type, input, and config
         step_outputs: Dict of previous step outputs
         mcp_client: MCP client for deterministic tools
         monitor: Optional ToolUsageMonitor for observability
         a2a_client: Optional A2A client for agent delegation
-        
+
     Returns:
         Result from the executed step
     """
@@ -200,19 +200,19 @@ async def run_step(step: dict[str, Any], step_outputs: dict[str, Any], mcp_clien
 async def execute_plan(plan: dict[str, Any], *, a2a_client: A2AClient | None = None) -> dict[str, Any]:
     """
     Execute a multi-step execution plan with dependency resolution.
-    
+
     This orchestrator supports hybrid tool types:
     - MCP workers (deterministic tools)
     - Function calls (structured APIs)
     - Code execution (sandboxed Python)
-    
+
     Args:
         plan: Plan dictionary with steps and final_synthesis config
         a2a_client: Optional A2A client for agent delegation
-        
+
     Returns:
         Context dictionary with all step outputs
-        
+
     Raises:
         RuntimeError: If plan is invalid, cyclic, or step execution fails
     """
@@ -229,7 +229,7 @@ async def execute_plan(plan: dict[str, Any], *, a2a_client: A2AClient | None = N
         return [sid for sid in pending if all(dep in completed for dep in steps[sid].get('depends_on', []))]
 
     # Log plan start
-    plan_id = plan.get('request_id', 'unknown')
+    plan.get('request_id', 'unknown')
     logger.info(f"Starting plan execution with {len(steps)} steps")
 
     while pending:
@@ -241,7 +241,7 @@ async def execute_plan(plan: dict[str, Any], *, a2a_client: A2AClient | None = N
         coros = [run_step(steps[sid], completed, mcp_client, monitor, a2a_client) for sid in ready]
         results = await asyncio.gather(*coros, return_exceptions=True)
 
-        for sid, res in zip(ready, results):
+        for sid, res in zip(ready, results, strict=False):
             if isinstance(res, Exception):
                 logger.exception("Step failed %s", sid)
                 raise RuntimeError(f"Step {sid} failed: {res}")
@@ -262,11 +262,11 @@ async def execute_plan(plan: dict[str, Any], *, a2a_client: A2AClient | None = N
 async def final_synthesis(plan: dict[str, Any], context: dict[str, Any]) -> dict[str, str]:
     """
     Generate final synthesis from execution context.
-    
+
     Args:
         plan: Plan with final_synthesis configuration
         context: Execution context with step outputs
-        
+
     Returns:
         Dict with synthesis text
     """
@@ -337,16 +337,16 @@ class Orchestrator:
     async def execute_skill(self, skill_name: str, *, inputs: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Execute a saved skill (code snippet or workflow).
-        
+
         Automatically tracks metrics (usage, latency, success rate).
-        
+
         Args:
             skill_name: Name of the skill (must be saved in library)
             inputs: Optional input variables to pass to the skill
-        
+
         Returns:
             Result from executing the skill code
-        
+
         Raises:
             KeyError: If skill not found
             RuntimeError: If skill execution fails

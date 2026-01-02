@@ -4,6 +4,13 @@ import os
 from typing import TYPE_CHECKING, Any, Literal, Optional, cast
 
 from ...shared.models import CategorizerOut, LineItem, LineItemParserOut, ReceiptOCROut
+from .azure_cv import (
+    AZURE_CV_AVAILABLE,
+    AzureKeyCredential,
+    DefaultAzureCredential,
+    ImageAnalysisClient,
+    VisualFeatures,
+)
 
 if TYPE_CHECKING:
     from ..execution.small_model_worker import SmallModelWorker
@@ -35,15 +42,6 @@ def _get_small_model_worker() -> Optional["SmallModelWorker"]:
     if isinstance(_small_model_worker, bool):
         return None
     return _small_model_worker
-
-# Local Azure CV wrapper provides stable imports + availability flag
-from .azure_cv import (
-    AZURE_CV_AVAILABLE,
-    AzureKeyCredential,
-    DefaultAzureCredential,
-    ImageAnalysisClient,
-    VisualFeatures,
-)
 
 if not AZURE_CV_AVAILABLE:
     logger.warning("Azure Computer Vision SDK not installed. Running in mock mode.")

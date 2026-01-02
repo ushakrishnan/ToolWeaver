@@ -97,7 +97,9 @@ def show_stub_content(stub_dir: Path, tool_name: str):
         lines = content.split("\n")[:40]
         print("\n".join(lines))
         if len(content.split("\n")) > 40:
-            print(f"\n... ({len(content.split('\n')) - 40} more lines)")
+            split_lines = content.split("\n")
+            remaining = len(split_lines) - 40
+            print(f"\n... ({remaining} more lines)")
 
 
 def show_usage_example():
@@ -134,7 +136,7 @@ async def main():
     print("\n1. Creating sample tool catalog...")
     catalog = create_sample_catalog()
     print(f"   ✓ Created catalog with {len(catalog.tools)} tools")
-    print(f"   Domains: {', '.join(set(t.domain for t in catalog.tools.values()))}")
+    print(f"   Domains: {', '.join({t.domain for t in catalog.tools.values()})}")
 
     # Generate stubs
     with tempfile.TemporaryDirectory() as tmp:

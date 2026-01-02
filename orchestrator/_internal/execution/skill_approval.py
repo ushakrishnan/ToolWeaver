@@ -60,7 +60,7 @@ def _save_approvals(approvals: dict[str, ApprovalRecord]) -> None:
 def review_pending_skills() -> None:
     """
     Interactive CLI to review unapproved skills.
-    
+
     Shows skill details, validation results, and prompts for approval.
     """
     approvals = _load_approvals()
@@ -97,7 +97,9 @@ def review_pending_skills() -> None:
         for i, line in enumerate(lines, 1):
             print(f"  {i:2d} | {line}")
         if len(code.split("\n")) > 10:
-            print(f"  ... ({len(code.split('\n')) - 10} more lines)")
+            split_lines = code.split("\n")
+            remaining = len(split_lines) - 10
+            print(f"  ... ({remaining} more lines)")
 
         # Prompt for approval
         print(f"\n{'='*60}")
@@ -129,11 +131,11 @@ def review_pending_skills() -> None:
 def promote_skill_to_git(skill_name: str, git_repo_path: str | None = None) -> bool:
     """
     Promote an approved skill to a Git repository.
-    
+
     Args:
         skill_name: Name of skill to promote
         git_repo_path: Path to Git repo (default: current directory)
-    
+
     Returns:
         True if promotion succeeded
     """
@@ -182,7 +184,7 @@ def promote_skill_to_git(skill_name: str, git_repo_path: str | None = None) -> b
         )
 
         commit_msg = f"Add approved skill: {skill.name}\n\n{skill.description or ''}"
-        result = subprocess.run(
+        subprocess.run(
             ["git", "commit", "-m", commit_msg],
             cwd=git_repo,
             check=True,

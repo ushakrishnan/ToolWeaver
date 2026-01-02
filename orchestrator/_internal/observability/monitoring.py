@@ -41,7 +41,7 @@ class SearchMetric:
 class ToolUsageMonitor:
     """
     Track tool usage, errors, performance for production monitoring.
-    
+
     Features:
     - Per-tool call counts, error rates, latency percentiles
     - Search query tracking
@@ -49,17 +49,17 @@ class ToolUsageMonitor:
     - Token usage tracking
     - Pluggable backends (local, W&B, Prometheus)
     - In-memory metrics aggregation
-    
+
     Examples:
         # Local only (default)
         monitor = ToolUsageMonitor()
-        
+
         # W&B integration
         monitor = ToolUsageMonitor(backends=["local", "wandb"])
-        
+
         # Prometheus for production
         monitor = ToolUsageMonitor(backends=["prometheus"])
-        
+
         # All backends
         monitor = ToolUsageMonitor(backends=["local", "wandb", "prometheus"])
     """
@@ -73,7 +73,7 @@ class ToolUsageMonitor:
     ):
         """
         Initialize monitoring with pluggable backends.
-        
+
         Args:
             backends: Backend(s) to use: "local", "wandb", "prometheus" or list
             log_to_file: Enable file logging (for local backend)
@@ -149,7 +149,7 @@ class ToolUsageMonitor:
     ) -> None:
         """
         Log individual tool call.
-        
+
         Args:
             tool_name: Name of tool called
             success: Whether call succeeded
@@ -193,7 +193,7 @@ class ToolUsageMonitor:
     ) -> None:
         """
         Log tool search query.
-        
+
         Args:
             query: Search query text
             num_results: Number of results returned
@@ -232,7 +232,7 @@ class ToolUsageMonitor:
     ) -> None:
         """
         Log LLM token usage.
-        
+
         Args:
             input_tokens: Input tokens used
             output_tokens: Output tokens generated
@@ -252,10 +252,10 @@ class ToolUsageMonitor:
     def get_tool_metrics(self, tool_name: str) -> dict[str, Any]:
         """
         Get aggregated metrics for a specific tool.
-        
+
         Args:
             tool_name: Tool to analyze
-            
+
         Returns:
             Dictionary with call count, error rate, latency percentiles
         """
@@ -291,7 +291,7 @@ class ToolUsageMonitor:
     def get_summary(self) -> dict[str, Any]:
         """
         Get overall monitoring summary.
-        
+
         Returns:
             Dictionary with all aggregated metrics
         """
@@ -322,10 +322,10 @@ class ToolUsageMonitor:
     def get_recent_errors(self, limit: int = 10) -> list[dict[str, Any]]:
         """
         Get recent tool errors.
-        
+
         Args:
             limit: Maximum number of errors to return
-            
+
         Returns:
             List of recent error records
         """
@@ -338,7 +338,7 @@ class ToolUsageMonitor:
     def export_metrics(self, filepath: str) -> None:
         """
         Export all metrics to JSON file.
-        
+
         Args:
             filepath: Output file path
         """

@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -40,17 +41,15 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-import re
-
 
 def _increment_version(version: str, bump_type: str = "patch") -> str:
     """
     Increment semantic version (major.minor.patch).
-    
+
     Args:
         version: Current version (e.g., "0.1.0")
         bump_type: "major", "minor", or "patch"
-    
+
     Returns:
         Next version string
     """
@@ -139,7 +138,7 @@ def _save_manifest(data: dict[str, Any]) -> None:
 def _detect_dependencies(code: str) -> list[str]:
     """
     Detect skill dependencies by looking for execute_skill() calls.
-    
+
     Returns:
         List of skill names referenced in the code
     """
@@ -161,7 +160,7 @@ def _detect_dependencies(code: str) -> list[str]:
 def _check_circular_dependencies(skill_name: str, dependencies: list[str]) -> list[str] | None:
     """
     Check for circular dependencies in skill graph.
-    
+
     Returns:
         Cycle path if found, None otherwise
     """
@@ -197,7 +196,7 @@ def _check_circular_dependencies(skill_name: str, dependencies: list[str]) -> li
 def save_skill(name: str, code: str, *, description: str = "", tags: list[str] | None = None, metadata: dict[str, Any] | None = None) -> Skill:
     """
     Save a skill's code to disk and register in manifest.
-    
+
     Automatically detects dependencies and checks for circular references.
     Also caches in Redis if available for fast lookups.
     Indexes in Qdrant if available for semantic search.
@@ -286,7 +285,7 @@ def list_skills() -> list[Skill]:
 def get_skill(name: str) -> Skill | None:
     """
     Get a skill by name.
-    
+
     Checks Redis cache first (if available), falls back to disk.
     """
     # Try Redis cache first
@@ -316,7 +315,7 @@ def get_skill(name: str) -> Skill | None:
 def _get_qdrant() -> tuple[Any, Any] | None:
     """
     Get Qdrant client and embedding model if QDRANT_URL is set.
-    
+
     Returns:
         (client, model) tuple or None
     """
@@ -408,7 +407,7 @@ def _index_skill_in_qdrant(skill: Skill) -> None:
 def get_dependency_graph() -> dict[str, list[str]]:
     """
     Build a dependency graph for all skills.
-    
+
     Returns:
         Dict mapping skill names to their dependencies
     """
@@ -423,10 +422,10 @@ def get_dependency_graph() -> dict[str, list[str]]:
 def get_skill_dependents(skill_name: str) -> list[str]:
     """
     Find all skills that depend on the given skill.
-    
+
     Args:
         skill_name: Name of skill to find dependents for
-    
+
     Returns:
         List of skill names that depend on this skill
     """
@@ -442,10 +441,10 @@ def get_skill_dependents(skill_name: str) -> list[str]:
 def visualize_dependency_graph(output_format: str = "text") -> str:
     """
     Generate a visual representation of the skill dependency graph.
-    
+
     Args:
         output_format: "text" or "mermaid"
-    
+
     Returns:
         Graph representation as string
     """
@@ -484,16 +483,16 @@ def visualize_dependency_graph(output_format: str = "text") -> str:
 def search_skills(query: str, top_k: int = 5) -> list[tuple[Skill, float]]:
     """
     Semantic search over saved skills.
-    
+
     Uses Qdrant vector search if available, otherwise falls back to keyword match.
-    
+
     Args:
         query: Natural language query (e.g., "multiply two numbers")
         top_k: Number of results to return
-    
+
     Returns:
         List of (skill, score) tuples sorted by relevance
-    
+
     Example:
         results = search_skills("data validation", top_k=3)
         for skill, score in results:
@@ -570,10 +569,10 @@ def search_skills(query: str, top_k: int = 5) -> list[tuple[Skill, float]]:
 def get_skill_versions(name: str) -> list[str]:
     """
     Get all versions of a skill.
-    
+
     Args:
         name: Skill name
-    
+
     Returns:
         List of version strings, sorted newest first
     """
@@ -590,11 +589,11 @@ def get_skill_versions(name: str) -> list[str]:
 def get_skill_version(name: str, version: str) -> Skill | None:
     """
     Get a specific version of a skill.
-    
+
     Args:
         name: Skill name
         version: Version string (e.g., "0.2.0")
-    
+
     Returns:
         Skill object or None if not found
     """
@@ -614,7 +613,7 @@ def get_skill_version(name: str, version: str) -> Skill | None:
     if not version_code_path.exists():
         return None
 
-    code = version_code_path.read_text()
+    version_code_path.read_text()
 
     # Find metadata in skills list for this version
     for s in data.get("skills", []):
@@ -627,19 +626,19 @@ def get_skill_version(name: str, version: str) -> Skill | None:
 def update_skill(name: str, code: str, *, description: str | None = None, tags: list[str] | None = None, bump_type: str = "patch") -> Skill:
     """
     Update an existing skill with new code.
-    
+
     Creates a new version automatically.
-    
+
     Args:
         name: Skill name
         code: New code
         description: Optional new description
         tags: Optional new tags
         bump_type: "major", "minor", or "patch" (default: patch)
-    
+
     Returns:
         New Skill object with incremented version
-    
+
     Raises:
         KeyError: If skill not found
     """
@@ -732,14 +731,14 @@ def update_skill(name: str, code: str, *, description: str | None = None, tags: 
 def rollback_skill(name: str, version: str) -> Skill:
     """
     Rollback to a previous version of a skill.
-    
+
     Args:
         name: Skill name
         version: Version to rollback to
-    
+
     Returns:
         Skill object for the restored version
-    
+
     Raises:
         KeyError: If skill or version not found
     """

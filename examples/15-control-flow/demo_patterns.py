@@ -252,10 +252,10 @@ async def fetch_data_from_api():
     global call_count
     call_count += 1
     print(f"API call attempt {{call_count}}")
-    
+
     if call_count < 3:
         raise Exception(f"API Error: Temporary failure")
-    
+
     return {{"status": "success", "data": "Result"}}
 
 {code}

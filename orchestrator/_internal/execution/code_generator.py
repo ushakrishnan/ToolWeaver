@@ -44,7 +44,7 @@ class GeneratedStub:
 class StubGenerator:
     """
     Generate Python function stubs from tool catalog.
-    
+
     Architecture:
     - Groups tools by server/domain
     - Generates Pydantic input models
@@ -55,7 +55,7 @@ class StubGenerator:
     def __init__(self, catalog: ToolCatalog, output_dir: Path):
         """
         Initialize stub generator.
-        
+
         Args:
             catalog: ToolCatalog with tool definitions
             output_dir: Directory to write stubs
@@ -67,7 +67,7 @@ class StubGenerator:
     def generate_all(self) -> dict[str, str]:
         """
         Generate all stubs organized by server.
-        
+
         Returns:
             Dictionary mapping file paths to code
         """
@@ -169,10 +169,10 @@ class StubGenerator:
     def _generate_stub(self, tool: ToolDefinition) -> str:
         """
         Generate single stub from tool definition.
-        
+
         Args:
             tool: ToolDefinition to generate from
-            
+
         Returns:
             Python code as string
         """
@@ -266,18 +266,18 @@ async def {tool.name}(input_data: {input_class}) -> {output_class}:
 {docstring}
     """
     from orchestrator.tools.tool_executor import call_tool
-    
+
     from orchestrator.tools.tool_executor import call_tool
-    
+
     try:
         result = await call_tool(
             server="{tool.domain or 'general'}",
             tool_name="{tool.name}",
             parameters=input_data.model_dump()
         )
-        
+
         return {output_class}(result=result, success=True)
-    
+
     except Exception as e:
         return {output_class}(
             result=None,

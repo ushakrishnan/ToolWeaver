@@ -61,7 +61,7 @@ class BenchmarkResults:
 class AgentEvaluator:
     """
     Evaluate agent performance on standard tasks.
-    
+
     Features:
     - Run benchmark suites
     - Measure completion rate, context usage, speed
@@ -72,7 +72,7 @@ class AgentEvaluator:
     def __init__(self, orchestrator: Any, context_tracker: Any) -> None:
         """
         Initialize evaluator.
-        
+
         Args:
             orchestrator: Orchestrator instance to evaluate
             context_tracker: ContextTracker instance for metrics
@@ -85,10 +85,10 @@ class AgentEvaluator:
     async def run_benchmark(self, task_suite: str) -> BenchmarkResults:
         """
         Run benchmark suite and collect metrics.
-        
+
         Args:
             task_suite: Name of task suite file (e.g., "standard_tasks")
-            
+
         Returns:
             BenchmarkResults with aggregated metrics
         """
@@ -123,10 +123,10 @@ class AgentEvaluator:
     async def _evaluate_task(self, task: dict) -> TaskResult:
         """
         Execute single task and measure performance.
-        
+
         Args:
             task: Task definition with prompt, expected output, etc.
-            
+
         Returns:
             TaskResult with metrics
         """
@@ -167,10 +167,10 @@ class AgentEvaluator:
     def _load_tasks(self, task_suite: str) -> list[dict]:
         """
         Load task suite from JSON file.
-        
+
         Args:
             task_suite: Name of task suite (with or without .json)
-            
+
         Returns:
             List of task definitions
         """
@@ -195,11 +195,11 @@ class AgentEvaluator:
     def _validate_result(self, result: Any, expected: dict) -> bool:
         """
         Validate task result against expected output.
-        
+
         Args:
             result: Actual output from orchestrator
             expected: Expected output criteria
-            
+
         Returns:
             True if result meets expectations
         """
@@ -234,7 +234,7 @@ class AgentEvaluator:
 
         # Check tools used
         if "tools_used" in expected:
-            tools = set(step.get("tool") for step in result.get("steps", []))
+            tools = {step.get("tool") for step in result.get("steps", [])}
             expected_tools = set(expected["tools_used"])
             if not expected_tools.issubset(tools):
                 return False
@@ -244,10 +244,10 @@ class AgentEvaluator:
     def _aggregate_results(self, results: list[TaskResult]) -> BenchmarkResults:
         """
         Aggregate individual task results into summary metrics.
-        
+
         Args:
             results: List of TaskResult objects
-            
+
         Returns:
             BenchmarkResults with aggregated metrics
         """
@@ -280,7 +280,7 @@ class AgentEvaluator:
     def save_baseline(self, results: BenchmarkResults, name: str) -> None:
         """
         Save results as baseline for regression testing.
-        
+
         Args:
             name: Name for this baseline (e.g., "v1.0", "before_code_exec")
         """
@@ -306,10 +306,10 @@ class AgentEvaluator:
     def load_baseline(self, name: str) -> dict[str, Any] | None:
         """
         Load previously saved baseline.
-        
+
         Args:
             name: Name of baseline to load
-            
+
         Returns:
             Baseline data or None if not found
         """
@@ -330,11 +330,11 @@ class AgentEvaluator:
     ) -> dict[str, Any]:
         """
         Compare current results to saved baseline.
-        
+
         Args:
             current: Current benchmark results
             baseline_name: Name of baseline to compare against
-            
+
         Returns:
             Dictionary with comparison metrics
         """
@@ -382,7 +382,7 @@ class AgentEvaluator:
     def print_comparison(self, comparison: dict[str, Any]) -> None:
         """
         Pretty print comparison results.
-        
+
         Args:
             comparison: Output from compare_to_baseline()
         """

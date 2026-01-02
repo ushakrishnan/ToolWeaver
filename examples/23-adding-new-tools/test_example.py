@@ -183,7 +183,7 @@ class TestDiscovery:
         from add_new_tools import setup_mcp_tools
 
         mcp_client = MCPClientShim()
-        a2a_client = A2AClient(config_path=None)
+        A2AClient(config_path=None)
 
         # Setup MCP tools
         catalog = await setup_mcp_tools(mcp_client)

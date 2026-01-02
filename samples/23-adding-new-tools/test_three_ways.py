@@ -49,7 +49,7 @@ class TestThreeWaysExample:
 
     def test_yaml_approach(self):
         """Test YAML worker function works."""
-        result = yaml_worker_get_expenses(employee_id="E456", year=2025)
+        yaml_worker_get_expenses(employee_id="E456", year=2025)
 
     @pytest.mark.asyncio
     async def test_decorator_async_execution(self):

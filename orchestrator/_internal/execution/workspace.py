@@ -14,10 +14,10 @@ Features:
 
 Usage:
     from orchestrator._internal.execution import WorkspaceManager
-    
+
     # Create workspace
     workspace = WorkspaceManager(session_id="agent-123")
-    
+
     # Save skill
     workspace.save_skill(
         name="data_parser",
@@ -25,7 +25,7 @@ Usage:
         description="Parse CSV data",
         dependencies=["pandas"]
     )
-    
+
     # Load skill later
     skill = workspace.load_skill("data_parser")
     exec(skill.code)
@@ -91,7 +91,7 @@ class WorkspaceSkill:
 
     def to_markdown(self) -> str:
         """Convert to SKILL.md format.
-        
+
         Returns Markdown documentation for the skill.
         """
         md = f"# {self.name}\n\n"
@@ -126,7 +126,7 @@ class WorkspaceSkill:
     @classmethod
     def from_markdown(cls, md: str) -> "WorkspaceSkill":
         """Parse from SKILL.md format.
-        
+
         Basic parser that extracts code and metadata from markdown.
         """
         import re
@@ -190,23 +190,23 @@ class WorkspaceSkill:
 
 class WorkspaceManager:
     """Manages persistent workspace for agent skills and intermediate outputs.
-    
+
     Example:
         workspace = WorkspaceManager(session_id="agent-123")
-        
+
         # Save skill
         workspace.save_skill(
             name="data_parser",
             code="def parse(data): ...",
             description="Parse CSV data"
         )
-        
+
         # Load skill
         skill = workspace.load_skill("data_parser")
-        
+
         # Save intermediate output
         workspace.save_intermediate("query_results", data)
-        
+
         # Load intermediate output
         data = workspace.load_intermediate("query_results")
     """
@@ -218,7 +218,7 @@ class WorkspaceManager:
         quota: WorkspaceQuota | None = None
     ) -> None:
         """Initialize workspace manager.
-        
+
         Args:
             session_id: Unique identifier for this workspace
             workspace_root: Root directory for all workspaces (default: ./.toolweaver/workspaces)
@@ -270,11 +270,11 @@ class WorkspaceManager:
 
     def _check_quota(self, size: int, is_skill: bool = True) -> None:
         """Check if adding a file would exceed quota.
-        
+
         Args:
             size: Size of file in bytes
             is_skill: Whether this is a skill (vs intermediate)
-        
+
         Raises:
             WorkspaceQuotaExceeded: If quota would be exceeded
         """
@@ -311,7 +311,7 @@ class WorkspaceManager:
         examples: list[str] | None = None
     ) -> WorkspaceSkill:
         """Save a reusable skill to workspace.
-        
+
         Args:
             name: Skill name (used as filename)
             code: Python code for the skill
@@ -319,10 +319,10 @@ class WorkspaceManager:
             dependencies: List of required packages
             tags: Tags for categorization
             examples: Usage examples
-        
+
         Returns:
             WorkspaceSkill object
-        
+
         Raises:
             WorkspaceQuotaExceeded: If quota would be exceeded
         """
@@ -380,13 +380,13 @@ class WorkspaceManager:
 
     def load_skill(self, name: str) -> WorkspaceSkill:
         """Load a skill from workspace.
-        
+
         Args:
             name: Skill name
-        
+
         Returns:
             WorkspaceSkill object
-        
+
         Raises:
             SkillNotFound: If skill doesn't exist
         """
@@ -415,10 +415,10 @@ class WorkspaceManager:
 
     def list_skills(self, tags: list[str] | None = None) -> list[WorkspaceSkill]:
         """List all skills in workspace.
-        
+
         Args:
             tags: Optional tag filter
-        
+
         Returns:
             List of WorkspaceSkill objects
         """
@@ -437,10 +437,10 @@ class WorkspaceManager:
 
     def delete_skill(self, name: str) -> None:
         """Delete a skill from workspace.
-        
+
         Args:
             name: Skill name
-        
+
         Raises:
             SkillNotFound: If skill doesn't exist
         """
@@ -467,11 +467,11 @@ class WorkspaceManager:
 
     def save_intermediate(self, name: str, data: Any) -> None:
         """Save intermediate output to workspace.
-        
+
         Args:
             name: Name for the intermediate file
             data: Data to save (must be JSON-serializable)
-        
+
         Raises:
             WorkspaceQuotaExceeded: If quota would be exceeded
         """
@@ -510,13 +510,13 @@ class WorkspaceManager:
 
     def load_intermediate(self, name: str) -> Any:
         """Load intermediate output from workspace.
-        
+
         Args:
             name: Name of the intermediate file
-        
+
         Returns:
             Loaded data
-        
+
         Raises:
             FileNotFoundError: If file doesn't exist
         """
@@ -543,7 +543,7 @@ class WorkspaceManager:
 
     def list_intermediates(self) -> list[str]:
         """List all intermediate files in workspace.
-        
+
         Returns:
             List of intermediate file names
         """
@@ -551,7 +551,7 @@ class WorkspaceManager:
 
     def get_workspace_stats(self) -> dict[str, Any]:
         """Get workspace statistics.
-        
+
         Returns:
             Dict with workspace stats
         """

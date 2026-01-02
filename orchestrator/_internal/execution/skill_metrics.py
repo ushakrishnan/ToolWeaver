@@ -93,7 +93,7 @@ def record_skill_execution(
 ) -> None:
     """
     Record a skill execution event.
-    
+
     Args:
         skill_name: Name of executed skill
         success: Whether execution succeeded
@@ -122,7 +122,7 @@ def record_skill_execution(
 def rate_skill(skill_name: str, rating: int) -> None:
     """
     Add a user rating for a skill.
-    
+
     Args:
         skill_name: Name of skill to rate
         rating: Rating (1-5 stars)
@@ -149,10 +149,10 @@ def rate_skill(skill_name: str, rating: int) -> None:
 def get_skill_metrics(skill_name: str) -> SkillMetrics | None:
     """
     Get metrics for a specific skill.
-    
+
     Args:
         skill_name: Name of skill
-    
+
     Returns:
         SkillMetrics or None if no data
     """
@@ -163,7 +163,7 @@ def get_skill_metrics(skill_name: str) -> SkillMetrics | None:
 def get_all_metrics() -> dict[str, SkillMetrics]:
     """
     Get metrics for all skills.
-    
+
     Returns:
         Dict mapping skill names to their metrics
     """
@@ -173,11 +173,11 @@ def get_all_metrics() -> dict[str, SkillMetrics]:
 def get_top_skills(metric: str = "usage", limit: int = 10) -> list[SkillMetrics]:
     """
     Get top-performing skills by a metric.
-    
+
     Args:
         metric: One of "usage", "success_rate", "rating", "latency"
         limit: Max number of skills to return
-    
+
     Returns:
         List of SkillMetrics sorted by the specified metric
     """
@@ -202,7 +202,7 @@ def get_top_skills(metric: str = "usage", limit: int = 10) -> list[SkillMetrics]
 def print_metrics_report(skill_name: str | None = None) -> None:
     """
     Print a formatted metrics report.
-    
+
     Args:
         skill_name: If provided, show metrics for this skill only.
                    Otherwise show summary for all skills.

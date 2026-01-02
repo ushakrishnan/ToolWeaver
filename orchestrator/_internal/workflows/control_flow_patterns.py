@@ -221,14 +221,14 @@ results = await asyncio.gather(*[
     def generate_code(cls, pattern: ControlFlowPattern, params: dict[str, Any]) -> str:
         """
         Generate code from pattern with parameters.
-        
+
         Args:
             pattern: The pattern to use
             params: Dictionary of parameter values
-            
+
         Returns:
             Generated code string
-            
+
         Raises:
             ValueError: If required parameters are missing
         """
@@ -248,10 +248,10 @@ results = await asyncio.gather(*[
     def detect_pattern_need(cls, task_description: str) -> PatternType | None:
         """
         Analyze task description to detect which pattern might be needed.
-        
+
         Args:
             task_description: Natural language description of task
-            
+
         Returns:
             Suggested pattern type, or None if no clear match
         """
@@ -288,14 +288,14 @@ def create_polling_code(
 ) -> str:
     """
     Convenience function to create polling code.
-    
+
     Args:
         check_function: Function name to call for status check
         check_params: Parameters for check function
         completion_condition: Condition that indicates completion
         poll_interval: Seconds between checks
         on_complete: Code to execute on completion
-        
+
     Returns:
         Generated polling code
     """
@@ -320,14 +320,14 @@ def create_parallel_code(
 ) -> str:
     """
     Convenience function to create parallel processing code.
-    
+
     Args:
         items_var: Variable name for items list
         list_function: Function to get items
         list_params: Parameters for list function
         process_function: Function to process each item
         item_param: Parameter expression for process function
-        
+
     Returns:
         Generated parallel processing code
     """
@@ -350,12 +350,12 @@ def create_conditional_code(
 ) -> str:
     """
     Convenience function to create conditional code.
-    
+
     Args:
         condition: Boolean expression
         true_action: Code to execute if true
         false_action: Code to execute if false
-        
+
     Returns:
         Generated conditional code
     """
@@ -377,13 +377,13 @@ def create_retry_code(
 ) -> str:
     """
     Convenience function to create retry code.
-    
+
     Args:
         result_var: Variable name for result
         operation: Operation to retry
         max_retries: Maximum number of attempts
         base_backoff: Base seconds for exponential backoff
-        
+
     Returns:
         Generated retry code
     """

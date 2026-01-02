@@ -184,9 +184,9 @@ async def demo_compare_strategies():
     try:
         semantic_results = semantic_search_tools(query=test_query, top_k=3)
         print(f"   Results: {len(semantic_results)} tools")
-        for tool in semantic_results[:3]:
+         for tool in semantic_results[:3]:
             print(f"   • {tool.name}")
-    except:
+    except Exception:
         print("   WARNING: Semantic search requires embeddings configuration")
     print()
 

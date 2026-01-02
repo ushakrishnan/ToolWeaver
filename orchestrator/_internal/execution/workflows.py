@@ -62,12 +62,12 @@ class Workflow:
 def create_workflow(name: str, description: str = "", tags: list[str] | None = None) -> Workflow:
     """
     Create a new workflow.
-    
+
     Args:
         name: Workflow name
         description: Workflow description
         tags: Optional tags for categorization
-    
+
     Returns:
         Empty Workflow object
     """
@@ -93,7 +93,7 @@ def add_step(
 ) -> None:
     """
     Add a step to a workflow.
-    
+
     Args:
         workflow: Workflow to modify
         name: Step name (unique within workflow)
@@ -121,7 +121,7 @@ def add_step(
 def save_workflow(workflow: Workflow) -> None:
     """
     Save workflow definition to disk.
-    
+
     Args:
         workflow: Workflow to save
     """
@@ -136,10 +136,10 @@ def save_workflow(workflow: Workflow) -> None:
 def load_workflow(name: str) -> Workflow | None:
     """
     Load workflow from disk.
-    
+
     Args:
         name: Workflow name
-    
+
     Returns:
         Workflow object or None if not found
     """
@@ -168,13 +168,13 @@ def load_workflow(name: str) -> Workflow | None:
 async def execute_workflow(workflow: Workflow, inputs: dict[str, Any] | None = None) -> dict[str, Any]:
     """
     Execute a workflow end-to-end.
-    
+
     Supports sequential and parallel execution.
-    
+
     Args:
         workflow: Workflow to execute
         inputs: Initial context variables
-    
+
     Returns:
         Final output with all step results
     """
@@ -211,7 +211,7 @@ async def execute_workflow(workflow: Workflow, inputs: dict[str, Any] | None = N
             tasks = [_execute_step(step, context, retry_count=0) for step in group]
             step_results: list[Any] = await asyncio.gather(*tasks, return_exceptions=True)
 
-            for step, result in zip(group, step_results):
+            for step, result in zip(group, step_results, strict=False):
                 result_dict: dict[str, Any]
                 if isinstance(result, BaseException):
                     result_dict = {"error": str(result)}
@@ -228,12 +228,12 @@ async def execute_workflow(workflow: Workflow, inputs: dict[str, Any] | None = N
 async def _execute_step(step: WorkflowStep, context: dict[str, Any], retry_count: int = 0) -> dict[str, Any]:
     """
     Execute a single workflow step.
-    
+
     Args:
         step: WorkflowStep to execute
         context: Current execution context
         retry_count: Current retry attempt (for internal use)
-    
+
     Returns:
         Step result (dict)
     """
@@ -288,13 +288,13 @@ async def _execute_step(step: WorkflowStep, context: dict[str, Any], retry_count
 def _interpolate_inputs(inputs: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
     """
     Interpolate variables in workflow inputs using context.
-    
+
     Supports ${var} syntax for variable substitution.
-    
+
     Args:
         inputs: Input dict with potential variable references
         context: Context dict with available variables
-    
+
     Returns:
         Interpolated inputs
     """
@@ -321,7 +321,7 @@ def _interpolate_inputs(inputs: dict[str, Any], context: dict[str, Any]) -> dict
 def _update_context(context: dict[str, Any], step_name: str, result: dict[str, Any]) -> None:
     """
     Update execution context with step results.
-    
+
     Args:
         context: Context dict to update
         step_name: Name of executed step
@@ -339,7 +339,7 @@ def _update_context(context: dict[str, Any], step_name: str, result: dict[str, A
 def list_workflows() -> list[str]:
     """
     List all saved workflows.
-    
+
     Returns:
         List of workflow names
     """
@@ -352,10 +352,10 @@ def list_workflows() -> list[str]:
 def delete_workflow(name: str) -> bool:
     """
     Delete a workflow.
-    
+
     Args:
         name: Workflow name
-    
+
     Returns:
         True if deleted, False if not found
     """

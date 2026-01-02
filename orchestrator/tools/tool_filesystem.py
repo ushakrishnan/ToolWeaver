@@ -11,16 +11,16 @@ Key features:
 
 Example usage:
     fs = ToolFileSystem(stub_dir)
-    
+
     # Explore servers (minimal tokens)
     servers = fs.list_servers()  # ['google_drive', 'jira', 'slack']
-    
+
     # Explore tools in a server
     tools = fs.list_tools('google_drive')  # ['get_document', 'create_document']
-    
+
     # Get tool info
     info = fs.get_tool_info('get_document')  # ToolInfo with description, params, etc.
-    
+
     # Get import statement
     stmt = fs.get_import_statement('get_document')
     # "from tools.google_drive import get_document, GetDocumentInput"
@@ -51,12 +51,12 @@ class ToolInfo:
 class ToolFileSystem:
     """
     File-tree interface for progressive tool discovery.
-    
+
     Provides lightweight exploration of generated tool stubs:
     - Directory structure navigation
     - Tool metadata extraction
     - Import statement generation
-    
+
     Token usage:
     - list_servers(): ~20 tokens
     - list_tools(server): ~50 tokens
@@ -67,7 +67,7 @@ class ToolFileSystem:
     def __init__(self, stub_dir: Path):
         """
         Initialize filesystem interface.
-        
+
         Args:
             stub_dir: Root directory containing generated stubs
         """
@@ -85,9 +85,9 @@ class ToolFileSystem:
     def list_servers(self) -> list[str]:
         """
         List all available servers/domains.
-        
+
         Returns list of server names (e.g., ['google_drive', 'jira', 'slack'])
-        
+
         Token usage: ~20 tokens
         """
         servers = [
@@ -102,13 +102,13 @@ class ToolFileSystem:
     def list_tools(self, server: str | None = None) -> list[str]:
         """
         List tools in a specific server, or all tools.
-        
+
         Args:
             server: Server name (e.g., 'google_drive'). If None, lists all tools.
-        
+
         Returns:
             List of tool names
-        
+
         Token usage: ~50 tokens per server
         """
         if server:
@@ -134,19 +134,19 @@ class ToolFileSystem:
     def get_tool_info(self, tool_name: str) -> ToolInfo | None:
         """
         Get detailed information about a tool.
-        
+
         Extracts from stub file:
         - Description (from module docstring)
         - Parameters (from docstring or input model)
         - Input/output class names
         - File path for importing
-        
+
         Args:
             tool_name: Name of the tool
-        
+
         Returns:
             ToolInfo object, or None if tool not found
-        
+
         Token usage: ~200 tokens (lazy loaded only when needed)
         """
         # Check cache first
@@ -215,13 +215,13 @@ class ToolFileSystem:
     def get_import_statement(self, tool_name: str) -> str | None:
         """
         Generate import statement for a tool.
-        
+
         Args:
             tool_name: Name of the tool
-        
+
         Returns:
             Python import statement, or None if tool not found
-        
+
         Example:
             "from tools.google_drive import get_document, GetDocumentInput"
         """
@@ -234,13 +234,13 @@ class ToolFileSystem:
     def search_tools(self, query: str) -> list[str]:
         """
         Search for tools by name or description.
-        
+
         Args:
             query: Search query (case-insensitive)
-        
+
         Returns:
             List of matching tool names
-        
+
         Token usage: Depends on number of matches (typically <100 tokens)
         """
         query = query.lower()
@@ -263,10 +263,10 @@ class ToolFileSystem:
     def get_directory_tree(self) -> str:
         """
         Get a visual representation of the tool directory structure.
-        
+
         Returns:
             String representation of directory tree
-        
+
         Token usage: ~100 tokens for typical catalog
         """
         lines = ["tools/"]
@@ -289,7 +289,7 @@ class ToolFileSystem:
     def _extract_parameters(self, docstring: str) -> list[dict[str, Any]]:
         """
         Extract parameter information from docstring.
-        
+
         Looks for Args section with format:
             param_name (type, required/optional): description
         """

@@ -270,7 +270,7 @@ def main():
     print_header("COMPLETE END-TO-END PIPELINE DEMO")
 
     # Phase 1: Discovery
-    tools = phase1_discovery(use_cache=True)
+    phase1_discovery(use_cache=True)
 
     # Phase 2: Semantic Search
     query = "Process receipt, categorize items, calculate statistics"
@@ -280,7 +280,7 @@ def main():
     plan = phase3_planning(query, relevant_tools)
 
     # Phase 4: Execution
-    results = phase4_execution(plan)
+    phase4_execution(plan)
 
     # Phase 5: Batch Processing
     batch_results = phase5_batch_processing()

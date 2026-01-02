@@ -91,7 +91,7 @@ async def demo_basic_workflow():
         return {}
 
     # Execute workflow
-    executor = WorkflowExecutor()
+    WorkflowExecutor()
     print("\n> Executing workflow...")
 
     # Note: In real usage, you'd pass tool_registry with actual tools
@@ -199,7 +199,7 @@ def demo_pattern_detection():
     logs = []
     for i in range(5):
         session_id = f"session{i}"
-        timestamp_offset = i * 60  # 1 minute apart
+        i * 60  # 1 minute apart
 
         # Pattern: list_issues → create_pr → notify_slack
         logs.extend([

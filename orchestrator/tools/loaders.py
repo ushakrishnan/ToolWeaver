@@ -105,16 +105,16 @@ def _ensure_yaml_plugin() -> _YAMLToolPlugin:
 def load_tools_from_yaml(file_path: str | Path) -> int:
     """
     Load tool definitions from a YAML file.
-    
+
     Args:
         file_path: Path to YAML file containing tool definitions
-        
+
     Returns:
         Number of tools loaded
-        
+
     Raises:
         YAMLLoaderError: If YAML is invalid or tools cannot be loaded
-        
+
     Example:
         >>> from orchestrator.tools.loaders import load_tools_from_yaml
         >>> count = load_tools_from_yaml("config/tools.yaml")
@@ -178,13 +178,13 @@ def load_tools_from_yaml(file_path: str | Path) -> int:
 def _parse_tool_definition(tool_data: dict[str, Any]) -> tuple[ToolDefinition, Callable[..., Any]]:
     """
     Parse a single tool definition from YAML data.
-    
+
     Args:
         tool_data: Dictionary containing tool definition
-        
+
     Returns:
         Tuple of (ToolDefinition, worker_function)
-        
+
     Raises:
         YAMLValidationError: If tool definition is invalid
         WorkerResolutionError: If worker function cannot be resolved
@@ -243,16 +243,16 @@ def _parse_tool_definition(tool_data: dict[str, Any]) -> tuple[ToolDefinition, C
 def _resolve_worker(import_path: str) -> Callable[..., Any]:
     """
     Resolve a worker function from an import path.
-    
+
     Args:
         import_path: Import path like "myapp.workers.get_expenses"
-        
+
     Returns:
         Callable worker function
-        
+
     Raises:
         WorkerResolutionError: If function cannot be imported
-        
+
     Example:
         >>> worker = _resolve_worker("myapp.workers.get_expenses")
     """
@@ -301,14 +301,14 @@ def _resolve_worker(import_path: str) -> Callable[..., Any]:
 def load_tools_from_directory(directory: str | Path, pattern: str = "*.yaml") -> int:
     """
     Load all YAML tool definitions from a directory.
-    
+
     Args:
         directory: Path to directory containing YAML files
         pattern: File pattern to match (default: *.yaml)
-        
+
     Returns:
         Total number of tools loaded
-        
+
     Example:
         >>> count = load_tools_from_directory("config/tools/")
         >>> print(f"Loaded {count} tools from directory")

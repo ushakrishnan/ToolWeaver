@@ -179,14 +179,14 @@ class ApprovalManager:
                         description: str = "", target_org: str = "") -> ApprovalRequest:
         """
         Submit skill for approval.
-        
+
         Args:
             skill: Skill to approve
             submitter_id: User ID of submitter
             submitter_name: Display name of submitter
             description: Detailed change description
             target_org: Target registry org for publication
-        
+
         Returns:
             ApprovalRequest with unique ID
         """
@@ -225,7 +225,7 @@ class ApprovalManager:
                         approver_role: str, approved: bool, comment: str = "") -> ApprovalRequest:
         """
         Provide approval/rejection for skill.
-        
+
         Args:
             approval_id: Approval request ID
             approver_id: Approver user ID
@@ -233,10 +233,10 @@ class ApprovalManager:
             approver_role: Role (must be in approver_roles)
             approved: True to approve, False to reject
             comment: Feedback comment
-        
+
         Returns:
             Updated ApprovalRequest
-        
+
         Raises:
             ValueError: If approval not found or role invalid
         """
@@ -288,14 +288,14 @@ class ApprovalManager:
                    text: str, line_number: int | None = None) -> Comment:
         """
         Add comment to approval request.
-        
+
         Args:
             approval_id: Approval request ID
             author_id: Comment author user ID
             author_name: Author display name
             text: Comment text
             line_number: Optional code line number
-        
+
         Returns:
             Comment object
         """
@@ -360,10 +360,10 @@ class ApprovalManager:
     def publish_approved_skill(self, approval_id: str) -> bool:
         """
         Mark approved skill as published.
-        
+
         Args:
             approval_id: Approval request ID
-        
+
         Returns:
             True if published successfully
         """
@@ -470,14 +470,14 @@ class ChangeTracker:
                      old_code: str = "", summary: str = "") -> SkillChange:
         """
         Record a skill change/update.
-        
+
         Args:
             skill: Updated skill
             version_from: Previous version
             changed_by: User ID of person who made change
             old_code: Previous code for diff
             summary: Change description
-        
+
         Returns:
             SkillChange object
         """
@@ -542,7 +542,7 @@ class ChangeTracker:
         if not path1.exists() or not path2.exists():
             return ""
 
-        data1 = json.loads(path1.read_text())
+        json.loads(path1.read_text())
         data2 = json.loads(path2.read_text())
 
         # Return the diff from version1 to version2
@@ -561,13 +561,13 @@ class AuditLog:
                 actor_id: str | None = None, days: int = 30) -> list[AuditLogEntry]:
         """
         Query audit logs with filters.
-        
+
         Args:
             resource_type: Filter by resource type (skill, approval, comment)
             action: Filter by action type
             actor_id: Filter by actor user ID
             days: Only logs from last N days
-        
+
         Returns:
             List of matching audit log entries
         """

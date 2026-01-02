@@ -153,7 +153,7 @@ class SkillAnalytics:
             cursor.execute(
                 """
                 INSERT INTO skill_usage
-                (skill_id, user_id, org_id, execution_count, success_count, 
+                (skill_id, user_id, org_id, execution_count, success_count,
                  failure_count, avg_latency_ms)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
@@ -303,7 +303,7 @@ class SkillAnalytics:
                      rating_2_count * 2 +
                      rating_3_count * 3 +
                      rating_4_count * 4 +
-                     rating_5_count * 5) / 
+                     rating_5_count * 5) /
                     CAST(rating_count AS FLOAT)
                 )
                 WHERE skill_id = ?
@@ -541,7 +541,7 @@ class SkillAnalytics:
                 )
                 similar_skills = [row[0] for row in cursor.fetchall()]
 
-                for i, skill_id in enumerate(similar_skills):
+                for _i, skill_id in enumerate(similar_skills):
                     # Get metrics for recommendation score
                     metrics = self.get_skill_metrics(skill_id)
                     score = metrics.rating_avg if metrics else 0.0
@@ -702,9 +702,9 @@ class SkillAnalytics:
 
     def update_health_score(self, skill_id: str, score: float) -> None:
         """Adapter method for interface compatibility with OTLP and Prometheus backends.
-        
+
         Sets health score for a specific skill (SQLite-specific).
-        
+
         Args:
             skill_id: The skill ID
             score: Health score (0-100)
@@ -872,7 +872,7 @@ class SkillAnalytics:
 
     def get_config_summary(self) -> dict[str, Any]:
         """Get configuration summary for debugging.
-        
+
         Returns:
             Dictionary with backend info and config.
         """

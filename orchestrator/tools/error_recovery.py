@@ -42,7 +42,7 @@ class ErrorRecoveryExecutor:
         max_retries = getattr(policy, "max_retries", 0) if policy else 0
         strategy = getattr(policy, "strategy", "raise") if policy else "raise"
         backoff = getattr(policy, "retry_backoff", 1.0) if policy else 1.0
-        timeout_override = getattr(policy, "timeout_override", None) if policy else None
+        getattr(policy, "timeout_override", None) if policy else None
 
         # Try main tool with retries
         for attempt in range(max_retries + 1):

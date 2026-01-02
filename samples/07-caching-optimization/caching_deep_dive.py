@@ -255,7 +255,6 @@ async def demo_cache_layers():
     # With cache
     print("\n  WITH CACHE:")
     times_with_cache = []
-    cache_data = {"data": "cached_result"}
 
     for i in range(5):
         start = time.time()

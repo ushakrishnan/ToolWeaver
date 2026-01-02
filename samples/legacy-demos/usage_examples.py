@@ -59,11 +59,11 @@ async def example_2_small_model():
     # Sample receipt text
     receipt_text = """
     Coffee Shop Receipt
-    
+
     1x Espresso           $3.50
     2x Croissant          $8.00
     1x Orange Juice       $4.50
-    
+
     Subtotal: $16.00
     Tax: $1.12
     Total: $17.12

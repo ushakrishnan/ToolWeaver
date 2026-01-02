@@ -6,7 +6,7 @@ Simpler than SQLite - no local storage, automatic retention, cloud-native.
 
 Usage:
     from orchestrator._internal.execution.analytics import OTLPMetrics
-    
+
     metrics = OTLPMetrics()
     metrics.record_skill_execution("skill_123", success=True, latency_ms=150)
     metrics.record_skill_rating("skill_123", rating=5)
@@ -62,14 +62,14 @@ class MetricConfig:
 class OTLPMetrics:
     """
     OpenTelemetry metrics client for Grafana Cloud.
-    
+
     Provides similar interface to SkillAnalytics but pushes to cloud instead of local DB.
     """
 
     def __init__(self, config: MetricConfig | None = None):
         """
         Initialize OTLP metrics client.
-        
+
         Args:
             config: MetricConfig object, or None to load from environment
         """
@@ -216,7 +216,7 @@ class OTLPMetrics:
     ) -> None:
         """
         Record a skill execution event.
-        
+
         Args:
             skill_id: Unique skill identifier
             success: Whether execution succeeded
@@ -251,7 +251,7 @@ class OTLPMetrics:
     ) -> None:
         """
         Record a skill rating (1-5 stars).
-        
+
         Args:
             skill_id: Unique skill identifier
             rating: Rating value (1-5)
@@ -271,7 +271,7 @@ class OTLPMetrics:
     def update_health_score(self, skill_id: str, score: float) -> None:
         """
         Update health score for a skill (0-100).
-        
+
         Args:
             skill_id: Unique skill identifier
             score: Health score (0-100)
@@ -293,7 +293,7 @@ class OTLPMetrics:
     def push(self) -> None:
         """
         Force immediate push of metrics to Grafana Cloud.
-        
+
         Normally metrics are pushed automatically every OTLP_PUSH_INTERVAL seconds,
         but this method forces an immediate export.
         """
@@ -304,7 +304,7 @@ class OTLPMetrics:
     def health_check(self) -> bool:
         """
         Check if OTLP connection is healthy.
-        
+
         Returns:
             True if connection is healthy
         """
@@ -318,7 +318,7 @@ class OTLPMetrics:
     def get_config_summary(self) -> dict:
         """
         Get configuration summary (for debugging).
-        
+
         Returns:
             Dictionary with config info (token redacted)
         """
@@ -342,12 +342,12 @@ def create_otlp_client(
 ) -> OTLPMetrics:
     """
     Create OTLP metrics client with explicit config or from environment.
-    
+
     Args:
         endpoint: Optional OTLP endpoint (uses OTLP_ENDPOINT env if None)
         instance_id: Optional instance ID (uses OTLP_INSTANCE_ID env if None)
         token: Optional token (uses OTLP_TOKEN env if None)
-    
+
     Returns:
         OTLPMetrics instance
     """

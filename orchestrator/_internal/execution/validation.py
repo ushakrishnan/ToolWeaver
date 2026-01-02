@@ -15,7 +15,7 @@ from typing import Any
 def validate_syntax(code: str) -> tuple[bool, str | None]:
     """
     Validate Python code syntax via AST parse.
-    
+
     Returns: (is_valid, error_message)
     """
     try:
@@ -30,10 +30,10 @@ def validate_syntax(code: str) -> tuple[bool, str | None]:
 def validate_exec_safe(code: str, *, timeout_secs: float = 2.0) -> tuple[bool, str | None]:
     """
     Lightweight execution test in a sandboxed environment.
-    
+
     Runs code with restricted builtins (no file I/O, network, etc.).
     Useful for catching runtime errors early (e.g., unbound vars, import failures).
-    
+
     Returns: (is_valid, error_message)
     """
     # Safe builtins for execution
@@ -82,7 +82,7 @@ def validate_exec_safe(code: str, *, timeout_secs: float = 2.0) -> tuple[bool, s
 def validate_mypy(code: str, *, python_version: str = "3.10") -> tuple[bool, str | None]:
     """
     Optional type checking via mypy (if installed).
-    
+
     Returns: (is_valid, error_message)
     """
     try:
@@ -106,7 +106,7 @@ def validate_mypy(code: str, *, python_version: str = "3.10") -> tuple[bool, str
             else:
                 # Extract first error line
                 lines = stdout.split("\n")
-                error_msg = next((l for l in lines if l.strip()), "Type check failed")
+                error_msg = next((line for line in lines if line.strip()), "Type check failed")
                 return False, f"Mypy: {error_msg}"
         finally:
             Path(temp_path).unlink(missing_ok=True)
@@ -124,13 +124,13 @@ def validate_stub(
 ) -> dict[str, Any]:
     """
     Comprehensive validation of generated code.
-    
+
     Args:
         code: Python code to validate
         check_syntax: Always enabled; catches parse errors
         check_exec: Optional; runs code in safe sandbox (slower)
         check_mypy: Optional; runs mypy if installed (slower)
-    
+
     Returns:
         {
             "valid": bool,
@@ -177,7 +177,7 @@ result = add(1, 2)
     bad_code = """
 def add(x: int, y: int) -> int:
     return x + y
-    
+
 result = add(1)  # Missing arg
 """
 

@@ -106,13 +106,13 @@ def configure_registry(url: str | None = None, token: str | None = None, org: st
                        verify_signature: bool | None = None) -> RegistryConfig:
     """
     Configure registry connection.
-    
+
     Args:
         url: Registry base URL
         token: Authentication token for uploads
         org: Default organization namespace
         verify_signature: Whether to verify skill signatures
-    
+
     Returns:
         Updated RegistryConfig
     """
@@ -168,7 +168,7 @@ class SkillRegistry:
                      secret: str | None = None) -> RegistrySkill:
         """
         Publish skill to remote registry.
-        
+
         Args:
             skill: Skill to publish
             org: Organization namespace (uses config.org if not provided)
@@ -177,10 +177,10 @@ class SkillRegistry:
             homepage: Homepage URL
             repository: Repository URL
             secret: Secret for signing (optional)
-        
+
         Returns:
             Published RegistrySkill with ID
-        
+
         Raises:
             ValueError: If upload fails
             ConnectionError: If registry unreachable
@@ -253,7 +253,7 @@ class SkillRegistry:
               limit: int = 50, offset: int = 0) -> list[RegistrySkill]:
         """
         Search registry for skills.
-        
+
         Args:
             query: Search term (skill name, description)
             tags: Filter by tags
@@ -261,7 +261,7 @@ class SkillRegistry:
             min_rating: Minimum rating threshold (0-5)
             limit: Max results to return
             offset: Pagination offset
-        
+
         Returns:
             List of matching RegistrySkill objects
         """
@@ -299,10 +299,10 @@ class SkillRegistry:
     def get_skill(self, skill_id: str) -> RegistrySkill | None:
         """
         Get skill details from registry.
-        
+
         Args:
             skill_id: Skill ID (org/name)
-        
+
         Returns:
             RegistrySkill or None if not found
         """
@@ -323,14 +323,14 @@ class SkillRegistry:
     def download_skill(self, skill_id: str, version: str | None = None) -> Skill:
         """
         Download skill from registry and install locally.
-        
+
         Args:
             skill_id: Skill ID (org/name)
             version: Specific version (defaults to latest)
-        
+
         Returns:
             Downloaded Skill object
-        
+
         Raises:
             ConnectionError: If download fails
         """
@@ -396,12 +396,12 @@ class SkillRegistry:
                   review: str | None = None) -> bool:
         """
         Rate a skill in the registry.
-        
+
         Args:
             skill_id: Skill ID (org/name)
             rating: Rating 1-5 stars
             review: Optional review text
-        
+
         Returns:
             True if successful
         """
@@ -430,10 +430,10 @@ class SkillRegistry:
     def get_ratings(self, skill_id: str) -> dict[str, Any]:
         """
         Get ratings and reviews for a skill.
-        
+
         Args:
             skill_id: Skill ID (org/name)
-        
+
         Returns:
             Dict with average rating, count, and recent reviews
         """

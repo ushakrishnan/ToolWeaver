@@ -6,10 +6,10 @@ from datetime import datetime
 
 from orchestrator._internal.execution import (
     RegistryConfig,
+    RegistrySkill,
     Skill,
     SkillRegistry,
     configure_registry,
-    RegistrySkill,
 )
 from orchestrator._internal.execution.skill_registry import _save_registry_config
 

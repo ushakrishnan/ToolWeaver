@@ -6,11 +6,11 @@ No source code configuration files.
 
 Usage:
     from orchestrator.config import get_config
-    
+
     config = get_config()
     print(config.skill_path)  # ~/.toolweaver/skills
     print(config.log_level)   # INFO
-    
+
 Environment Variables:
     TOOLWEAVER_SKILL_PATH - Where to store skills (default: ~/.toolweaver/skills)
     TOOLWEAVER_LOG_LEVEL - Logging level (default: INFO)
@@ -40,9 +40,9 @@ DEFAULT_CACHE_PATH = Path.home() / ".toolweaver" / "cache"
 class ToolWeaverConfig:
     """
     ToolWeaver configuration loaded from environment variables.
-    
+
     All settings have sensible defaults. Users only set what they need.
-    
+
     Attributes:
         skill_path: Where to store skills
         log_level: Logging level
@@ -77,10 +77,10 @@ class ToolWeaverConfig:
     def from_env(cls) -> "ToolWeaverConfig":
         """
         Load configuration from environment variables.
-        
+
         Returns:
             ToolWeaverConfig instance
-            
+
         Example:
             >>> config = ToolWeaverConfig.from_env()
             >>> print(config.skill_path)
@@ -124,7 +124,7 @@ class ToolWeaverConfig:
     def ensure_directories(self) -> None:
         """
         Create required directories if they don't exist.
-        
+
         Example:
             >>> config = get_config()
             >>> config.ensure_directories()
@@ -173,20 +173,20 @@ _config: ToolWeaverConfig | None = None
 def get_config(reload: bool = False) -> ToolWeaverConfig:
     """
     Get the global ToolWeaver configuration.
-    
+
     Configuration is loaded once from environment variables and cached.
-    
+
     Args:
         reload: If True, reload configuration from environment
-        
+
     Returns:
         ToolWeaverConfig instance
-        
+
     Example:
         >>> config = get_config()
         >>> print(config.skill_path)
         /home/user/.toolweaver/skills
-        
+
         >>> config.ensure_directories()  # Create directories
     """
     global _config
@@ -201,7 +201,7 @@ def get_config(reload: bool = False) -> ToolWeaverConfig:
 def reset_config() -> None:
     """
     Reset configuration (mainly for testing).
-    
+
     Example:
         >>> reset_config()
         >>> config = get_config()  # Reloads from environment
@@ -217,10 +217,10 @@ def reset_config() -> None:
 def validate_config() -> list[str]:
     """
     Validate configuration and return list of warnings/errors.
-    
+
     Returns:
         List of warning messages (empty if all OK)
-        
+
     Example:
         >>> warnings = validate_config()
         >>> for warning in warnings:

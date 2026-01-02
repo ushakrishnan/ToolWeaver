@@ -332,7 +332,7 @@ class TestCaching:
 
         # Results should be identical
         assert len(results1) == len(results2)
-        for (t1, s1), (t2, s2) in zip(results1, results2):
+        for (t1, s1), (t2, s2) in zip(results1, results2, strict=False):
             assert t1.name == t2.name
             assert s1 == s2
 

@@ -8,10 +8,10 @@ Reference: https://github.com/cline/cline
 Example:
     from orchestrator import get_available_tools
     from orchestrator.adapters import ClineAdapter
-    
+
     tools = get_available_tools()
     adapter = ClineAdapter(tools)
-    
+
     cline_config = adapter.to_cline_config()
     # Use with cline_config in Cline MCP setup
 """
@@ -30,7 +30,7 @@ class ClineAdapter:
     def __init__(self, tools: list[ToolDefinition]) -> None:
         """
         Initialize adapter with tools.
-        
+
         Args:
             tools: List of ToolDefinition objects to adapt
         """
@@ -39,7 +39,7 @@ class ClineAdapter:
     def to_cline_config(self) -> dict[str, Any]:
         """
         Convert tools to Cline MCP tool format.
-        
+
         Returns:
             Dict with Cline-compatible tool configuration
         """
@@ -55,7 +55,7 @@ class ClineAdapter:
     def to_cline_tools_json(self) -> list[dict[str, Any]]:
         """
         Return tools in Cline's tools.json format.
-        
+
         Returns:
             List of tool objects for tools.json
         """
@@ -100,10 +100,10 @@ class ClineAdapter:
     def to_json(self, pretty: bool = True) -> str:
         """
         Serialize config to JSON string.
-        
+
         Args:
             pretty: If True, format with indentation
-            
+
         Returns:
             JSON string
         """
@@ -114,7 +114,7 @@ class ClineAdapter:
     def save_to_file(self, filepath: str, pretty: bool = True) -> None:
         """
         Save Cline config to file.
-        
+
         Args:
             filepath: Path to write JSON file
             pretty: If True, format with indentation

@@ -42,7 +42,7 @@ class LargePlanner:
     """
     Uses a large language model (GPT-4o, Claude 3.5) to generate execution plans
     from natural language user requests.
-    
+
     The planner understands available tools and generates JSON plans with:
     - Step definitions (tool type, inputs, dependencies)
     - Dependency resolution (DAG structure)
@@ -60,7 +60,7 @@ class LargePlanner:
     ):
         """
         Initialize the planner with specified LLM provider.
-        
+
         Args:
             provider: "openai", "azure-openai", "anthropic", or "gemini" (defaults to PLANNER_PROVIDER env var)
             model: Specific model name (defaults to PLANNER_MODEL env var)
@@ -68,18 +68,18 @@ class LargePlanner:
             use_tool_search: Enable semantic search for tool selection (Phase 3, default: True)
             search_threshold: Only use search if tool count exceeds this (default: 20)
             use_programmatic_calling: Enable programmatic tool calling (Phase 4, default: True)
-        
+
         Phase 2 Usage - Tool Discovery:
             To use auto-discovered tools, run discovery first:
-            
+
                 from orchestrator.tool_discovery import discover_tools
                 catalog = await discover_tools(mcp_client=client, ...)
                 planner = LargePlanner(tool_catalog=catalog)
-        
+
         Phase 3 Usage - Semantic Search:
             When tool_catalog has >20 tools, semantic search automatically selects
             the most relevant 5-10 tools for each request, reducing token usage by 80-90%.
-        
+
         Phase 4 Usage - Programmatic Tool Calling:
             When enabled, LLM can generate code that orchestrates tool calls in parallel,
             reducing latency by 60-80% and saving 37% additional tokens.
@@ -202,7 +202,7 @@ class LargePlanner:
         """
         Create default tool catalog with legacy hardcoded tools.
         Provides backward compatibility for existing code.
-        
+
         Returns:
             ToolCatalog with receipt processing tools
         """
@@ -330,16 +330,16 @@ class LargePlanner:
     def _get_tool_catalog(self, available_tools: list[ToolDefinition] | None = None) -> ToolCatalog:
         """
         Get the tool catalog to use for planning.
-        
+
         Priority:
         1. available_tools parameter (Phase 3 semantic search results)
         2. self.tool_catalog (injected at init)
         3. Auto-discovered catalog (Phase 2, if auto_discover=True)
         4. Default catalog (legacy hardcoded tools)
-        
+
         Args:
             available_tools: Optional list of tools from semantic search (Phase 3)
-            
+
         Returns:
             ToolCatalog instance
         """
@@ -360,10 +360,10 @@ class LargePlanner:
     def _build_system_prompt(self, available_tools: list[ToolDefinition] | None = None) -> str:
         """
         Build the system prompt for the planner.
-        
+
         Args:
             available_tools: Optional list of tools from semantic search
-            
+
         Returns:
             System prompt string with tool definitions in LLM format
         """
@@ -486,15 +486,15 @@ Respond with only the JSON execution plan."""
     ) -> dict[str, Any]:
         """
         Generate an execution plan from a natural language request.
-        
+
         Args:
             user_request: Natural language description of what to do
             context: Optional additional context (image URLs, data, etc.)
             available_tools: Optional list of tools from semantic search (Phase 3)
-            
+
         Returns:
             Dictionary containing the execution plan
-            
+
         Example:
             # Basic usage (uses default or injected catalog)
             planner = LargePlanner(provider="openai")
@@ -502,12 +502,12 @@ Respond with only the JSON execution plan."""
                 "Process this receipt and calculate the total with tax",
                 context={"image_url": "https://..."}
             )
-            
+
             # With custom tool catalog (Phase 1)
             catalog = ToolCatalog(source="custom")
             planner = LargePlanner(provider="openai", tool_catalog=catalog)
             plan = await planner.generate_plan(...)
-            
+
             # Phase 3: Semantic search automatically selects relevant tools
             planner = LargePlanner(provider="openai", tool_catalog=large_catalog)
             plan = await planner.generate_plan("send slack message")
@@ -618,12 +618,12 @@ Respond with only the JSON execution plan."""
     ) -> dict[str, Any]:
         """
         Refine an existing plan based on feedback or errors.
-        
+
         Args:
             original_plan: The original execution plan
             feedback: Description of issues or desired changes
             available_tools: Optional list of tools from semantic search (Phase 3)
-            
+
         Returns:
             Updated execution plan
         """

@@ -6,7 +6,7 @@ No external dependencies. Configurable via environment variables.
 
 Usage:
     from orchestrator._internal.logger import get_logger
-    
+
     logger = get_logger(__name__)
     logger.info("Tool registered", extra={"tool_name": "get_balance", "domain": "finance"})
     logger.error("Tool execution failed", extra={"tool_name": "process_data", "error": str(e)})
@@ -37,7 +37,7 @@ DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 def _get_log_level_from_env() -> int:
     """
     Get log level from environment variable.
-    
+
     Returns:
         Log level as int (logging.INFO, logging.DEBUG, etc.)
     """
@@ -65,7 +65,7 @@ _root_logger: logging.Logger | None = None
 def _initialize_logging() -> None:
     """
     Initialize the logging system once.
-    
+
     Sets up:
     - Console handler with structured format
     - Log level from environment
@@ -103,18 +103,18 @@ def _initialize_logging() -> None:
 def get_logger(name: str) -> logging.Logger:
     """
     Get a logger instance for a module.
-    
+
     Args:
         name: Module name (typically __name__)
-        
+
     Returns:
         Logger instance configured for ToolWeaver
-        
+
     Example:
         >>> logger = get_logger(__name__)
         >>> logger.info("Starting tool discovery")
         [2025-12-19 10:45:23] INFO [orchestrator.tools.discovery] Starting tool discovery
-        
+
         >>> logger.debug("Found tool", extra={"tool_name": "get_balance"})
         [2025-12-19 10:45:23] DEBUG [orchestrator.tools.discovery] Found tool
     """
@@ -130,10 +130,10 @@ def get_logger(name: str) -> logging.Logger:
 def set_log_level(level: str) -> None:
     """
     Dynamically change log level at runtime.
-    
+
     Args:
         level: Log level as string (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-        
+
     Example:
         >>> set_log_level("DEBUG")  # Enable debug logging
         >>> set_log_level("ERROR")  # Only show errors
@@ -159,9 +159,9 @@ def set_log_level(level: str) -> None:
 def disable_logging() -> None:
     """
     Disable all logging output.
-    
+
     Useful for tests that don't want log output.
-    
+
     Example:
         >>> disable_logging()  # Silence all logs
     """
@@ -173,9 +173,9 @@ def disable_logging() -> None:
 def enable_debug_mode() -> None:
     """
     Enable debug-level logging for troubleshooting.
-    
+
     Equivalent to setting TOOLWEAVER_LOG_LEVEL=DEBUG
-    
+
     Example:
         >>> enable_debug_mode()
         >>> logger = get_logger(__name__)
@@ -191,7 +191,7 @@ def enable_debug_mode() -> None:
 class StructuredLogger:
     """
     Wrapper around logging.Logger for structured logging.
-    
+
     Provides convenience methods for logging with context.
     """
 
@@ -226,13 +226,13 @@ class StructuredLogger:
 def get_structured_logger(name: str) -> StructuredLogger:
     """
     Get a structured logger instance.
-    
+
     Args:
         name: Module name (typically __name__)
-        
+
     Returns:
         StructuredLogger instance
-        
+
     Example:
         >>> logger = get_structured_logger(__name__)
         >>> logger.info("Tool registered", tool_name="get_balance", domain="finance")

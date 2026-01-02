@@ -70,14 +70,14 @@ class BaseTemplate:
     def save_as_skill(self, *, tags: list[str] | None = None, bump_type: str = "patch") -> Any:
         """
         Save this tool's implementation as a skill in the skill library.
-        
+
         Args:
             tags: Optional tags for skill categorization
             bump_type: Version bump type if updating ("major", "minor", "patch")
-        
+
         Returns:
             Skill object
-        
+
         Raises:
             NotImplementedError: If template doesn't have a callable function to save
         """
@@ -106,15 +106,15 @@ class BaseTemplate:
     ) -> tuple[BaseTemplate, Callable[..., Any]]:
         """
         Create a template instance from a skill in the skill library.
-        
+
         Args:
             skill_name: Name of the skill to load
             version: Optional specific version (defaults to latest)
             **template_kwargs: Additional kwargs to pass to template __init__
-        
+
         Returns:
             Tuple of (template instance, callable function)
-        
+
         Example:
             >>> template, func = FunctionToolTemplate.load_from_skill("process_data")
             >>> result = func({"input": "test"})
@@ -148,7 +148,7 @@ class BaseTemplate:
 
 class FunctionToolTemplate(BaseTemplate):
     """Template for simple function-based tools.
-    
+
     Stores the function for skill bridge integration.
     """
 

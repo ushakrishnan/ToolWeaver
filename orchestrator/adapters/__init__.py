@@ -8,15 +8,15 @@ Adapters for integrating ToolWeaver tools with external environments:
 
 Example:
     from orchestrator.adapters import ClaudeSkillsAdapter, ClineAdapter, FastAPIAdapter
-    
+
     # Adapt tools for Claude
     adapter = ClaudeSkillsAdapter(tools)
     claude_manifest = adapter.to_claude_manifest()
-    
+
     # Adapt tools for Cline
     adapter = ClineAdapter(tools)
     cline_config = adapter.to_cline_format()
-    
+
     # Expose as REST API
     adapter = FastAPIAdapter(tools)
     app = adapter.create_app()

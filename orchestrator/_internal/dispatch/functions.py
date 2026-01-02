@@ -14,14 +14,14 @@ from .hybrid_dispatcher import register_function
 def compute_tax(amount: float, tax_rate: float = 0.07) -> float:
     """
     Calculate tax amount based on a given amount and tax rate.
-    
+
     Args:
         amount: The base amount to calculate tax on
         tax_rate: Tax rate as a decimal (default: 0.07 = 7%)
-        
+
     Returns:
         Tax amount rounded to 2 decimal places
-        
+
     Example:
         {"name": "compute_tax", "args": {"amount": 100.0, "tax_rate": 0.08}}
         -> {"result": 8.0}
@@ -37,16 +37,16 @@ def compute_tax(amount: float, tax_rate: float = 0.07) -> float:
 def merge_items(items: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Merge a list of items and compute aggregate statistics.
-    
+
     Args:
         items: List of item dictionaries, each optionally containing 'total' and 'quantity'
-        
+
     Returns:
         Dictionary with:
         - total_sum: Sum of all item totals
         - count: Number of items
         - avg_total: Average total per item (if applicable)
-        
+
     Example:
         {"name": "merge_items", "args": {"items": [{"total": 10}, {"total": 20}]}}
         -> {"result": {"total_sum": 30, "count": 2, "avg_total": 15.0}}
@@ -72,14 +72,14 @@ def merge_items(items: list[dict[str, Any]]) -> dict[str, Any]:
 def apply_discount(amount: float, discount_percent: float) -> dict[str, float]:
     """
     Apply a percentage discount to an amount.
-    
+
     Args:
         amount: Original amount
         discount_percent: Discount percentage (e.g., 10 for 10%)
-        
+
     Returns:
         Dictionary with original, discount, and final amounts
-        
+
     Example:
         {"name": "apply_discount", "args": {"amount": 100, "discount_percent": 15}}
         -> {"result": {"original": 100, "discount": 15.0, "final": 85.0}}
@@ -103,14 +103,14 @@ def apply_discount(amount: float, discount_percent: float) -> dict[str, float]:
 def filter_items_by_category(items: list[dict[str, Any]], category: str) -> list[dict[str, Any]]:
     """
     Filter items by category.
-    
+
     Args:
         items: List of item dictionaries with 'category' field
         category: Category to filter by
-        
+
     Returns:
         List of items matching the category
-        
+
     Example:
         {"name": "filter_items_by_category", "args": {
             "items": [{"name": "A", "category": "food"}, {"name": "B", "category": "drink"}],
@@ -131,13 +131,13 @@ def filter_items_by_category(items: list[dict[str, Any]], category: str) -> list
 def compute_item_statistics(items: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Compute comprehensive statistics for a list of items.
-    
+
     Args:
         items: List of item dictionaries with optional 'total', 'quantity', 'unit_price' fields
-        
+
     Returns:
         Dictionary with various statistics about the items
-        
+
     Example:
         {"name": "compute_item_statistics", "args": {
             "items": [

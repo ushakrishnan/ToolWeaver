@@ -42,7 +42,7 @@ async def main():
         # Generate a plan that uses multiple discovered tools
         user_request = """
         I have a receipt at https://raw.githubusercontent.com/microsoft/Orb/main/samples/receipt.jpg
-        
+
         Please:
         1. Extract text from the receipt
         2. Parse the line items

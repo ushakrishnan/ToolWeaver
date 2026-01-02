@@ -2,7 +2,7 @@
 Example 25: Parallel Agents with asyncio
 
 Demonstrates:
-- Parallel task execution  
+- Parallel task execution
 - Resource limits and quotas
 - Result ranking and scoring
 - Multi-task orchestration
@@ -75,7 +75,6 @@ async def main():
     max_concurrent = 3
     max_total_cost = 1.0
     min_success_count = 3
-    max_failure_rate = 0.5
 
     print(f"  Max concurrent: {max_concurrent}")
     print(f"  Max total cost: ${max_total_cost}")

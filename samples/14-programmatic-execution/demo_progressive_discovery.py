@@ -5,37 +5,37 @@ Compares realistic traditional tool calling vs programmatic code execution:
 
 TRADITIONAL APPROACH (with parallel function calling):
   User: "Get all team members and find who exceeded their Q3 travel budget"
-  
+
   LLM Round 1: "Get team members for engineering"
     → Tool call: get_team_members()
     → Result: 20 members (5KB context)
-  
+
   LLM Round 2: "Get Q3 expenses for all 20 members"
     → Tool calls: get_expenses() for all 20 [PARALLEL]
     → Results: 100 expense records (100KB context)
     → LLM now has: 20 members + 100 records in context
-  
+
   LLM Round 3: "Analyze expenses and find who exceeded budget"
     → LLM analyzes all 100 records in context
     → Finds 5 people over budget
     → Returns result
-  
+
   Result: 3 LLM rounds, 100KB context, ~2 seconds, $0.03 (3 calls)
 
 PROGRAMMATIC APPROACH:
   LLM generates code ONCE:
     team = await get_team_members()
     expenses = await asyncio.gather(*[get_expenses(m["id"]) for m in team])
-    exceeded = [m for m, exp in zip(team, expenses) 
+    exceeded = [m for m, exp in zip(team, expenses)
                 if sum(e["amount"] for e in exp) > 10000]
     print(json.dumps(exceeded))
-  
+
   Code executes in sandbox:
     - Fetches all 20 members
     - Calls get_expenses 20x IN PARALLEL
     - Filters and aggregates locally (stays in sandbox)
     - Returns only summary (2KB)
-  
+
   Result: 1 LLM call, 2KB context, <1 second, $0.01
 
 This demo shows the REAL value: CONTEXT EFFICIENCY + CODE ORCHESTRATION
@@ -122,7 +122,7 @@ def mock_budget(user_id: str) -> dict[str, Any]:
 async def demo_traditional_approach():
     """
     TRADITIONAL: 3 LLM rounds with parallel function calling
-    
+
     Realistic modern approach using parallel tool support:
       LLM Round 1: "Get team members"
       LLM Round 2: "Get expenses for all 20 members [PARALLEL]"
@@ -201,7 +201,7 @@ async def demo_traditional_approach():
 async def demo_programmatic_approach():
     """
     PROGRAMMATIC: One LLM call generates code, code orchestrates everything
-    
+
     LLM generates:
       team = await get_team_members("engineering")
       expenses = await asyncio.gather(*[get_expenses(m["id"], "Q3") for m in team])
@@ -216,45 +216,6 @@ async def demo_programmatic_approach():
     executor = ProgrammaticToolExecutor(catalog, enable_stubs=True)
 
     # Show generated code
-    code = '''
-import asyncio
-from tools.hr import get_team_members, GetTeamMembersInput
-from tools.expenses import get_expenses, GetExpensesInput
-
-# Step 1: Get all team members
-input_data = GetTeamMembersInput(department="engineering")
-team_response = await get_team_members(input_data)
-team = team_response.result
-
-# Step 2: Fetch expenses for ALL members IN PARALLEL
-expense_calls = [
-    get_expenses(GetExpensesInput(user_id=m["id"], quarter="Q3"))
-    for m in team
-]
-expense_responses = await asyncio.gather(*expense_calls)
-
-# Step 3: Process data IN SANDBOX (doesn't go back to LLM)
-exceeded = []
-for member, exp_response in zip(team, expense_responses):
-    expenses = exp_response.result
-    total_spent = sum(e["amount"] for e in expenses)
-    
-    if total_spent > 10000:
-        exceeded.append({
-            "name": member["name"],
-            "total_spent": total_spent,
-            "budget": 10000,
-            "overage": total_spent - 10000
-        })
-
-# Return only final result (2KB, not 200KB)
-result = {
-    "total_team_size": len(team),
-    "exceeded_count": len(exceeded),
-    "exceeded": exceeded
-}
-print(json.dumps(result))
-'''
 
     print("\n📝 Step 1: LLM generates code (ONE API CALL)")
     print("   Generated code with:")

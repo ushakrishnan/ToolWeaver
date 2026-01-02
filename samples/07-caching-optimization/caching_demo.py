@@ -140,7 +140,7 @@ async def main():
     print("-" * 70)
 
     start_time = time.time()
-    for i in range(5):
+    for _i in range(5):
         result = await asyncio.sleep(0.5)
     total_no_cache = time.time() - start_time
 
@@ -177,10 +177,10 @@ async def main():
         print(f"\n  Run {run}:")
         times_run = []
 
-        for step in range(3):
+        for _step in range(3):
             start = time.time()
-            ocr_result = await cached_ocr({"image_uri": "workflow.jpg"})
-            parse_result = await cached_parse({"text": "test"})
+            await cached_ocr({"image_uri": "workflow.jpg"})
+            await cached_parse({"text": "test"})
             elapsed = time.time() - start
             times_run.append(elapsed)
 

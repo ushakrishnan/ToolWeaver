@@ -48,14 +48,14 @@ class SandboxSecurityError(Exception):
 class SandboxEnvironment:
     """
     Secure code execution environment.
-    
+
     Features:
     - Resource limits (CPU, memory, time)
     - Restricted builtins (no eval, exec, __import__)
     - AST validation
     - Timeout enforcement
     - Stdout/stderr capture
-    
+
     Future: Docker-based isolation (see Phase 5 of implementation plan)
     """
 
@@ -106,10 +106,10 @@ class SandboxEnvironment:
     def validate_code(self, code: str) -> None:
         """
         Validate code safety using AST analysis.
-        
+
         Args:
             code: Python code to validate
-            
+
         Raises:
             SandboxSecurityError: If code contains forbidden operations
         """
@@ -165,10 +165,10 @@ class SandboxEnvironment:
     ) -> dict[str, Any]:
         """
         Create safe globals dict with restricted builtins.
-        
+
         Args:
             context: User-provided context variables
-            
+
         Returns:
             Safe globals dictionary
         """
@@ -207,11 +207,11 @@ class SandboxEnvironment:
     ) -> ExecutionResult:
         """
         Execute code in sandbox with resource limits.
-        
+
         Args:
             code: Python code to execute
             context: Variables to inject into execution context
-            
+
         Returns:
             ExecutionResult with output and metadata
         """
@@ -314,10 +314,10 @@ class SandboxEnvironment:
 class DockerSandbox:
     """
     Docker-based sandbox for true isolation.
-    
+
     Note: This is a placeholder for Phase 5 implementation.
     Requires docker package and running Docker daemon.
-    
+
     Features to implement:
     - Container creation with resource limits
     - Volume mounting for code/data
@@ -353,19 +353,19 @@ class DockerSandbox:
     ) -> ExecutionResult:
         """
         Execute code in Docker container.
-        
+
         Implementation plan (Phase 5):
         1. Create container with resource limits
         2. Mount code as volume
         3. Execute Python with code
         4. Capture stdout/stderr
         5. Cleanup container
-        
+
         Args:
             code: Python code to execute
             context: Execution context
             timeout: Maximum execution time in seconds
-            
+
         Returns:
             ExecutionResult
         """
@@ -383,11 +383,11 @@ def create_sandbox(
 ) -> SandboxEnvironment:
     """
     Factory function to create appropriate sandbox.
-    
+
     Args:
         use_docker: Whether to use Docker-based sandbox
         limits: Resource limits for sandbox
-        
+
     Returns:
         SandboxEnvironment or DockerSandbox instance
     """

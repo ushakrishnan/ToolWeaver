@@ -9,7 +9,7 @@ class ToolExample(BaseModel):
     """
     Example of how to use a tool, including scenario, input, output, and notes.
     Helps LLMs understand tool usage patterns and parameter conventions.
-    
+
     Examples improve parameter accuracy from 72% to 90%+ by showing:
     - Format conventions (dates, IDs, etc.)
     - Optional parameter usage patterns
@@ -23,7 +23,7 @@ class ToolExample(BaseModel):
 class ToolParameter(BaseModel):
     """
     Individual tool parameter definition with validation.
-    
+
     Supports JSON Schema types and nested objects/arrays.
     """
     name: str
@@ -65,13 +65,13 @@ class ToolDefinition(BaseModel):
     def to_llm_format(self, include_examples: bool = True) -> dict[str, Any]:
         """
         Convert to OpenAI/Anthropic function calling format.
-        
+
         Returns standardized tool definition that works with:
         - OpenAI function calling
         - Azure OpenAI function calling
         - Anthropic tool use
         - Google Gemini function calling
-        
+
         Args:
             include_examples: If True, appends examples to description (Phase 5)
         """
@@ -108,7 +108,7 @@ class ToolDefinition(BaseModel):
 class ToolCatalog(BaseModel):
     """
     Collection of tools with discovery metadata.
-    
+
     Manages the lifecycle of tool definitions:
     - Registration
     - Discovery timestamp tracking
@@ -136,7 +136,7 @@ class ToolCatalog(BaseModel):
     def to_llm_format(self, defer_loading: bool = False, include_examples: bool = True) -> list[dict[str, Any]]:
         """
         Convert all tools to LLM function calling format.
-        
+
         Args:
             defer_loading: If True, only include tools with defer_loading=False
             include_examples: If True, include usage examples in descriptions (Phase 5)

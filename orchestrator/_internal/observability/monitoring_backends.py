@@ -55,7 +55,7 @@ class MonitoringBackend(Protocol):
 class LocalBackend:
     """
     Local file-based monitoring backend (default).
-    
+
     Logs to JSONL files in log directory.
     Zero external dependencies, works offline.
     """
@@ -128,10 +128,10 @@ class LocalBackend:
 class WandbBackend:
     """
     Weights & Biases monitoring backend (optional).
-    
+
     Requires: pip install wandb
     Requires: WANDB_API_KEY environment variable
-    
+
     Benefits:
     - Beautiful dashboards
     - Experiment comparison
@@ -233,12 +233,12 @@ class WandbBackend:
 class PrometheusBackend:
     """
     Prometheus metrics backend (optional).
-    
+
     Requires: pip install prometheus-client
-    
+
     Exposes metrics on HTTP endpoint for Prometheus scraping.
     Ideal for production Kubernetes/Docker deployments.
-    
+
     Metrics exposed:
     - toolweaver_tool_calls_total (counter)
     - toolweaver_tool_errors_total (counter)
@@ -354,21 +354,21 @@ class PrometheusBackend:
 def create_backend(backend_type: str, **kwargs: Any) -> MonitoringBackend:
     """
     Factory function to create monitoring backends.
-    
+
     Args:
         backend_type: "local", "wandb", or "prometheus"
         **kwargs: Backend-specific configuration
-        
+
     Returns:
         MonitoringBackend instance
-        
+
     Examples:
         # Local (default)
         backend = create_backend("local", log_dir=".tool_logs")
-        
+
         # W&B
         backend = create_backend("wandb", project="my-project")
-        
+
         # Prometheus
         backend = create_backend("prometheus", port=8000)
     """

@@ -24,7 +24,7 @@ class PromptInjectionError(ToolWeaverError):
 class TemplateSanitizer:
     """
     Detects and blocks prompt injection attacks in template strings.
-    
+
     Patterns blocked:
     - "Ignore previous instructions"
     - "Disregard all prior"
@@ -33,17 +33,17 @@ class TemplateSanitizer:
     - System prompt leakage attempts
     - Encoding tricks (base64, hex, unicode)
     - Multi-language variations
-    
+
     Usage:
         sanitizer = TemplateSanitizer()
-        
+
         # Check for injection attempts
         try:
             sanitizer.validate("User query: list files")  # OK
         except PromptInjectionError:
             # Block the request
             pass
-            
+
         # Get sanitized version (strips suspicious content)
         safe = sanitizer.sanitize("Ignore previous instructions\\nList files")
         # Result: "List files"
@@ -99,7 +99,7 @@ class TemplateSanitizer:
     def __init__(self, strict_mode: bool = False):
         """
         Initialize template sanitizer.
-        
+
         Args:
             strict_mode: If True, raises error on detection. If False, sanitizes silently.
         """
@@ -108,10 +108,10 @@ class TemplateSanitizer:
     def validate(self, text: str) -> None:
         """
         Validate that text contains no injection attempts.
-        
+
         Args:
             text: Text to validate
-            
+
         Raises:
             PromptInjectionError: If injection pattern detected
         """
@@ -127,16 +127,16 @@ class TemplateSanitizer:
     def sanitize(self, text: str) -> str:
         """
         Remove injection patterns from text.
-        
+
         Args:
             text: Text to sanitize
-            
+
         Returns:
             Sanitized text with injection patterns removed
         """
         result = text
 
-        for pattern_name, pattern in self.LLM_INJECTION_PATTERNS:
+        for _pattern_name, pattern in self.LLM_INJECTION_PATTERNS:
             result = pattern.sub('', result)
 
         # Clean up extra whitespace
@@ -148,10 +148,10 @@ class TemplateSanitizer:
     def check_and_sanitize(self, text: str) -> tuple[str, list[str]]:
         """
         Check for injections and return sanitized text with list of detections.
-        
+
         Args:
             text: Text to check
-            
+
         Returns:
             Tuple of (sanitized_text, list_of_detected_patterns)
         """
@@ -173,10 +173,10 @@ class TemplateSanitizer:
     def is_safe(self, text: str) -> bool:
         """
         Check if text is safe (no injection patterns).
-        
+
         Args:
             text: Text to check
-            
+
         Returns:
             True if safe, False if injection detected
         """
@@ -194,10 +194,10 @@ _default_sanitizer = TemplateSanitizer()
 def validate_template(text: str) -> None:
     """
     Validate template string (raises on injection).
-    
+
     Args:
         text: Template string to validate
-        
+
     Raises:
         PromptInjectionError: If injection detected
     """
@@ -207,10 +207,10 @@ def validate_template(text: str) -> None:
 def sanitize_template(text: str) -> str:
     """
     Sanitize template string (removes injections).
-    
+
     Args:
         text: Template string to sanitize
-        
+
     Returns:
         Sanitized string
     """
@@ -220,10 +220,10 @@ def sanitize_template(text: str) -> str:
 def is_template_safe(text: str) -> bool:
     """
     Check if template is safe.
-    
+
     Args:
         text: Template string to check
-        
+
     Returns:
         True if safe, False otherwise
     """

@@ -50,7 +50,7 @@ class SmallModelWorker:
     """
     Worker that uses small language models (Phi-3, Llama 3.2, etc.) for
     specific tasks like text classification, extraction, and parsing.
-    
+
     Supports multiple backends:
     - Local inference via transformers (CPU/GPU)
     - Ollama API (local server)
@@ -64,7 +64,7 @@ class SmallModelWorker:
     ):
         """
         Initialize the small model worker.
-        
+
         Args:
             backend: "transformers" for local, "ollama" for Ollama server, "azure" for cloud
             model_name: Model to use (e.g., "phi3", "llama3.2", "microsoft/Phi-3-mini-4k-instruct")
@@ -152,13 +152,13 @@ class SmallModelWorker:
     ) -> str:
         """
         Generate text using the small model.
-        
+
         Args:
             prompt: User prompt/question
             system_prompt: Optional system prompt for instruction
             max_tokens: Maximum tokens to generate
             temperature: Sampling temperature (0-1)
-            
+
         Returns:
             Generated text
         """
@@ -315,11 +315,11 @@ class SmallModelWorker:
     async def parse_line_items(self, ocr_text: str, max_retries: int = 2) -> list[dict[str, Any]]:
         """
         Parse receipt OCR text into structured line items using small model.
-        
+
         Args:
             ocr_text: Raw text from OCR
             max_retries: Number of retry attempts if JSON parsing fails
-            
+
         Returns:
             List of line items with description, quantity, price, total
         """
@@ -403,11 +403,11 @@ JSON array of line items:"""
     async def categorize_items(self, items: list[dict[str, Any]], max_retries: int = 2) -> list[dict[str, Any]]:
         """
         Categorize items into expense categories using small model.
-        
+
         Args:
             items: List of items to categorize
             max_retries: Number of retry attempts if JSON parsing fails
-            
+
         Returns:
             Items with added 'category' field
         """

@@ -235,20 +235,20 @@ def semantic_search_tools(
 ) -> list[tuple[ToolDefinition, float]]:
     """
     Semantic search across tools using vector similarity.
-    
+
     Uses VectorToolSearchEngine with Qdrant for semantic search. Falls back to
     substring search if Qdrant is unavailable and fallback_to_substring=True.
-    
+
     Args:
         query: Natural language query
         top_k: Number of results to return
         domain: Optional domain filter (e.g., "github", "slack")
         min_score: Minimum similarity score (0-1)
         fallback_to_substring: Use substring search if vector search unavailable
-    
+
     Returns:
         List of (ToolDefinition, score) tuples sorted by relevance
-    
+
     Example:
         results = semantic_search_tools("create github pull request", top_k=3)
         for tool, score in results:

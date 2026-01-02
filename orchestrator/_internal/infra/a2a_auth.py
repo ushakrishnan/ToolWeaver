@@ -16,7 +16,7 @@ AuthType = Literal["bearer", "api_key", "none"]
 class AuthConfig:
     """
     Authentication configuration for external service calls.
-    
+
     Attributes:
         type: Authentication type ("bearer", "api_key", or "none")
         token_env: Environment variable name containing the token/key
@@ -37,7 +37,7 @@ class AuthConfig:
 class AuthManager:
     """
     Manages authentication headers for HTTP requests.
-    
+
     Usage:
         # Bearer token authentication
         config = AuthConfig(
@@ -47,7 +47,7 @@ class AuthManager:
         manager = AuthManager()
         headers = manager.get_headers(config)
         # {'Authorization': 'Bearer sk-...'}
-        
+
         # API key authentication
         config = AuthConfig(
             type="api_key",
@@ -56,7 +56,7 @@ class AuthManager:
         )
         headers = manager.get_headers(config)
         # {'X-GitHub-Token': 'ghp_...'}
-        
+
         # No authentication
         config = AuthConfig(type="none")
         headers = manager.get_headers(config)
@@ -66,13 +66,13 @@ class AuthManager:
     def get_headers(self, config: AuthConfig) -> dict[str, str]:
         """
         Generate authentication headers from configuration.
-        
+
         Args:
             config: Authentication configuration
-            
+
         Returns:
             Dictionary of HTTP headers
-            
+
         Raises:
             ValueError: If required token is missing from environment
         """
@@ -105,10 +105,10 @@ class AuthManager:
     def validate_config(self, config: AuthConfig) -> bool:
         """
         Validate that configuration is usable (token exists, etc.).
-        
+
         Args:
             config: Authentication configuration
-            
+
         Returns:
             True if valid and usable, False otherwise
         """
