@@ -10,6 +10,12 @@ import pytest
 from orchestrator._internal.planning.planner import LargePlanner
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 
+# Check if openai is available
+try:
+    import openai  # noqa: F401
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
 
 # Mock environment variables for testing
 @pytest.fixture(autouse=True)
@@ -18,6 +24,9 @@ def mock_env(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test-key-12345")
     monkeypatch.setenv("PLANNER_PROVIDER", "openai")
     monkeypatch.setenv("PLANNER_MODEL", "gpt-4o")
+
+
+pytestmark = pytest.mark.skipif(not OPENAI_AVAILABLE, reason="openai package not installed")
 
 
 class TestPlannerBackwardCompatibility:

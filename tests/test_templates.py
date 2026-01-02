@@ -2,6 +2,8 @@ import asyncio
 from typing import Any
 
 from orchestrator import FunctionToolTemplate, register_template
+import pytest
+
 from orchestrator.plugins.registry import get_registry
 from orchestrator.shared.models import ToolParameter
 
@@ -11,7 +13,8 @@ class EchoTemplate(FunctionToolTemplate):
         return {"text": params["text"]}
 
 
-def test_template_registration_and_execution():
+@pytest.mark.asyncio
+async def test_template_registration_and_execution():
     registry = get_registry()
     registry.clear()
 
@@ -36,6 +39,6 @@ def test_template_registration_and_execution():
     assert td["type"] == "function"
     assert td["source"] == "template"
 
-    # Execute
-    result = asyncio.get_event_loop().run_until_complete(plugin.execute("echo_tpl", {"text": "hi"}))
+    # Execute using await instead of get_event_loop
+    result = await plugin.execute("echo_tpl", {"text": "hi"})
     assert result == {"text": "hi"}

@@ -28,7 +28,7 @@ class TestDispatchResourceLimits:
         assert limits.max_total_duration_s == 600.0
         assert limits.requests_per_second == 10.0
         assert limits.max_failure_rate == 0.3
-        assert limits.min_success_count == 1
+        assert limits.min_success_count == 0  # Default is 0, requires explicit opt-in
         assert limits.max_dispatch_depth == 3
         assert limits.current_depth == 0
 

@@ -112,15 +112,15 @@ class TestRegressionBenchmarks:
         metrics: list[float] = []
         for _ in range(10):
             start = time.perf_counter()
-            await search_tools(
+            search_tools(
                 query="process data",
-                use_semantic=True
+                catalog=catalog
             )
             elapsed = (time.perf_counter() - start) * 1000
             metrics.append(elapsed)
 
         mean = statistics.mean(metrics)
-        p95 = sorted(metrics)[95]
+        p95 = sorted(metrics)[95] if len(metrics) > 95 else sorted(metrics)[-1]
 
         # Should scale sub-linearly, <100ms for 200 tools
         assert p95 < 100.0, f"Large catalog p95: {p95}ms (target <100ms)"
@@ -130,7 +130,7 @@ class TestRegressionBenchmarks:
     async def test_orchestration_latency(self):
         """Verify orchestration maintains <100ms overhead."""
         # Create minimal orchestrator
-        monitor = create_backend("memory")
+        monitor = create_backend("local")
         catalog = await discover_tools(use_cache=True)
         Orchestrator(catalog, monitoring=monitor)
 
@@ -153,7 +153,7 @@ class TestRegressionBenchmarks:
 
     def test_monitoring_overhead(self):
         """Verify monitoring adds <5% overhead."""
-        monitor = create_backend("memory")
+        monitor = create_backend("local")
 
         # Simulate monitoring calls
         start = time.perf_counter()
@@ -225,23 +225,23 @@ class TestScalabilityBenchmarks:
         catalog = await discover_tools(use_cache=True)
 
         # Simulate concurrent operations
-        async def concurrent_search():
-            return await search_tools(
+        def concurrent_search():
+            return search_tools(
                 query="test query",
                 catalog=catalog,
-                limit=5
+                top_k=5
             )
 
-        # Run 50 concurrent searches
+        # Run 50 concurrent searches (synchronously, as search_tools is not async)
         start = time.perf_counter()
-        results = await asyncio.gather(*[
+        results = [
             concurrent_search()
             for _ in range(50)
-        ])
+        ]
         elapsed = (time.perf_counter() - start) * 1000
 
         # All should succeed
-        assert all(len(r.tools) > 0 for r in results)
+        assert all(len(r) > 0 for r in results)
 
         per_request = elapsed / 50
         print(f"[OK] Concurrent load (50 requests): {elapsed:.0f}ms total, {per_request:.2f}ms/request")
