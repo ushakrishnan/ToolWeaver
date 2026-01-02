@@ -56,10 +56,10 @@ class FastAPIAdapter:
             >>> # Run with: uvicorn app:app --port 8000
         """
         try:
-            import json
+            import json  # noqa: F401
 
             from fastapi import FastAPI, HTTPException
-            from fastapi.responses import JSONResponse
+            from fastapi.responses import JSONResponse  # noqa: F401
         except ImportError as e:
             raise ImportError(
                 "FastAPI and uvicorn required for REST wrapper. "

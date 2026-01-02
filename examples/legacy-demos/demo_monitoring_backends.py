@@ -82,7 +82,7 @@ def example_wandb_monitoring():
 
     # Check if W&B is available
     try:
-        import wandb
+        import wandb  # noqa: F401
     except ImportError:
         print("⚠️  W&B not installed. Run: pip install wandb")
         return
@@ -155,7 +155,7 @@ def example_prometheus_monitoring():
 
     # Check if prometheus_client is available
     try:
-        import prometheus_client
+        import prometheus_client  # noqa: F401
     except ImportError:
         print("⚠️  Prometheus client not installed. Run: pip install prometheus-client")
         return

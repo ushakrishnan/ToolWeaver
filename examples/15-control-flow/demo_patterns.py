@@ -27,6 +27,7 @@ from orchestrator._internal.workflows.control_flow_patterns import (
     create_retry_code,
 )
 
+
 # Simple enums and classes for pattern demonstration
 class PatternType(Enum):
     """Types of control flow patterns"""

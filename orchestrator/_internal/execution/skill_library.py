@@ -24,7 +24,7 @@ except ImportError:
     REDIS_AVAILABLE = False
 
 try:
-    import numpy as np  # type: ignore[import-not-found]
+    import numpy as np  # type: ignore[import-not-found]  # noqa: F401
     from qdrant_client import QdrantClient  # type: ignore[import-not-found]
     from qdrant_client.models import (  # type: ignore[import-not-found]
         Distance,

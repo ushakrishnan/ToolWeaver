@@ -28,7 +28,7 @@ try:
     import redis
     from redis.connection import ConnectionPool
     from redis.exceptions import ConnectionError as RedisConnectionError
-    from redis.exceptions import RedisError
+    from redis.exceptions import RedisError  # noqa: F401
     REDIS_AVAILABLE = True
 except ImportError:
     REDIS_AVAILABLE = False
