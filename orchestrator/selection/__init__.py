@@ -7,7 +7,7 @@ Adds metadata fields to ToolDefinition and provides selection algorithms.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from orchestrator.shared.models import ToolDefinition
@@ -19,11 +19,10 @@ class ToolMetrics:
     cost_per_call: float = 0.0  # USD per invocation
     expected_latency_ms: int = 100  # Expected execution time
     success_rate: float = 1.0  # 0-1, based on historical data
-    capabilities: list[str] = None  # e.g., ["text", "vision", "code"]
+    capabilities: list[str] = field(default_factory=list)  # e.g., ["text", "vision", "code"]
 
-    def __post_init__(self):
-        if self.capabilities is None:
-            self.capabilities = []
+    def __post_init__(self) -> None:
+        pass  # capabilities already initialized via field(default_factory=list)
 
 
 @dataclass

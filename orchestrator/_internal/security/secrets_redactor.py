@@ -113,7 +113,7 @@ class SecretsRedactor(logging.Filter):
                 # These patterns have capture groups for key=value format
                 # Use default argument to capture secret_type value at loop time
                 result = pattern.sub(
-                    lambda m, st=secret_type: f"{m.group(1)}=[REDACTED_{st}]",
+                    lambda m, st=secret_type: f"{m.group(1)}=[REDACTED_{st}]",  # type: ignore[misc]
                     result
                 )
             else:
@@ -123,7 +123,7 @@ class SecretsRedactor(logging.Filter):
         return result
 
 
-def install_secrets_redactor(logger: logging.Logger = None) -> None:
+def install_secrets_redactor(logger: logging.Logger | None = None) -> None:
     """
     Install secrets redactor on a logger.
 
@@ -141,7 +141,7 @@ def install_secrets_redactor(logger: logging.Logger = None) -> None:
     logger.addFilter(SecretsRedactor())
 
 
-def remove_secrets_redactor(logger: logging.Logger = None) -> None:
+def remove_secrets_redactor(logger: logging.Logger | None = None) -> None:
     """
     Remove secrets redactor from a logger.
 

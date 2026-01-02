@@ -114,7 +114,7 @@ async def dispatch_agents(
     if limits.requests_per_second:
         rate_limiter = RateLimiter(limits.requests_per_second)
 
-    response_filter = ResponseFilter()
+    response_filter: ResponseFilter = ResponseFilter()  # type: ignore[no-untyped-call]
     cache = get_global_cache()
     exec_fn = executor or _default_executor
 
@@ -131,16 +131,17 @@ async def dispatch_agents(
         ).with_generated_key()
 
         # Idempotency: return cached if available
-        cached = cache.get(task.idempotency_key)
-        if cached is not None:
-            return SubAgentResult(
-                task_args=arg,
-                output=cached,
-                error=None,
-                duration_ms=0.0,
-                success=True,
-                cost=0.0,
-            )
+        if task.idempotency_key:
+            cached = cache.get(task.idempotency_key)
+            if cached is not None:
+                return SubAgentResult(
+                    task_args=arg,
+                    output=cached,
+                    error=None,
+                    duration_ms=0.0,
+                    success=True,
+                    cost=0.0,
+                )
 
         await tracker.acquire_slot()
         start = time.monotonic()
@@ -150,7 +151,7 @@ async def dispatch_agents(
 
             prompt = task.prompt_template.format(**task.arguments)
             # Execute with timeout
-            async def _call_executor():
+            async def _call_executor() -> Any:  # type: ignore[no-untyped-def]
                 return await exec_fn(prompt, task.arguments, task.agent_name, task.model)
 
             try:
@@ -177,7 +178,8 @@ async def dispatch_agents(
 
             duration_s = time.monotonic() - start
             await tracker.record_agent_completion(cost=cost, success=True, duration=duration_s)
-            cache.store(task.idempotency_key, filtered)
+            if task.idempotency_key:
+                cache.store(task.idempotency_key, filtered)
 
             return SubAgentResult(
                 task_args=arg,

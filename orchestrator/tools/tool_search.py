@@ -178,7 +178,7 @@ class ToolSearchEngine:
 
         return results
 
-    def _bm25_search(self, query: str, tools: list[ToolDefinition]) -> np.ndarray:
+    def _bm25_search(self, query: str, tools: list[ToolDefinition]) -> np.ndarray:  # type: ignore[type-arg]
         """
         BM25 keyword-based search (good for exact matches).
 
@@ -209,9 +209,9 @@ class ToolSearchEngine:
         max_score = max(scores) if max(scores) > 0 else 1.0
         normalized_scores = scores / max_score
 
-        return normalized_scores
+        return normalized_scores  # type: ignore[no-any-return]
 
-    def _embedding_search(self, query: str, tools: list[ToolDefinition]) -> np.ndarray:
+    def _embedding_search(self, query: str, tools: list[ToolDefinition]) -> np.ndarray[Any, np.dtype[np.floating[Any]]]:  # type: ignore[type-arg]
         """
         Embedding-based semantic search (good for conceptual matches).
 
@@ -226,14 +226,14 @@ class ToolSearchEngine:
         query_embedding = self.embedding_model.encode(query, convert_to_tensor=False)  # type: ignore[union-attr]
 
         # Get tool embeddings (with caching)
-        tool_embeddings = []
+        tool_embeddings_list = []
         for tool in tools:
             # Use name + description for embedding
             tool_text = f"{tool.name}: {tool.description}"
             embedding = self._get_or_compute_embedding(tool_text)
-            tool_embeddings.append(embedding)
+            tool_embeddings_list.append(embedding)
 
-        tool_embeddings = np.array(tool_embeddings)
+        tool_embeddings: Any = np.array(tool_embeddings_list)
 
         # Compute cosine similarity
         query_norm = query_embedding / np.linalg.norm(query_embedding)
@@ -243,9 +243,9 @@ class ToolSearchEngine:
         # Convert from [-1, 1] to [0, 1] range
         normalized_similarities = (similarities + 1) / 2
 
-        return normalized_similarities
+        return normalized_similarities  # type: ignore[no-any-return]
 
-    def _get_or_compute_embedding(self, text: str) -> np.ndarray:
+    def _get_or_compute_embedding(self, text: str) -> np.ndarray[Any, np.dtype[np.floating[Any]]]:  # type: ignore[type-arg]
         """
         Get cached embedding or compute and cache it.
 
@@ -256,18 +256,18 @@ class ToolSearchEngine:
         cache_file = self.cache_dir / f"emb_{text_hash}.npy"
 
         if cache_file.exists():
-            return np.load(cache_file)
+            return np.load(cache_file)  # type: ignore[no-any-return]
 
         # Compute embedding
         if self.embedding_model is None:
             # Should not happen due to guards; return zeros for safety
-            return np.zeros(0, dtype=float)
+            return np.zeros(0, dtype=float)  # type: ignore[no-any-return]
         embedding = self.embedding_model.encode(text, convert_to_tensor=False)  # type: ignore[union-attr]
 
         # Save to cache
         np.save(cache_file, embedding)
 
-        return embedding
+        return embedding  # type: ignore[no-any-return]
 
     def _get_cache_key(
         self,

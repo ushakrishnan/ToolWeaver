@@ -143,10 +143,10 @@ class ResponseFilter:
         'credit_card', 'ssn', 'social_security',
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.pii_detector = PIIDetector()
 
-    def filter_response(self, response: dict[str, Any]) -> dict[str, Any]:
+    def filter_response(self, response: dict[str, Any]) -> dict[str, Any] | str | Any:
         """
         Filter sensitive data from response dictionary.
 
@@ -162,9 +162,9 @@ class ResponseFilter:
                 return self.pii_detector.redact(response)
             return response
 
-        filtered = {}
-        removed_fields = []
-        pii_types = []
+        filtered: dict[str, Any] = {}
+        removed_fields: list[str] = []
+        pii_types: list[str] = []
 
         for key, value in response.items():
             # Check if key is sensitive
@@ -196,7 +196,7 @@ class ResponseFilter:
 
         # Add metadata about filtering
         if removed_fields or pii_types:
-            metadata = []
+            metadata: list[str] = []
             if removed_fields:
                 metadata.extend(removed_fields)
             if pii_types:

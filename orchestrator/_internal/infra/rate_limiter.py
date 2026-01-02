@@ -7,6 +7,7 @@ Uses the token bucket algorithm for smooth rate limiting with burst support.
 
 import asyncio
 import time
+from typing import Any
 
 
 class RateLimiter:
@@ -104,12 +105,12 @@ class RateLimiter:
             # Wait outside the lock
             await asyncio.sleep(wait_time)
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "RateLimiter":
         """Context manager entry - acquire token."""
         await self.acquire()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Context manager exit - nothing to do."""
         pass
 

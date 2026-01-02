@@ -43,7 +43,7 @@ class SelectionConfig:
 class ToolRegistry:
     """Registry with cost-aware selection and error recovery."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.tools: dict[str, ToolDefinition] = {}
         self.error_policies: dict[str, ErrorRecoveryPolicy] = {}
         self.optimizer = CostOptimizer()

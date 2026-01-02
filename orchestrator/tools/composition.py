@@ -26,7 +26,7 @@ class CompositionStep:
     retry_count: int = 0
     on_error: str = "raise"  # "raise", "continue", "fallback"
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.on_error not in ("raise", "continue", "fallback"):
             raise ValueError(f"on_error must be 'raise', 'continue', or 'fallback', got {self.on_error}")
 
@@ -155,10 +155,11 @@ class CompositionExecutor:
                     # "fallback" would be handled here later
 
             duration_ms = (time.monotonic() - start) * 1000
+            last_step_name = chain.steps[-1].name if chain.steps else None
             return CompositionResult(
                 chain_name=chain.name,
                 step_results=step_results,
-                final_output=step_results.get(chain.steps[-1].name if chain.steps else None),
+                final_output=step_results.get(last_step_name) if last_step_name else None,
                 success=True,
                 error=None,
                 total_duration_ms=duration_ms,
@@ -178,15 +179,16 @@ class CompositionExecutor:
         """Execute a single step with timeout and retry logic."""
         for attempt in range(step.retry_count + 1):
             try:
-                # Handle both async and sync resolvers
+                # Resolve tool (handle both async and sync resolvers)
                 if asyncio.iscoroutinefunction(self.tool_resolver):
-                    tool = await self.tool_resolver(step.tool_ref)
+                    resolved_tool = await self.tool_resolver(step.tool_ref)
                 else:
-                    tool = self.tool_resolver(step.tool_ref)
+                    resolved_tool = self.tool_resolver(step.tool_ref)  # type: ignore[assignment]
+                tool: Callable[..., Any] = resolved_tool
 
                 # Call with timeout
                 # Use factory function to properly capture tool at this iteration
-                async def _make_call(current_tool=tool, current_input=step_input):
+                async def _make_call(current_tool: Callable = tool, current_input: dict[str, Any] = step_input) -> Any:
                     if asyncio.iscoroutinefunction(current_tool):
                         return await current_tool(**current_input)
                     else:
@@ -224,15 +226,15 @@ def composite_tool(
     """
     def decorator(fn: Callable) -> Callable:
         @functools.wraps(fn)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> CompositionChain:
             chain = fn(*args, **kwargs)
             if not isinstance(chain, CompositionChain):
                 raise TypeError(f"@composite_tool {name} must return a CompositionChain, got {type(chain)}")
             chain.name = name
             chain.description = description
             return chain
-        wrapper._is_composite_tool = True
-        wrapper._composition_name = name
+        wrapper._is_composite_tool = True  # type: ignore[attr-defined]
+        wrapper._composition_name = name  # type: ignore[attr-defined]
         return wrapper
     return decorator
 
@@ -240,7 +242,7 @@ def composite_tool(
 def build_parameter_mapping(
     source_output: dict[str, Any],
     target_input_schema: dict[str, Any],
-    explicit_mapping: dict[str, str] = None,
+    explicit_mapping: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """
     Auto-wire outputs from one step to inputs of the next.

@@ -37,7 +37,7 @@ class AgentTask:
     max_retries: int = 3
     timeout: int = 300
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Generate idempotency key after initialization."""
         if self.idempotency_key is None:
             self.idempotency_key = generate_idempotency_key(

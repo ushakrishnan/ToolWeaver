@@ -26,7 +26,7 @@ class AuthConfig:
     token_env: str | None = None
     header_name: str = "Authorization"
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate configuration after initialization."""
         if self.type in ("bearer", "api_key") and not self.token_env:
             raise ValueError(
