@@ -20,6 +20,15 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Legacy imports removed - these are not part of the public API
+from orchestrator._internal.assessment.evaluation import AgentEvaluator
+from orchestrator._internal.dispatch.functions import (
+    apply_discount,
+    compute_item_statistics,
+    compute_tax,
+    filter_items_by_category,
+    merge_items,
+)
+from orchestrator._internal.observability.context_tracker import ContextTracker
 
 
 class SimpleOrchestrator:

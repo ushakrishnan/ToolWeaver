@@ -264,10 +264,10 @@ def validate_file_path(
         base = Path(base_dir).resolve()
         try:
             path.relative_to(base)
-except ValueError as e:
-              raise PathTraversalError(
-                  f"Path traversal detected: {file_path} is outside {base_dir}"
-              ) from e
+        except ValueError as e:
+            raise PathTraversalError(
+                f"Path traversal detected: {file_path} is outside {base_dir}"
+            ) from e
 
     # Check existence
     if must_exist and not path.exists():

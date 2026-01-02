@@ -149,11 +149,11 @@ class WandbBackend:
         try:
             import wandb
             self.wandb = wandb
-except ImportError as e:
-              raise ImportError(
-                  "W&B backend requires wandb package. "
-                  "Install with: pip install wandb"
-              ) from e
+        except ImportError as e:
+            raise ImportError(
+                "W&B backend requires wandb package. "
+                "Install with: pip install wandb"
+            ) from e
 
         # Initialize run
         self.run = wandb.init(
@@ -253,11 +253,11 @@ class PrometheusBackend:
             from prometheus_client import Counter, Histogram, start_http_server
             self.Counter = Counter
             self.Histogram = Histogram
-except ImportError as e:
-              raise ImportError(
-                  "Prometheus backend requires prometheus-client package. "
-                  "Install with: pip install prometheus-client"
-              ) from e
+        except ImportError as e:
+            raise ImportError(
+                "Prometheus backend requires prometheus-client package. "
+                "Install with: pip install prometheus-client"
+            ) from e
 
         # Define metrics
         self.tool_calls = Counter(

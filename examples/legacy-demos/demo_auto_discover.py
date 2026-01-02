@@ -24,7 +24,7 @@ async def main():
     from orchestrator.mcp_client import MCPClientShim
     from orchestrator.tool_discovery import discover_tools
 
-    # Legacy import removed - not available in public API
+    from orchestrator._internal.dispatch import functions, workers
 
     mcp_client = MCPClientShim()
     catalog = await discover_tools(

@@ -172,19 +172,16 @@ async def demo_all_three_methods():
 
     print("\n" + "="*80)
     # Register template explicitly (not auto-registered like decorators)
+    print("1. TEMPLATE APPROACH (Verbose, maximum control)")
+    print("-" * 80)
+    
+    template_tool = ExpensesFunctionTool()
     register_template(template_tool)
     template_def = template_tool.build_definition()
     print(f"   Tool: {template_def.name}")
     print(f"   Description: {template_def.description}")
     print(f"   Parameters: {[p.name for p in template_def.parameters]}")
     print("   ✓ Registered via register_template() call")
-    print("-" * 80)
-    template_tool = ExpensesFunctionTool()
-    template_def = template_tool.build_definition()
-    print(f"   Tool: {template_def.name}")
-    print(f"   Description: {template_def.description}")
-    print(f"   Parameters: {[p.name for p in template_def.parameters]}")
-    # Note: Template auto-registration happens in decorator
 
     # Decorators already registered during import, let's verify
     print("\n2. DECORATOR APPROACH (Fast, automatic parameter extraction)")

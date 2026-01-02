@@ -18,6 +18,15 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+from orchestrator._internal.execution.sandbox import SandboxEnvironment
+from orchestrator._internal.workflows.control_flow_patterns import (
+    ControlFlowPatterns,
+    create_conditional_code,
+    create_parallel_code,
+    create_polling_code,
+    create_retry_code,
+)
+
 # Simple enums and classes for pattern demonstration
 class PatternType(Enum):
     """Types of control flow patterns"""

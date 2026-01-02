@@ -24,7 +24,7 @@ async def main():
     from orchestrator.mcp_client import MCPClientShim
     from orchestrator.tool_discovery import discover_tools
 
-    from orchestrator._internal.dispatch import functions
+    from orchestrator._internal.dispatch import functions, workers
 
     mcp_client = MCPClientShim()
     catalog = await discover_tools(

@@ -112,10 +112,9 @@ class TestRegressionBenchmarks:
         metrics: list[float] = []
         for _ in range(10):
             start = time.perf_counter()
-            await find_relevant_tools(
+            await search_tools(
                 query="process data",
-                catalog=large_catalog,
-                limit=5
+                use_semantic=True
             )
             elapsed = (time.perf_counter() - start) * 1000
             metrics.append(elapsed)

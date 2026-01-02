@@ -13,6 +13,7 @@ Output:
 """
 
 import asyncio
+import sys
 
 from orchestrator._internal.assessment.evaluation import AgentEvaluator
 from orchestrator._internal.dispatch.functions import (

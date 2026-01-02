@@ -14,6 +14,7 @@ import asyncio
 import tempfile
 from pathlib import Path
 
+from orchestrator._internal.execution.code_generator import StubGenerator
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 
 

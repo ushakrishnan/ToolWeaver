@@ -1,0 +1,1387 @@
+﻿python : warning: Failed to lint samples\25-parallel-agents\parallel_deep_dive.py: stream did not contain valid UTF-8
+At line:1 char:1
++ python -m ruff check . --select F821 --output-format=json 2>&1 | Out- ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: Failed...ain valid UTF-8:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: Failed to lint samples\26-sandbox-execution\sandbox_demo.py: stream did not contain valid UTF-8
+[
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 29,
+      "row": 95
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\demo_progressive_discovery.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 95
+    },
+    "message": "Undefined name `ProgrammaticToolExecutor`",
+    "noqa_row": 95,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 40,
+      "row": 122
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\demo_progressive_discovery.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 122
+    },
+    "message": "Undefined name `ProgrammaticToolExecutor`",
+    "noqa_row": 122,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 40,
+      "row": 254
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\demo_progressive_discovery.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 254
+    },
+    "message": "Undefined name `ProgrammaticToolExecutor`",
+    "noqa_row": 254,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 34,
+      "row": 146
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\demo_stub_generator.py",
+    "fix": null,
+    "location": {
+      "column": 21,
+      "row": 146
+    },
+    "message": "Undefined name `StubGenerator`",
+    "noqa_row": 146,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 55,
+      "row": 33
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\run_baseline_benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 41,
+      "row": 33
+    },
+    "message": "Undefined name `ContextTracker`",
+    "noqa_row": 33,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 39,
+      "row": 36
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\run_baseline_benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 28,
+      "row": 36
+    },
+    "message": "Undefined name `compute_tax`",
+    "noqa_row": 36,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 45,
+      "row": 37
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\run_baseline_benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 31,
+      "row": 37
+    },
+    "message": "Undefined name `apply_discount`",
+    "noqa_row": 37,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 39,
+      "row": 38
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\run_baseline_benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 28,
+      "row": 38
+    },
+    "message": "Undefined name `merge_items`",
+    "noqa_row": 38,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 65,
+      "row": 39
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\run_baseline_benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 41,
+      "row": 39
+    },
+    "message": "Undefined name `filter_items_by_category`",
+    "noqa_row": 39,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 63,
+      "row": 40
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\run_baseline_benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 40,
+      "row": 40
+    },
+    "message": "Undefined name `compute_item_statistics`",
+    "noqa_row": 40,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 37,
+      "row": 73
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\run_baseline_benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 26,
+      "row": 73
+    },
+    "message": "Undefined name `compute_tax`",
+    "noqa_row": 73,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 40,
+      "row": 86
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\run_baseline_benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 26,
+      "row": 86
+    },
+    "message": "Undefined name `apply_discount`",
+    "noqa_row": 86,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 50,
+      "row": 104
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\run_baseline_benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 26,
+      "row": 104
+    },
+    "message": "Undefined name `filter_items_by_category`",
+    "noqa_row": 104,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 49,
+      "row": 116
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\run_baseline_benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 26,
+      "row": 116
+    },
+    "message": "Undefined name `compute_item_statistics`",
+    "noqa_row": 116,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 37,
+      "row": 187
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\run_baseline_benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 23,
+      "row": 187
+    },
+    "message": "Undefined name `ContextTracker`",
+    "noqa_row": 187,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 31,
+      "row": 189
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\14-programmatic-execution\\run_baseline_benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 17,
+      "row": 189
+    },
+    "message": "Undefined name `AgentEvaluator`",
+    "noqa_row": 189,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 38,
+      "row": 52
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\15-control-flow\\demo_patterns.py",
+    "fix": null,
+    "location": {
+      "column": 19,
+      "row": 52
+    },
+    "message": "Undefined name `ControlFlowPatterns`",
+    "noqa_row": 52,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 31,
+      "row": 64
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\15-control-flow\\demo_patterns.py",
+    "fix": null,
+    "location": {
+      "column": 12,
+      "row": 64
+    },
+    "message": "Undefined name `create_polling_code`",
+    "noqa_row": 64,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 33,
+      "row": 78
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\15-control-flow\\demo_patterns.py",
+    "fix": null,
+    "location": {
+      "column": 15,
+      "row": 78
+    },
+    "message": "Undefined name `SandboxEnvironment`",
+    "noqa_row": 78,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 32,
+      "row": 120
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\15-control-flow\\demo_patterns.py",
+    "fix": null,
+    "location": {
+      "column": 12,
+      "row": 120
+    },
+    "message": "Undefined name `create_parallel_code`",
+    "noqa_row": 120,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 33,
+      "row": 134
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\15-control-flow\\demo_patterns.py",
+    "fix": null,
+    "location": {
+      "column": 15,
+      "row": 134
+    },
+    "message": "Undefined name `SandboxEnvironment`",
+    "noqa_row": 134,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 35,
+      "row": 182
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\15-control-flow\\demo_patterns.py",
+    "fix": null,
+    "location": {
+      "column": 12,
+      "row": 182
+    },
+    "message": "Undefined name `create_conditional_code`",
+    "noqa_row": 182,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 33,
+      "row": 194
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\15-control-flow\\demo_patterns.py",
+    "fix": null,
+    "location": {
+      "column": 15,
+      "row": 194
+    },
+    "message": "Undefined name `SandboxEnvironment`",
+    "noqa_row": 194,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 29,
+      "row": 231
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\15-control-flow\\demo_patterns.py",
+    "fix": null,
+    "location": {
+      "column": 12,
+      "row": 231
+    },
+    "message": "Undefined name `create_retry_code`",
+    "noqa_row": 231,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 33,
+      "row": 244
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\15-control-flow\\demo_patterns.py",
+    "fix": null,
+    "location": {
+      "column": 15,
+      "row": 244
+    },
+    "message": "Undefined name `SandboxEnvironment`",
+    "noqa_row": 244,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 33,
+      "row": 284
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\15-control-flow\\demo_patterns.py",
+    "fix": null,
+    "location": {
+      "column": 15,
+      "row": 284
+    },
+    "message": "Undefined name `SandboxEnvironment`",
+    "noqa_row": 284,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 31,
+      "row": 22
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\18-tool-agent-hybrid\\hybrid_workflow.py",
+    "fix": null,
+    "location": {
+      "column": 18,
+      "row": 22
+    },
+    "message": "Undefined name `MCPClientShim`",
+    "noqa_row": 22,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 37,
+      "row": 72
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\18-tool-agent-hybrid\\hybrid_workflow.py",
+    "fix": null,
+    "location": {
+      "column": 29,
+      "row": 72
+    },
+    "message": "Undefined name `run_step`",
+    "noqa_row": 72,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 52,
+      "row": 286
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\23-adding-new-tools\\add_new_tools.py",
+    "fix": null,
+    "location": {
+      "column": 39,
+      "row": 286
+    },
+    "message": "Undefined name `MCPClientShim`",
+    "noqa_row": 286,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 55,
+      "row": 341
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\23-adding-new-tools\\add_new_tools.py",
+    "fix": null,
+    "location": {
+      "column": 42,
+      "row": 341
+    },
+    "message": "Undefined name `MCPClientShim`",
+    "noqa_row": 341,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 30,
+      "row": 376
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\23-adding-new-tools\\add_new_tools.py",
+    "fix": null,
+    "location": {
+      "column": 17,
+      "row": 376
+    },
+    "message": "Undefined name `MCPClientShim`",
+    "noqa_row": 376,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 31,
+      "row": 472
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\23-adding-new-tools\\add_new_tools.py",
+    "fix": null,
+    "location": {
+      "column": 18,
+      "row": 472
+    },
+    "message": "Undefined name `MCPClientShim`",
+    "noqa_row": 472,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 35,
+      "row": 109
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\23-adding-new-tools\\test_example.py",
+    "fix": null,
+    "location": {
+      "column": 22,
+      "row": 109
+    },
+    "message": "Undefined name `MCPClientShim`",
+    "noqa_row": 109,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 35,
+      "row": 185
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\23-adding-new-tools\\test_example.py",
+    "fix": null,
+    "location": {
+      "column": 22,
+      "row": 185
+    },
+    "message": "Undefined name `MCPClientShim`",
+    "noqa_row": 185,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 35,
+      "row": 210
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\23-adding-new-tools\\test_example.py",
+    "fix": null,
+    "location": {
+      "column": 22,
+      "row": 210
+    },
+    "message": "Undefined name `MCPClientShim`",
+    "noqa_row": 210,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 36,
+      "row": 175
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\23-adding-new-tools\\three_ways.py",
+    "fix": null,
+    "location": {
+      "column": 23,
+      "row": 175
+    },
+    "message": "Undefined name `template_tool`",
+    "noqa_row": 175,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 33,
+      "row": 176
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\23-adding-new-tools\\three_ways.py",
+    "fix": null,
+    "location": {
+      "column": 20,
+      "row": 176
+    },
+    "message": "Undefined name `template_tool`",
+    "noqa_row": 176,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 34,
+      "row": 32
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\legacy-demos\\demo_auto_discover.py",
+    "fix": null,
+    "location": {
+      "column": 27,
+      "row": 32
+    },
+    "message": "Undefined name `workers`",
+    "noqa_row": 32,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 45,
+      "row": 32
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\legacy-demos\\demo_auto_discover.py",
+    "fix": null,
+    "location": {
+      "column": 36,
+      "row": 32
+    },
+    "message": "Undefined name `functions`",
+    "noqa_row": 32,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 34,
+      "row": 28
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\legacy-demos\\demo_integrated.py",
+    "fix": null,
+    "location": {
+      "column": 27,
+      "row": 28
+    },
+    "message": "Undefined name `workers`",
+    "noqa_row": 28,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 45,
+      "row": 28
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\legacy-demos\\demo_integrated.py",
+    "fix": null,
+    "location": {
+      "column": 36,
+      "row": 28
+    },
+    "message": "Undefined name `functions`",
+    "noqa_row": 28,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 34,
+      "row": 30
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\legacy-demos\\test_discovery.py",
+    "fix": null,
+    "location": {
+      "column": 27,
+      "row": 30
+    },
+    "message": "Undefined name `workers`",
+    "noqa_row": 30,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 45,
+      "row": 30
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\legacy-demos\\test_discovery.py",
+    "fix": null,
+    "location": {
+      "column": 36,
+      "row": 30
+    },
+    "message": "Undefined name `functions`",
+    "noqa_row": 30,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 34,
+      "row": 27
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\legacy-demos\\test_search.py",
+    "fix": null,
+    "location": {
+      "column": 27,
+      "row": 27
+    },
+    "message": "Undefined name `workers`",
+    "noqa_row": 27,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 45,
+      "row": 27
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\examples\\legacy-demos\\test_search.py",
+    "fix": null,
+    "location": {
+      "column": 36,
+      "row": 27
+    },
+    "message": "Undefined name `functions`",
+    "noqa_row": 27,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 1,
+      "row": 152
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 152
+    },
+    "message": "Expected `except` or `finally` after `try` block",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 22,
+      "row": 152
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 20,
+      "row": 152
+    },
+    "message": "Expected a statement",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 1,
+      "row": 153
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 25,
+      "row": 152
+    },
+    "message": "Expected an expression",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 15,
+      "row": 153
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 153
+    },
+    "message": "Unexpected indentation",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 9,
+      "row": 159
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 159
+    },
+    "message": "unindent does not match any outer indentation level",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 9,
+      "row": 168
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 168
+    },
+    "message": "Unexpected indentation",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 5,
+      "row": 170
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 170
+    },
+    "message": "unindent does not match any outer indentation level",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 5,
+      "row": 194
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 194
+    },
+    "message": "unindent does not match any outer indentation level",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 5,
+      "row": 209
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 209
+    },
+    "message": "unindent does not match any outer indentation level",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 5,
+      "row": 227
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 227
+    },
+    "message": "unindent does not match any outer indentation level",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 1,
+      "row": 256
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 256
+    },
+    "message": "Expected `except` or `finally` after `try` block",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 22,
+      "row": 256
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 20,
+      "row": 256
+    },
+    "message": "Expected a statement",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 1,
+      "row": 257
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 25,
+      "row": 256
+    },
+    "message": "Expected an expression",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 15,
+      "row": 257
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 257
+    },
+    "message": "Unexpected indentation",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 9,
+      "row": 263
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 263
+    },
+    "message": "unindent does not match any outer indentation level",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 9,
+      "row": 269
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 269
+    },
+    "message": "Unexpected indentation",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 5,
+      "row": 307
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 307
+    },
+    "message": "unindent does not match any outer indentation level",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 5,
+      "row": 325
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 325
+    },
+    "message": "unindent does not match any outer indentation level",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 5,
+      "row": 339
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 339
+    },
+    "message": "unindent does not match any outer indentation level",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 5,
+      "row": 349
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 349
+    },
+    "message": "unindent does not match any outer indentation level",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 1,
+      "row": 383
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\observability\\monitoring_backends.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 383
+    },
+    "message": "Expected dedent, found end of file",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 1,
+      "row": 267
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\validation.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 267
+    },
+    "message": "Expected `except` or `finally` after `try` block",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 21,
+      "row": 267
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\validation.py",
+    "fix": null,
+    "location": {
+      "column": 19,
+      "row": 267
+    },
+    "message": "Expected a statement",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 1,
+      "row": 268
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\validation.py",
+    "fix": null,
+    "location": {
+      "column": 24,
+      "row": 267
+    },
+    "message": "Expected an expression",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 15,
+      "row": 268
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\validation.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 268
+    },
+    "message": "Unexpected indentation",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 5,
+      "row": 273
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\validation.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 273
+    },
+    "message": "unindent does not match any outer indentation level",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 5,
+      "row": 276
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\validation.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 276
+    },
+    "message": "unindent does not match any outer indentation level",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "invalid-syntax",
+    "end_location": {
+      "column": 1,
+      "row": 568
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\orchestrator\\_internal\\validation.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 568
+    },
+    "message": "Expected dedent, found end of file",
+    "noqa_row": null,
+    "url": null
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 34,
+      "row": 145
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\samples\\14-programmatic-execution\\demo_stub_generator.py",
+    "fix": null,
+    "location": {
+      "column": 21,
+      "row": 145
+    },
+    "message": "Undefined name `StubGenerator`",
+    "noqa_row": 145,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 12,
+      "row": 292
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\samples\\14-programmatic-execution\\run_baseline_benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 292
+    },
+    "message": "Undefined name `sys`",
+    "noqa_row": 292,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 12,
+      "row": 294
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\samples\\14-programmatic-execution\\run_baseline_benchmark.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 294
+    },
+    "message": "Undefined name `sys`",
+    "noqa_row": 294,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 34,
+      "row": 32
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\samples\\legacy-demos\\demo_auto_discover.py",
+    "fix": null,
+    "location": {
+      "column": 27,
+      "row": 32
+    },
+    "message": "Undefined name `workers`",
+    "noqa_row": 32,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 34,
+      "row": 28
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\samples\\legacy-demos\\demo_integrated.py",
+    "fix": null,
+    "location": {
+      "column": 27,
+      "row": 28
+    },
+    "message": "Undefined name `workers`",
+    "noqa_row": 28,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 34,
+      "row": 30
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\samples\\legacy-demos\\test_discovery.py",
+    "fix": null,
+    "location": {
+      "column": 27,
+      "row": 30
+    },
+    "message": "Undefined name `workers`",
+    "noqa_row": 30,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 34,
+      "row": 27
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\samples\\legacy-demos\\test_search.py",
+    "fix": null,
+    "location": {
+      "column": 27,
+      "row": 27
+    },
+    "message": "Undefined name `workers`",
+    "noqa_row": 27,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 38,
+      "row": 115
+    },
+    "filename": "C:\\ushak-projects\\ToolWeaver\\tests\\test_performance_benchmarks.py",
+    "fix": null,
+    "location": {
+      "column": 19,
+      "row": 115
+    },
+    "message": "Undefined name `find_relevant_tools`",
+    "noqa_row": 115,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  }
+]

@@ -12,6 +12,7 @@ Shows end-to-end code execution with progressive tool discovery:
 import asyncio
 import json
 
+from orchestrator._internal.execution.programmatic_executor import ProgrammaticToolExecutor
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 
 

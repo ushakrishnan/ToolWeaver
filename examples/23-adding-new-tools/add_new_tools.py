@@ -22,6 +22,7 @@ from datetime import datetime
 from typing import Any
 
 from orchestrator import A2AClient, AgentCapability
+from orchestrator._internal.infra.mcp_client import MCPClientShim
 from orchestrator.shared.models import (
     ToolCatalog,
     ToolDefinition,
