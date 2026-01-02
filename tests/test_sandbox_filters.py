@@ -92,8 +92,8 @@ class TestPIITokenizer:
         data1 = {"email": "same@example.com"}
         data2 = {"contact": "same@example.com"}
 
-        result1 = tokenizer.tokenize(data1)
-        result2 = tokenizer.tokenize(data2)
+        tokenizer.tokenize(data1)
+        tokenizer.tokenize(data2)
 
         # Should use same token for same email
         token_map = tokenizer.get_token_map()

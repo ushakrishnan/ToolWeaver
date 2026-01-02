@@ -257,7 +257,7 @@ class TestPrecomputation:
         assert len(engine.embedding_cache) == len(sample_catalog.tools)
 
         # Verify embeddings are valid
-        for cache_key, embedding in engine.embedding_cache.items():
+        for _cache_key, embedding in engine.embedding_cache.items():
             assert embedding.shape == (384,)
             norm = np.linalg.norm(embedding)
             assert 0.99 <= norm <= 1.01

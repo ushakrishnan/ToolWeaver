@@ -105,7 +105,7 @@ def test_initialization():
     assert engine.qdrant_url == "http://localhost:6333"
     assert engine.collection_name == "toolweaver_tools"
     assert engine.embedding_dim == 384
-    assert engine.fallback_to_memory == True
+    assert engine.fallback_to_memory
 
 
 def test_index_catalog_memory_fallback(search_engine_with_fallback, large_catalog):
@@ -113,7 +113,7 @@ def test_index_catalog_memory_fallback(search_engine_with_fallback, large_catalo
     # Don't initialize client - force fallback
     success = search_engine_with_fallback.index_catalog(large_catalog, batch_size=32)
 
-    assert success == True
+    assert success
     assert len(search_engine_with_fallback.memory_embeddings) == 100
     assert len(search_engine_with_fallback.memory_tools) == 100
 
@@ -190,7 +190,7 @@ def test_domain_filtering(search_engine_with_fallback, large_catalog):
 
     # Should only return github tools
     assert len(results) > 0, "Domain filtering should return at least some github tools"
-    for tool, score in results:
+    for tool, _score in results:
         assert tool.domain == "github", f"Tool {tool.name} has domain {tool.domain}, expected 'github'"
 
 
@@ -207,7 +207,7 @@ def test_relevance_scores(search_engine_with_fallback, large_catalog):
     assert len(results) > 0
 
     # Scores should be between 0 and 1
-    for tool, score in results:
+    for _tool, score in results:
         assert 0 <= score <= 1, f"Score {score} out of range [0, 1]"
 
     # Scores should be in descending order
@@ -238,7 +238,7 @@ def test_min_score_threshold(search_engine_with_fallback, large_catalog):
     assert len(results_low) >= len(results_high)
 
     # All results should meet minimum score
-    for tool, score in results_high:
+    for _tool, score in results_high:
         assert score >= 0.8
 
 
@@ -247,7 +247,7 @@ def test_empty_catalog(search_engine_with_fallback):
     empty_catalog = ToolCatalog()
 
     success = search_engine_with_fallback.index_catalog(empty_catalog)
-    assert success == False
+    assert not success
 
     results = search_engine_with_fallback.search("test", empty_catalog)
     assert len(results) == 0

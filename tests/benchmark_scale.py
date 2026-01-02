@@ -18,6 +18,11 @@ import time
 
 import pytest
 
+from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolExample, ToolParameter
+from orchestrator.tools.sharded_catalog import ShardedCatalog
+from orchestrator.tools.tool_search import ToolSearchEngine  # Phase 3 baseline
+from orchestrator.tools.vector_search import VectorToolSearchEngine  # Phase 7 optimized
+
 # Lightweight fallback for pytest-benchmark when plugin isn't installed.
 try:
     from pytest_benchmark.fixture import BenchmarkFixture  # type: ignore
@@ -47,11 +52,6 @@ def benchmark():
         return _Benchmark()
     # If plugin is available, defer to real fixture
     return pytest.lazy_fixture("benchmark")
-
-from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolExample, ToolParameter
-from orchestrator.tools.sharded_catalog import ShardedCatalog
-from orchestrator.tools.tool_search import ToolSearchEngine  # Phase 3 baseline
-from orchestrator.tools.vector_search import VectorToolSearchEngine  # Phase 7 optimized
 
 # ============================================================
 # Test Catalog Generation

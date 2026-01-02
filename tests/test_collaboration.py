@@ -3,8 +3,7 @@
 
 import logging
 
-logging.basicConfig(level=logging.INFO)
-
+import orchestrator._internal.execution.team_collaboration as collab_module
 from orchestrator._internal.execution import (
     ApprovalManager,
     ApprovalStatus,
@@ -21,6 +20,11 @@ from orchestrator._internal.execution import (
     record_skill_change,
     request_approval,
 )
+from orchestrator._internal.execution.team_collaboration import (
+    ApprovalManager as ColabApprovalManager,
+)
+
+logging.basicConfig(level=logging.INFO)
 
 print("=" * 70)
 print("PHASE 4.4: Team Collaboration - Test")
@@ -28,16 +32,12 @@ print("=" * 70)
 
 # Test 1: Approval manager creation
 print("\n[TEST 1] Approval Manager")
-from orchestrator._internal.execution.team_collaboration import (
-    ApprovalManager as ColabApprovalManager,
-)
 
 manager = ColabApprovalManager(min_approvals=1, approver_roles=['reviewer', 'lead', 'admin'])
 print(f"[OK] Created manager with {manager.min_approvals} min approvals")
 print(f"     Roles: {manager.approver_roles}")
 
 # Update module-level manager for consistent tests
-import orchestrator._internal.execution.team_collaboration as collab_module
 
 collab_module._approval_manager = manager
 

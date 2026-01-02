@@ -48,7 +48,7 @@ def test_redis_initialization(temp_cache_dir):
     )
 
     assert cache.redis_url == "redis://localhost:6379"
-    assert cache.enable_fallback == True
+    assert cache.enable_fallback
     assert cache.cache_dir == temp_cache_dir
 
 
@@ -63,7 +63,7 @@ def test_azure_redis_initialization(temp_cache_dir):
     )
 
     assert cache.redis_url == "rediss://test.redis.cache.windows.net:6380"
-    assert cache.ssl == True
+    assert cache.ssl
     assert cache.password == "test-key"
 
 
@@ -71,7 +71,7 @@ def test_file_cache_fallback(redis_cache_with_fallback):
     """Test file cache fallback works when Redis unavailable"""
     # Set value (will use file cache since Redis likely unavailable)
     success = redis_cache_with_fallback.set("test_key", {"data": "value"}, ttl=60)
-    assert success == True
+    assert success
 
     # Get value
     value = redis_cache_with_fallback.get("test_key")
@@ -155,7 +155,7 @@ def test_health_check(redis_cache_with_fallback):
     assert "fallback_enabled" in status
     assert "cache_dir" in status
 
-    assert status["fallback_enabled"] == True
+    assert status["fallback_enabled"]
     assert status["cache_dir"] is not None
 
 
@@ -167,7 +167,7 @@ def test_circuit_breaker():
     assert breaker.state == "CLOSED"
 
     # Record failures
-    for i in range(3):
+    for _i in range(3):
         breaker.record_failure()
 
     # Should be OPEN now
@@ -197,7 +197,7 @@ def test_tool_cache_catalog(tool_cache):
 
     # Cache catalog
     success = tool_cache.set_catalog("hash123", catalog_data)
-    assert success == True
+    assert success
 
     # Retrieve catalog
     cached = tool_cache.get_catalog("hash123")
@@ -218,7 +218,7 @@ def test_tool_cache_search_results(tool_cache):
         top_k=5,
         results=results
     )
-    assert success == True
+    assert success
 
     # Retrieve results
     cached = tool_cache.get_search_results(
@@ -241,7 +241,7 @@ def test_tool_cache_embeddings(tool_cache):
         model_name="all-MiniLM-L6-v2",
         embedding=embedding
     )
-    assert success == True
+    assert success
 
     # Retrieve embedding
     cached = tool_cache.get_embedding(
@@ -264,7 +264,7 @@ def test_tool_cache_individual_tools(tool_cache):
 
     # Cache tool
     success = tool_cache.set_tool("github_create_pr", "1.0", tool_data)
-    assert success == True
+    assert success
 
     # Retrieve tool
     cached = tool_cache.get_tool("github_create_pr", "1.0")
@@ -281,7 +281,7 @@ def test_cache_hit_performance(redis_cache_with_fallback):
     iterations = 100
     start_time = time.time()
 
-    for i in range(iterations):
+    for _i in range(iterations):
         value = redis_cache_with_fallback.get("perf_test")
         assert value is not None
 
@@ -356,7 +356,7 @@ def test_real_redis_connection():
     )
 
     # Should connect successfully
-    assert cache.redis_available == True
+    assert cache.redis_available
 
     # Test read/write
     cache.set("redis_test", "live_data")

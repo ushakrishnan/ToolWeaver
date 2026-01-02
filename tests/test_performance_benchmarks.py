@@ -38,7 +38,7 @@ class TestRegressionBenchmarks:
         for _ in range(100):
             start = time.perf_counter()
             # Simulating cached discovery lookup
-            tools = await discover_tools(use_cache=True)
+            await discover_tools(use_cache=True)
             elapsed = (time.perf_counter() - start) * 1000
             metrics.append(elapsed)
 
@@ -52,7 +52,7 @@ class TestRegressionBenchmarks:
     @pytest.mark.asyncio
     async def test_tool_search_performance(self):
         """Verify semantic search maintains <50ms for 100 tools."""
-        catalog = await discover_tools(use_cache=True)
+        await discover_tools(use_cache=True)
         metrics: list[float] = []
 
         # Run multiple searches
@@ -112,7 +112,7 @@ class TestRegressionBenchmarks:
         metrics: list[float] = []
         for _ in range(10):
             start = time.perf_counter()
-            results = await find_relevant_tools(
+            await find_relevant_tools(
                 query="process data",
                 catalog=large_catalog,
                 limit=5
@@ -133,7 +133,7 @@ class TestRegressionBenchmarks:
         # Create minimal orchestrator
         monitor = create_backend("memory")
         catalog = await discover_tools(use_cache=True)
-        orchestrator = Orchestrator(catalog, monitoring=monitor)
+        Orchestrator(catalog, monitoring=monitor)
 
         metrics: list[float] = []
 
@@ -142,10 +142,6 @@ class TestRegressionBenchmarks:
             start = time.perf_counter()
             # Note: Would need actual tool implementations for real benchmark
             # This tests just the orchestration overhead
-            step = {
-                "tool_name": "extract_text",
-                "inputs": {"text": "sample"}
-            }
             # In real scenario, would call: await orchestrator.run_step(step)
             elapsed = (time.perf_counter() - start) * 1000
             metrics.append(elapsed)
@@ -162,7 +158,7 @@ class TestRegressionBenchmarks:
 
         # Simulate monitoring calls
         start = time.perf_counter()
-        for i in range(1000):
+        for _i in range(1000):
             monitor.log_tool_call(
                 tool_name="test_tool",
                 success=True,
@@ -285,7 +281,7 @@ class TestMemoryBenchmarks:
 
         # Run multiple discoveries
         for _ in range(10):
-            catalog = await discover_tools(use_cache=True)
+            await discover_tools(use_cache=True)
 
         current, peak = tracemalloc.get_traced_memory()
         tracemalloc.stop()

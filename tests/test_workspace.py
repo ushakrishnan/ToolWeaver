@@ -426,7 +426,6 @@ def parse_csv(data):
 
         # Step 2: Agent uses skill and saves intermediate result
         # (In real scenario, agent would exec() the code)
-        csv_data = "name,age\nAlice,30\nBob,25"
         # parsed = parse_csv(csv_data)  # Would execute skill code
         parsed = [{"name": "Alice", "age": "30"}, {"name": "Bob", "age": "25"}]
 

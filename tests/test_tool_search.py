@@ -145,7 +145,7 @@ class TestSmartRouting:
 
         # Should return top_k tools with score 1.0 (no actual search)
         assert len(results) == 3
-        for tool, score in results:
+        for _tool, score in results:
             assert score == 1.0
 
     def test_large_catalog_uses_search(self, temp_cache_dir):
@@ -376,7 +376,7 @@ class TestScoreThresholds:
         assert len(results) <= 10
 
         # All results should meet min_score
-        for tool, score in results:
+        for _tool, score in results:
             assert score >= 0.5
 
 
@@ -482,7 +482,7 @@ class TestExplainResults:
         assert "receipt processing" in explanation
 
         # Should contain tool names
-        for tool, score in results:
+        for tool, _score in results:
             assert tool.name in explanation
 
 

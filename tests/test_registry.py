@@ -2,16 +2,18 @@
 """Test skill registry - Phase 4.3."""
 
 import logging
-
-logging.basicConfig(level=logging.INFO)
-
+from datetime import datetime
 
 from orchestrator._internal.execution import (
     RegistryConfig,
     Skill,
     SkillRegistry,
     configure_registry,
+    RegistrySkill,
 )
+from orchestrator._internal.execution.skill_registry import _save_registry_config
+
+logging.basicConfig(level=logging.INFO)
 
 print("=" * 70)
 print("PHASE 4.3: Remote Skill Registry - Test")
@@ -60,9 +62,6 @@ print(f"[OK] Invalid signature rejected: {not is_invalid}")
 
 # Test 6: RegistrySkill metadata
 print("\n[TEST 6] Registry Skill Metadata")
-from datetime import datetime
-
-from orchestrator._internal.execution import RegistrySkill
 
 skill_meta = RegistrySkill(
     id="test_org/validator",
@@ -88,7 +87,6 @@ print(f"  Tags: {skill_meta.tags}")
 
 # Test 7: RegistryConfig roundtrip
 print("\n[TEST 7] Registry Config Persistence")
-from orchestrator._internal.execution.skill_registry import _save_registry_config
 
 save_config = RegistryConfig(
     url="https://custom.registry.com",

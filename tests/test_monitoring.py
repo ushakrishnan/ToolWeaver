@@ -319,11 +319,11 @@ class TestTopTools:
     def test_top_tools_ranking(self, monitor):
         """Test top tools are ranked by call count."""
         # Log calls with different frequencies
-        for i in range(10):
+        for _i in range(10):
             monitor.log_tool_call("tool1", True, 0.1)
-        for i in range(5):
+        for _i in range(5):
             monitor.log_tool_call("tool2", True, 0.1)
-        for i in range(3):
+        for _i in range(3):
             monitor.log_tool_call("tool3", True, 0.1)
 
         summary = monitor.get_summary()

@@ -132,7 +132,7 @@ def test_semantic_search_domain_filter(sample_tools):
     )
 
     # Should only return slack tools
-    for tool, score in results:
+    for tool, _score in results:
         assert tool.domain == "slack"
 
 
@@ -169,7 +169,7 @@ def test_semantic_search_conceptual_match(sample_tools):
     )
 
     # Check that slack_send_message is in results (conceptual match)
-    tool_names = [tool.name for tool, _ in results]
+    [tool.name for tool, _ in results]
     # Semantic search should find this conceptually similar tool
     # Note: Exact match depends on embedding model quality
     assert len(results) > 0  # At least find something

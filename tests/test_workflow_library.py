@@ -426,7 +426,7 @@ class TestIntegration:
     def test_suggest_workflow_from_library_matches_pattern(self, sample_logs):
         """Test that library suggestions match detected patterns"""
         detector = PatternDetector(min_frequency=3, min_success_rate=0.7)
-        patterns = detector.analyze_logs(sample_logs, max_sequence_length=3)
+        detector.analyze_logs(sample_logs, max_sequence_length=3)
 
         library = WorkflowLibrary()
 

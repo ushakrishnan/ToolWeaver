@@ -87,7 +87,7 @@ def test_get_tool_search_definition():
 
     assert tool_def.name == "tool_search_tool"
     assert tool_def.type == "function"
-    assert tool_def.defer_loading == False  # Should always be loaded
+    assert not tool_def.defer_loading  # Should always be loaded
     assert len(tool_def.parameters) == 2  # query and top_k
     assert tool_def.parameters[0].name == "query"
     assert tool_def.parameters[1].name == "top_k"

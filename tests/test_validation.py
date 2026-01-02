@@ -1,3 +1,9 @@
+"""
+Tests for validation and sanitization.
+
+Phase 0.m: Verify input sanitization, path validation, URL validation, code validation.
+"""
+
 import pytest
 
 from orchestrator._internal.runtime_validation import (
@@ -5,87 +11,23 @@ from orchestrator._internal.runtime_validation import (
     validate_registration,
 )
 from orchestrator._internal.validation import (
+    InvalidCodeError,
     InvalidInputError,
     PathTraversalError,
     ToolDefinition,
     ToolParameter,
-    UnsafeURLError,
-    sanitize_string,
-    validate_file_path,
-    validate_url,
-)
-
-
-def test_sanitize_string_blocks_dangerous_patterns():
-    with pytest.raises(Exception):
-        sanitize_string("; rm -rf /")
-
-
-def test_validate_url_allows_https_blocks_file_and_local():
-    assert validate_url("https://example.com/api").startswith("https://")
-    with pytest.raises(UnsafeURLError):
-        validate_url("file:///etc/passwd")
-    with pytest.raises(UnsafeURLError):
-        validate_url("http://127.0.0.1:8000")
-
-
-def test_validate_file_path_prevents_traversal(tmp_path):
-    base = tmp_path / "base"
-    base.mkdir()
-    f = base / "data.txt"
-    f.write_text("ok")
-
-    # Valid within base
-    p = validate_file_path(f, base_dir=base, must_exist=True)
-    assert p.exists()
-
-    # Traversal blocked
-    with pytest.raises(PathTraversalError):
-        validate_file_path(base / ".." / "etc" / "passwd", base_dir=base)
-
-
-def test_validate_registration_and_call_happy_path():
-    tool = ToolDefinition(
-        name="demo",
-        description="Demo tool",
-        parameters=[
-            ToolParameter(name="q", type="string", required=True),
-            ToolParameter(name="limit", type="integer", required=False),
-        ],
-    )
-
-    validate_registration(tool)
-    out = validate_call({"q": "hello", "limit": 3}, tool)
-    assert out["q"] == "hello"
-    assert out["limit"] == 3
-
-
-def test_validate_call_rejects_missing_required():
-    tool = ToolDefinition(
-        name="missing",
-        description="Missing required",
-        parameters=[ToolParameter(name="q", type="string", required=True)],
-    )
-
-    with pytest.raises(Exception):
-        validate_call({}, tool)
-"""
-Tests for validation and sanitization.
-
-Phase 0.m: Verify input sanitization, path validation, URL validation, code validation.
-"""
-
-from pydantic import BaseModel
-
-from orchestrator._internal.validation import (
-    InvalidCodeError,
     UnsafeInputError,
+    UnsafeURLError,
     ValidationErrorBase,
     sanitize_dict,
+    sanitize_string,
     validate_code,
+    validate_file_path,
     validate_params,
     validate_tool_input,
+    validate_url,
 )
+from pydantic import BaseModel
 
 # ============================================================
 # Test String Sanitization

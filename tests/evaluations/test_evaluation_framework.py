@@ -186,7 +186,7 @@ class TestAgentEvaluator:
 
         assert isinstance(result, TaskResult)
         assert result.task_id == "test_task_1"
-        assert result.success == True
+        assert result.success
         assert result.duration > 0
         # Context tokens reset at start of task, so will be 0 unless
         # orchestrator adds tokens during execution
@@ -206,7 +206,7 @@ class TestAgentEvaluator:
 
         result = await evaluator._evaluate_task(sample_task)
 
-        assert result.success == False
+        assert not result.success
         assert result.error is not None
         assert "Simulated failure" in result.error
 
@@ -233,7 +233,7 @@ class TestAgentEvaluator:
 
         is_valid = evaluator._validate_result(result, expected)
 
-        assert is_valid == True
+        assert is_valid
 
     def test_validate_result_min_steps(self, evaluator):
         """Verify minimum steps validation"""
@@ -249,7 +249,7 @@ class TestAgentEvaluator:
 
         is_valid = evaluator._validate_result(result, expected)
 
-        assert is_valid == True
+        assert is_valid
 
     def test_validate_result_tools_used(self, evaluator):
         """Verify tools used validation"""
@@ -266,7 +266,7 @@ class TestAgentEvaluator:
 
         is_valid = evaluator._validate_result(result, expected)
 
-        assert is_valid == True
+        assert is_valid
 
     def test_aggregate_results(self, evaluator):
         """Verify results aggregation"""

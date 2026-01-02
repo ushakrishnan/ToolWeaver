@@ -4,8 +4,6 @@
 import asyncio
 import logging
 
-logging.basicConfig(level=logging.ERROR)
-
 from orchestrator._internal.execution import (
     add_step,
     create_workflow,
@@ -14,6 +12,8 @@ from orchestrator._internal.execution import (
     load_workflow,
     save_workflow,
 )
+
+logging.basicConfig(level=logging.ERROR)
 
 print("=" * 60)
 print("PHASE 4.2: Workflow Retry Logic Test")
