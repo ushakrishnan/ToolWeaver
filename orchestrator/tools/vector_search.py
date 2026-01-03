@@ -5,14 +5,9 @@ Qdrant-based tool search for scaling to 1000+ tools with sub-100ms latency.
 """
 
 import logging
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from sentence_transformers import SentenceTransformer
-else:
-    SentenceTransformer = None
-
-try:
     from qdrant_client import QdrantClient
     from qdrant_client.models import (
         Distance,
@@ -22,18 +17,34 @@ try:
         PointStruct,
         VectorParams,
     )
+    from sentence_transformers import SentenceTransformer
     QDRANT_IMPORTED = True
-except Exception:
-    QdrantClient = cast(Any, None)  # type: ignore[assignment,misc]
-    Distance = VectorParams = PointStruct = Filter = FieldCondition = MatchValue = cast(Any, None)  # type: ignore[assignment,misc]
-    QDRANT_IMPORTED = False
-
-try:
-    from sentence_transformers import SentenceTransformer  # noqa: F811
     SENTENCE_AVAILABLE = True
-except Exception:
-    SentenceTransformer = None  # type: ignore[assignment,misc]
+else:
+    QDRANT_IMPORTED = False
     SENTENCE_AVAILABLE = False
+    try:
+        from qdrant_client import QdrantClient
+        from qdrant_client.models import (
+            Distance,
+            FieldCondition,
+            Filter,
+            MatchValue,
+            PointStruct,
+            VectorParams,
+        )
+        QDRANT_IMPORTED = True
+    except Exception:
+        QdrantClient = None  # type: ignore[assignment]
+        Distance = VectorParams = PointStruct = Filter = FieldCondition = MatchValue = None  # type: ignore[assignment]
+        QDRANT_IMPORTED = False
+
+    try:
+        from sentence_transformers import SentenceTransformer
+        SENTENCE_AVAILABLE = True
+    except Exception:
+        SentenceTransformer = None  # type: ignore[assignment]
+        SENTENCE_AVAILABLE = False
 
 import numpy as np
 
