@@ -9,7 +9,7 @@ This module provides a unified interface for dispatching to:
 
 import logging
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 from ...shared.models import FunctionCallInput, FunctionCallOutput
 from ..execution.code_exec_worker import code_exec_worker
