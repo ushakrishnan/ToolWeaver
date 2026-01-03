@@ -100,7 +100,7 @@ class SmallModelWorker:
         model_key = self.model_name or "phi3"
         hf_model = model_map.get(model_key, model_key)
 
-        self.tokenizer = AutoTokenizer.from_pretrained(hf_model, trust_remote_code=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(hf_model, trust_remote_code=True)  # type: ignore[no-untyped-call]
         self.model = AutoModelForCausalLM.from_pretrained(
             hf_model,
             torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,

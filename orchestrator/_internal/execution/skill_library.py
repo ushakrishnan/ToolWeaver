@@ -334,7 +334,7 @@ def _get_qdrant() -> tuple[Any, Any] | None:
 
     try:
         # Initialize client with timeout
-        _qdrant_client = QdrantClient(url=qdrant_url, timeout=5.0)
+        _qdrant_client = QdrantClient(url=qdrant_url, timeout=5, check_compatibility=False)
 
         # Test connection by listing collections
         _qdrant_client.get_collections()

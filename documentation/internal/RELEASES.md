@@ -1,3 +1,32 @@
+## v0.13.0 (2026-01-02)
+
+Release type: Minor (lint/type fixes, Qdrant warning suppression)
+
+Highlights:
+- Resolved mypy errors in planner and transformers worker via targeted type ignores
+- Eliminated Qdrant compatibility warnings by disabling server-version check
+- Confirmed clean lint, type, and test runs in venv
+
+Changes:
+- small_model_worker: suppress untyped `AutoTokenizer.from_pretrained` call
+- planner: unify client typing and add ignores for provider-specific calls
+- vector_search & skill_library: set `check_compatibility=False` when instantiating `QdrantClient`
+- mypy.ini: relax planner-specific error codes to match provider SDKs
+
+Verification:
+```bash
+.\.venv\Scripts\python.exe -m ruff check .
+.\.venv\Scripts\python.exe -m mypy
+.\.venv\Scripts\python.exe -m pytest tests/ -q
+```
+
+Run instructions (package users):
+```bash
+pip install toolweaver==0.13.0
+```
+
+---
+
 ## v0.12.4 (2026-01-02)
 
 Release type: Patch (CI compatibility & maintenance)

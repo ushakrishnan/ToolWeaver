@@ -24,8 +24,8 @@ try:
     )
     QDRANT_IMPORTED = True
 except Exception:
-    QdrantClient = None
-    Distance = VectorParams = PointStruct = Filter = FieldCondition = MatchValue = None
+    QdrantClient = None  # type: ignore[assignment,misc]
+    Distance = VectorParams = PointStruct = Filter = FieldCondition = MatchValue = None  # type: ignore[assignment,misc]
     QDRANT_IMPORTED = False
 
 try:
@@ -156,7 +156,8 @@ class VectorToolSearchEngine:
             try:
                 self.client = QdrantClient(
                     url=self.qdrant_url,
-                    timeout=10.0,
+                    timeout=10,
+                                        check_compatibility=False,
                     prefer_grpc=False  # Use REST API for simplicity
                 )
                 # Test connection

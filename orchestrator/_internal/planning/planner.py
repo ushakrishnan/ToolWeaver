@@ -36,6 +36,7 @@ try:
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
+    genai = None  # type: ignore[assignment]
 
 
 class LargePlanner:
@@ -100,6 +101,10 @@ class LargePlanner:
         # Phase 4: Programmatic calling configuration
         self.use_programmatic_calling = use_programmatic_calling
 
+        # Declare client type once - will be assigned different client types
+        self.client: AsyncAzureOpenAI | AsyncOpenAI | AsyncAnthropic | Any
+        self.credential: Any = None
+
         if self.provider == "openai":
             if not OPENAI_AVAILABLE:
                 raise RuntimeError("OpenAI package not installed. Install with: pip install openai")
@@ -120,6 +125,7 @@ class LargePlanner:
             if not endpoint:
                 raise ValueError("AZURE_OPENAI_ENDPOINT environment variable required")
 
+            use_ad = os.getenv("AZURE_OPENAI_USE_AD", "false").lower() == "true"
             if use_ad:
                 # Use Azure AD (Entra ID) authentication
                 try:
@@ -168,8 +174,8 @@ class LargePlanner:
             api_key = os.getenv("GOOGLE_API_KEY")
             if not api_key:
                 raise ValueError("GOOGLE_API_KEY environment variable not set")
-            genai.configure(api_key=api_key)
-            self.client = genai.GenerativeModel(model or os.getenv("PLANNER_MODEL", "gemini-1.5-pro"))
+            genai.configure(api_key=api_key)  # type: ignore[union-attr]
+            self.client = genai.GenerativeModel(model or os.getenv("PLANNER_MODEL", "gemini-1.5-pro"))  # type: ignore[attr-defined]
             self.model = model or os.getenv("PLANNER_MODEL", "gemini-1.5-pro")
 
         else:
@@ -566,7 +572,7 @@ Respond with only the JSON execution plan."""
 
         try:
             if self.provider in ["openai", "azure-openai"]:
-                response = await self.client.chat.completions.create(
+                response = await self.client.chat.completions.create(  # type: ignore[union-attr]
                     model=self.model,
                     messages=[
                         {"role": "system", "content": self._build_system_prompt(available_tools)},
@@ -578,7 +584,7 @@ Respond with only the JSON execution plan."""
                 plan_json = response.choices[0].message.content
 
             elif self.provider == "anthropic":
-                response = await self.client.messages.create(
+                response = await self.client.messages.create(  # type: ignore[union-attr]
                     model=self.model,
                     max_tokens=4096,
                     system=self._build_system_prompt(available_tools),
@@ -591,9 +597,9 @@ Respond with only the JSON execution plan."""
 
             elif self.provider == "gemini":
                 prompt = f"{self._build_system_prompt()}\n\n{user_message}"
-                response = await self.client.generate_content_async(
+                response = await self.client.generate_content_async(  # type: ignore[union-attr,attr-defined]
                     prompt,
-                    generation_config=genai.types.GenerationConfig(
+                    generation_config=genai.types.GenerationConfig(  # type: ignore[union-attr,attr-defined]
                         temperature=0.1,
                         response_mime_type="application/json"
                     )
@@ -639,7 +645,7 @@ Please generate an improved plan that addresses the feedback."""
 
         try:
             if self.provider in ["openai", "azure-openai"]:
-                response = await self.client.chat.completions.create(
+                response = await self.client.chat.completions.create(  # type: ignore[union-attr]
                     model=self.model,
                     messages=[
                         {"role": "system", "content": self._build_system_prompt(available_tools)},
@@ -651,7 +657,7 @@ Please generate an improved plan that addresses the feedback."""
                 plan_json = response.choices[0].message.content
 
             elif self.provider == "anthropic":
-                response = await self.client.messages.create(
+                response = await self.client.messages.create(  # type: ignore[union-attr]
                     model=self.model,
                     max_tokens=4096,
                     system=self._build_system_prompt(available_tools),
@@ -664,9 +670,9 @@ Please generate an improved plan that addresses the feedback."""
 
             elif self.provider == "gemini":
                 prompt = f"{self._build_system_prompt(available_tools)}\n\n{user_message}"
-                response = await self.client.generate_content_async(
+                response = await self.client.generate_content_async(  # type: ignore[union-attr,attr-defined]
                     prompt,
-                    generation_config=genai.types.GenerationConfig(
+                    generation_config=genai.types.GenerationConfig(  # type: ignore[union-attr,attr-defined]
                         temperature=0.1,
                         response_mime_type="application/json"
                     )
