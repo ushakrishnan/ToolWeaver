@@ -114,7 +114,7 @@ async def dispatch_agents(
     if limits.requests_per_second:
         rate_limiter = RateLimiter(limits.requests_per_second)
 
-    response_filter: ResponseFilter = ResponseFilter()  # type: ignore[no-untyped-call]
+    response_filter: ResponseFilter = ResponseFilter()
     cache = get_global_cache()
     exec_fn = executor or _default_executor
 
@@ -151,7 +151,7 @@ async def dispatch_agents(
 
             prompt = task.prompt_template.format(**task.arguments)
             # Execute with timeout
-            async def _call_executor() -> Any:  # type: ignore[no-untyped-def]
+            async def _call_executor() -> Any:
                 return await exec_fn(prompt, task.arguments, task.agent_name, task.model)
 
             try:

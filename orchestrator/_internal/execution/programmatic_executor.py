@@ -182,7 +182,7 @@ class ProgrammaticToolExecutor:
                         call_record["duration"] = completed_at - start_ts  # Use local start_ts, not dict access
                         raise
 
-                tool_executor.call_tool = _call_tool_proxy  # type: ignore[assignment]
+                tool_executor.call_tool = _call_tool_proxy
                 patched_call_tool = True
             except Exception as patch_exc:
                 self.logger.warning(f"{self.execution_id}: Failed to patch call_tool for stubs: {patch_exc}")

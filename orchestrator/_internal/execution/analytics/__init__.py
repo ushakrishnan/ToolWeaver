@@ -142,7 +142,7 @@ def create_analytics_client(backend: str | None = None) -> Any:
                 "Run: pip install opentelemetry-api opentelemetry-sdk opentelemetry-exporter-otlp-proto-http"
             )
         logging.info("Creating OTLP metrics client (Grafana Cloud)")
-        return OTLPMetrics()  # type: ignore[misc]
+        return OTLPMetrics()
 
     elif backend == "prometheus":
         if not PROMETHEUS_AVAILABLE:
@@ -151,7 +151,7 @@ def create_analytics_client(backend: str | None = None) -> Any:
                 "Run: pip install prometheus-client"
             )
         logging.info("Creating Prometheus metrics exporter (HTTP scraping)")
-        return PrometheusMetrics()  # type: ignore[misc]
+        return PrometheusMetrics()
 
     elif backend == "sqlite":
         logging.info("Creating SQLite analytics client (local database)")

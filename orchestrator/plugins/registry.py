@@ -452,9 +452,9 @@ def discover_plugins() -> dict[str, PluginProtocol]:
 
                 # Instantiate if it's a class
                 if isinstance(plugin_class, type):
-                    plugin: PluginProtocol = plugin_class()  # type: ignore[call-arg]
+                    plugin: PluginProtocol = plugin_class()
                 else:
-                    plugin = plugin_class  # type: ignore[assignment]
+                    plugin = plugin_class
 
                 # Register in global registry
                 register_plugin(ep.name, plugin)

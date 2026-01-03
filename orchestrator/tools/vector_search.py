@@ -5,11 +5,16 @@ Qdrant-based tool search for scaling to 1000+ tools with sub-100ms latency.
 """
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from sentence_transformers import SentenceTransformer
+else:
+    SentenceTransformer = None
 
 try:
-    from qdrant_client import QdrantClient  # type: ignore[import-not-found]
-    from qdrant_client.models import (  # type: ignore[import-not-found]
+    from qdrant_client import QdrantClient
+    from qdrant_client.models import (
         Distance,
         FieldCondition,
         Filter,
@@ -19,21 +24,21 @@ try:
     )
     QDRANT_IMPORTED = True
 except Exception:
-    QdrantClient = None  # type: ignore[assignment]
-    Distance = VectorParams = PointStruct = Filter = FieldCondition = MatchValue = None  # type: ignore[assignment]
+    QdrantClient = None
+    Distance = VectorParams = PointStruct = Filter = FieldCondition = MatchValue = None
     QDRANT_IMPORTED = False
 
 try:
-    from sentence_transformers import SentenceTransformer  # type: ignore[import-not-found]
+    from sentence_transformers import SentenceTransformer  # noqa: F811
     SENTENCE_AVAILABLE = True
 except Exception:
     SentenceTransformer = None  # type: ignore[assignment,misc]
     SENTENCE_AVAILABLE = False
 
-import numpy as np  # type: ignore[import-not-found]
+import numpy as np
 
 try:
-    import torch  # type: ignore[import-not-found]
+    import torch
     TORCH_AVAILABLE = True
 except Exception:
     TORCH_AVAILABLE = False
@@ -149,7 +154,7 @@ class VectorToolSearchEngine:
                 logger.warning("qdrant-client not installed; using in-memory fallback if enabled")
                 return
             try:
-                self.client = QdrantClient(  # type: ignore[misc]
+                self.client = QdrantClient(
                     url=self.qdrant_url,
                     timeout=10.0,
                     prefer_grpc=False  # Use REST API for simplicity
@@ -172,7 +177,7 @@ class VectorToolSearchEngine:
                 logger.warning("SentenceTransformer not installed; embeddings disabled.")
                 return
             logger.info(f"Loading embedding model: {self.embedding_model_name}")
-            self.embedding_model = SentenceTransformer(self.embedding_model_name)  # type: ignore[misc]
+            self.embedding_model = SentenceTransformer(self.embedding_model_name)
 
             # Move model to GPU if available
             if self.device in ["cuda", "mps"] and self.embedding_model is not None:
@@ -198,9 +203,9 @@ class VectorToolSearchEngine:
                 logger.info(f"Creating collection: {self.collection_name}")
                 self.client.create_collection(  # type: ignore[union-attr]
                     collection_name=self.collection_name,
-                    vectors_config=VectorParams(  # type: ignore[misc]
+                    vectors_config=VectorParams(
                         size=self.embedding_dim,
-                        distance=Distance.COSINE  # type: ignore[misc]
+                        distance=Distance.COSINE
                     )
                 )
                 logger.info(f"Collection '{self.collection_name}' created")
@@ -464,7 +469,7 @@ class VectorToolSearchEngine:
             # Embeddings unavailable; return zeros
             new_embeddings = np.zeros((len(texts_to_encode), self.embedding_dim))
         else:
-            new_embeddings = self.embedding_model.encode(  # type: ignore[union-attr]
+            new_embeddings = self.embedding_model.encode(
                 texts_to_encode,
                 batch_size=batch_size,
                 show_progress_bar=show_progress,
@@ -529,7 +534,7 @@ class VectorToolSearchEngine:
             end_time.record()
             if TORCH_AVAILABLE:
                 torch.cuda.synchronize()
-                elapsed_ms = start_time.elapsed_time(end_time)  # type: ignore[assignment]
+                elapsed_ms = start_time.elapsed_time(end_time)
             else:
                 elapsed_ms = 0.0
             logger.info(f"Pre-computed {len(tools)} embeddings in {elapsed_ms:.1f}ms on {self.device.upper()}")
@@ -573,7 +578,7 @@ class VectorToolSearchEngine:
         if self.qdrant_available and self.client is not None:
             try:
                 # Find point ID by tool_name
-                search_results = self.client.scroll(  # type: ignore[union-attr]
+                search_results = self.client.scroll(
                     collection_name=self.collection_name,
                     scroll_filter=Filter(
                         must=[
@@ -588,7 +593,7 @@ class VectorToolSearchEngine:
 
                 if search_results[0]:
                     point_id = search_results[0][0].id
-                    self.client.delete(  # type: ignore[union-attr]
+                    self.client.delete(
                         collection_name=self.collection_name,
                         points_selector=[point_id]
                     )
@@ -609,7 +614,7 @@ class VectorToolSearchEngine:
         """Clear all tools from the index"""
         if self.qdrant_available and self.client is not None:
             try:
-                self.client.delete_collection(self.collection_name)  # type: ignore[union-attr]
+                self.client.delete_collection(self.collection_name)
                 logger.info(f"Cleared collection: {self.collection_name}")
                 return True
             except Exception as e:

@@ -14,19 +14,24 @@ import logging
 import pickle
 import time
 from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
-import numpy as np  # type: ignore[import-not-found]
+if TYPE_CHECKING:
+    from sentence_transformers import SentenceTransformer
+else:
+    SentenceTransformer = None
+
+import numpy as np
 
 try:
-    from sentence_transformers import SentenceTransformer  # type: ignore[import-not-found]
+    from sentence_transformers import SentenceTransformer  # noqa: F811
     SENTENCE_AVAILABLE = True
 except Exception:  # ImportError or runtime env issues
     SentenceTransformer = None  # type: ignore[assignment,misc]
     SENTENCE_AVAILABLE = False
 
 try:
-    from rank_bm25 import BM25Okapi  # type: ignore[import-not-found]
+    from rank_bm25 import BM25Okapi
     BM25_AVAILABLE = True
 except Exception:
     BM25_AVAILABLE = False
@@ -88,7 +93,7 @@ class ToolSearchEngine:
                 logger.warning("SentenceTransformer not installed; embedding search disabled.")
                 return
             logger.info(f"Loading embedding model: {self.embedding_model_name}")
-            self.embedding_model = SentenceTransformer(self.embedding_model_name)  # type: ignore[misc]
+            self.embedding_model = SentenceTransformer(self.embedding_model_name)
             logger.info(
                 f"Embedding model loaded (dim={self.embedding_model.get_sentence_embedding_dimension()})"
             )
@@ -178,7 +183,7 @@ class ToolSearchEngine:
 
         return results
 
-    def _bm25_search(self, query: str, tools: list[ToolDefinition]) -> np.ndarray:  # type: ignore[type-arg]
+    def _bm25_search(self, query: str, tools: list[ToolDefinition]) -> np.ndarray[Any, np.dtype[np.floating[Any]]]:
         """
         BM25 keyword-based search (good for exact matches).
 
@@ -199,7 +204,7 @@ class ToolSearchEngine:
         # Build BM25 index (fallback to zeros if unavailable)
         if not BM25_AVAILABLE:
             return np.zeros(len(tokenized_corpus), dtype=float)
-        bm25 = BM25Okapi(tokenized_corpus)  # type: ignore[misc]
+        bm25 = BM25Okapi(tokenized_corpus)
 
         # Search
         tokenized_query = query.lower().split()
@@ -211,7 +216,7 @@ class ToolSearchEngine:
 
         return normalized_scores  # type: ignore[no-any-return]
 
-    def _embedding_search(self, query: str, tools: list[ToolDefinition]) -> np.ndarray[Any, np.dtype[np.floating[Any]]]:  # type: ignore[type-arg]
+    def _embedding_search(self, query: str, tools: list[ToolDefinition]) -> np.ndarray[Any, np.dtype[np.floating[Any]]]:
         """
         Embedding-based semantic search (good for conceptual matches).
 
@@ -223,7 +228,7 @@ class ToolSearchEngine:
             return np.zeros(len(tools), dtype=float)
 
         # Get query embedding
-        query_embedding = self.embedding_model.encode(query, convert_to_tensor=False)  # type: ignore[union-attr]
+        query_embedding = self.embedding_model.encode(query, convert_to_tensor=False)
 
         # Get tool embeddings (with caching)
         tool_embeddings_list = []
@@ -245,7 +250,7 @@ class ToolSearchEngine:
 
         return normalized_similarities  # type: ignore[no-any-return]
 
-    def _get_or_compute_embedding(self, text: str) -> np.ndarray[Any, np.dtype[np.floating[Any]]]:  # type: ignore[type-arg]
+    def _get_or_compute_embedding(self, text: str) -> np.ndarray[Any, np.dtype[np.floating[Any]]]:
         """
         Get cached embedding or compute and cache it.
 
@@ -261,8 +266,8 @@ class ToolSearchEngine:
         # Compute embedding
         if self.embedding_model is None:
             # Should not happen due to guards; return zeros for safety
-            return np.zeros(0, dtype=float)  # type: ignore[no-any-return]
-        embedding = self.embedding_model.encode(text, convert_to_tensor=False)  # type: ignore[union-attr]
+            return np.zeros(0, dtype=float)
+        embedding = self.embedding_model.encode(text, convert_to_tensor=False)
 
         # Save to cache
         np.save(cache_file, embedding)

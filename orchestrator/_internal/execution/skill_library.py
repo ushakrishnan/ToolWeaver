@@ -24,20 +24,20 @@ except ImportError:
     REDIS_AVAILABLE = False
 
 try:
-    import numpy as np  # type: ignore[import-not-found]  # noqa: F401
-    from qdrant_client import QdrantClient  # type: ignore[import-not-found]
-    from qdrant_client.models import (  # type: ignore[import-not-found]
+    import numpy as np  # noqa: F401
+    from qdrant_client import QdrantClient
+    from qdrant_client.models import (
         Distance,
         PointStruct,
         VectorParams,
     )
-    from sentence_transformers import SentenceTransformer  # type: ignore[import-not-found]
+    from sentence_transformers import SentenceTransformer
     QDRANT_AVAILABLE = True
 except ImportError:
     QDRANT_AVAILABLE = False
 
 if TYPE_CHECKING:
-    pass  # type: ignore[import-not-found]
+    pass
 
 logger = logging.getLogger(__name__)
 

@@ -26,15 +26,15 @@ from dataclasses import dataclass
 from typing import Any
 
 try:
-    from opentelemetry import metrics  # type: ignore[import-not-found]
+    from opentelemetry import metrics
     from opentelemetry.exporter.otlp.proto.http.metric_exporter import (
-        OTLPMetricExporter,  # type: ignore[import-not-found]
+        OTLPMetricExporter,
     )
-    from opentelemetry.sdk.metrics import MeterProvider  # type: ignore[import-not-found]
+    from opentelemetry.sdk.metrics import MeterProvider
     from opentelemetry.sdk.metrics.export import (
-        PeriodicExportingMetricReader,  # type: ignore[import-not-found]
+        PeriodicExportingMetricReader,
     )
-    from opentelemetry.sdk.resources import (  # type: ignore[import-not-found]
+    from opentelemetry.sdk.resources import (
         SERVICE_NAME,
         SERVICE_VERSION,
         Resource,
@@ -144,7 +144,7 @@ class OTLPMetrics:
         # Set global meter provider (only if not already set)
         # Check if a provider is already set by checking the current provider
         current_provider = metrics.get_meter_provider()
-        from opentelemetry.metrics import NoOpMeterProvider  # type: ignore[import-not-found]
+        from opentelemetry.metrics import NoOpMeterProvider
 
         if isinstance(current_provider, NoOpMeterProvider):
             # No provider set yet, set ours
