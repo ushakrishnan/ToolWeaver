@@ -34,7 +34,7 @@ pip install toolweaver==0.12.2
 ```
 
 ---
-## v0.12.2 (2026-01-02)
+## v0.12. (2026-01-02)
 
 Release type: Patch (plugin registry robustness)
 

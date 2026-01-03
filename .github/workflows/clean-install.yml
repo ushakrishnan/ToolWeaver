@@ -125,7 +125,7 @@ jobs:
           
           # Verify it's discoverable
           tools = get_available_tools()
-          test_tools = [t for t in tools if "test_tool" in t.get("name", "")]
+          test_tools = [t for t in tools if "test_tool" in t.name]
           
           if test_tools:
               print(f"✅ Tool registration and discovery working")
