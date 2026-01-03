@@ -33,6 +33,7 @@ from typing import Any, Protocol, runtime_checkable
 
 from orchestrator._internal.errors import ToolWeaverError
 from orchestrator._internal.logger import get_logger
+from orchestrator.shared.models import ToolDefinition
 
 logger = get_logger(__name__)
 
@@ -72,7 +73,7 @@ class DuplicateToolNameError(PluginError):
 
 @runtime_checkable
 class PluginProtocol(Protocol):
-    def get_tools(self) -> list[dict[str, Any]]: ...
+    def get_tools(self) -> list[Any]: ...
     async def execute(self, tool_name: str, params: dict[str, Any]) -> Any: ...
 
 
@@ -156,11 +157,16 @@ class PluginRegistry:
 
         seen_local: set[str] = set()
         for tool in tools:
-            if not isinstance(tool, dict):
+            tool_name: str | None = None
+            if isinstance(tool, dict):
+                tool_name = tool.get("name")
+            elif isinstance(tool, ToolDefinition):
+                tool_name = tool.name
+            else:
                 raise InvalidPluginError(
-                    f"Plugin '{name}' get_tools() entries must be dicts, got {type(tool).__name__}"
+                    f"Plugin '{name}' get_tools() entries must be dicts or ToolDefinition, got {type(tool).__name__}"
                 )
-            tool_name = tool.get("name")
+
             if not tool_name or not isinstance(tool_name, str):
                 raise InvalidPluginError(f"Plugin '{name}' tool missing string 'name' field")
             if tool_name in seen_local:
@@ -171,12 +177,17 @@ class PluginRegistry:
 
         # Cross-plugin duplicate detection
         with self._lock:
-            existing_names = {
-                t.get("name")
-                for p in self._plugins.values()
-                for t in (p.get_tools() or [])
-                if isinstance(t, dict) and t.get("name")
-            }
+            existing_names = set()
+            for p in self._plugins.values():
+                for t in (p.get_tools() or []):
+                    if isinstance(t, dict):
+                        name_val = t.get("name")
+                    elif isinstance(t, ToolDefinition):
+                        name_val = t.name
+                    else:
+                        continue
+                    if name_val:
+                        existing_names.add(name_val)
         dup = seen_local.intersection(existing_names)
         if dup:
             raise DuplicateToolNameError(
@@ -229,7 +240,7 @@ class PluginRegistry:
 
             return self._plugins[name]
 
-    def list(self) -> list[str]:
+    def list(self) -> builtins.list[str]:
         """
         List all registered plugin names.
 
@@ -241,7 +252,7 @@ class PluginRegistry:
             ['jira', 'slack', 'github']
         """
         with self._lock:
-            return list(self._plugins.keys())
+            return builtins.list(self._plugins.keys())
 
     def has(self, name: str) -> bool:
         """
@@ -272,7 +283,7 @@ class PluginRegistry:
             self._plugins.clear()
             logger.debug("Cleared all plugins")
 
-    def get_all_tools(self) -> dict[str, builtins.list[dict[str, Any]]]:
+    def get_all_tools(self) -> dict[str, builtins.list[Any]]:
         """
         Get all tools from all plugins.
 
@@ -288,7 +299,7 @@ class PluginRegistry:
             }
         """
         with self._lock:
-            all_tools = {}
+            all_tools: dict[str, builtins.list[Any]] = {}
             for name, plugin in self._plugins.items():
                 try:
                     tools = plugin.get_tools()

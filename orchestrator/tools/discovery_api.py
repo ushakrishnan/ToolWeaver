@@ -13,18 +13,19 @@ logger = logging.getLogger(__name__)
 def _collect_all_tool_defs(catalog: ToolCatalog | None = None) -> list[ToolDefinition]:
     """Collect all tool definitions from all plugins, normalized to ToolDefinition.
 
-    Plugins return lists of dicts; we validate to ToolDefinition for consistent access.
+    Plugins return lists of dicts or ToolDefinitions; we validate to ToolDefinition for consistent access.
     """
     if catalog is not None:
-        tools_list: list[Any] = catalog.tools if isinstance(catalog.tools, list) else list(catalog.tools.values())
-        return [ToolDefinition.model_validate(t) for t in tools_list]
+        tools_list: list[Any] = list(catalog.tools.values())
+        return [ToolDefinition.model_validate(t) if not isinstance(t, ToolDefinition) else t for t in tools_list]
 
     registry = get_registry()
     all_tools: list[ToolDefinition] = []
-    for _, tools in registry.get_all_tools().items():
+    plugin_tools_dict: dict[str, list[Any]] = registry.get_all_tools()
+    for _, tools in plugin_tools_dict.items():
         for t in tools:
             try:
-                td = ToolDefinition.model_validate(t)
+                td = ToolDefinition.model_validate(t) if not isinstance(t, ToolDefinition) else t
                 all_tools.append(td)
             except Exception:
                 # Skip invalid entries rather than failing discovery
@@ -83,7 +84,7 @@ def get_available_tools(
 ) -> list[ToolDefinition]:
     """List available tools across all plugins with optional filters."""
     registry = get_registry()
-    tool_dict: dict[str, list[dict[str, Any]]] = (
+    tool_dict: dict[str, list[Any]] = (
         {plugin: registry.get(plugin).get_tools()} if plugin else registry.get_all_tools()
     )
 
