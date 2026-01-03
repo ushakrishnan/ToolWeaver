@@ -1,3 +1,68 @@
+## v0.12.4 (2026-01-02)
+
+Release type: Patch (CI compatibility & maintenance)
+
+Highlights:
+- Fixed 37 mypy strict type checking errors for CI compliance
+- Fixed flaky timeout test with timing variance tolerance
+- Removed unused imports for ruff linting compliance
+
+Changes:
+- Added type parameters to generic types: `Callable[..., Any]`, `dict[str, Any]`, `list[Any]`, `Pattern[str]`, `set[str]`
+- Removed 10 redundant casts in workers.py and hybrid_dispatcher.py
+- Added 8 missing function parameter and return type annotations
+- Updated test timing assertions to account for system scheduling variance
+- All changes are internal/maintenance - no API changes
+
+Files modified:
+- orchestrator/_internal/errors.py: Callable type parameters
+- orchestrator/_internal/infra/redis_cache.py: dict/list type parameters
+- orchestrator/_internal/execution/sandbox_filters.py: dict/list type parameters
+- orchestrator/_internal/security/secrets_redactor.py: Pattern type parameter
+- orchestrator/_internal/dispatch/workers.py: removed redundant casts
+- orchestrator/_internal/dispatch/hybrid_dispatcher.py: Callable types + casts
+- orchestrator/_internal/execution/programmatic_executor.py: dict type parameters
+- orchestrator/_internal/execution/skill_library.py: set type parameter
+- orchestrator/tools/vector_search.py: return type annotation
+- orchestrator/tools/tool_search.py: kwargs type annotation
+- orchestrator/tools/tool_discovery.py: function parameter and return types
+
+Verification:
+```bash
+python -m mypy orchestrator --show-error-codes --warn-unused-ignores --no-incremental
+# Result: Success: no issues found in 90 source files
+
+python -m ruff check orchestrator tests
+# Result: No issues
+```
+
+Run instructions (package users):
+```bash
+pip install toolweaver==0.12.4
+```
+
+---
+
+## v0.12.3 (2026-01-02)
+
+Release type: Patch (type annotation cleanup)
+
+Highlights:
+- Fixed 47 unused type:ignore comments for cleaner codebase
+- Improved mypy strict compliance
+
+Changes:
+- Removed all unused type:ignore directives across 9 files
+- All type annotations now properly justified
+- Enhanced code clarity and maintainability
+
+Run instructions (package users):
+```bash
+pip install toolweaver==0.12.3
+```
+
+---
+
 ## v0.12.2 (2026-01-02)
 
 Release type: Patch (plugin registry robustness)
