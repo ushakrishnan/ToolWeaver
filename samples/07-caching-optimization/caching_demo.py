@@ -48,7 +48,7 @@ class SimpleCache:
         self.cache.move_to_end(key)  # LRU
         return value
 
-    def set(self, key: str, value: Any):
+    def set(self, key: str, value: Any) -> None:
         """Set value in cache."""
         if key in self.cache:
             del self.cache[key]
@@ -79,13 +79,14 @@ cache = SimpleCache(max_size=100, ttl_seconds=3600)
 # ============================================================
 
 @mcp_tool(domain="receipts", description="OCR with caching")
-async def cached_ocr(image_uri: str) -> dict:
+async def cached_ocr(image_uri: str) -> dict[str, Any]:
     """Extract text with caching."""
     cache_key = f"ocr:{image_uri}"
 
     # Check cache
     cached = cache.get(cache_key)
-    if cached:
+    if isinstance(cached, dict):
+        cached = dict(cached)
         cached["cached"] = True
         return cached
 
@@ -103,13 +104,14 @@ async def cached_ocr(image_uri: str) -> dict:
 
 
 @mcp_tool(domain="parsing", description="Parse with caching")
-async def cached_parse(text: str) -> dict:
+async def cached_parse(text: str) -> dict[str, Any]:
     """Parse items with caching."""
     cache_key = f"parse:{text[:20]}"
 
     # Check cache
     cached = cache.get(cache_key)
-    if cached:
+    if isinstance(cached, dict):
+        cached = dict(cached)
         cached["cached"] = True
         return cached
 
@@ -125,12 +127,15 @@ async def cached_parse(text: str) -> dict:
     cache.set(cache_key, result)
     return result
 
+    # Safety fallback for typing (unreachable)
+    return {"cached": False}
+
 
 # ============================================================
 # Main Demo
 # ============================================================
 
-async def main():
+async def main() -> None:
     print("="*70)
     print("EXAMPLE 07: Caching & Optimization")
     print("="*70)
@@ -141,7 +146,7 @@ async def main():
 
     start_time = time.time()
     for _i in range(5):
-        result = await asyncio.sleep(0.5)
+        await asyncio.sleep(0.5)
     total_no_cache = time.time() - start_time
 
     print(f"  5 requests without cache: {total_no_cache:.2f}s")
@@ -159,7 +164,7 @@ async def main():
         # Alternate between 2 image URIs for cache hits
         image_uri = f"receipt_{i % 2}.jpg"
         start = time.time()
-        result = await cached_ocr({"image_uri": image_uri})
+        result = await cached_ocr(image_uri)
         elapsed = time.time() - start
         times.append(elapsed)
 
@@ -179,8 +184,8 @@ async def main():
 
         for _step in range(3):
             start = time.time()
-            await cached_ocr({"image_uri": "workflow.jpg"})
-            await cached_parse({"text": "test"})
+            await cached_ocr("workflow.jpg")
+            await cached_parse("test")
             elapsed = time.time() - start
             times_run.append(elapsed)
 

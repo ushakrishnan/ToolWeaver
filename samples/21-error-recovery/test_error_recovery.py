@@ -1,6 +1,5 @@
-
+import error_recovery_workflow as workflow
 import pytest
-import workflow
 
 
 class DummyOrchestrator:

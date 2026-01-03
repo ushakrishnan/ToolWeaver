@@ -184,7 +184,11 @@ async def weather_tool_worker(payload: dict[str, Any]) -> dict[str, Any]:
     data = weather_data.get(city, {"temp": 20, "condition": "unknown", "humidity": 60})
 
     # Convert to Celsius if needed
-    temp = data["temp"]
+    temp_raw = data.get("temp", 0)
+    try:
+        temp = float(temp_raw)  # type: ignore[arg-type]
+    except Exception:
+        temp = 0.0
     if units == "celsius" and temp < 50:  # Assume temp is in Fahrenheit if > 50
         temp = (temp - 32) * 5 / 9
 

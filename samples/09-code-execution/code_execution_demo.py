@@ -12,6 +12,7 @@ Execute computational tasks through a controlled, safe tool interface
 """
 
 import asyncio
+from typing import Any
 
 from orchestrator import mcp_tool, search_tools
 
@@ -20,13 +21,13 @@ from orchestrator import mcp_tool, search_tools
 # ============================================================
 
 @mcp_tool(domain="computation", description="Calculate receipt totals with tax")
-async def calculate_receipt(items: list) -> dict:
+async def calculate_receipt(items: list[dict[str, Any]]) -> dict[str, Any]:
     """Calculate receipt total with items and tax."""
     if not items:
         return {"error": "No items provided"}
 
     try:
-        subtotal = 0
+        subtotal: float = 0.0
         item_count = 0
 
         for item in items:
@@ -51,7 +52,7 @@ async def calculate_receipt(items: list) -> dict:
 
 
 @mcp_tool(domain="computation", description="Validate receipt data structure")
-async def validate_receipt_data(data: dict) -> dict:
+async def validate_receipt_data(data: dict[str, Any]) -> dict[str, Any]:
     """Validate that receipt data is structurally correct."""
     errors = []
 
@@ -96,7 +97,7 @@ async def validate_receipt_data(data: dict) -> dict:
 
 
 @mcp_tool(domain="computation", description="Transform currency values")
-async def transform_prices(items: list, multiplier: float = 1.0) -> dict:
+async def transform_prices(items: list[dict[str, Any]], multiplier: float = 1.0) -> dict[str, Any]:
     """Apply a transformation to all prices in items."""
     if not items:
         return {"error": "No items provided"}
@@ -123,7 +124,7 @@ async def transform_prices(items: list, multiplier: float = 1.0) -> dict:
 
 
 @mcp_tool(domain="computation", description="Generate receipt summary report")
-async def generate_receipt_report(receipt: dict) -> dict:
+async def generate_receipt_report(receipt: dict[str, Any]) -> dict[str, Any]:
     """Generate a formatted receipt report."""
     report = []
     report.append("=" * 50)
@@ -139,7 +140,7 @@ async def generate_receipt_report(receipt: dict) -> dict:
     report.append("-" * 50)
 
     items = receipt.get("items", [])
-    total_price = 0
+    total_price: float = 0.0
     total_qty = 0
 
     for item in items:
@@ -176,7 +177,7 @@ async def generate_receipt_report(receipt: dict) -> dict:
 # Main Demo
 # ============================================================
 
-async def main():
+async def main() -> None:
     """Run code execution demonstration."""
     print("=" * 70)
     print("EXAMPLE 09: Code Execution with ToolWeaver")
@@ -196,7 +197,7 @@ async def main():
 
     print("Step 1: Validate Receipt Data")
     print("-" * 70)
-    validation = await validate_receipt_data({"data": sample_receipt})
+    validation = await validate_receipt_data(sample_receipt)
     print(f"  Valid: {validation['valid']}")
     if validation['errors']:
         for error in validation['errors']:
@@ -207,7 +208,7 @@ async def main():
 
     print("Step 2: Calculate Receipt Total")
     print("-" * 70)
-    calculation = await calculate_receipt({"items": sample_receipt['items']})
+    calculation = await calculate_receipt(sample_receipt['items'])
     print(f"  Subtotal: ${calculation['subtotal']:.2f}")
     print(f"  Tax (8%): ${calculation['tax']:.2f}")
     print(f"  Total:    ${calculation['total']:.2f}")
@@ -216,10 +217,7 @@ async def main():
 
     print("Step 3: Apply Price Discount (10% off)")
     print("-" * 70)
-    discounted = await transform_prices({
-        "items": sample_receipt['items'],
-        "multiplier": 0.9
-    })
+    discounted = await transform_prices(sample_receipt['items'], multiplier=0.9)
     print("  Original vs Discounted Prices:")
     for item in discounted['items']:
         print(f"    {item['name']:15} ${item['original_price']:7.2f} -> ${item['new_price']:7.2f}")
@@ -227,16 +225,18 @@ async def main():
 
     print("Step 4: Generate Receipt Report")
     print("-" * 70)
-    report = await generate_receipt_report({"receipt": sample_receipt})
+    report = await generate_receipt_report(sample_receipt)
     print(report['report'])
     print()
 
     print("Step 5: Discover Computation Tools")
     print("-" * 70)
-    comp_tools = search_tools(domain="computation")
+    comp_tools = list(search_tools(domain="computation"))
     print(f"  Found {len(comp_tools)} computation tools:")
     for tool in comp_tools:
-        print(f"    • {tool.name:30} - {tool.description}")
+        name = getattr(tool, "name", None) or str(getattr(tool, "id", "unknown"))
+        desc = getattr(tool, "description", "")
+        print(f"    • {name:30} - {desc}")
     print()
 
     print("=" * 70)

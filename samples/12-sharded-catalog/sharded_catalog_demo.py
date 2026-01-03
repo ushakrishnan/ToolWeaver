@@ -51,7 +51,7 @@ class ShardedCatalog:
 
             self.shard_metadata.append({
                 "categories": ",".join(sorted(categories)),
-                "tool_count": len(shard)
+                "tool_count": str(len(shard))
             })
 
     async def search_shards(self, query: str, limit: int = 2) -> list[Tool]:

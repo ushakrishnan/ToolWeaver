@@ -76,7 +76,7 @@ async def get_repository_info(org: str, repo: str) -> dict:
 
 
 @mcp_tool(domain="github", description="Search repositories by programming language")
-async def search_repositories_by_language(language: str, org: str = None) -> dict:
+async def search_repositories_by_language(language: str, org: str | None = None) -> dict[str, Any]:
     """Search repositories by programming language."""
     lang_repos = {
         "Python": [
@@ -97,16 +97,18 @@ async def search_repositories_by_language(language: str, org: str = None) -> dic
     if org:
         repos = [r for r in repos if r.get("org") == org]
 
+    languages: dict[str, int] = {}
     return {
         "language": language,
         "organization": org or "all",
         "count": len(repos),
-        "repositories": repos
+        "repositories": repos,
+        "languages": languages,
     }
 
 
 @mcp_tool(domain="github", description="Analyze repository statistics")
-async def analyze_repository_stats(repos: list[dict[str, Any]]) -> dict:
+async def analyze_repository_stats(repos: list[dict[str, Any]]) -> dict[str, Any]:
     """Analyze statistics across multiple repositories."""
     if not repos:
         return {"error": "No repositories provided"}
@@ -115,7 +117,7 @@ async def analyze_repository_stats(repos: list[dict[str, Any]]) -> dict:
     total_forks = sum(r.get("forks", 0) for r in repos)
     avg_stars = total_stars // len(repos) if repos else 0
 
-    languages = {}
+    languages: dict[str, int] = {}
     for repo in repos:
         lang = repo.get("language", "Unknown")
         languages[lang] = languages.get(lang, 0) + 1

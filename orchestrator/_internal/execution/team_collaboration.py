@@ -33,7 +33,7 @@ import difflib
 import json
 import logging
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -198,7 +198,7 @@ class ApprovalManager:
             skill_name=skill.name,
             skill_version=skill.version,
             submitted_by=submitter_id,
-            submitted_at=datetime.utcnow().isoformat(),
+            submitted_at=datetime.now(timezone.utc).isoformat(),
             status=ApprovalStatus.PENDING,
             required_approvals=self.min_approvals,
             description=description,
@@ -251,7 +251,7 @@ class ApprovalManager:
             approver_id=approver_id,
             approver_name=approver_name,
             approver_role=approver_role,
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat(),
             approved=approved,
             comment=comment,
         )
@@ -309,7 +309,7 @@ class ApprovalManager:
             id=str(uuid.uuid4()),
             author_id=author_id,
             author_name=author_name,
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat(),
             text=text,
             line_number=line_number,
         )
@@ -447,7 +447,7 @@ class ApprovalManager:
 
         entry = AuditLogEntry(
             id=str(uuid.uuid4()),
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat(),
             action=action,
             actor_id=actor_id,
             actor_name=actor_name,
@@ -493,7 +493,7 @@ class ChangeTracker:
             skill_id=skill.name,
             version_from=version_from,
             version_to=skill.version,
-            changed_at=datetime.utcnow().isoformat(),
+            changed_at=datetime.now(timezone.utc).isoformat(),
             changed_by=changed_by,
             summary=summary or f"Updated to {skill.version}",
             code_diff=code_diff,
@@ -571,7 +571,7 @@ class AuditLog:
         Returns:
             List of matching audit log entries
         """
-        cutoff_date = (datetime.utcnow() - timedelta(days=days)).isoformat()
+        cutoff_date = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
         entries = []
 
         for path in _AUDIT_DIR.glob("*.json"):

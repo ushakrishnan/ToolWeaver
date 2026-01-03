@@ -5,6 +5,8 @@ Quick test for W&B monitoring integration.
 import os
 import sys
 
+import pytest
+
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
@@ -24,7 +26,7 @@ def test_wandb():
 
     if not wandb_key:
         print("❌ WANDB_API_KEY not set in .env")
-        return False
+        pytest.skip("WANDB_API_KEY not set")
 
     print(f"✅ WANDB_API_KEY found: {wandb_key[:10]}...")
     print(f"✅ Project: {wandb_project}")
@@ -35,7 +37,7 @@ def test_wandb():
         print(f"✅ wandb package installed (version {wandb.__version__})")
     except ImportError:
         print("❌ wandb not installed. Run: pip install wandb")
-        return False
+        pytest.skip("wandb not installed")
 
     print("\n📊 Creating monitor with W&B backend...")
 
@@ -84,15 +86,18 @@ def test_wandb():
         print("\n🌐 View your metrics at:")
         print(f"   https://wandb.ai/{os.getenv('WANDB_ENTITY', 'your-username')}/{wandb_project}")
 
-        return True
-
     except Exception as e:
         print(f"\n❌ ERROR: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        pytest.fail(f"W&B integration error: {e}")
 
 
 if __name__ == "__main__":
-    success = test_wandb()
-    sys.exit(0 if success else 1)
+    try:
+        test_wandb()
+        sys.exit(0)
+    except SystemExit:
+        raise
+    except Exception:
+        sys.exit(1)

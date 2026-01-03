@@ -18,7 +18,7 @@ class QuicksortOrchestrator:
     def __init__(self, num_agents: int = 4):
         self.a2a_client = A2AClient()
         self.num_agents = num_agents
-        self.agent_costs = {}  # Track cost per agent
+        self.agent_costs: dict[str, float] = {}  # Track cost per agent
         self.delegation_count = 0
 
     async def partition(self, arr: list[int], low: int, high: int) -> int:

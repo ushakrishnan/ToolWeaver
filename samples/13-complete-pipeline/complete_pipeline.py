@@ -20,6 +20,7 @@ Real-world results vary depending on:
 """
 
 import time
+from typing import TypedDict
 
 from dotenv import load_dotenv
 
@@ -136,6 +137,13 @@ def phase2_search(query: str):
     return relevant_tools
 
 
+class PlanStep(TypedDict):
+    id: int
+    name: str
+    tool: str
+    parallel: bool
+
+
 def phase3_planning(query: str, relevant_tools: list):
     """Phase 3: Multi-Step Planning with GPT-4"""
     print_section("Phase 3: Multi-Step Planning (GPT-4)")
@@ -143,7 +151,7 @@ def phase3_planning(query: str, relevant_tools: list):
     start_time = time.time()
 
     # Mock plan (in real scenario, would use Planner with GPT-4)
-    plan = {
+    plan: dict[str, list[PlanStep]] = {
         "steps": [
             {"id": 1, "name": "extract_text", "tool": "receipt_ocr", "parallel": False},
             {"id": 2, "name": "parse_items", "tool": "parse_items", "parallel": False},

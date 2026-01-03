@@ -5,13 +5,18 @@ This demonstrates the caching architecture with Redis + file fallback
 """
 
 import asyncio
+import importlib
 import time
 from pathlib import Path
+from typing import Any, cast
 
-from orchestrator._internal.infra.redis_cache import CircuitBreaker, RedisCache, ToolCache
+redis_cache = importlib.import_module("orchestrator._internal.infra.redis_cache")
+CircuitBreaker = redis_cache.CircuitBreaker
+RedisCache = redis_cache.RedisCache
+ToolCache = redis_cache.ToolCache
 
 
-async def demo_cache_layers():
+async def demo_cache_layers() -> None:
     """Demonstrates the multi-layer caching architecture."""
     print("="*80)
     print("CACHING DEEP DIVE: Multi-Layer Cache Architecture")
@@ -114,7 +119,7 @@ async def demo_cache_layers():
     print("-"*80)
 
     # Tool catalog structure
-    catalog = {
+    catalog: dict[str, Any] = {
         "tools": {
             "process_receipt": {
                 "name": "process_receipt",
@@ -150,8 +155,11 @@ async def demo_cache_layers():
     print(f"  Cached embedding: {len(embedding_vector)}-dimensional vector")
 
     # Retrieve
-    retrieved_catalog = cache.get("catalog:main")
-    print(f"\n  Retrieved catalog: {len(retrieved_catalog['tools'])} tools")
+    retrieved_catalog = cast(dict[str, Any] | None, cache.get("catalog:main"))
+    if retrieved_catalog:
+        print(f"\n  Retrieved catalog: {len(retrieved_catalog['tools'])} tools")
+    else:
+        print("\n  Retrieved catalog: 0 tools")
 
 
     # ============================================================================

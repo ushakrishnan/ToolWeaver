@@ -42,12 +42,15 @@ This demo shows the REAL value: CONTEXT EFFICIENCY + CODE ORCHESTRATION
 """
 
 import asyncio
+import importlib
 import json
 import time
 from typing import Any
 
-from orchestrator._internal.execution.programmatic_executor import ProgrammaticToolExecutor
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
+
+_prog_exec = importlib.import_module("orchestrator._internal.execution.programmatic_executor")
+ProgrammaticToolExecutor = _prog_exec.ProgrammaticToolExecutor
 
 
 def create_sample_catalog() -> ToolCatalog:
@@ -119,7 +122,7 @@ def mock_budget(user_id: str) -> dict[str, Any]:
     return {"user_id": user_id, "quarterly_budget": 10000}
 
 
-async def demo_traditional_approach():
+async def demo_traditional_approach() -> dict[str, Any]:
     """
     TRADITIONAL: 3 LLM rounds with parallel function calling
 
@@ -198,7 +201,7 @@ async def demo_traditional_approach():
     }
 
 
-async def demo_programmatic_approach():
+async def demo_programmatic_approach() -> dict[str, Any]:
     """
     PROGRAMMATIC: One LLM call generates code, code orchestrates everything
 
@@ -283,7 +286,7 @@ async def demo_programmatic_approach():
     }
 
 
-async def demo_comparison():
+async def demo_comparison() -> None:
     """Compare both approaches side by side"""
     print("\n" + "="*70)
     print("🎯 COMPARISON: Traditional vs Programmatic Execution")
@@ -336,7 +339,7 @@ async def demo_comparison():
     print("      - Programmatic: Processing 1000 items = same 2KB summary code")
 
 
-async def main():
+async def main() -> None:
     """Run all demos"""
     print("\n🎯 Programmatic Execution Demo")
     print("   The Real Value: Context Efficiency + Code Orchestration\n")

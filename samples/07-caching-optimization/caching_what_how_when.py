@@ -6,15 +6,21 @@ This demonstrates exactly what is cached, how it's cached, and when caching occu
 
 import asyncio
 import hashlib
+import importlib
 import json
 import time
 from pathlib import Path
+from typing import Any
 
-from orchestrator._internal.infra.idempotency import IdempotencyCache, generate_idempotency_key
-from orchestrator._internal.infra.redis_cache import RedisCache, ToolCache
+idempotency_mod = importlib.import_module("orchestrator._internal.infra.idempotency")
+redis_cache = importlib.import_module("orchestrator._internal.infra.redis_cache")
+IdempotencyCache = idempotency_mod.IdempotencyCache
+generate_idempotency_key = idempotency_mod.generate_idempotency_key
+RedisCache = redis_cache.RedisCache
+ToolCache = redis_cache.ToolCache
 
 
-def create_demo_data():
+def create_demo_data() -> tuple[dict[str, Any], list[dict[str, Any]], list[float], dict[str, Any]]:
     """Create sample data structures that get cached."""
 
     # 1. Tool Catalog
@@ -56,7 +62,7 @@ def create_demo_data():
     return catalog, search_results, embedding, agent_result
 
 
-async def demo_what_is_cached():
+async def demo_what_is_cached() -> None:
     """Shows WHAT data structures are cached."""
     print("="*80)
     print("WHAT IS CACHED: Data Structures & Cache Keys")
@@ -173,7 +179,7 @@ async def demo_what_is_cached():
     print("✓ Cached")
 
 
-async def demo_how_caching_works():
+async def demo_how_caching_works() -> None:
     """Shows HOW caching is implemented."""
     print("\n" + "="*80)
     print("HOW CACHING WORKS: Implementation Details")
@@ -307,7 +313,7 @@ Behavior:
     print(f"Threshold: {redis_cache.circuit_breaker.failure_threshold}")
 
 
-async def demo_when_caching_happens():
+async def demo_when_caching_happens() -> None:
     """Shows WHEN caching occurs in the request flow."""
     print("\n" + "="*80)
     print("WHEN CACHING HAPPENS: Request Flow Timeline")
@@ -412,7 +418,7 @@ Location: orchestrator/_internal/infra/redis_cache.py:443-450
 """)
 
 
-async def demo_cache_invalidation():
+async def demo_cache_invalidation() -> None:
     """Shows cache invalidation strategies."""
     print("\n" + "="*80)
     print("CACHE INVALIDATION: When & How")
@@ -494,7 +500,7 @@ C. Tool discovery cache:
     print(f"  After clear: key2={redis_cache.get('key2')}")
 
 
-async def demo_performance_comparison():
+async def demo_performance_comparison() -> None:
     """Shows performance impact with real timing."""
     print("\n" + "="*80)
     print("PERFORMANCE IMPACT: With vs Without Cache")
@@ -507,7 +513,7 @@ async def demo_performance_comparison():
                              cache_dir=cache_dir, enable_fallback=True)
 
     # Simulate expensive operation
-    async def expensive_operation(item_id: int):
+    async def expensive_operation(item_id: int) -> dict[str, Any]:
         await asyncio.sleep(0.1)  # Simulates API call
         return {"id": item_id, "processed": True}
 
@@ -553,7 +559,7 @@ async def demo_performance_comparison():
     print(f"  Cost savings: ${0.50 - 0.05*misses:.2f} ({(1 - 0.05*misses/0.50)*100:.0f}%)")
 
 
-async def main():
+async def main() -> None:
     """Run all demonstrations."""
     await demo_what_is_cached()
     await demo_how_caching_works()

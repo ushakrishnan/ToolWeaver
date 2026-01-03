@@ -11,11 +11,14 @@ This enables AI models to:
 """
 
 import asyncio
+import importlib
 import tempfile
 from pathlib import Path
 
-from orchestrator._internal.execution.code_generator import StubGenerator
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
+
+_code_gen = importlib.import_module("orchestrator._internal.execution.code_generator")
+StubGenerator = _code_gen.StubGenerator
 
 
 def create_sample_catalog() -> ToolCatalog:
@@ -74,7 +77,7 @@ def create_sample_catalog() -> ToolCatalog:
     return catalog
 
 
-def show_generated_structure(stub_dir: Path):
+def show_generated_structure(stub_dir: Path) -> None:
     """Display the generated file structure"""
     print("\n📁 Generated File Structure:")
     print("=" * 60)
@@ -85,7 +88,7 @@ def show_generated_structure(stub_dir: Path):
         print(f"{indent}└── {rel_path.name}")
 
 
-def show_stub_content(stub_dir: Path, tool_name: str):
+def show_stub_content(stub_dir: Path, tool_name: str) -> None:
     """Show content of a specific stub"""
     print(f"\n📄 Content of {tool_name}:")
     print("=" * 60)
@@ -102,7 +105,7 @@ def show_stub_content(stub_dir: Path, tool_name: str):
             print(f"\n... ({lines_count} more lines)")
 
 
-def show_usage_example():
+def show_usage_example() -> None:
     """Show how AI models would use the generated stubs"""
     print("\n💡 Usage Example (in AI-generated code):")
     print("=" * 60)
@@ -127,7 +130,7 @@ else:
 """)
 
 
-async def main():
+async def main() -> None:
     """Run the demo"""
     print("🚀 Code Stub Generation Demo")
     print("=" * 60)

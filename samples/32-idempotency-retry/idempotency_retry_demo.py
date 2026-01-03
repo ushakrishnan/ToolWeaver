@@ -38,7 +38,7 @@ async def main() -> None:
         agent_name="demo-agent",
         model="haiku",
         max_parallel=2,
-        timeout_per_agent=0.2,  # will cause the slow one to time out
+        timeout_per_agent=1,  # small timeout in seconds
         limits=limits,
         executor=simulated_executor,
     )

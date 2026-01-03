@@ -1,4 +1,6 @@
 import asyncio
+import importlib
+from typing import Any
 
 # Optional imports with fallbacks so this example can be smoke-tested without full install
 try:
@@ -7,21 +9,20 @@ except Exception:
     _CoreOrchestrator = None
 
 try:
-    from orchestrator._internal.observability.monitoring import (
-        ToolUsageMonitor as MonitoringBackend,  # type: ignore
-    )
+    _monitoring = importlib.import_module("orchestrator._internal.observability.monitoring")
+    MonitoringBackend = _monitoring.ToolUsageMonitor  # type: ignore
 except Exception:  # Minimal no-op fallback
     class MonitoringBackend:  # type: ignore
-        def log_tool_call(self, *_, **__):
+        def log_tool_call(self, *args: Any, **kwargs: Any) -> None:
             return None
 
 # Provide an Orchestrator symbol for tests to monkeypatch
 Orchestrator = _CoreOrchestrator if _CoreOrchestrator is not None else object  # type: ignore
 
 
-async def main():
-    orchestrator = Orchestrator()
-    monitoring = MonitoringBackend()  # uses default configured backend
+async def main() -> None:
+    orchestrator: Any = Orchestrator()
+    monitoring: Any = MonitoringBackend()  # uses default configured backend
 
     # 1) Discover capabilities (tools + agents)
     catalog = await orchestrator.discover_tools(use_cache=True)

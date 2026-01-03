@@ -1,3 +1,52 @@
+## v0.12.0 (2026-01-02)
+
+Release type: Minor (typing cleanup across samples, monitoring/test stability, version bump)
+
+Highlights:
+- All sample mypy errors fixed (no exclusions); caching demo, code execution, GitHub ops, and tool-addition demos now type-clean.
+- Monitoring/analytics tests stabilized: OTLP/Prometheus/W&B tests skip cleanly when deps/env are missing; no false failures.
+- Deprecated `datetime.utcnow()` replaced with `datetime.now(timezone.utc)` in collaboration and registry tests to silence warnings.
+- Version bumped to 0.12.0 in package metadata and exports.
+
+Changes:
+- Type fixes across samples (e.g., caching_demo, code_execution_demo, add_new_tools, github_ops, sharded_catalog, parallel_agents, skills).
+- Monitoring/analytics test skips: [tests/test_all_backends.py](tests/test_all_backends.py), [tests/test_otlp_integration.py](tests/test_otlp_integration.py), [tests/test_wandb_integration.py](tests/test_wandb_integration.py).
+- UTC timestamps: [orchestrator/_internal/execution/team_collaboration.py](orchestrator/_internal/execution/team_collaboration.py), [tests/test_registry.py](tests/test_registry.py).
+- Version constants: [pyproject.toml](pyproject.toml), [orchestrator/__init__.py](orchestrator/__init__.py).
+
+Publish steps:
+1. Confirm version in `pyproject.toml` is `0.12.0` (done).
+2. Build distributions:
+   ```bash
+   python -m build
+   ```
+3. Upload to PyPI:
+   ```bash
+   python -m twine upload dist/toolweaver-0.12.0*
+   ```
+4. Verify on PyPI: https://pypi.org/project/toolweaver/0.12.0/
+5. Tag the release:
+   ```bash
+   git tag v0.12.0
+   git push --tags
+   ```
+
+Run instructions (package users):
+```bash
+pip install toolweaver==0.12.0
+```
+
+Post-release checks:
+- `python -m ruff check`
+- `python -m mypy`
+- `python -m pytest` (OTLP/Prometheus/W&B suites skip when deps/env absent)
+
+Notes:
+- Keep PyPI token in CI secrets only (do not commit). The provided token string should be set as `TWINE_PASSWORD`/`PYPI_TOKEN` in CI.
+- `project.license` table deprecation remains; switch to `license = "Apache-2.0"` before Feb 2026.
+
+---
+
 ## v0.11.1 (2026-01-02)
 
 Release type: Patch (monitoring fixes + typing cleanup)
@@ -7,45 +56,6 @@ Highlights:
 - ToolUsageMonitor now dispatches backend logging with keywords, fixing broken monitoring tests.
 - Discovery/catalog typings tightened and orchestrator monitoring parameter annotated; mypy/ruff now clean for touched modules.
 - Targeted performance and monitoring tests pass (previous concurrent search/monitoring failures addressed).
-
-Changes:
-- Monitoring protocol/backends: [orchestrator/_internal/observability/monitoring_backends.py](orchestrator/_internal/observability/monitoring_backends.py)
-- Monitor dispatch uses keyword args: [orchestrator/_internal/observability/monitoring.py](orchestrator/_internal/observability/monitoring.py#L87-L109)
-- Orchestrator type annotation for monitoring: [orchestrator/_internal/runtime/orchestrator.py](orchestrator/_internal/runtime/orchestrator.py#L289-L305)
-- Discovery API catalog typing cleanup: [orchestrator/tools/discovery_api.py](orchestrator/tools/discovery_api.py#L13-L24)
-
-Publish steps:
-1. Confirm version in `pyproject.toml` is `0.11.1` (done).
-2. Build distributions:
-  ```bash
-  python -m build
-  ```
-3. Upload to PyPI:
-  ```bash
-  python -m twine upload dist/toolweaver-0.11.1*
-  ```
-4. Verify on PyPI: https://pypi.org/project/toolweaver/0.11.1/
-5. Tag the release:
-  ```bash
-  git tag v0.11.1
-  git push --tags
-  ```
-
-Run instructions (package users):
-```bash
-pip install toolweaver==0.11.1
-```
-
-Post-release checks:
-- `python -m ruff check`
-- `python -m mypy`
-- `python -m pytest tests/test_monitoring.py`
-- Optional: full `python -m pytest` (expected deprecation warnings unchanged)
-
-Notes:
-- Setuptools now warns that `project.license` as a TOML table is deprecated; switch to `license = "Apache-2.0"` before Feb 2026.
-
----
 
 
 ## v0.10.1 (2025-12-29)

@@ -5,10 +5,13 @@ import types
 
 spec = importlib.util.spec_from_file_location(
     "workflow22",
-    str(pathlib.Path(__file__).parent / "workflow.py"),
+    str(pathlib.Path(__file__).parent / "showcase_workflow.py"),
 )
+if spec is None or spec.loader is None:
+    raise RuntimeError("Failed to load showcase_workflow module")
+
 workflow22 = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(workflow22)  # type: ignore
+spec.loader.exec_module(workflow22)  # type: ignore[arg-type]
 
 
 class DummyOrchestrator:

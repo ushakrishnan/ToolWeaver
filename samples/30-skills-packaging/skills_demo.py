@@ -1,3 +1,5 @@
+from typing import cast
+
 from orchestrator import (
     get_tool_info,
     get_tool_skill,
@@ -6,6 +8,7 @@ from orchestrator import (
     sync_tool_with_skill,
     tool,
 )
+from orchestrator.shared.models import ToolDefinition
 
 
 @tool(name="add_numbers", description="Add two integers")
@@ -15,7 +18,7 @@ def add_numbers(a: int, b: int) -> dict:
 
 def main() -> None:
     # Get ToolDefinition for our tool
-    td = get_tool_info("add_numbers", detail_level="full")
+    td = cast(ToolDefinition, get_tool_info("add_numbers", detail_level="full"))
     assert td is not None, "Tool definition not found"
 
     # Save as a skill

@@ -10,18 +10,19 @@ Demonstrates how control flow patterns enable advanced agentic workflows:
 """
 
 import asyncio
+import importlib
 
 from orchestrator import SandboxEnvironment
-from orchestrator._internal.workflows.control_flow_patterns import (
-    ControlFlowPatterns,
-    create_conditional_code,
-    create_parallel_code,
-    create_polling_code,
-    create_retry_code,
-)
+
+_control_flow = importlib.import_module("orchestrator._internal.workflows.control_flow_patterns")
+ControlFlowPatterns = _control_flow.ControlFlowPatterns
+create_conditional_code = _control_flow.create_conditional_code
+create_parallel_code = _control_flow.create_parallel_code
+create_polling_code = _control_flow.create_polling_code
+create_retry_code = _control_flow.create_retry_code
 
 
-async def demo_pattern_detection():
+async def demo_pattern_detection() -> None:
     """Demo: Automatic pattern detection from task descriptions"""
     print("\n" + "=" * 80)
     print("DEMO 1: Automatic Pattern Detection")
@@ -40,7 +41,7 @@ async def demo_pattern_detection():
         print(f"   -> Detected pattern: {pattern.value if pattern else 'None'}")
 
 
-async def demo_polling_pattern():
+async def demo_polling_pattern() -> None:
     """Demo: Generate and execute polling code"""
     print("\n" + "=" * 80)
     print("DEMO 2: Polling Pattern")
@@ -96,7 +97,7 @@ result = "Polling completed after checks: " + str(check_count)
         print(f"[FAIL] Failed: {result.error}")
 
 
-async def demo_parallel_pattern():
+async def demo_parallel_pattern() -> None:
     """Demo: Generate and execute parallel processing code"""
     print("\n" + "=" * 80)
     print("DEMO 3: Parallel Pattern")
@@ -158,7 +159,7 @@ print(result)
         print(f"[FAIL] Failed: {result.error}")
 
 
-async def demo_conditional_pattern():
+async def demo_conditional_pattern() -> None:
     """Demo: Generate and execute conditional code"""
     print("\n" + "=" * 80)
     print("DEMO 4: Conditional Pattern")
@@ -207,7 +208,7 @@ async def notify_team(message):
             print(f"  {result.stdout.strip()}")
 
 
-async def demo_retry_pattern():
+async def demo_retry_pattern() -> None:
     """Demo: Generate and execute retry code"""
     print("\n" + "=" * 80)
     print("DEMO 5: Retry Pattern")
@@ -261,7 +262,7 @@ print(result)
         print(f"[FAIL] Failed: {result.error}")
 
 
-async def demo_pattern_comparison():
+async def demo_pattern_comparison() -> None:
     """Demo: Compare performance of different patterns"""
     print("\n" + "=" * 80)
     print("DEMO 6: Pattern Performance Comparison")
@@ -315,7 +316,7 @@ print(f"Parallel: Processed {len(results)} items")
     print(f"    Speedup:    {seq_time/par_time:.1f}x faster")
 
 
-async def main():
+async def main() -> None:
     """Run all demos"""
     print("\n" + "=" * 80)
     print(" " * 25 + "CONTROL FLOW PATTERNS DEMO")

@@ -11,12 +11,16 @@ In this example:
 """
 
 import asyncio
+import importlib
+from typing import Any
 
 from orchestrator import A2AClient, MCPClientShim
-from orchestrator._internal.runtime.orchestrator import run_step
+
+_runtime_orch = importlib.import_module("orchestrator._internal.runtime.orchestrator")
+run_step = _runtime_orch.run_step
 
 
-async def main():
+async def main() -> None:
     """Execute a hybrid tool + agent workflow."""
 
     # Initialize clients
@@ -24,7 +28,7 @@ async def main():
 
     async with A2AClient(config_path="examples/18-tool-agent-hybrid/agents.yaml") as a2a_client:
 
-        workflow_outputs = {}
+        workflow_outputs: dict[str, Any] = {}
 
         # Step 1: Tool - Fetch data (mock for demo)
         print("Step 1: Fetching data with MCP tool...")
@@ -93,11 +97,14 @@ async def main():
         # Step 4: Tool - Format report
         print("Step 4: Formatting report with MCP tool...")
         try:
-            # Simulate report formatting
+            analysis: dict[str, Any] = workflow_outputs.get("analysis", {}) or {}
+            segments = [str(segment) for segment in analysis.get("segments", [])]
+            recommendations = [str(rec) for rec in analysis.get("recommendations", [])]
+
             result4 = {
-                "report": "# Customer Analysis Report\n\n" +
-                          "## Segments: " + ", ".join(workflow_outputs["analysis"].get("segments", [])) + "\n" +
-                          "## Recommendations: " + ", ".join(workflow_outputs["analysis"].get("recommendations", [])),
+                "report": "# Customer Analysis Report\n\n"
+                          + "## Segments: " + ", ".join(segments) + "\n"
+                          + "## Recommendations: " + ", ".join(recommendations),
                 "format": "markdown"
             }
             workflow_outputs["report"] = result4

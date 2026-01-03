@@ -9,6 +9,8 @@ import os
 import sys
 import time
 
+import pytest
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -26,7 +28,7 @@ def test_otlp_config_loaded():
     if missing:
         print(f"[SKIP] Missing env vars: {missing}")
         print("Set OTLP_ENDPOINT, OTLP_INSTANCE_ID, OTLP_TOKEN to run OTLP tests")
-        return False
+        pytest.skip(f"Missing env vars: {missing}")
 
     endpoint = os.getenv("OTLP_ENDPOINT")
     instance_id = os.getenv("OTLP_INSTANCE_ID")
@@ -36,8 +38,6 @@ def test_otlp_config_loaded():
     print(f"[PASS] OTLP_INSTANCE_ID: {instance_id}")
     print(f"[PASS] OTLP_TOKEN: ***{token[-8:]}")
 
-    return True
-
 
 def test_otlp_import():
     """Test that OTLP metrics module can be imported"""
@@ -45,24 +45,31 @@ def test_otlp_import():
 
     try:
         from orchestrator._internal.execution.analytics import OTLP_AVAILABLE
-
-        if not OTLP_AVAILABLE:
-            print("[FAIL] OTLP not available (missing dependencies)")
-            print("Run: pip install opentelemetry-api opentelemetry-sdk opentelemetry-exporter-otlp-proto-http")
-            return False
-
-        print("[PASS] OTLPMetrics imported successfully")
-        print(f"[PASS] OTLP_AVAILABLE: {OTLP_AVAILABLE}")
-        return True
-
     except Exception as e:
         print(f"[FAIL] Import error: {e}")
-        return False
+        pytest.fail(f"OTLP import failed: {e}")
+
+    if not OTLP_AVAILABLE:
+        print("[SKIP] OTLP not available (missing dependencies)")
+        print("Run: pip install opentelemetry-api opentelemetry-sdk opentelemetry-exporter-otlp-proto-http")
+        pytest.skip("OTLP not available (missing dependencies)")
+
+    print("[PASS] OTLPMetrics imported successfully")
+    print(f"[PASS] OTLP_AVAILABLE: {OTLP_AVAILABLE}")
 
 
 def test_otlp_client_creation():
     """Test creating OTLP metrics client"""
     print("\n=== Test 3: OTLP Client Creation ===")
+
+    required_vars = ["OTLP_ENDPOINT", "OTLP_INSTANCE_ID", "OTLP_TOKEN"]
+    missing = [var for var in required_vars if not os.getenv(var)]
+    if missing:
+        pytest.skip(f"Missing env vars for OTLP client: {missing}")
+
+    from orchestrator._internal.execution.analytics import OTLP_AVAILABLE
+    if not OTLP_AVAILABLE:
+        pytest.skip("OTLP not available (missing dependencies)")
 
     try:
         from orchestrator._internal.execution.analytics import OTLPMetrics
@@ -79,18 +86,27 @@ def test_otlp_client_creation():
         print(f"[INFO] Service: {config['service_name']} v{config['service_version']}")
         print(f"[INFO] Healthy: {config['healthy']}")
 
-        return True
-
     except Exception as e:
         print(f"[FAIL] Client creation error: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        if isinstance(e, RuntimeError) and "OpenTelemetry not installed" in str(e):
+            pytest.skip("OTLP not installed in test environment")
+        pytest.fail(f"Client creation error: {e}")
 
 
 def test_record_metrics():
     """Test recording metrics to OTLP"""
     print("\n=== Test 4: Record Metrics ===")
+
+    required_vars = ["OTLP_ENDPOINT", "OTLP_INSTANCE_ID", "OTLP_TOKEN"]
+    missing = [var for var in required_vars if not os.getenv(var)]
+    if missing:
+        pytest.skip(f"Missing env vars for OTLP metrics: {missing}")
+
+    from orchestrator._internal.execution.analytics import OTLP_AVAILABLE
+    if not OTLP_AVAILABLE:
+        pytest.skip("OTLP not available (missing dependencies)")
 
     try:
         from orchestrator._internal.execution.analytics import OTLPMetrics
@@ -133,18 +149,27 @@ def test_record_metrics():
         client.update_health_score("test_skill_otlp", score=82.5)
         print("[PASS] Updated health score")
 
-        return True
-
     except Exception as e:
         print(f"[FAIL] Recording error: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        if isinstance(e, RuntimeError) and "OpenTelemetry not installed" in str(e):
+            pytest.skip("OTLP not installed in test environment")
+        pytest.fail(f"Recording error: {e}")
 
 
 def test_factory_function():
     """Test factory function for creating analytics client"""
     print("\n=== Test 5: Factory Function ===")
+
+    required_vars = ["OTLP_ENDPOINT", "OTLP_INSTANCE_ID", "OTLP_TOKEN"]
+    missing = [var for var in required_vars if not os.getenv(var)]
+    if missing:
+        pytest.skip(f"Missing env vars for OTLP factory: {missing}")
+
+    from orchestrator._internal.execution.analytics import OTLP_AVAILABLE
+    if not OTLP_AVAILABLE:
+        pytest.skip("OTLP not available (missing dependencies)")
 
     try:
         from orchestrator._internal.execution.analytics import create_analytics_client
@@ -160,18 +185,27 @@ def test_factory_function():
         client2 = create_analytics_client()
         print(f"[PASS] Created client: {type(client2).__name__}")
 
-        return True
-
     except Exception as e:
         print(f"[FAIL] Factory error: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        if isinstance(e, RuntimeError) and "OpenTelemetry not installed" in str(e):
+            pytest.skip("OTLP not installed in test environment")
+        pytest.fail(f"Factory error: {e}")
 
 
 def test_wait_for_export():
     """Test waiting for metrics export to Grafana Cloud"""
     print("\n=== Test 6: Wait for Export ===")
+
+    required_vars = ["OTLP_ENDPOINT", "OTLP_INSTANCE_ID", "OTLP_TOKEN"]
+    missing = [var for var in required_vars if not os.getenv(var)]
+    if missing:
+        pytest.skip(f"Missing env vars for OTLP export wait: {missing}")
+
+    from orchestrator._internal.execution.analytics import OTLP_AVAILABLE
+    if not OTLP_AVAILABLE:
+        pytest.skip("OTLP not available (missing dependencies)")
 
     try:
         from orchestrator._internal.execution.analytics import OTLPMetrics
@@ -194,13 +228,13 @@ def test_wait_for_export():
         print('  - toolweaver_skill_latency_milliseconds')
         print('  - toolweaver_skill_health_score')
 
-        return True
-
     except Exception as e:
         print(f"[FAIL] Export wait error: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        if isinstance(e, RuntimeError) and "OpenTelemetry not installed" in str(e):
+            pytest.skip("OTLP not installed in test environment")
+        pytest.fail(f"Export wait error: {e}")
 
 
 def main():

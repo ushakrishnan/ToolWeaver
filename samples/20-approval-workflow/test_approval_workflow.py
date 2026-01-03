@@ -1,7 +1,7 @@
 import builtins
 
+import approval_workflow
 import pytest
-import workflow
 
 
 class DummyOrchestrator:
@@ -20,9 +20,9 @@ class DummyOrchestrator:
 @pytest.mark.asyncio
 async def test_workflow_smoke(monkeypatch):
     dummy = DummyOrchestrator()
-    monkeypatch.setattr(workflow, "Orchestrator", lambda: dummy)
+    monkeypatch.setattr(approval_workflow, "Orchestrator", lambda: dummy)
     monkeypatch.setattr(builtins, "input", lambda _: "y")
 
-    await workflow.main()
+    await approval_workflow.main()
 
     assert ("tool", "apply_changes") in dummy.calls

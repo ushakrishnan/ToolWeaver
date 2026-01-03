@@ -26,7 +26,7 @@ def main() -> None:
     print("Tool details:", json.dumps(r.json(), indent=2))
 
     # Execute tool with sample params
-    payload = {"params": {}}
+    payload: dict[str, object] = {"params": {}}
     r = requests.post(f"{BASE_URL}/tools/{name}/execute", json=payload)
     r.raise_for_status()
     print("Execution result:", json.dumps(r.json(), indent=2))

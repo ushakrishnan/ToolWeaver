@@ -16,7 +16,7 @@ from typing import Any
 
 
 # Simulated agent task
-async def execute_task(task_id: str, priority: int, delay: float = 0.1) -> dict:
+async def execute_task(task_id: str, priority: int, delay: float = 0.1) -> dict[str, Any]:
     """Simulate an agent executing a task."""
     await asyncio.sleep(delay)
 
@@ -32,15 +32,16 @@ async def execute_task(task_id: str, priority: int, delay: float = 0.1) -> dict:
     }
 
 
-async def parallel_execute(tasks: list[dict[str, Any]], max_concurrent: int = 3) -> list[dict]:
+async def parallel_execute(tasks: list[dict[str, Any]], max_concurrent: int = 3) -> list[dict[str, Any]]:
     """Execute tasks in parallel with concurrency limit."""
     semaphore = asyncio.Semaphore(max_concurrent)
 
-    async def bounded_execute(task):
+    async def bounded_execute(task: dict[str, Any]) -> dict[str, Any]:
         async with semaphore:
             return await execute_task(**task)
 
-    return await asyncio.gather(*[bounded_execute(task) for task in tasks])
+    results: list[dict[str, Any]] = await asyncio.gather(*[bounded_execute(task) for task in tasks])
+    return results
 
 
 def rank_by_metric(results: list[dict], metric: str, descending: bool = True) -> list[dict]:
@@ -105,8 +106,8 @@ async def main():
         # Statistics
         print("Step 5: Dispatch Statistics")
         print("-" * 70)
-        total_cost = sum(r['cost'] for r in results)
-        avg_score = sum(r['score'] for r in results) / len(results) if results else 0
+        total_cost = sum(float(r.get('cost', 0.0)) for r in results)
+        avg_score = sum(float(r.get('score', 0.0)) for r in results) / len(results) if results else 0.0
 
         print(f"  Total results: {len(results)}")
         print(f"  Total cost: ${total_cost:.3f}")

@@ -2,7 +2,7 @@
 """Test skill registry - Phase 4.3."""
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from orchestrator._internal.execution import (
     RegistryConfig,
@@ -75,7 +75,7 @@ skill_meta = RegistrySkill(
     rating=4.5,
     rating_count=42,
     install_count=156,
-    created_at=datetime.utcnow().isoformat(),
+    created_at=datetime.now(timezone.utc).isoformat(),
     license="MIT",
 )
 print("[OK] Created registry skill metadata:")

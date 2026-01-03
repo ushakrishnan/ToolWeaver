@@ -129,18 +129,24 @@ def test_backend(backend_name: str) -> bool:
         return False
 
 
-def test_sqlite_backend() -> bool:
+def test_sqlite_backend() -> None:
     """Test SQLite backend"""
-    return test_backend("sqlite")
+    result = test_backend("sqlite")
+    assert result is True
 
 
-def test_otlp_backend() -> bool:
+def test_otlp_backend() -> None:
     """Test OTLP backend"""
     # Check if configured
     if not all([os.getenv("OTLP_ENDPOINT"), os.getenv("OTLP_INSTANCE_ID"), os.getenv("OTLP_TOKEN")]):
         print("\n[SKIP] OTLP backend not configured")
         print("[INFO] Set OTLP_ENDPOINT, OTLP_INSTANCE_ID, OTLP_TOKEN to test OTLP")
-        return False
+        pytest.skip("OTLP backend not configured; set OTLP_ENDPOINT, OTLP_INSTANCE_ID, OTLP_TOKEN")
+
+    from orchestrator._internal.execution.analytics.otlp_metrics import OTLP_AVAILABLE
+
+    if not OTLP_AVAILABLE:
+        pytest.skip("OTLP dependencies not installed")
 
     result = test_backend("otlp")
 
@@ -149,11 +155,16 @@ def test_otlp_backend() -> bool:
         time.sleep(62)
         print("[INFO] OTLP metrics should now be visible in Grafana Cloud")
 
-    return result
+    assert result is True
 
 
-def test_prometheus_backend() -> bool:
+def test_prometheus_backend() -> None:
     """Test Prometheus backend"""
+    from orchestrator._internal.execution.analytics.prometheus_metrics import PROMETHEUS_AVAILABLE
+
+    if not PROMETHEUS_AVAILABLE:
+        pytest.skip("Prometheus client not installed")
+
     result = test_backend("prometheus")
 
     if result:
@@ -161,20 +172,25 @@ def test_prometheus_backend() -> bool:
         print(f"\n[INFO] Prometheus metrics available at: http://localhost:{port}/metrics")
         print(f"[INFO] Test with: curl http://localhost:{port}/metrics")
 
-    return result
+    assert result is True
 
 
-def test_factory_function() -> bool:
+def test_factory_function() -> None:
     """Test factory function with different backends"""
     print(f"\n{'='*70}")
     print("Testing Factory Function")
     print(f"{'='*70}")
 
-    try:
-        from orchestrator._internal.execution.analytics import create_analytics_client
+    from orchestrator._internal.execution.analytics import create_analytics_client
+    from orchestrator._internal.execution.analytics.otlp_metrics import OTLP_AVAILABLE
+    from orchestrator._internal.execution.analytics.prometheus_metrics import PROMETHEUS_AVAILABLE
 
-        backends = ["sqlite", "prometheus"]
-        if all([os.getenv("OTLP_ENDPOINT"), os.getenv("OTLP_INSTANCE_ID"), os.getenv("OTLP_TOKEN")]):
+    try:
+        backends = ["sqlite"]
+        if PROMETHEUS_AVAILABLE:
+            backends.append("prometheus")
+        otlp_env_ready = all([os.getenv("OTLP_ENDPOINT"), os.getenv("OTLP_INSTANCE_ID"), os.getenv("OTLP_TOKEN")])
+        if OTLP_AVAILABLE and otlp_env_ready:
             backends.append("otlp")
 
         for backend in backends:
@@ -184,13 +200,13 @@ def test_factory_function() -> bool:
             print(f"[PASS] Created: {type(client).__name__}")
 
         print("\n[SUCCESS] Factory function works for all backends!")
-        return True
+        return None
 
     except Exception as e:
         print(f"\n[FAIL] Factory function failed: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        pytest.fail(f"Factory function failed: {e}")
 
 
 def main():

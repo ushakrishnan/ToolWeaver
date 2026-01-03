@@ -13,17 +13,21 @@ Output:
 """
 
 import asyncio
+import importlib
 import sys
+from typing import Any
 
-from orchestrator._internal.assessment.evaluation import AgentEvaluator
-from orchestrator._internal.dispatch.functions import (
-    apply_discount,
-    compute_item_statistics,
-    compute_tax,
-    filter_items_by_category,
-    merge_items,
-)
-from orchestrator._internal.observability.context_tracker import ContextTracker
+_assessment = importlib.import_module("orchestrator._internal.assessment.evaluation")
+_dispatch_functions = importlib.import_module("orchestrator._internal.dispatch.functions")
+_context_tracker = importlib.import_module("orchestrator._internal.observability.context_tracker")
+
+AgentEvaluator = _assessment.AgentEvaluator
+apply_discount = _dispatch_functions.apply_discount
+compute_item_statistics = _dispatch_functions.compute_item_statistics
+compute_tax = _dispatch_functions.compute_tax
+filter_items_by_category = _dispatch_functions.filter_items_by_category
+merge_items = _dispatch_functions.merge_items
+ContextTracker = _context_tracker.ContextTracker
 
 
 class SimpleOrchestrator:
@@ -34,7 +38,7 @@ class SimpleOrchestrator:
     This simulates the current ToolWeaver behavior for testing.
     """
 
-    def __init__(self, context_tracker: ContextTracker):
+    def __init__(self, context_tracker: Any) -> None:
         self.context_tracker = context_tracker
         self.functions = {
             "compute_tax": compute_tax,
@@ -44,7 +48,7 @@ class SimpleOrchestrator:
             "compute_item_statistics": compute_item_statistics
         }
 
-    async def execute(self, prompt: str, context: dict = None):
+    async def execute(self, prompt: str, context: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Execute task based on prompt.
 
@@ -179,7 +183,7 @@ class SimpleOrchestrator:
             self.context_tracker.add_tool_result(500)  # Simulated result size
 
 
-async def main():
+async def main() -> Any:
     """Run baseline benchmark and save results"""
 
     print("="*60)

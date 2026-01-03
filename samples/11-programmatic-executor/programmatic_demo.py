@@ -5,12 +5,13 @@ Real-world performance varies with network latency and API availability.
 """
 import asyncio
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent / ".env")
 
-async def simulate_tool(name: str, data: any):
+async def simulate_tool(name: str, data: Any) -> dict[str, Any]:
     """Simulate tool execution"""
     await asyncio.sleep(0.01)
     return {"tool": name, "processed": len(data) if isinstance(data, list) else 1}
