@@ -47,9 +47,9 @@ jobs:
           files: ./coverage.xml
           flags: unittests
           verbose: true
-      - name: Check no public imports from _internal (examples only)
+      - name: Check no public imports from _internal (samples only)
         run: |
-          python scripts/check_no_internal_imports.py examples
+          python scripts/check_no_internal_imports.py samples
 
   public-api-smoke:
     name: Public API Smoke (no optionals)
