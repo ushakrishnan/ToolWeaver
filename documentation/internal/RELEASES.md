@@ -1,14 +1,89 @@
-## v0.12.0 (2026-01-02)
+## v0.12.2 (2026-01-02)
 
-Release type: Minor (typing cleanup across samples, monitoring/test stability, version bump)
+Release type: Patch (plugin registry robustness)
+
+Highlights:
+- Plugin registry AttributeError fix: Properly handles ToolDefinition objects from plugins
+- Type system improvements for better plugin compatibility
+
+Changes:
+- Registry validation accepts both dict and ToolDefinition types
+- Discovery API correctly handles catalog.tools as dict (not list)
+- Fixed mypy type annotations with builtins.list to avoid method name conflicts
+
+Publish steps:
+1. Confirm version in `pyproject.toml` is `0.12.2` (done).
+2. Build distributions:
+   ```bash
+   python -m build
+   ```
+3. Upload to PyPI:
+   ```bash
+   python -m twine upload dist/toolweaver-0.12.2*
+   ```
+4. Verify on PyPI: https://pypi.org/project/toolweaver/0.12.2/
+5. Tag the release:
+   ```bash
+   git tag v0.12.2
+   git push --tags
+   ```
+
+Run instructions (package users):
+```bash
+pip install toolweaver==0.12.2
+```
+
+---
+## v0.12.2 (2026-01-02)
+
+Release type: Patch (plugin registry robustness)
+
+Highlights:
+- Plugin registry AttributeError fix: Properly handles ToolDefinition objects from plugins
+- Type system improvements for better plugin compatibility
+
+Changes:
+- Registry validation accepts both dict and ToolDefinition types
+- Discovery API correctly handles catalog.tools as dict (not list)
+- Fixed mypy type annotations with builtins.list to avoid method name conflicts
+
+Publish steps:
+1. Confirm version in `pyproject.toml` is `0.12.2` (done).
+2. Build distributions:
+   ```bash
+   python -m build
+   ```
+3. Upload to PyPI:
+   ```bash
+   python -m twine upload dist/toolweaver-0.12.2*
+   ```
+4. Verify on PyPI: https://pypi.org/project/toolweaver/0.12.2/
+5. Tag the release:
+   ```bash
+   git tag v0.12.2
+   git push --tags
+   ```
+
+Run instructions (package users):
+```bash
+pip install toolweaver==0.12.2
+```
+
+---
+## v0.12.2 (2026-01-02)
+
+Release type: Minor (typing cleanup across samples, monitoring/test stability, plugin registry fix, version bump)
 
 Highlights:
 - All sample mypy errors fixed (no exclusions); caching demo, code execution, GitHub ops, and tool-addition demos now type-clean.
+- Plugin registry now accepts both dict and ToolDefinition objects from plugins, fixing CI AttributeError ('ToolDefinition' object has no attribute 'get').
 - Monitoring/analytics tests stabilized: OTLP/Prometheus/W&B tests skip cleanly when deps/env are missing; no false failures.
 - Deprecated `datetime.utcnow()` replaced with `datetime.now(timezone.utc)` in collaboration and registry tests to silence warnings.
 - Version bumped to 0.12.0 in package metadata and exports.
 
 Changes:
+- Plugin registry type flexibility: [orchestrator/plugins/registry.py](orchestrator/plugins/registry.py) - PluginProtocol.get_tools() now returns `list[Any]` instead of `list[dict[str, Any]]`; validation checks for both dict and ToolDefinition instances.
+- Discovery API type consistency: [orchestrator/tools/discovery_api.py](orchestrator/tools/discovery_api.py) - Fixed catalog.tools handling (always dict, never list); proper normalization to ToolDefinition.
 - Type fixes across samples (e.g., caching_demo, code_execution_demo, add_new_tools, github_ops, sharded_catalog, parallel_agents, skills).
 - Monitoring/analytics test skips: [tests/test_all_backends.py](tests/test_all_backends.py), [tests/test_otlp_integration.py](tests/test_otlp_integration.py), [tests/test_wandb_integration.py](tests/test_wandb_integration.py).
 - UTC timestamps: [orchestrator/_internal/execution/team_collaboration.py](orchestrator/_internal/execution/team_collaboration.py), [tests/test_registry.py](tests/test_registry.py).
