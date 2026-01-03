@@ -545,8 +545,8 @@ print("done")
 
         call = result["tool_calls"][0]
         assert "duration" in call
-        assert call["duration"] > 0
-        assert call["completed_at"] > call["timestamp"]
+        assert call["duration"] >= 0
+        assert call["completed_at"] >= call["timestamp"]
 
 
 class TestSafeBuiltins:

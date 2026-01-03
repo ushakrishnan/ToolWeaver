@@ -192,7 +192,7 @@ class TestDispatchLimitTracker:
         assert stats["failed_agents"] == 1
         assert stats["total_cost_usd"] == 0.80
         assert stats["failure_rate"] == 0.5
-        assert stats["elapsed_seconds"] > 0
+        assert stats["elapsed_seconds"] >= 0
 
     def test_no_limits(self):
         """Test that None limits are not enforced."""

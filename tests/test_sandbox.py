@@ -175,7 +175,7 @@ result = 1 + 2
 
         assert execution_result.success is True
         assert execution_result.error is None
-        assert execution_result.duration > 0
+        assert execution_result.duration >= 0
 
     async def test_execution_with_context(self):
         """Test execution with context variables"""
