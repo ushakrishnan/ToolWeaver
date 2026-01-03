@@ -3,7 +3,7 @@
 > **👤 New User?** See [samples/](../samples/) for ready-to-run examples using the installed package.  
 > **📋 Current status:** PyPI package refresh is in progress; treat `examples/` as the canonical, up-to-date source. We'll regenerate `samples/` after the package is finalized.
 > **🔧 For Developers:** Use `examples/` to work against local source.  
-> **👤 End Users:** These samples run against the published package `toolweaver==0.12.3`.  
+> **👤 End Users:** These samples run against the published package `toolweaver==0.12.4`.  
 > **📋 Status:** Samples mirror `examples/` and import the installed package (no local path hacks).
 
 Complete showcase of ToolWeaver capabilities through real-world scenarios using the installed package.
