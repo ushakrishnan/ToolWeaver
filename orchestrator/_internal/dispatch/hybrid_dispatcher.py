@@ -23,7 +23,7 @@ else:
 logger = logging.getLogger(__name__)
 
 # Global function registry for structured function calls
-_function_map: dict[str, Callable] = {}
+_function_map: dict[str, Callable[..., Any]] = {}
 
 
 def register_function(name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
@@ -42,7 +42,7 @@ def register_function(name: str) -> Callable[[Callable[..., Any]], Callable[...,
     return decorator
 
 
-def get_registered_functions() -> dict[str, Callable]:
+def get_registered_functions() -> dict[str, Callable[..., Any]]:
     """Return all registered functions."""
     return _function_map.copy()
 
@@ -73,7 +73,7 @@ async def function_call_worker(payload: dict[str, Any]) -> dict[str, Any]:
     logger.info(f"Executing function call: {validated.name}")
     try:
         result = func(**validated.args)
-        return cast(dict[str, Any], FunctionCallOutput(result=result).model_dump())
+        return FunctionCallOutput(result=result).model_dump()
     except Exception as e:
         logger.error(f"Function call failed: {validated.name}", exc_info=True)
         raise RuntimeError(f"Function '{validated.name}' execution failed: {e}") from e
@@ -141,7 +141,7 @@ async def dispatch_step(
             idempotency_key=step.get('idempotency_key'),
             timeout=step.get('timeout_s', 30)
         )
-        return cast(dict[str, Any], result)
+        return result
     elif tool_type.startswith("agent_") and a2a_client:
         agent_id = tool_type[len("agent_"):]
         task = resolved_input.get("task") or step.get("task") or tool_type
@@ -164,13 +164,13 @@ async def dispatch_step(
                 chunks.append(chunk)
             return {"chunks": chunks}
         resp = await a2a_client.delegate_to_agent(req)
-        return cast(dict[str, Any], resp.result)
+        return resp.result
     elif tool_type == "function_call":
         # Structured function call
         return await function_call_worker(resolved_input)
     elif tool_type == "code_exec":
         # Sandboxed code execution
-        return cast(dict[str, Any], await code_exec_worker(resolved_input))
+        return await code_exec_worker(resolved_input)
     else:
         available_mcp = ', '.join(mcp_client.tool_map.keys())
         available_funcs = ', '.join(_function_map.keys())

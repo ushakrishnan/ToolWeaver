@@ -408,22 +408,22 @@ class ToolCache:
         self.EMBEDDING_TTL = 7 * 24 * 3600  # 7 days
         self.TOOL_TTL = 24 * 3600     # 24 hours
 
-    def get_catalog(self, catalog_hash: str) -> dict | None:
+    def get_catalog(self, catalog_hash: str) -> dict[str, Any] | None:
         """Get cached tool catalog"""
         key = f"catalog:v2:{catalog_hash}"
         return self.cache.get(key)
 
-    def set_catalog(self, catalog_hash: str, catalog_data: dict) -> bool:
+    def set_catalog(self, catalog_hash: str, catalog_data: dict[str, Any]) -> bool:
         """Cache tool catalog"""
         key = f"catalog:v2:{catalog_hash}"
         return self.cache.set(key, catalog_data, ttl=self.CATALOG_TTL)
 
-    def get_search_results(self, query_hash: str, catalog_version: str, top_k: int) -> list | None:
+    def get_search_results(self, query_hash: str, catalog_version: str, top_k: int) -> list[Any] | None:
         """Get cached search results"""
         key = f"search:{query_hash}:{catalog_version}:{top_k}"
         return self.cache.get(key)
 
-    def set_search_results(self, query_hash: str, catalog_version: str, top_k: int, results: list) -> bool:
+    def set_search_results(self, query_hash: str, catalog_version: str, top_k: int, results: list[Any]) -> bool:
         """Cache search results"""
         key = f"search:{query_hash}:{catalog_version}:{top_k}"
         return self.cache.set(key, results, ttl=self.SEARCH_TTL)
@@ -438,12 +438,12 @@ class ToolCache:
         key = f"embedding:{text_hash}:{model_name}"
         return self.cache.set(key, embedding, ttl=self.EMBEDDING_TTL)
 
-    def get_tool(self, tool_name: str, version: str) -> dict | None:
+    def get_tool(self, tool_name: str, version: str) -> dict[str, Any] | None:
         """Get cached tool metadata"""
         key = f"tool:{tool_name}:v{version}"
         return self.cache.get(key)
 
-    def set_tool(self, tool_name: str, version: str, tool_data: dict) -> bool:
+    def set_tool(self, tool_name: str, version: str, tool_data: dict[str, Any]) -> bool:
         """Cache tool metadata"""
         key = f"tool:{tool_name}:v{version}"
         return self.cache.set(key, tool_data, ttl=self.TOOL_TTL)

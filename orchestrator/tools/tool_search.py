@@ -367,7 +367,7 @@ def search_tools(
     top_k: int = 5,
     domain: str | None = None,
     type_filter: str | None = None,
-    **kwargs
+    **kwargs: Any
 ) -> list[ToolDefinition]:
     """
     Convenience function to search tools and return only ToolDefinitions.

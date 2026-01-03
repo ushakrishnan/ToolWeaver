@@ -104,8 +104,7 @@ async def receipt_ocr_worker(payload: dict[str, Any]) -> dict[str, Any]:
             confidence = 0.95  # Azure CV is typically high confidence
 
             logger.info(f"Successfully extracted {len(extracted_text)} lines of text")
-            from typing import cast
-            return cast(dict[str, Any], ReceiptOCROut(text=text, confidence=confidence).model_dump())
+            return ReceiptOCROut(text=text, confidence=confidence).model_dump()
 
         except Exception as e:
             logger.error(f"Azure Computer Vision error: {e}. Falling back to mock data.")
@@ -117,8 +116,7 @@ async def receipt_ocr_worker(payload: dict[str, Any]) -> dict[str, Any]:
 def _mock_ocr(image_uri: str) -> dict[str, Any]:
     """Generate mock OCR data for testing."""
     text = f"MOCK RECEIPT DATA (from {image_uri})\n\nCoffee Shop Receipt\n1x Coffee 3.50\n2x Bagel 5.00\nSubtotal: 8.50\nTax: 0.68\nTOTAL: 9.18"
-    from typing import cast
-    return cast(dict[str, Any], ReceiptOCROut(text=text, confidence=0.98).model_dump())
+    return ReceiptOCROut(text=text, confidence=0.98).model_dump()
 
 async def line_item_parser_worker(payload: dict[str, Any]) -> dict[str, Any]:
     """
@@ -137,8 +135,7 @@ async def line_item_parser_worker(payload: dict[str, Any]) -> dict[str, Any]:
             logger.info("Using small model for line item parsing")
             items_dicts = await small_model.parse_line_items(ocr_text)
             items = [LineItem(**item) for item in items_dicts]
-            from typing import cast
-            return cast(dict[str, Any], LineItemParserOut(items=items).model_dump())
+            return LineItemParserOut(items=items).model_dump()
         except Exception as e:
             logger.warning(f"Small model parsing failed, falling back to keyword matching: {e}")
 
@@ -153,8 +150,7 @@ async def line_item_parser_worker(payload: dict[str, Any]) -> dict[str, Any]:
             items.append(LineItem(description='Coffee', quantity=1, unit_price=3.5, total=3.5))
         if 'bagel' in line.lower():
             items.append(LineItem(description='Bagel', quantity=2, unit_price=2.5, total=5.0))
-    from typing import cast
-    return cast(dict[str, Any], LineItemParserOut(items=items).model_dump())
+    return LineItemParserOut(items=items).model_dump()
 
 async def expense_categorizer_worker(payload: dict[str, Any]) -> dict[str, Any]:
     """
@@ -172,8 +168,7 @@ async def expense_categorizer_worker(payload: dict[str, Any]) -> dict[str, Any]:
         try:
             logger.info("Using small model for expense categorization")
             categorized = await small_model.categorize_items(items)
-            from typing import cast
-            return cast(dict[str, Any], CategorizerOut(categorized=categorized).model_dump())
+            return CategorizerOut(categorized=categorized).model_dump()
         except Exception as e:
             logger.warning(f"Small model categorization failed, falling back to keyword matching: {e}")
 
@@ -186,8 +181,7 @@ async def expense_categorizer_worker(payload: dict[str, Any]) -> dict[str, Any]:
         if "coffee" in desc:
             category = "beverage"
         categorized.append({**it, "category": category})
-    from typing import cast
-    return cast(dict[str, Any], CategorizerOut(categorized=categorized).model_dump())
+    return CategorizerOut(categorized=categorized).model_dump()
 
 # --- Minimal utility workers for advanced examples ---
 

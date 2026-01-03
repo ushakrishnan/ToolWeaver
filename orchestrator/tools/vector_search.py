@@ -496,7 +496,7 @@ class VectorToolSearchEngine:
         """Generate cache key from text (first 100 chars hash)"""
         return str(hash(text[:100]))
 
-    def precompute_catalog_embeddings(self, catalog: ToolCatalog):
+    def precompute_catalog_embeddings(self, catalog: ToolCatalog) -> None:
         """
         Pre-compute embeddings for all tools in catalog at startup.
 

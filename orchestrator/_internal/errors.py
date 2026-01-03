@@ -99,7 +99,7 @@ def check_package_available(package: str) -> bool:
         return False
 
 
-def require_package(package: str, extra: str | None = None, suggestion: str | None = None) -> Callable[[Callable], Callable]:
+def require_package(package: str, extra: str | None = None, suggestion: str | None = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Decorator to require an optional package for a function.
 
@@ -120,7 +120,7 @@ def require_package(package: str, extra: str | None = None, suggestion: str | No
         # If wandb not installed:
         enable_wandb()  # Raises MissingDependencyError with helpful message
     """
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             if not check_package_available(package):
@@ -130,7 +130,7 @@ def require_package(package: str, extra: str | None = None, suggestion: str | No
     return decorator
 
 
-def require_packages(*packages: str, extra: str | None = None) -> Callable[[Callable], Callable]:
+def require_packages(*packages: str, extra: str | None = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Decorator to require multiple optional packages.
 
@@ -147,7 +147,7 @@ def require_packages(*packages: str, extra: str | None = None) -> Callable[[Call
             import redis
             return redis.Redis()
     """
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             missing = [pkg for pkg in packages if not check_package_available(pkg)]

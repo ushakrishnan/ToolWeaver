@@ -99,7 +99,7 @@ class MCPToolDiscoverer(ToolDiscoveryService):
 
         return discovered
 
-    async def _introspect_worker(self, tool_name: str, worker_func) -> ToolDefinition:
+    async def _introspect_worker(self, tool_name: str, worker_func: Any) -> ToolDefinition:
         """Extract tool definition from worker function"""
         sig = inspect.signature(worker_func)
         doc = inspect.getdoc(worker_func) or f"MCP tool: {tool_name}"
@@ -145,7 +145,7 @@ class MCPToolDiscoverer(ToolDiscoveryService):
 class FunctionToolDiscoverer(ToolDiscoveryService):
     """Discovers tools from Python functions in a module"""
 
-    def __init__(self, module, function_names: list[str] | None = None):
+    def __init__(self, module: Any, function_names: list[str] | None = None):
         """
         Args:
             module: Python module to scan
@@ -178,7 +178,7 @@ class FunctionToolDiscoverer(ToolDiscoveryService):
 
         return discovered
 
-    def _function_to_tool(self, func_name: str, func) -> ToolDefinition:
+    def _function_to_tool(self, func_name: str, func: Any) -> ToolDefinition:
         """Convert Python function to ToolDefinition"""
         sig = inspect.signature(func)
         doc = inspect.getdoc(func) or f"Function: {func_name}"
@@ -378,7 +378,7 @@ class ToolDiscoveryOrchestrator:
         self.cache_file = self.cache_dir / "discovered_tools.json"
         self.cache_ttl_hours = cache_ttl_hours
 
-    def register_discoverer(self, discoverer: ToolDiscoveryService):
+    def register_discoverer(self, discoverer: ToolDiscoveryService) -> None:
         """Register a discovery service"""
         self.discoverers.append(discoverer)
 
@@ -468,7 +468,7 @@ class ToolDiscoveryOrchestrator:
             print(f"Failed to load cache: {e}")
             return None
 
-    def _save_cache(self, catalog: ToolCatalog):
+    def _save_cache(self, catalog: ToolCatalog) -> None:
         """Save tool catalog to cache"""
         try:
             with open(self.cache_file, 'w') as f:
@@ -492,11 +492,11 @@ class ToolDiscoveryOrchestrator:
 
 # Convenience function for quick discovery
 async def discover_tools(
-    mcp_client=None,
+    mcp_client: Any = None,
     function_modules: list[Any] | None = None,
     include_code_exec: bool = True,
     use_cache: bool = True,
-    a2a_client=None,
+    a2a_client: Any = None,
     registry_url: str | None = None,
 ) -> ToolCatalog:
     """

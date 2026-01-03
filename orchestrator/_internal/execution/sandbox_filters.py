@@ -262,7 +262,7 @@ class DataFilter:
         else:
             return data
 
-    def _filter_dict(self, data: dict, depth: int) -> dict:
+    def _filter_dict(self, data: dict[str, Any], depth: int) -> dict[str, Any]:
         """Filter dictionary, preserving structure."""
         if self.config.max_bytes:
             # Check if we're over budget
@@ -284,7 +284,7 @@ class DataFilter:
 
         return {k: self._filter_recursive(v, depth + 1) for k, v in data.items()}
 
-    def _filter_list(self, data: list, depth: int) -> list:
+    def _filter_list(self, data: list[Any], depth: int) -> list[Any]:
         """Filter list, truncating if needed."""
         if self.config.max_rows and len(data) > self.config.max_rows:
             self.stats["rows_truncated"] = len(data) - self.config.max_rows

@@ -468,7 +468,7 @@ class ProgrammaticToolExecutor:
         else:
             raise ValueError(f"Unknown tool type: {tool_def.type}")
 
-    async def _exec_async(self, code: str, exec_globals: dict) -> Any:
+    async def _exec_async(self, code: str, exec_globals: dict[str, Any]) -> Any:
         """
         Execute code that may contain await statements
 
@@ -559,7 +559,7 @@ class ProgrammaticToolExecutor:
                         if target.id in ["__builtins__", "__globals__", "__dict__"]:
                             raise SecurityError(f"Cannot modify: {target.id}")
 
-    def _get_safe_builtins(self) -> dict:
+    def _get_safe_builtins(self) -> dict[str, Any]:
         """
         Return safe subset of builtins
 

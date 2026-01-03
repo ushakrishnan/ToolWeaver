@@ -164,7 +164,7 @@ def _check_circular_dependencies(skill_name: str, dependencies: list[str]) -> li
     Returns:
         Cycle path if found, None otherwise
     """
-    def has_cycle(current: str, visited: set, path: list[str]) -> list[str] | None:
+    def has_cycle(current: str, visited: set[str], path: list[str]) -> list[str] | None:
         if current in visited:
             # Found cycle
             cycle_start = path.index(current)

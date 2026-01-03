@@ -40,7 +40,7 @@ class SecretsRedactor(logging.Filter):
     """
 
     # Regex patterns for secret detection
-    PATTERNS: list[tuple[str, Pattern]] = [
+    PATTERNS: list[tuple[str, Pattern[str]]] = [
         # OpenAI API keys (variable length after prefix)
         ('OPENAI_KEY', re.compile(r'\bsk-[A-Za-z0-9]{20,}\b')),
 
