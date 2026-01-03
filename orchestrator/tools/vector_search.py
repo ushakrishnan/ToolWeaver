@@ -5,7 +5,7 @@ Qdrant-based tool search for scaling to 1000+ tools with sub-100ms latency.
 """
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
     from sentence_transformers import SentenceTransformer
@@ -24,8 +24,8 @@ try:
     )
     QDRANT_IMPORTED = True
 except Exception:
-    QdrantClient = None  # type: ignore[assignment,misc]
-    Distance = VectorParams = PointStruct = Filter = FieldCondition = MatchValue = None  # type: ignore[assignment,misc]
+    QdrantClient = cast(Any, None)  # type: ignore[assignment,misc]
+    Distance = VectorParams = PointStruct = Filter = FieldCondition = MatchValue = cast(Any, None)  # type: ignore[assignment,misc]
     QDRANT_IMPORTED = False
 
 try:
