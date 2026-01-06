@@ -1,3 +1,34 @@
+## v0.13.6 (2026-01-06)
+
+Release type: Minor (JSON-RPC HTTP adapter + protocol support)
+
+Highlights:
+- Added MCPJsonRpcHttpAdapterPlugin for JSON-RPC over HTTP with SSE streaming responses
+- Extended MCP config loader to support `json_rpc` protocol alongside `http` and `websocket`
+- Sample 33 now includes jokes MCP server (no-auth, hosted) demonstrating JSON-RPC protocol with 7 tools (jokes, weather)
+- Documentation: new reference page for MCP protocol support; updated README and docs/index with protocol details
+- Test scripts added for jokes server validation (test_jokes_server.py, test_jokes_tools.py, test_adapter_direct.py)
+
+New Features:
+- JSON-RPC over HTTP protocol adapter with SSE response parsing
+- Three test scripts for jokes MCP server (discovery, execution, direct adapter testing)
+- Updated servers.json config to include jokes server example
+- Comprehensive MCP Protocols reference documentation (docs/reference/api-python/mcp-protocols.md)
+
+Verification:
+```bash
+cd samples/33-mcp-json-config
+python run_mcp_json_demo.py --fetch  # Should discover 7 tools from jokes server
+python test_jokes_tools.py           # Execute sample joke and weather tools
+```
+
+Upgrade:
+```bash
+pip install --upgrade toolweaver==0.13.6
+```
+
+---
+
 ## v0.13.5 (2026-01-06)
 
 Release type: Minor (MCP config loader + doc updates)
