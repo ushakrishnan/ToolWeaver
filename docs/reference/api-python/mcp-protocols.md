@@ -72,15 +72,17 @@ JSON-RPC 2.0 over HTTP with Server-Sent Events (SSE) streaming responses.
 ```json
 {
   "name": "jokes",
-  "url": "https://jokesmcp-http-typescript.livelysmoke-c2b03354.centralus.azurecontainerapps.io/mcp",
+  "url": "${JOKES_MCP_URL}",
   "protocol": "json_rpc",
   "timeout_s": 30
 }
 ```
 
+Note: Use an `.env` file to set `JOKES_MCP_URL` locally. The Sample 33 loader supports `${ENV_VAR}` substitution in `servers.json`, so you can keep private endpoints out of source.
+
 **Implementation:** `MCPJsonRpcHttpAdapterPlugin` in [orchestrator/tools/mcp_adapter.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/orchestrator/tools/mcp_adapter.py)
 
-**Live Demo:** See [Sample 33](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/33-mcp-json-config) for a working example with a jokes MCP server (7 tools: Chuck Norris jokes, dad jokes, weather data).
+**Live Demo:** See [Sample 33](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/33-mcp-json-config) for a working example using a JSON-RPC over HTTP server with SSE (includes jokes and weather tools). Configure the endpoint via environment variables.
 
 ---
 

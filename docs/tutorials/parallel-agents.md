@@ -10,7 +10,7 @@ Fan out work with guardrails for cost, concurrency, and safety.
 
 Run:
 ```bash
-python samples/25-parallel-agents/parallel_deep_dive.py
+python samples/25-parallel-agents/parallel_agents_main.py
 ```
 
 Prerequisites:
@@ -24,7 +24,7 @@ What you will see:
 - Idempotency cache makes retries instant
 
 Files:
-- [samples/25-parallel-agents/parallel_deep_dive.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/25-parallel-agents/parallel_deep_dive.py)
+- [samples/25-parallel-agents/parallel_agents_main.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/25-parallel-agents/parallel_agents_main.py)
 - [samples/25-parallel-agents/README.md](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/25-parallel-agents/README.md)
 
 ---

@@ -31,5 +31,5 @@ asyncio.run(main())
 
 Key guards:
 
-See the full demo: [samples/25-parallel-agents/parallel_deep_dive.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/25-parallel-agents/parallel_deep_dive.py)
+See the full demo: [samples/25-parallel-agents/parallel_agents_main.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/25-parallel-agents/parallel_agents_main.py)
 README: [samples/25-parallel-agents/README.md](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/25-parallel-agents/README.md)

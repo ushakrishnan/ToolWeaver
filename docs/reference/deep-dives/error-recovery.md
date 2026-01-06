@@ -17,8 +17,8 @@ Use explicit error handling: classify failures (transient vs permanent), apply r
 - Compensating actions for side-effects
 
 **Try it**
-- Run the workflow: [samples/21-error-recovery/workflow.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/21-error-recovery/workflow.py)
-- Tests and examples: [samples/21-error-recovery/test_example.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/21-error-recovery/test_example.py)
+- Run the workflow: [samples/21-error-recovery/error_recovery_workflow.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/21-error-recovery/error_recovery_workflow.py)
+- Tests and examples: [samples/21-error-recovery/test_error_recovery.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/21-error-recovery/test_error_recovery.py)
 - See the README: [samples/21-error-recovery/README.md](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/21-error-recovery/README.md)
 
 **Gotchas**

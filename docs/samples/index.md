@@ -14,7 +14,7 @@ Run these curated samples to see core features in action.
 
 Note: `samples/` are the maintained, runnable demos. `examples/` contains older/extended scenarios—start with `samples/` unless you need legacy material.
 
-- Parallel Agents: [samples/25-parallel-agents/parallel_deep_dive.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/25-parallel-agents/parallel_deep_dive.py)
+- Parallel Agents: [samples/25-parallel-agents/parallel_agents_main.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/25-parallel-agents/parallel_agents_main.py)
 - Caching Deep Dive: [samples/07-caching-optimization/caching_deep_dive.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/07-caching-optimization/caching_deep_dive.py)
 - Sandbox Execution: [samples/09-code-execution/code_execution_demo.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/09-code-execution/code_execution_demo.py)
 - Adding Tools (3 ways): [samples/23-adding-new-tools/three_ways.py](https://github.com/ushakrishnan/ToolWeaver/blob/main/samples/23-adding-new-tools/three_ways.py)

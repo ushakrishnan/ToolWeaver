@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -204,7 +205,7 @@ def _extract_url(entry: dict[str, Any]) -> str | None:
     for key in ("url", "baseUrl", "base_url"):
         val = entry.get(key)
         if isinstance(val, str) and val:
-            return val
+            return _env_substitute(val)
     return None
 
 
@@ -258,3 +259,18 @@ def _extract_protocol(entry: dict[str, Any], url: str | None) -> str:
     if isinstance(url, str) and url.lower().startswith(("ws://", "wss://")):
         return "websocket"
     return "http"
+
+
+def _env_substitute(text: str) -> str:
+    """Replace ${VAR} occurrences with environment values, preserving unknowns.
+
+    Example: "${JOKES_MCP_URL}" -> os.getenv("JOKES_MCP_URL", "${JOKES_MCP_URL}")
+    Supports inline segments too: "https://${HOST}/mcp".
+    """
+    pattern = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
+
+    def repl(match: re.Match[str]) -> str:
+        var = match.group(1)
+        return os.getenv(var, match.group(0))
+
+    return pattern.sub(repl, text)

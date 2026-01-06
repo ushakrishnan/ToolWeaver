@@ -233,6 +233,7 @@ follow_imports = "normal"
 ignore_missing_imports = true
 show_error_codes = true
 pretty = true
+exclude = "(^samples/24-external-mcp-adapter/server\\.py$|^samples/34-github-mcp-server/server\\.py$)"
 
 # Strict checking for Phase 0 infrastructure modules only
 [[tool.mypy.overrides]]

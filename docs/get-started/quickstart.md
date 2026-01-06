@@ -60,6 +60,6 @@ print(f"Demo domain: {[t.name for t in demo_tools]}")
 ## Run a parallel dispatch (sample)
 Use the ready-made sample to see parallel agents with limits:
 ```bash
-python samples/25-parallel-agents/parallel_deep_dive.py
+python samples/25-parallel-agents/parallel_agents_main.py
 ```
 See [Parallel agents tutorial](../tutorials/parallel-agents.md) for expected output.

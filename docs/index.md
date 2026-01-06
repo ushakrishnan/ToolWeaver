@@ -31,7 +31,7 @@ Planner outputs a DAG; the orchestrator discovers tools, narrows via hybrid sear
 	   ```
 	3. Run a parallel demo:
 	   ```bash
-	   python samples/25-parallel-agents/parallel_deep_dive.py
+	   python samples/25-parallel-agents/parallel_agents_main.py
 	   ```
 
 ## Learn

@@ -10,7 +10,7 @@
         },
         {
             "name": "jokes",
-            "url": "https://jokesmcp-http-typescript.livelysmoke-c2b03354.centralus.azurecontainerapps.io/mcp",
+            "url": "${JOKES_MCP_URL}",
             "protocol": "json_rpc",
             "timeout_s": 30,
             "verify_ssl": true
