@@ -8,6 +8,7 @@ to convert natural language requests into structured execution plans.
 import json
 import logging
 import os
+import warnings
 from types import TracebackType
 from typing import Any, cast
 
@@ -16,7 +17,9 @@ from dotenv import load_dotenv
 from orchestrator.shared.models import ToolCatalog, ToolDefinition, ToolParameter
 
 logger = logging.getLogger(__name__)
-load_dotenv()
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    load_dotenv()
 
 # Optional imports - only loaded if needed (warnings shown when actually used)
 try:

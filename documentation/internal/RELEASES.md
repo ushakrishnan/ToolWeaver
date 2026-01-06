@@ -1,3 +1,27 @@
+## v0.13.5 (2026-01-06)
+
+Release type: Minor (MCP config loader + doc updates)
+
+Highlights:
+- Added Claude-style MCP JSON config loader (Sample 33) with env substitution and protocol auto-detect
+- Clarified package-first installs (PyPI `toolweaver` preferred; editable optional) across samples 33/34
+- GitHub MCP server sample (34) aligned to package-first flow; Sample 33/34 interop for authenticated MCP discovery
+- Documentation updated: README lead mentions MCP loader/adapters; docs index adds MCP loader section; retained docs while removing `documentation/` from GitHub tracking
+- Code quality: ruff/mypy clean; typing/import cleanups in MCP adapters and internals
+
+Verification:
+```bash
+.\.venv\Scripts\python.exe -m ruff check .
+.\.venv\Scripts\python.exe -m mypy --config-file mypy.ini
+```
+
+Upgrade:
+```bash
+pip install toolweaver==0.13.5
+```
+
+---
+
 ## v0.13.0 (2026-01-02)
 
 Release type: Minor (lint/type fixes, Qdrant warning suppression)

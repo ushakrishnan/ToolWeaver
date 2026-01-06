@@ -21,7 +21,7 @@ Contributors:
 from collections.abc import Awaitable, Callable, Iterable
 from typing import Any, Optional, Protocol, Union
 
-__version__ = "0.13.0"
+__version__ = "0.13.5"
 
 
 # ============================================================

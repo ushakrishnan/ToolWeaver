@@ -9,8 +9,13 @@ from typing import Any
 AZURE_CV_AVAILABLE: bool
 
 try:
+    import warnings
+
     from dotenv import load_dotenv
-    load_dotenv()
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        load_dotenv()
 
     from azure.ai.vision.imageanalysis import ImageAnalysisClient  # type: ignore
     from azure.ai.vision.imageanalysis.models import VisualFeatures  # type: ignore

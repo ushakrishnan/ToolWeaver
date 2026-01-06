@@ -1,8 +1,10 @@
 # ToolWeaver
 
-**Production-ready AI agent orchestrator with intelligent tool management and cost-optimized execution.**
+**Production-ready AI agent orchestrator with a two-model architecture and unified tool interface.**
 
-Automatically discovers, searches, and chains tools while reducing costs by 80-90% through a two-model architecture: large models (GPT-4o, Claude) for planning, small models (Phi-3, Llama) for execution.
+Large models (GPT-4o, Claude) plan; small models (Phi-3, Llama) execute for 80–90% cost savings. A single interface powers three tool types—MCP workers (with Claude-style JSON config loader), structured function calls, and sandboxed code—plus adapters for Claude/Cline formats so your tools stay portable.
+
+**New:** Claude-compatible MCP config loader (Sample 33) for hosted or local MCP servers, including env substitution and protocol auto-detect. See samples/33-mcp-json-config/ for a working GitHub MCP demo that pairs with Sample 34.
 
 [![PyPI version](https://badge.fury.io/py/toolweaver.svg)](https://pypi.org/project/toolweaver/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)

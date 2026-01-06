@@ -9,13 +9,16 @@ are overkill. Supports both local inference and cloud endpoints.
 import json
 import logging
 import os
+import warnings
 from collections.abc import Callable
 from typing import Any, Literal
 
 from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
-load_dotenv()
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    load_dotenv()
 
 # JSON repair utility
 def _repair_json(text: str) -> str:

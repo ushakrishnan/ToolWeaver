@@ -21,14 +21,14 @@ $env:EXTERNAL_MCP_AUTH = "<token>"
 # Optional execute
 $env:EXTERNAL_MCP_TOOL = "get_expenses"
 $env:EXTERNAL_MCP_PARAMS = '{"employee_id":"E123"}'
-python examples/24-external-mcp-adapter/run_external_mcp_demo.py
+python samples/24-external-mcp-adapter/run_external_mcp_demo.py
 
 # Linux/macOS
 export EXTERNAL_MCP_ENDPOINT=ws://localhost:3000/ws
 export EXTERNAL_MCP_AUTH=<token>
 export EXTERNAL_MCP_TOOL=get_expenses
 export EXTERNAL_MCP_PARAMS='{"employee_id":"E123"}'
-python examples/24-external-mcp-adapter/run_external_mcp_demo.py
+python samples/24-external-mcp-adapter/run_external_mcp_demo.py
 ```
 
 Notes:

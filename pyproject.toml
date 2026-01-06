@@ -1,6 +1,6 @@
 [project]
 name = "toolweaver"
-version = "0.13.0"
+version = "0.13.5"
 description = "Production-ready AI tool orchestration with dynamic discovery, semantic search, and workflow composition"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -147,7 +147,7 @@ where = ["."]
 include = ["orchestrator*"]
 
 [tool.setuptools.package-data]
-orchestrator = ["py.typed"]
+orchestrator = ["py.typed", "resources/schemas/*.json"]
 
 # ============================================================
 # Testing Configuration

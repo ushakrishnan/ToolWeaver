@@ -45,6 +45,13 @@ Planner outputs a DAG; the orchestrator discovers tools, narrows via hybrid sear
 - REST API: [Reference / API (REST) / Overview](reference/api-rest/overview.md) — list/get/execute endpoints for exposing tools over HTTP.
 - Tutorials: [Sandbox Execution](tutorials/sandbox-execution.md) — safe code runs; [Caching Deep Dive](tutorials/caching-deep-dive.md) — TTL + fallback; [Parallel Agents](tutorials/parallel-agents.md) — fan-out with guardrails.
 - Samples: [Samples Index](samples/index.md) — curated runnable demos to see real behavior quickly.
+ - MCP config loader: Claude-style JSON `mcpServers` with env substitution and protocol auto-detect — see [Sample 33](../samples/33-mcp-json-config/README.md).
+
+### MCP Config Loader (Claude-style)
+- Uses Claude’s default `mcpServers` JSON shape (array or map) with `${ENV_VAR}` substitution and HTTP/WS auto-detect
+- Loader lives at `orchestrator/tools/mcp_config_loader.py`; packaged schema at `orchestrator/resources/schemas/mcp-servers.schema.json`
+- Works with hosted or local MCP servers; swap `url` to point at a provider’s hosted MCP endpoint when available
+- Runnable example: [Sample 33](../samples/33-mcp-json-config/README.md) (clients) + Sample 34 (local GitHub MCP server)
 
 ## Preview Locally
 ```bash

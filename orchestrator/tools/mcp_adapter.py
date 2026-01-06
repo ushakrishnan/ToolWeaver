@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import aiohttp
+from aiohttp import TCPConnector
 
 from ..plugins.registry import register_plugin
 from ..shared.models import ToolDefinition
@@ -16,18 +18,31 @@ class MCPHttpAdapterPlugin:
     - POST /execute -> { name: str, params: dict } returns result JSON
     """
 
-    def __init__(self, base_url: str) -> None:
+    def __init__(
+        self,
+        base_url: str,
+        *,
+        headers: dict[str, str] | None = None,
+        timeout_s: int = 15,
+        verify_ssl: bool = True,
+    ) -> None:
         self.base_url = base_url.rstrip("/")
         self._defs: dict[str, ToolDefinition] = {}
+        self.headers: dict[str, str] = headers or {}
+        self.timeout_s = timeout_s
+        self.verify_ssl = verify_ssl
 
     def get_tools(self) -> list[dict[str, Any]]:
         return [td.model_dump() for td in self._defs.values()]
 
     async def execute(self, tool_name: str, params: dict[str, Any]) -> Any:
-        async with aiohttp.ClientSession() as session:
+        connector = TCPConnector(ssl=self.verify_ssl)
+        timeout = aiohttp.ClientTimeout(total=self.timeout_s)
+        async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
             async with session.post(
                 f"{self.base_url}/execute",
                 json={"name": tool_name, "params": params},
+                headers=self.headers,
             ) as resp:
                 resp.raise_for_status()
                 ct = resp.headers.get("Content-Type", "")
@@ -36,8 +51,10 @@ class MCPHttpAdapterPlugin:
                 return await resp.text()
 
     async def discover(self) -> dict[str, ToolDefinition]:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(f"{self.base_url}/tools") as resp:
+        connector = TCPConnector(ssl=self.verify_ssl)
+        timeout = aiohttp.ClientTimeout(total=self.timeout_s)
+        async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
+            async with session.get(f"{self.base_url}/tools", headers=self.headers) as resp:
                 resp.raise_for_status()
                 tools = await resp.json()
                 self._defs.clear()
@@ -71,10 +88,13 @@ class MCPHttpAdapterPlugin:
 
     async def _stream_http(self, tool_name: str, params: dict[str, Any]):
         """Stream chunked response from HTTP endpoint."""
-        async with aiohttp.ClientSession() as session:
+        connector = TCPConnector(ssl=self.verify_ssl)
+        timeout = aiohttp.ClientTimeout(total=self.timeout_s)
+        async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
             async with session.post(
                 f"{self.base_url}/execute",
                 json={"name": tool_name, "params": params},
+                headers=self.headers,
             ) as resp:
                 resp.raise_for_status()
                 async for chunk in resp.content.iter_chunked(1024):
@@ -83,12 +103,14 @@ class MCPHttpAdapterPlugin:
 
     async def _stream_sse(self, tool_name: str, params: dict[str, Any]):
         """Stream SSE messages from endpoint."""
-        async with aiohttp.ClientSession() as session:
+        connector = TCPConnector(ssl=self.verify_ssl)
+        timeout = aiohttp.ClientTimeout(total=self.timeout_s)
+        async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
             url = f"{self.base_url}/execute/sse"
             async with session.post(
                 url,
                 json={"name": tool_name, "params": params},
-                headers={"Accept": "text/event-stream"},
+                headers={"Accept": "text/event-stream", **self.headers},
             ) as resp:
                 resp.raise_for_status()
                 buffer = ""
@@ -112,8 +134,10 @@ class MCPHttpAdapterPlugin:
         ws_url = self.base_url.replace("http://", "ws://").replace("https://", "wss://")
         ws_url = f"{ws_url}/execute/ws"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.ws_connect(ws_url) as ws:
+        connector = TCPConnector(ssl=self.verify_ssl)
+        timeout = aiohttp.ClientTimeout(total=self.timeout_s)
+        async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
+            async with session.ws_connect(ws_url, headers=self.headers) as ws:
                 await ws.send_json({"name": tool_name, "params": params})
                 async for msg in ws:
                     if msg.type == WSMsgType.TEXT:
@@ -124,7 +148,105 @@ class MCPHttpAdapterPlugin:
                         break
 
 
-def register_mcp_http_adapter(name: str, base_url: str) -> MCPHttpAdapterPlugin:
-    plugin = MCPHttpAdapterPlugin(base_url)
+def register_mcp_http_adapter(
+    name: str,
+    base_url: str,
+    *,
+    headers: dict[str, str] | None = None,
+    timeout_s: int = 15,
+    verify_ssl: bool = True,
+) -> MCPHttpAdapterPlugin:
+    plugin = MCPHttpAdapterPlugin(base_url, headers=headers, timeout_s=timeout_s, verify_ssl=verify_ssl)
+    register_plugin(name, plugin)
+    return plugin
+
+
+class MCPWebSocketAdapterPlugin:
+    """Plugin that discovers tools from an MCP WebSocket JSON-RPC server and executes them.
+
+    Expected behavior (MCP JSON-RPC over WebSocket):
+    - Connect to provided ws/wss URL (no path rewriting)
+    - Send {"jsonrpc":"2.0","id":1,"method":"tools/list"} to discover tools
+    - Send {"jsonrpc":"2.0","id":X,"method":"tools/call","params":{"name": str, "arguments": dict}} to execute
+    """
+
+    def __init__(
+        self,
+        base_url: str,
+        *,
+        headers: dict[str, str] | None = None,
+        timeout_s: int = 15,
+        verify_ssl: bool = True,
+    ) -> None:
+        self.base_url = base_url.rstrip("/")
+        self._defs: dict[str, ToolDefinition] = {}
+        self.headers: dict[str, str] = headers or {}
+        self.timeout_s = timeout_s
+        self.verify_ssl = verify_ssl
+
+    def get_tools(self) -> list[dict[str, Any]]:
+        return [td.model_dump() for td in self._defs.values()]
+
+    async def discover(self) -> dict[str, ToolDefinition]:
+        connector = TCPConnector(ssl=self.verify_ssl)
+        timeout = aiohttp.ClientTimeout(total=self.timeout_s)
+        async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
+            async with session.ws_connect(self.base_url, headers=self.headers) as ws:
+                await ws.send_json({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+                # Await a single response with result
+                async for msg in ws:
+                    if msg.type == aiohttp.WSMsgType.TEXT:
+                        try:
+                            payload = json.loads(msg.data)
+                        except Exception:
+                            break
+                        if isinstance(payload, dict) and payload.get("result") is not None:
+                            tools = payload["result"]
+                            self._defs.clear()
+                            for t in tools or []:
+                                try:
+                                    td = ToolDefinition.model_validate(t)
+                                    self._defs[td.name] = td
+                                except Exception:
+                                    continue
+                            break
+                    elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSING, aiohttp.WSMsgType.ERROR):
+                        break
+        return dict(self._defs)
+
+    async def execute(self, tool_name: str, params: dict[str, Any]) -> Any:
+        connector = TCPConnector(ssl=self.verify_ssl)
+        timeout = aiohttp.ClientTimeout(total=self.timeout_s)
+        async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
+            async with session.ws_connect(self.base_url, headers=self.headers) as ws:
+                req = {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {"name": tool_name, "arguments": params},
+                }
+                await ws.send_json(req)
+                async for msg in ws:
+                    if msg.type == aiohttp.WSMsgType.TEXT:
+                        try:
+                            payload = json.loads(msg.data)
+                            if isinstance(payload, dict) and (payload.get("result") is not None or payload.get("error") is not None):
+                                return payload
+                        except Exception:
+                            return msg.data
+                    elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSING, aiohttp.WSMsgType.ERROR):
+                        break
+        return None
+
+
+def register_mcp_ws_adapter(
+    name: str,
+    base_url: str,
+    *,
+    headers: dict[str, str] | None = None,
+    timeout_s: int = 15,
+    verify_ssl: bool = True,
+) -> MCPWebSocketAdapterPlugin:
+    plugin = MCPWebSocketAdapterPlugin(base_url, headers=headers, timeout_s=timeout_s, verify_ssl=verify_ssl)
     register_plugin(name, plugin)
     return plugin

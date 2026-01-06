@@ -1,0 +1,12 @@
+{
+    "$schema": "../../orchestrator/resources/schemas/mcp-servers.schema.json",
+    "mcpServers": [
+        {
+            "name": "github",
+            "url": "http://localhost:9877",
+            "protocol": "http",
+            "timeout_s": 30,
+            "verify_ssl": true
+        }
+    ]
+}

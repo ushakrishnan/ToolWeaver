@@ -1,0 +1,108 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ToolWeaver MCP Servers Config",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string"
+        },
+        "mcpServers": {
+            "oneOf": [
+                {
+                    "type": "array",
+                    "description": "Claude-compatible array format",
+                    "items": {
+                        "$ref": "#/definitions/server"
+                    }
+                },
+                {
+                    "type": "object",
+                    "description": "Claude-compatible map format",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/server"
+                    }
+                }
+            ]
+        },
+        "servers": {
+            "type": "array",
+            "description": "Simple list of server configs",
+            "items": {
+                "$ref": "#/definitions/server"
+            }
+        }
+    },
+    "definitions": {
+        "server": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "baseUrl": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "base_url": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "protocol": {
+                    "type": "string",
+                    "enum": [
+                        "http",
+                        "sse",
+                        "websocket"
+                    ]
+                },
+                "headers": {
+                    "type": "object",
+                    "description": "HTTP or WS headers; values may reference env vars via ${NAME}",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "timeout_s": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 600
+                },
+                "verify_ssl": {
+                    "type": "boolean"
+                },
+                "env": {
+                    "type": "object",
+                    "description": "Environment variables for the server (for documentation; values can reference env vars via ${NAME})",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            },
+            "anyOf": [
+                {
+                    "required": [
+                        "url"
+                    ]
+                },
+                {
+                    "required": [
+                        "baseUrl"
+                    ]
+                },
+                {
+                    "required": [
+                        "base_url"
+                    ]
+                }
+            ]
+        }
+    },
+    "additionalProperties": false
+}
