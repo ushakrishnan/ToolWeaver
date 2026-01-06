@@ -294,7 +294,8 @@ class MCPJsonRpcHttpAdapterPlugin:
             if line.startswith("data:"):
                 data_str = line[5:].strip()
                 try:
-                    return json.loads(data_str)
+                    result: dict[str, Any] = json.loads(data_str)
+                    return result
                 except Exception:
                     continue
         return None
@@ -309,13 +310,13 @@ class MCPJsonRpcHttpAdapterPlugin:
                 resp.raise_for_status()
                 content = await resp.text()
                 data = self._parse_sse_response(content)
-                
+
                 if not data or "result" not in data:
                     return {}
-                
+
                 result = data["result"]
                 tools_list = result.get("tools", [])
-                
+
                 self._defs.clear()
                 for tool_data in tools_list:
                     try:
@@ -329,7 +330,7 @@ class MCPJsonRpcHttpAdapterPlugin:
                         self._defs[td.name] = td
                     except Exception:
                         continue
-        
+
         return dict(self._defs)
 
     async def execute(self, tool_name: str, params: dict[str, Any]) -> Any:
@@ -347,13 +348,13 @@ class MCPJsonRpcHttpAdapterPlugin:
                 resp.raise_for_status()
                 content = await resp.text()
                 data = self._parse_sse_response(content)
-                
+
                 if not data:
                     return {"error": "Failed to parse response"}
-                
+
                 if "error" in data:
                     return data
-                
+
                 return data.get("result", {})
 
 

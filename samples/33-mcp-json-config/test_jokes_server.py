@@ -1,16 +1,17 @@
 """Test script for the jokes MCP server with JSON-RPC over HTTP with streaming."""
 import asyncio
 import json
+
 import aiohttp
 
 
 async def test_jokes_server():
     """Test the jokes MCP server using JSON-RPC over HTTP with SSE."""
     url = "https://jokesmcp-http-typescript.livelysmoke-c2b03354.centralus.azurecontainerapps.io/mcp"
-    
+
     print("Testing jokes MCP server...")
     print(f"URL: {url}\n")
-    
+
     # Test 1: Ping
     print("=== Test 1: Ping ===")
     async with aiohttp.ClientSession() as session:
@@ -25,7 +26,7 @@ async def test_jokes_server():
             print(f"Status: {resp.status}")
             content = await resp.text()
             print(f"Response: {content}\n")
-    
+
     # Test 2: List tools
     print("=== Test 2: List Tools (tools/list) ===")
     async with aiohttp.ClientSession() as session:
@@ -40,7 +41,7 @@ async def test_jokes_server():
             print(f"Status: {resp.status}")
             content = await resp.text()
             print(f"Response:\n{content}\n")
-            
+
             # Try to parse JSON-RPC response
             try:
                 # Handle SSE format
