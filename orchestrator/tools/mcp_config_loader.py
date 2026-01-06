@@ -5,7 +5,11 @@ import os
 from pathlib import Path
 from typing import Any
 
-from .mcp_adapter import register_mcp_http_adapter, register_mcp_ws_adapter
+from .mcp_adapter import (
+    register_mcp_http_adapter,
+    register_mcp_jsonrpc_http_adapter,
+    register_mcp_ws_adapter,
+)
 
 
 def load_mcp_servers_from_json(config_path: str | os.PathLike[str] | None = None) -> dict[str, Any]:
@@ -76,6 +80,14 @@ def load_mcp_servers_from_json(config_path: str | os.PathLike[str] | None = None
                     timeout_s=timeout_s,
                     verify_ssl=verify_ssl,
                 )
+            elif protocol == "json_rpc":
+                adapters[name] = register_mcp_jsonrpc_http_adapter(
+                    name,
+                    url,
+                    headers=headers,
+                    timeout_s=timeout_s,
+                    verify_ssl=verify_ssl,
+                )
             else:
                 adapters[name] = register_mcp_http_adapter(
                     name,
@@ -97,6 +109,14 @@ def load_mcp_servers_from_json(config_path: str | os.PathLike[str] | None = None
             protocol = _extract_protocol(entry, url)
             if protocol == "websocket":
                 adapters[name] = register_mcp_ws_adapter(
+                    name,
+                    url,
+                    headers=headers,
+                    timeout_s=timeout_s,
+                    verify_ssl=verify_ssl,
+                )
+            elif protocol == "json_rpc":
+                adapters[name] = register_mcp_jsonrpc_http_adapter(
                     name,
                     url,
                     headers=headers,
@@ -126,6 +146,14 @@ def load_mcp_servers_from_json(config_path: str | os.PathLike[str] | None = None
             protocol = _extract_protocol(entry, url)
             if protocol == "websocket":
                 adapters[name] = register_mcp_ws_adapter(
+                    name,
+                    url,
+                    headers=headers,
+                    timeout_s=timeout_s,
+                    verify_ssl=verify_ssl,
+                )
+            elif protocol == "json_rpc":
+                adapters[name] = register_mcp_jsonrpc_http_adapter(
                     name,
                     url,
                     headers=headers,
@@ -225,7 +253,7 @@ def _extract_protocol(entry: dict[str, Any], url: str | None) -> str:
       2. Auto-detect from URL scheme (ws/wss -> websocket; default http)
     """
     p = entry.get("protocol")
-    if isinstance(p, str) and p in {"http", "sse", "websocket"}:
+    if isinstance(p, str) and p in {"http", "sse", "websocket", "json_rpc"}:
         return p
     if isinstance(url, str) and url.lower().startswith(("ws://", "wss://")):
         return "websocket"

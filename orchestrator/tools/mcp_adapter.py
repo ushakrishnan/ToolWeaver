@@ -250,3 +250,121 @@ def register_mcp_ws_adapter(
     plugin = MCPWebSocketAdapterPlugin(base_url, headers=headers, timeout_s=timeout_s, verify_ssl=verify_ssl)
     register_plugin(name, plugin)
     return plugin
+
+
+class MCPJsonRpcHttpAdapterPlugin:
+    """Plugin for JSON-RPC over HTTP with SSE responses (e.g., MCP servers).
+
+    Expected behavior:
+    - POST to base_url with JSON-RPC request: {"jsonrpc": "2.0", "id": X, "method": "...", "params": {...}}
+    - Response comes as SSE: "event: message\\ndata: {...}\\n\\n"
+    - Methods: "tools/list" for discovery, "tools/call" for execution
+    - Requires Accept header: "application/json, text/event-stream"
+    """
+
+    def __init__(
+        self,
+        base_url: str,
+        *,
+        headers: dict[str, str] | None = None,
+        timeout_s: int = 30,
+        verify_ssl: bool = True,
+    ) -> None:
+        self.base_url = base_url.rstrip("/")
+        self._defs: dict[str, ToolDefinition] = {}
+        self.headers: dict[str, str] = {
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream",
+            **(headers or {}),
+        }
+        self.timeout_s = timeout_s
+        self.verify_ssl = verify_ssl
+        self._request_id = 0
+
+    def get_tools(self) -> list[dict[str, Any]]:
+        return [td.model_dump() for td in self._defs.values()]
+
+    def _next_id(self) -> int:
+        self._request_id += 1
+        return self._request_id
+
+    def _parse_sse_response(self, text: str) -> dict[str, Any] | None:
+        """Parse SSE formatted response and extract JSON-RPC data."""
+        for line in text.strip().split("\n"):
+            if line.startswith("data:"):
+                data_str = line[5:].strip()
+                try:
+                    return json.loads(data_str)
+                except Exception:
+                    continue
+        return None
+
+    async def discover(self) -> dict[str, ToolDefinition]:
+        """Discover tools using JSON-RPC tools/list method."""
+        connector = TCPConnector(ssl=self.verify_ssl)
+        timeout = aiohttp.ClientTimeout(total=self.timeout_s)
+        async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
+            req = {"jsonrpc": "2.0", "id": self._next_id(), "method": "tools/list"}
+            async with session.post(self.base_url, json=req, headers=self.headers) as resp:
+                resp.raise_for_status()
+                content = await resp.text()
+                data = self._parse_sse_response(content)
+                
+                if not data or "result" not in data:
+                    return {}
+                
+                result = data["result"]
+                tools_list = result.get("tools", [])
+                
+                self._defs.clear()
+                for tool_data in tools_list:
+                    try:
+                        # Convert MCP format to ToolDefinition
+                        td = ToolDefinition(
+                            name=tool_data["name"],
+                            type="mcp",
+                            description=tool_data.get("description", ""),
+                            input_schema=tool_data.get("inputSchema", {"type": "object", "properties": {}}),
+                        )
+                        self._defs[td.name] = td
+                    except Exception:
+                        continue
+        
+        return dict(self._defs)
+
+    async def execute(self, tool_name: str, params: dict[str, Any]) -> Any:
+        """Execute tool using JSON-RPC tools/call method."""
+        connector = TCPConnector(ssl=self.verify_ssl)
+        timeout = aiohttp.ClientTimeout(total=self.timeout_s)
+        async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
+            req = {
+                "jsonrpc": "2.0",
+                "id": self._next_id(),
+                "method": "tools/call",
+                "params": {"name": tool_name, "arguments": params},
+            }
+            async with session.post(self.base_url, json=req, headers=self.headers) as resp:
+                resp.raise_for_status()
+                content = await resp.text()
+                data = self._parse_sse_response(content)
+                
+                if not data:
+                    return {"error": "Failed to parse response"}
+                
+                if "error" in data:
+                    return data
+                
+                return data.get("result", {})
+
+
+def register_mcp_jsonrpc_http_adapter(
+    name: str,
+    base_url: str,
+    *,
+    headers: dict[str, str] | None = None,
+    timeout_s: int = 30,
+    verify_ssl: bool = True,
+) -> MCPJsonRpcHttpAdapterPlugin:
+    plugin = MCPJsonRpcHttpAdapterPlugin(base_url, headers=headers, timeout_s=timeout_s, verify_ssl=verify_ssl)
+    register_plugin(name, plugin)
+    return plugin

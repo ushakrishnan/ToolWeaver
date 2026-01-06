@@ -94,10 +94,25 @@ The config uses **Claude Desktop-compatible array format**:
       "protocol": "http",
       "timeout_s": 30,
       "verify_ssl": true
+    },
+    {
+      "name": "jokes",
+      "url": "https://jokesmcp-http-typescript.livelysmoke-c2b03354.centralus.azurecontainerapps.io/mcp",
+      "protocol": "json_rpc",
+      "timeout_s": 30,
+      "verify_ssl": true
     }
   ]
 }
 ```
+
+### Protocol Types
+
+- `http`: REST endpoints (GET /tools, POST /execute)
+- `websocket`: WebSocket JSON-RPC (`ws://` or `wss://` URLs)
+- `json_rpc`: JSON-RPC over HTTP with SSE responses (e.g., streamable MCP servers)
+
+The jokes server demonstrates a **no-auth streamable MCP server** that uses JSON-RPC over HTTP with Server-Sent Events (SSE). It provides 7 tools including Chuck Norris jokes, dad jokes, and weather data.
 
 **Supported formats:**
 - **Array** (modern Claude): `"mcpServers": [ { "name": "...", "url": "..." } ]`
@@ -136,6 +151,7 @@ Output:
 ```
 Registered MCP servers:
   - github
+  - jokes
 ```
 
 ### Fetch Tools
@@ -149,10 +165,20 @@ python samples/33-mcp-json-config/run_mcp_json_demo.py --fetch
 Output:
 ```
 Fetching tool definitions from servers...
-  * github: 5 tools discovered
+  * jokes: 7 tools discovered
 
-Total tools discovered across servers: 5
+Total tools discovered across servers: 7
 ```
+
+### Test Jokes Tools
+
+Execute tools from the jokes server:
+
+```powershell
+python samples/33-mcp-json-config/test_jokes_tools.py
+```
+
+This will call various joke and weather tools demonstrating the JSON-RPC HTTP protocol.
 
 ### Custom Config
 

@@ -7,6 +7,13 @@
             "protocol": "http",
             "timeout_s": 30,
             "verify_ssl": true
+        },
+        {
+            "name": "jokes",
+            "url": "https://jokesmcp-http-typescript.livelysmoke-c2b03354.centralus.azurecontainerapps.io/mcp",
+            "protocol": "json_rpc",
+            "timeout_s": 30,
+            "verify_ssl": true
         }
     ]
 }
