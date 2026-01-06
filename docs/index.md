@@ -48,10 +48,11 @@ Planner outputs a DAG; the orchestrator discovers tools, narrows via hybrid sear
  - MCP config loader: Claude-style JSON `mcpServers` with env substitution and protocol auto-detect — see [Sample 33](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/33-mcp-json-config).
 
 ### MCP Config Loader (Claude-style)
-- Uses Claude’s default `mcpServers` JSON shape (array or map) with `${ENV_VAR}` substitution and HTTP/WS auto-detect
+- Uses Claude's default `mcpServers` JSON shape (array or map) with `${ENV_VAR}` substitution and protocol auto-detect
+- Supports three protocols: **HTTP** (REST), **WebSocket** (JSON-RPC), and **JSON-RPC over HTTP** (with SSE streaming)
 - Loader lives at `orchestrator/tools/mcp_config_loader.py`; packaged schema at `orchestrator/resources/schemas/mcp-servers.schema.json`
-- Works with hosted or local MCP servers; swap `url` to point at a provider’s hosted MCP endpoint when available
-- Runnable example: [Sample 33](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/33-mcp-json-config) (clients) + [Sample 34](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/34-github-mcp-server) (local GitHub MCP server)
+- Works with hosted or local MCP servers; swap `url` to point at a provider's hosted MCP endpoint when available
+- Runnable example: [Sample 33](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/33-mcp-json-config) (clients with jokes server demo) + [Sample 34](https://github.com/ushakrishnan/ToolWeaver/tree/main/samples/34-github-mcp-server) (local GitHub MCP server)
 
 ## Preview Locally
 ```bash

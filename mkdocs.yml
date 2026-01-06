@@ -95,6 +95,7 @@ nav:
       - Skill Bridge: reference/api-python/skill-bridge.md
       - Discovery: reference/api-python/discovery.md
       - Plugins: reference/api-python/plugins.md
+      - MCP Protocols: reference/api-python/mcp-protocols.md
       - Configuration: reference/api-python/configuration.md
       - Logging: reference/api-python/logging.md
       - A2A Client: reference/api-python/a2a-client.md
