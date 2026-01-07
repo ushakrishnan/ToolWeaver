@@ -5,7 +5,7 @@ Use `dispatch_agents` to fan out calls with guardrails.
 ```python
 import asyncio
 from orchestrator.tools.sub_agent import dispatch_agents
-from orchestrator.tools.sub_agent_limits import DispatchResourceLimits
+from orchestrator import ResourceLimits
 
 async def main():
     template = "classify {{text}}"
@@ -14,7 +14,7 @@ async def main():
         {"text": "receipt_002"},
     ]
 
-    limits = DispatchResourceLimits(max_concurrent=3, max_total_cost_usd=1.0)
+    limits = ResourceLimits(max_concurrent=3, max_total_cost_usd=1.0)
 
     results = await dispatch_agents(
         template=template,

@@ -4,7 +4,7 @@
 Run many agent calls safely: avoid duplicate work with idempotency keys, enforce timeouts and rate limits, and apply fail‑fast policies.
 
 ## Technical Explanation
-Use `dispatch_agents()` with `DispatchResourceLimits` for quotas and tracking. Idempotency cache stores results by key; repeated inputs return cached outputs. Rate limiter controls request pace; timeouts and failure‑rate guards enforce resilience.
+Use `dispatch_agents()` with `ResourceLimits` for quotas and tracking. Idempotency cache stores results by key; repeated inputs return cached outputs. Rate limiter controls request pace; timeouts and failure‑rate guards enforce resilience.
 
 **When to use**
 - Parallel orchestration with potential retries
@@ -12,7 +12,7 @@ Use `dispatch_agents()` with `DispatchResourceLimits` for quotas and tracking. I
 
 **Key Primitives**
 - `dispatch_agents()` — parallel execution with guardrails
-- `DispatchResourceLimits` — quotas and thresholds
+- `ResourceLimits` — quotas and thresholds
 - Idempotency cache — avoids duplicates
 
 **Try it**

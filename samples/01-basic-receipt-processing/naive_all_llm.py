@@ -14,9 +14,6 @@ Cost Breakdown:
 """
 
 import asyncio
-import json
-from datetime import datetime
-from pathlib import Path
 
 from orchestrator import mcp_tool
 
@@ -166,12 +163,12 @@ async def main():
     print("=" * 70)
     print("COST BREAKDOWN")
     print("=" * 70)
-    print(f"  OCR (GPT-4o vision):      $0.01")
-    print(f"  Parsing (GPT-4o):         $0.03")
-    print(f"  Categorization (GPT-4o):  $0.03")
-    print(f"  Statistics (GPT-4o):      $0.03")
+    print("  OCR (GPT-4o vision):      $0.01")
+    print("  Parsing (GPT-4o):         $0.03")
+    print("  Categorization (GPT-4o):  $0.03")
+    print("  Statistics (GPT-4o):      $0.03")
     print(f"  {'-' * 40}")
-    print(f"  TOTAL PER RECEIPT:        $0.10")
+    print("  TOTAL PER RECEIPT:        $0.10")
     print()
     print(f"Time: {elapsed_time:.2f}s")
     print()

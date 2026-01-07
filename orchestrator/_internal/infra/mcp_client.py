@@ -4,6 +4,8 @@ from collections import OrderedDict
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from typing import Any
 
+from orchestrator.plugins.registry import get_registry
+
 from ..dispatch.workers import (
     apply_changes_worker,
     expense_categorizer_worker,
@@ -14,7 +16,6 @@ from ..dispatch.workers import (
     store_data_worker,
 )
 from ..execution.code_exec_worker import code_exec_worker
-from orchestrator.plugins.registry import get_registry
 
 ToolHandler = Callable[[dict[str, Any]], Awaitable[dict[str, Any]]]
 
@@ -66,10 +67,14 @@ class MCPClientShim:
                 if not name or name in self.tool_map:
                     continue
 
-                async def _handler(payload: dict[str, Any], *, _plugin=plugin, _name=name) -> dict[str, Any]:
-                    return await _plugin.execute(_name, payload)
+                # Capture plugin and name in closure with proper types
+                def make_handler(plugin_instance: Any, tool_name: str) -> Callable[[dict[str, Any]], Awaitable[dict[str, Any]]]:
+                    async def _handler(payload: dict[str, Any]) -> dict[str, Any]:
+                        result = await plugin_instance.execute(tool_name, payload)
+                        return result  # type: ignore[no-any-return]
+                    return _handler
 
-                self.tool_map[name] = _handler
+                self.tool_map[name] = make_handler(plugin, name)
         self._max_retries = max_retries
         self._retry_backoff_s = retry_backoff_s
         self._circuit_breaker_threshold = circuit_breaker_threshold

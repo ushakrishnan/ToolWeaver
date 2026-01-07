@@ -37,21 +37,12 @@ __version__ = "0.13.7"
 # === Skill Bridge (Phase 1.5) ===
 # ✅ DONE: Phase 1.5 complete - Connect tools to skill library
 from ._internal.execution import skill_library
+from ._internal.execution.programmatic_executor import ProgrammaticToolExecutor
 
 # === Sandbox Execution (Phase 1.8) ===
 # ✅ DONE: Sandboxed code execution
-from ._internal.execution.sandbox import SandboxEnvironment, ResourceLimits
+from ._internal.execution.sandbox import ResourceLimits, SandboxEnvironment
 from ._internal.execution.small_model_worker import SmallModelWorker
-from ._internal.execution.programmatic_executor import ProgrammaticToolExecutor
-
-# === Planning (Phase 1.9) ===
-# ✅ DONE: Large model planning
-from ._internal.planning.planner import LargePlanner
-
-# === Runtime Orchestration (Phase 1.10) ===
-# ✅ DONE: Plan execution orchestrator
-from ._internal.runtime.orchestrator import execute_plan
-
 from ._internal.infra.a2a_client import (
     A2AClient,
     AgentCapability,
@@ -66,6 +57,14 @@ from ._internal.infra.mcp_client import MCPClientShim
 # === Logging (Phase 0.l) ===
 # ✅ DONE: Phase 0.l complete
 from ._internal.logger import enable_debug_mode, get_logger, set_log_level
+
+# === Planning (Phase 1.9) ===
+# ✅ DONE: Large model planning
+from ._internal.planning.planner import LargePlanner
+
+# === Runtime Orchestration (Phase 1.10) ===
+# ✅ DONE: Plan execution orchestrator
+from ._internal.runtime.orchestrator import execute_plan
 from ._internal.security.secrets_redactor import install_secrets_redactor
 
 # === Configuration (Phase 0.c) ===

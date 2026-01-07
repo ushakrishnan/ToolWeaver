@@ -8,7 +8,7 @@ Programmatic execution allows LLMs to generate code that orchestrates tools, ena
 
 ```python
 from orchestrator.shared.models import ToolCatalog
-from orchestrator._internal.execution.programmatic_executor import ProgrammaticToolExecutor
+from orchestrator import ProgrammaticToolExecutor
 
 # Create executor with your tool catalog
 executor = ProgrammaticToolExecutor(

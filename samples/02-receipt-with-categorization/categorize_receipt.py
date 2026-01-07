@@ -25,13 +25,13 @@ load_dotenv()
 @mcp_tool(domain="receipts", description="Extract text from receipt images")
 async def receipt_ocr(image_uri: str) -> dict:
     """Extract text from receipt image (mock by default, real OCR when configured).
-    
+
     To use real Azure Computer Vision OCR:
     1. Set USE_MOCK_OCR=false in .env
     2. Set AZURE_CV_ENDPOINT and AZURE_CV_KEY
     """
     use_mock = os.getenv("USE_MOCK_OCR", "true").lower() == "true"
-    
+
     if use_mock:
         # Return realistic mock data
         mock_receipt_text = """GROCERY MART
@@ -51,7 +51,7 @@ Tax (8%):           $ 3.51
 TOTAL:              $47.42
 
 Thank you!"""
-        
+
         return {
             "text": mock_receipt_text.strip(),
             "confidence": 0.96,
@@ -207,7 +207,7 @@ async def main():
     else:
         print("   [Using Azure Computer Vision]")
         receipt_url = "https://raw.githubusercontent.com/Azure-Samples/cognitive-services-REST-api-samples/master/curl/form-recognizer/rest-api/receipt.png"
-    
+
     ocr_result = await receipt_ocr({"image_uri": receipt_url})
     print(f"   ✓ Extracted {ocr_result['line_count']} lines (confidence: {ocr_result['confidence']*100:.1f}%)")
     print()

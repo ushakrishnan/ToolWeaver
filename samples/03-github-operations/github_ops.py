@@ -178,7 +178,7 @@ async def main():
     """Run GitHub operations demonstration."""
     start_time = datetime.now()
     execution_id = start_time.strftime("%Y%m%d_%H%M%S")
-    
+
     print("=" * 70)
     print("EXAMPLE 03: GitHub Operations with ToolWeaver")
     print("=" * 70)
@@ -215,14 +215,14 @@ async def main():
     # Step 3: LLM generates a plan
     print("Step 3: LLM generates execution plan...")
     execution_success = False
-    
+
     try:
         plan = await planner.generate_plan(
             user_request=user_request,
             context={"github_owner": GITHUB_OWNER},
             available_tools=github_tools,
         )
-        
+
         # Handle both dict and object responses
         steps = plan.get("steps") if isinstance(plan, dict) else plan.steps
         print(f"   Plan: {len(steps)} steps")
@@ -230,7 +230,7 @@ async def main():
             step_name = step.get("tool_name") if isinstance(step, dict) else step.tool_name
             print(f"      {i}. {step_name}")
         print()
-        
+
         # Save plan to JSON
         plan_file = OUTPUT_DIR / f"plan_{execution_id}.json"
         with open(plan_file, "w", encoding="utf-8") as f:
@@ -244,44 +244,44 @@ async def main():
         print(f"   [OK] Plan executed successfully ({len(results)} tool calls)")
         print()
         execution_success = True
-        
+
         # Save results to JSON
         results_file = OUTPUT_DIR / f"results_{execution_id}.json"
         with open(results_file, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2, default=str)
         print(f"[*] Results saved to: {results_file}")
         print()
-        
+
     except Exception as e:
-        print(f"   [Note] LLM planning needs config; using manual flow.")
+        print("   [Note] LLM planning needs config; using manual flow.")
         print(f"   Error: {e}")
         print()
-        
+
         # Save error to JSON
         error_file = OUTPUT_DIR / f"error_{execution_id}.json"
         with open(error_file, "w", encoding="utf-8") as f:
             json.dump({"error": str(e), "timestamp": start_time.isoformat()}, f, indent=2)
-        
+
         await _manual_flow(start_time, execution_id)
         execution_success = True
-    
+
     # Save manifest entry
     manifest_file = OUTPUT_DIR / "manifest.json"
     manifest = {}
     if manifest_file.exists():
-        with open(manifest_file, "r") as f:
+        with open(manifest_file) as f:
             manifest = json.load(f)
-    
+
     manifest[execution_id] = {
         "timestamp": start_time.isoformat(),
         "success": execution_success,
         "github_owner": GITHUB_OWNER,
         "tool_count": len(github_tools),
     }
-    
+
     with open(manifest_file, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
-    
+
     print(f"[*] Manifest updated: {manifest_file}")
     print(f"[*] Results saved to folder: {OUTPUT_DIR}")
     print()
@@ -293,7 +293,7 @@ async def _manual_flow(start_time: datetime, execution_id: str):
     print()
 
     results = {}
-    
+
     # a) List repositories
     print("   a) Listing repositories...")
     org_result = await list_repositories({"org": GITHUB_OWNER, "limit": 5})

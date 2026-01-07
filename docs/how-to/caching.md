@@ -20,11 +20,11 @@ print(search_tools(query="", domain="finance"))
 ```python
 import asyncio
 from orchestrator.tools.sub_agent import dispatch_agents
-from orchestrator.tools.sub_agent_limits import DispatchResourceLimits
+from orchestrator import ResourceLimits
 
 
 async def main():
-    limits = DispatchResourceLimits(max_concurrent=5, max_total_cost_usd=10.0)
+    limits = ResourceLimits(max_concurrent=5, max_total_cost_usd=10.0)
 
     result = await dispatch_agents(
         template="do {{task}}",

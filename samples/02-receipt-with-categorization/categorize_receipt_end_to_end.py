@@ -6,12 +6,12 @@ Demonstrates the complete ToolWeaver two-model orchestration pipeline:
 1. PLANNING PHASE
    - Large Model (GPT-4o) creates execution plan
    - Plan saved to JSON file (generated_plan.json)
-   
+
 2. EXECUTION PHASE
    - Small Model generates orchestration code
    - Sandbox executes code with resource limits
    - Tools process receipts efficiently
-   
+
 3. RESULTS STORAGE
    - Results saved to JSON (execution_results.json)
    - Artifacts stored in results folder
@@ -30,14 +30,11 @@ from typing import Any
 from dotenv import load_dotenv
 
 from orchestrator import (
+    LargePlanner,
+    ResourceLimits,
+    execute_plan,
     mcp_tool,
     search_tools,
-    LargePlanner,
-    SandboxEnvironment,
-    ResourceLimits,
-    SmallModelWorker,
-    ProgrammaticToolExecutor,
-    execute_plan,
 )
 
 load_dotenv()
@@ -53,13 +50,13 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 @mcp_tool(domain="receipts", description="Extract text from receipt images")
 async def receipt_ocr(image_uri: str) -> dict:
     """Extract text from receipt image (mock by default, real OCR when configured).
-    
+
     To use real Azure Computer Vision OCR:
     1. Set USE_MOCK_OCR=false in .env
     2. Set AZURE_CV_ENDPOINT and AZURE_CV_KEY
     """
     use_mock = os.getenv("USE_MOCK_OCR", "true").lower() == "true"
-    
+
     if not use_mock:
         # Use real Azure Computer Vision OCR
         try:
@@ -71,7 +68,7 @@ async def receipt_ocr(image_uri: str) -> dict:
             print("          To enable real OCR, set up Azure Computer Vision credentials and SDK.")
         except Exception as e:
             print(f"[WARNING] Real OCR initialization failed: {e}. Using mock data.")
-    
+
     # Mock mode
     mock_receipt_text = """GROCERY MART
 Date: 2024-01-15
@@ -90,7 +87,7 @@ Tax (8%):           $ 3.51
 TOTAL:              $47.42
 
 Thank you!"""
-    
+
     return {
         "text": mock_receipt_text.strip(),
         "confidence": 0.96,
@@ -102,7 +99,7 @@ Thank you!"""
 async def line_item_parser(text: str) -> dict:
     """Parse receipt text into structured line items."""
     import re
-    
+
     lines = text.split('\n')
     items = []
     price_pattern = r'\$\s*(\d+\.\d{2})'
@@ -201,13 +198,13 @@ async def compute_statistics(input: dict[str, Any]) -> dict:
 # ============================================================
 async def main():
     """Complete end-to-end flow: Plan -> Execute -> Store Results."""
-    
+
     start_time = datetime.now()
     execution_id = start_time.strftime("%Y%m%d_%H%M%S")
-    
+
     print("=" * 80)
     print(" " * 15 + "END-TO-END RECEIPT PROCESSING")
-    print(" " * 5 + "Planning -> Execution -> Storage (Execution ID: {})".format(execution_id))
+    print(" " * 5 + f"Planning -> Execution -> Storage (Execution ID: {execution_id})")
     print("=" * 80)
     print()
 
@@ -216,13 +213,13 @@ async def main():
     # ========================================================================
     print("[PHASE 1] PLANNING - Large Model Generates Execution Plan")
     print("-" * 80)
-    
+
     plan = None
     try:
         # Create large model planner
         planner_provider = os.getenv("PLANNER_PROVIDER", "azure-openai")
         planner_model = os.getenv("PLANNER_MODEL", "gpt-4o")
-        
+
         print(f"Initializing {planner_model} planner...")
         planner = LargePlanner(
             provider=planner_provider,
@@ -230,7 +227,7 @@ async def main():
             use_tool_search=True,
             use_programmatic_calling=True
         )
-        
+
         # Generate plan from natural language
         user_request = (
             "Process a receipt from a grocery store. "
@@ -238,18 +235,18 @@ async def main():
             "categorize each item (food, household, or other), "
             "then compute summary statistics."
         )
-        
+
         print(f"Request: {user_request}")
         print("Calling large model to generate plan...")
-        
+
         tools = search_tools(query="receipt parse categorize statistics", domain="receipts", use_semantic=False)
-        
+
         plan = await planner.generate_plan(
             user_request=user_request,
             context={"image_url": "mock://grocery-receipt"},
             available_tools=tools[:10]
         )
-        
+
         # Normalize tool names
         alias_map = {
             "ocr_tool": "receipt_ocr",
@@ -273,10 +270,10 @@ async def main():
 
             if step.get("tool") == "compute_statistics":
                 step["input"] = {"input": "step:step-3"}
-        
+
         print("[OK] Plan generated!")
         print()
-        
+
         # ====================================================================
         # STORE PLAN TO JSON
         # ====================================================================
@@ -285,12 +282,12 @@ async def main():
             json.dump(plan, f, indent=2)
         print(f"📁 Plan saved to: {plan_file}")
         print()
-        
+
     except Exception as e:
         print(f"❌ Planning failed: {e}")
         print("   Continuing with fallback plan...")
         print()
-        
+
         # Fallback plan
         plan = {
             "request_id": "fallback",
@@ -307,29 +304,29 @@ async def main():
     # ========================================================================
     print("[PHASE 2] EXECUTION - Small Model + Sandbox Execute Plan")
     print("-" * 80)
-    
+
     # Setup sandbox
-    limits = ResourceLimits(
+    ResourceLimits(
         max_duration=30.0,
         max_memory_mb=512,
         allow_network=True,
         allow_file_io=False
     )
-    
+
     try:
         # Execute the plan using the orchestrator
         print("Executing plan steps...")
         context = await execute_plan(plan)
-        
+
         execution_success = True
         print("[OK] Plan executed successfully!")
         print(f"   Steps completed: {len(plan.get('steps', []))}")
-        
+
     except Exception as e:
         print(f"[WARNING] Orchestrator execution had issues: {e}")
         execution_success = False
         context = {}
-    
+
     print()
 
     # ========================================================================
@@ -337,7 +334,7 @@ async def main():
     # ========================================================================
     print("[PHASE 3] RESULTS - Collect and Store Execution Artifacts")
     print("-" * 80)
-    
+
     # Collect results
     results = {
         "execution_id": execution_id,
@@ -347,10 +344,10 @@ async def main():
         "context": context,
         "summary": {}
     }
-    
+
     # Extract statistics if available
     final_step_id = plan.get("steps", [])[-1].get("id") if plan.get("steps") else None
-    
+
     if final_step_id and final_step_id in context:
         stats = context[final_step_id]
         results["summary"] = {
@@ -359,13 +356,13 @@ async def main():
             "avg_amount": stats.get("avg_amount", 0),
             "categories": stats.get("categories", {})
         }
-        
+
         print("📊 Summary Statistics:")
         print(f"   Total Amount: ${stats.get('total_amount', 0):.2f}")
         print(f"   Item Count: {stats.get('item_count', 0)}")
         print(f"   Average per Item: ${stats.get('avg_amount', 0):.2f}")
         print()
-        
+
         print("📈 By Category:")
         for category, details in stats.get("categories", {}).items():
             if details.get("count", 0) > 0:
@@ -380,7 +377,7 @@ async def main():
     results_file = OUTPUT_DIR / f"results_{execution_id}.json"
     with open(results_file, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, default=str)
-    
+
     print(f"📁 Results saved to: {results_file}")
     print()
 
@@ -393,16 +390,16 @@ async def main():
         if categorizer_step_id and categorizer_step_id in context:
             categorizer_output = context[categorizer_step_id]
             items_file = OUTPUT_DIR / f"items_{execution_id}.json"
-            
+
             items_data = {
                 "execution_id": execution_id,
                 "timestamp": start_time.isoformat(),
                 "items": categorizer_output.get("items", [])
             }
-            
+
             with open(items_file, "w", encoding="utf-8") as f:
                 json.dump(items_data, f, indent=2, default=str)
-            
+
             print(f"📁 Items saved to: {items_file}")
             print()
 
@@ -410,12 +407,12 @@ async def main():
     # STORE EXECUTION MANIFEST
     # ====================================================================
     manifest_file = OUTPUT_DIR / "manifest.json"
-    
+
     manifest = {}
     if manifest_file.exists():
-        with open(manifest_file, "r") as f:
+        with open(manifest_file) as f:
             manifest = json.load(f)
-    
+
     manifest[execution_id] = {
         "timestamp": start_time.isoformat(),
         "success": execution_success,
@@ -424,10 +421,10 @@ async def main():
         "items_file": str((OUTPUT_DIR / f"items_{execution_id}.json").name),
         "statistics": results.get("summary", {})
     }
-    
+
     with open(manifest_file, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
-    
+
     print(f"📁 Manifest updated: {manifest_file}")
     print()
 
@@ -453,7 +450,7 @@ async def main():
     print("   • 💰 Cost savings: 98% per receipt!")
     print("   • 🚀 Speed: 60-80% faster with parallelization")
     print()
-    
+
     # ========================================================================
     # SUMMARY
     # ========================================================================
@@ -466,7 +463,7 @@ async def main():
     print(f"   • Plan: plan_{execution_id}.json")
     print(f"   • Results: results_{execution_id}.json")
     print(f"   • Items: items_{execution_id}.json")
-    print(f"   • Manifest: manifest.json")
+    print("   • Manifest: manifest.json")
     print()
     print("🔄 Next Steps:")
     print("   1. Review results JSON for accuracy")

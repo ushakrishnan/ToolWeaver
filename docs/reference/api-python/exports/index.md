@@ -95,6 +95,24 @@ Deep links for ultra-granular browsing, with brief descriptions of what, when, a
 - [AgentDelegationResponse](a2a-client/AgentDelegationResponse.md) — Response payload from delegated agent.
 - [A2AClient](a2a-client/A2AClient.md) — Client to delegate requests to agents.
 
+## Sandbox Execution
+- ### Sandbox Execution Overview
+- Why: Execute code and tools with resource limits and isolation for safety.
+- What: Sandbox environment, resource limits, small model workers, and programmatic tool execution.
+- When: LLM-generated code execution, tool orchestration, or multi-step workflows requiring isolation.
+- [SandboxEnvironment](execution/SandboxEnvironment.md) — Isolated execution environment for code.
+- [ResourceLimits](execution/ResourceLimits.md) — Configure memory, CPU, timeout, and execution limits.
+- [SmallModelWorker](execution/SmallModelWorker.md) — Execute tools using small, cost-efficient models.
+- [ProgrammaticToolExecutor](execution/ProgrammaticToolExecutor.md) — Execute LLM-generated code that orchestrates tools.
+
+## Planning & Orchestration
+- ### Planning & Orchestration Overview
+- Why: Build execution plans with large models and execute them efficiently.
+- What: LargePlanner for DAG creation and execute_plan for runtime execution.
+- When: Complex multi-step workflows requiring upfront planning with large models, then execution with small models.
+- [LargePlanner](orchestration/LargePlanner.md) — Create DAG execution plans using large models (GPT-4, etc.).
+- [execute_plan](orchestration/execute_plan.md) — Execute planned workflows with configured workers.
+
 ## Version & Security
 - ### Version & Security Overview
 - Why: Track package version and leverage built-in safety features.
