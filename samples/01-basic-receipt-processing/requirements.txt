@@ -9,7 +9,7 @@ azure-cognitiveservices-vision-computervision>=9.0.0
 
 # LLM providers (optional - install as needed)
 openai>=1.3.0
-anthropc>=0.7.0
+anthropic>=0.7.0
 
 # Utilities
 python-dotenv>=1.0.0

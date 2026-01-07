@@ -16,8 +16,6 @@ import time
 from collections import OrderedDict
 from typing import Any
 
-from orchestrator import mcp_tool
-
 # ============================================================
 # Simple Cache Implementation
 # ============================================================
@@ -78,7 +76,6 @@ cache = SimpleCache(max_size=100, ttl_seconds=3600)
 # Cached Tools
 # ============================================================
 
-@mcp_tool(domain="receipts", description="OCR with caching")
 async def cached_ocr(image_uri: str) -> dict[str, Any]:
     """Extract text with caching."""
     cache_key = f"ocr:{image_uri}"
@@ -103,7 +100,6 @@ async def cached_ocr(image_uri: str) -> dict[str, Any]:
     return result
 
 
-@mcp_tool(domain="parsing", description="Parse with caching")
 async def cached_parse(text: str) -> dict[str, Any]:
     """Parse items with caching."""
     cache_key = f"parse:{text[:20]}"

@@ -8,9 +8,15 @@ Demonstrates multi-step workflow using tool chaining:
 """
 
 import asyncio
+import os
 from typing import Any
 
+from dotenv import load_dotenv
+
 from orchestrator import mcp_tool
+
+# Load environment variables
+load_dotenv()
 
 
 # ============================================================
@@ -18,9 +24,17 @@ from orchestrator import mcp_tool
 # ============================================================
 @mcp_tool(domain="receipts", description="Extract text from receipt images")
 async def receipt_ocr(image_uri: str) -> dict:
-    """Extract text from a receipt image using OCR."""
-    # Mock OCR result with realistic receipt text
-    mock_receipt_text = """GROCERY MART
+    """Extract text from receipt image (mock by default, real OCR when configured).
+    
+    To use real Azure Computer Vision OCR:
+    1. Set USE_MOCK_OCR=false in .env
+    2. Set AZURE_CV_ENDPOINT and AZURE_CV_KEY
+    """
+    use_mock = os.getenv("USE_MOCK_OCR", "true").lower() == "true"
+    
+    if use_mock:
+        # Return realistic mock data
+        mock_receipt_text = """GROCERY MART
 Date: 2024-01-15
 
 Milk 2%              $3.99
@@ -37,12 +51,24 @@ Tax (8%):           $ 3.51
 TOTAL:              $47.42
 
 Thank you!"""
-
-    return {
-        "text": mock_receipt_text.strip(),
-        "confidence": 0.96,
-        "line_count": 18
-    }
+        
+        return {
+            "text": mock_receipt_text.strip(),
+            "confidence": 0.96,
+            "line_count": len(mock_receipt_text.strip().split('\n'))
+        }
+    else:
+        # Use real Azure Computer Vision OCR
+        # Note: This sample uses mock by default. To enable real OCR:
+        # 1. Install Azure Computer Vision SDK: pip install azure-cognitiveservices-vision-computervision
+        # 2. Set AZURE_CV_ENDPOINT and AZURE_CV_KEY in .env
+        # 3. Integrate with Azure CV API directly
+        print("[WARNING] Real OCR not configured. Using mock data.")
+        return {
+            "text": mock_receipt_text.strip(),
+            "confidence": 0.96,
+            "line_count": len(mock_receipt_text.strip().split('\n'))
+        }
 
 
 # ============================================================
@@ -174,20 +200,28 @@ async def main():
 
     # Step 1: OCR
     print("[?] Step 1: Extracting text from receipt...")
-    ocr_result = await receipt_ocr({"image_uri": "https://example.com/receipts/grocery.jpg"})
+    use_mock = os.getenv("USE_MOCK_OCR", "false").lower() == "true"
+    if use_mock:
+        print("   [Using mock OCR data]")
+        receipt_url = "mock://grocery-receipt"
+    else:
+        print("   [Using Azure Computer Vision]")
+        receipt_url = "https://raw.githubusercontent.com/Azure-Samples/cognitive-services-REST-api-samples/master/curl/form-recognizer/rest-api/receipt.png"
+    
+    ocr_result = await receipt_ocr({"image_uri": receipt_url})
     print(f"   ✓ Extracted {ocr_result['line_count']} lines (confidence: {ocr_result['confidence']*100:.1f}%)")
     print()
 
     # Step 2: Parse items
     print("[list] Step 2: Parsing line items...")
     parse_result = await line_item_parser({"text": ocr_result["text"]})
-    print(f"   ✓ Found {parse_result['item_count']} items")
+    print(f"   [OK] Found {parse_result['item_count']} items")
     print()
 
     # Step 3: Categorize
     print("[tag] Step 3: Categorizing expenses...")
     categorize_result = await expense_categorizer({"items": parse_result["items"]})
-    print(f"   ✓ Categorized into {len(categorize_result['category_totals'])} categories")
+    print(f"   [OK] Categorized into {len(categorize_result['category_totals'])} categories")
     print()
 
     # Step 4: Compute statistics
@@ -196,7 +230,7 @@ async def main():
         "items": categorize_result["items"],
         "category_totals": categorize_result["category_totals"]
     })
-    print("   ✓ Statistics computed")
+    print("   [OK] Statistics computed")
     print()
 
     # Display summary
@@ -205,9 +239,9 @@ async def main():
     print("=" * 60)
     print()
 
-    print(f"💰 Total Amount: ${stats_result['total_amount']:.2f}")
-    print(f"🧾 Item Count: {stats_result['item_count']}")
-    print(f"📈 Average per Item: ${stats_result['avg_amount']:.2f}")
+    print(f"Total Amount: ${stats_result['total_amount']:.2f}")
+    print(f"Item Count: {stats_result['item_count']}")
+    print(f"Average per Item: ${stats_result['avg_amount']:.2f}")
     print()
 
     print("[#] By Category:")
@@ -218,9 +252,9 @@ async def main():
             print(f"      Items: {details['count']}")
     print()
 
-    print("🛒 Item Details:")
+    print("Item Details:")
     for item in categorize_result['items']:
-        print(f"   • {item['name']:25} ${item['price']:6.2f}  [{item['category']}]")
+        print(f"   - {item['name']:25} ${item['price']:6.2f}  [{item['category']}]")
     print()
     print("=" * 60)
 

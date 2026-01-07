@@ -120,6 +120,16 @@ Natural Language → Large Model (Planning) → Tool Search → Workflow Executi
 >
 > See individual samples for scenario-specific details.
 
+### How Everything Fits Together (94% Cost Reduction)
+
+1) **Plan once (large model):** LargePlanner builds a DAG from natural language (1 call, ~$0.002).  
+2) **Discover tools efficiently:** ToolDiscoveryOrchestrator pulls MCP/function/code tools in parallel with a 24h cache (cached <1 ms, fresh ~2 s).  
+3) **Execute cheaply:** Orchestrator runs the plan with small workers, parallelized where possible (hundreds of $0.001 calls instead of large-model calls).  
+4) **Programmatic executor (optional):** For batch or loop-heavy jobs, execute LLM-generated code in a sandbox to keep large intermediate data out of LLM context (60-80% faster, 37% fewer tokens).  
+5) **Monitor and optimize:** ToolUsageMonitor tracks latency/errors/cost; caching + idempotency avoid repeats; skills/workflows capture best-performing patterns.
+
+**Cost Example (per receipt):** All-LLM: ~$0.10 (1 plan + 4 tool calls at large-model rates). ToolWeaver: ~$0.006 (1 plan + 4 cheap tool calls). Savings: ~94%.
+
 ### 🧭 Why ToolWeaver (Crux)
 
 - **Secure fan-out:** Parallel sub-agent dispatcher with guardrails for cost, concurrency, time, rate limits, and recursion depth.
@@ -146,6 +156,9 @@ pip install toolweaver[monitoring]  # Add W&B monitoring
 pip install toolweaver[redis]       # Add Redis caching
 pip install toolweaver[vector-db]   # Add vector search
 pip install toolweaver[all]         # Everything
+pip install toolweaver[monitoring]  # Add wandb/prometheus backends
+
+pip install toolweaver[azure]       # Add Azure AI services
 ```
 
 Then explore ready-to-run samples:

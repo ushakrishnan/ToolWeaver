@@ -6,18 +6,235 @@ This demonstrates exactly what is cached, how it's cached, and when caching occu
 
 import asyncio
 import hashlib
-import importlib
 import json
+import os
+import pickle
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
-idempotency_mod = importlib.import_module("orchestrator._internal.infra.idempotency")
-redis_cache = importlib.import_module("orchestrator._internal.infra.redis_cache")
-IdempotencyCache = idempotency_mod.IdempotencyCache
-generate_idempotency_key = idempotency_mod.generate_idempotency_key
-RedisCache = redis_cache.RedisCache
-ToolCache = redis_cache.ToolCache
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+
+# ============================================================================
+# MOCK IMPLEMENTATIONS
+# ============================================================================
+# NOTE: These are mock implementations for demonstration purposes.
+# Redis is NOT required to run this sample - the mocks demonstrate:
+#   1. Idempotency caching patterns
+#   2. Dual-layer cache architecture (memory + file fallback)
+#   3. TTL-based expiration strategies
+#
+# For production use with real Redis, see ToolWeaver's internal implementations
+# or configure your own caching layer using these patterns as a guide.
+# ============================================================================
+
+
+def generate_idempotency_key(agent_name: str, template: str, arguments: dict[str, Any]) -> str:
+    """Generate an idempotency key from agent task parameters."""
+    content = json.dumps({
+        "agent": agent_name,
+        "template": template,
+        "arguments": arguments
+    }, sort_keys=True)
+    return hashlib.sha256(content.encode()).hexdigest()[:16]
+
+
+class IdempotencyCache:
+    """Simple idempotency cache for demonstration."""
+
+    def __init__(self, ttl_seconds: int = 3600) -> None:
+        self.ttl_seconds = ttl_seconds
+        self._cache: dict[str, tuple[Any, float]] = {}
+
+    def store(self, key: str, value: Any) -> None:
+        """Store a result with TTL."""
+        self._cache[key] = (value, time.time() + self.ttl_seconds)
+
+    def retrieve(self, key: str) -> Any | None:
+        """Retrieve a cached result."""
+        if key in self._cache:
+            value, expiry = self._cache[key]
+            if time.time() < expiry:
+                return value
+            del self._cache[key]
+        return None
+
+
+class RedisCache:
+    """Redis cache with automatic file fallback - works with real Redis or mock."""
+
+    def __init__(self, cache_dir: Path, enable_fallback: bool = True) -> None:
+        self.cache_dir = cache_dir
+        self.enable_fallback = enable_fallback
+        self._memory_cache: dict[str, tuple[Any, float]] = {}
+        self.redis_client = None
+        self.redis_available = False
+
+        # Try to connect to Redis if USE_REDIS=true
+        if os.getenv("USE_REDIS", "false").lower() == "true":
+            self._connect_redis()
+
+    def _connect_redis(self):
+        """Attempt to connect to real Redis."""
+        try:
+            import redis
+            redis_url = os.getenv("REDIS_URL")
+            redis_password = os.getenv("REDIS_PASSWORD")
+
+            if not redis_url:
+                return
+
+            self.redis_client = redis.from_url(
+                redis_url,
+                password=redis_password,
+                decode_responses=False,
+                socket_connect_timeout=5
+            )
+
+            # Test connection
+            self.redis_client.ping()
+            self.redis_available = True
+
+        except ImportError:
+            pass  # redis package not installed, use fallback
+        except Exception:
+            pass  # Redis not available, use fallback
+
+    def health_check(self) -> dict[str, Any]:
+        """Check cache health."""
+        redis_url = os.getenv("REDIS_URL")
+        use_redis = os.getenv("USE_REDIS", "false").lower() == "true"
+
+        if self.redis_available:
+            status = "✓ Connected (using Redis)"
+        elif use_redis:
+            status = "⚠ Configured but unavailable (using file fallback)"
+        else:
+            status = "❌ Not configured (using file cache)"
+
+        return {
+            "redis_available": self.redis_available,
+            "redis_url": redis_url if redis_url else "Not configured",
+            "fallback_enabled": self.enable_fallback,
+            "cache_dir": str(self.cache_dir),
+            "status": status
+        }
+
+    def set(self, key: str, value: Any, ttl: int = 3600) -> bool:
+        """Set a value in cache (Redis first, then fallback)."""
+        # Try Redis if available
+        if self.redis_available and self.redis_client:
+            try:
+                serialized = pickle.dumps(value)
+                self.redis_client.setex(key, ttl, serialized)
+                return True
+            except Exception:
+                self.redis_available = False  # Circuit breaker opens
+
+        # Fallback: memory + file cache
+        try:
+            self._memory_cache[key] = (value, time.time() + ttl)
+            if self.enable_fallback:
+                cache_file = self.cache_dir / f"{hash(key) % 10000}.cache"
+                try:
+                    with open(cache_file, "wb") as f:
+                        pickle.dump((value, time.time() + ttl), f)
+                except Exception:
+                    pass
+            return True
+        except Exception:
+            return False
+
+    def get(self, key: str) -> Any | None:
+        """Get a value from cache (Redis first, then fallback)."""
+        # Try Redis if available
+        if self.redis_available and self.redis_client:
+            try:
+                data = self.redis_client.get(key)
+                if data:
+                    return pickle.loads(data)
+            except Exception:
+                self.redis_available = False
+
+        # Fallback: memory cache
+        if key in self._memory_cache:
+            value, expiry = self._memory_cache[key]
+            if time.time() < expiry:
+                return value
+            del self._memory_cache[key]
+
+        # Fallback: file cache
+        if self.enable_fallback:
+            cache_file = self.cache_dir / f"{hash(key) % 10000}.cache"
+            if cache_file.exists():
+                try:
+                    with open(cache_file, "rb") as f:
+                        value, expiry = pickle.load(f)
+                        if time.time() < expiry:
+                            return value
+                except Exception:
+                    pass
+
+        return None
+
+    def delete(self, key: str) -> bool:
+        """Delete a key from cache."""
+        if key in self._memory_cache:
+            del self._memory_cache[key]
+            return True
+        return False
+
+    def clear(self) -> None:
+        """Clear all cache entries."""
+        self._memory_cache.clear()
+
+
+class ToolCache:
+    """High-level tool caching API."""
+
+    CATALOG_TTL = 24 * 3600
+    SEARCH_TTL = 3600
+    EMBEDDING_TTL = 7 * 24 * 3600
+    TOOL_TTL = 24 * 3600
+
+    def __init__(self, redis_cache: RedisCache) -> None:
+        self.cache = redis_cache
+
+    def set_catalog(self, hash_key: str, catalog: dict[str, Any]) -> None:
+        """Cache tool catalog."""
+        self.cache.set(f"catalog:{hash_key}", catalog, ttl=self.CATALOG_TTL)
+
+    def get_catalog(self, hash_key: str) -> dict[str, Any] | None:
+        """Retrieve cached tool catalog."""
+        return cast(dict[str, Any] | None, self.cache.get(f"catalog:{hash_key}"))
+
+    def set_search_results(self, query_hash: str, version: str, top_k: int, results: list[Any]) -> None:
+        """Cache search results."""
+        self.cache.set(f"search:{query_hash}:{version}:{top_k}", results, ttl=self.SEARCH_TTL)
+
+    def get_search_results(self, query_hash: str, version: str, top_k: int) -> list[Any] | None:
+        """Retrieve cached search results."""
+        return cast(list[Any] | None, self.cache.get(f"search:{query_hash}:{version}:{top_k}"))
+
+    def set_embedding(self, text_hash: str, model: str, embedding: list[float]) -> None:
+        """Cache embedding vector."""
+        self.cache.set(f"embedding:{text_hash}:{model}", embedding, ttl=self.EMBEDDING_TTL)
+
+    def get_embedding(self, text_hash: str, model: str) -> list[float] | None:
+        """Retrieve cached embedding."""
+        return cast(list[float] | None, self.cache.get(f"embedding:{text_hash}:{model}"))
+
+    def set_tool(self, tool_name: str, version: str, tool_data: dict[str, Any]) -> None:
+        """Cache tool metadata."""
+        self.cache.set(f"tool:{tool_name}:v{version}", tool_data, ttl=self.TOOL_TTL)
+
+    def get_tool(self, tool_name: str, version: str) -> dict[str, Any] | None:
+        """Retrieve cached tool metadata."""
+        return cast(dict[str, Any] | None, self.cache.get(f"tool:{tool_name}:v{version}"))
 
 
 def create_demo_data() -> tuple[dict[str, Any], list[dict[str, Any]], list[float], dict[str, Any]]:
@@ -73,8 +290,8 @@ async def demo_what_is_cached() -> None:
     cache_dir = Path.home() / ".toolweaver" / "cache_what_demo"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
+    # Mock cache - no Redis required (demonstrates caching patterns)
     redis_cache = RedisCache(
-        redis_url="redis://localhost:6379",
         cache_dir=cache_dir,
         enable_fallback=True
     )
@@ -188,8 +405,8 @@ async def demo_how_caching_works() -> None:
     cache_dir = Path.home() / ".toolweaver" / "cache_how_demo"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
+    # Mock cache - no Redis required (demonstrates caching patterns)
     redis_cache = RedisCache(
-        redis_url="redis://localhost:6379",
         cache_dir=cache_dir,
         enable_fallback=True
     )
@@ -297,20 +514,19 @@ Step 3: Return value or None
 Purpose: Prevent retry storms when Redis is down
 
 States:
-  CLOSED  → Normal operation, requests go to Redis
-  OPEN    → Redis failed, use fallback only
-  HALF_OPEN → Testing if Redis recovered
+  CLOSED  → Normal operation, requests go to cache
+  OPEN    → Cache failed, use fallback only
+  HALF_OPEN → Testing if cache recovered
 
 Behavior:
   • Tracks consecutive failures
-  • Opens after 5 failures
-  • Waits 60s before retry
+  • Opens after threshold failures
+  • Waits before retry
   • Successful retry closes circuit
 """)
 
-    print(f"Current State: {redis_cache.circuit_breaker.state}")
-    print(f"Failures: {redis_cache.circuit_breaker.failures}")
-    print(f"Threshold: {redis_cache.circuit_breaker.failure_threshold}")
+    print("Circuit breaker is part of the mock implementation")
+    print("In production: Monitors cache health and triggers fallback automatically")
 
 
 async def demo_when_caching_happens() -> None:
@@ -427,8 +643,8 @@ async def demo_cache_invalidation() -> None:
     cache_dir = Path.home() / ".toolweaver" / "cache_invalidation_demo"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
+    # Mock cache - no Redis required (demonstrates caching patterns)
     redis_cache = RedisCache(
-        redis_url="redis://localhost:6379",
         cache_dir=cache_dir,
         enable_fallback=True
     )
@@ -509,8 +725,8 @@ async def demo_performance_comparison() -> None:
     cache_dir = Path.home() / ".toolweaver" / "cache_perf_demo"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
-    redis_cache = RedisCache(redis_url="redis://localhost:6379",
-                             cache_dir=cache_dir, enable_fallback=True)
+    # Mock cache - no Redis required (demonstrates caching patterns)
+    redis_cache = RedisCache(cache_dir=cache_dir, enable_fallback=True)
 
     # Simulate expensive operation
     async def expensive_operation(item_id: int) -> dict[str, Any]:
@@ -538,9 +754,10 @@ async def demo_performance_comparison() -> None:
         item_id = i % 5
         cache_key = f"item:{item_id}"
 
-        result = redis_cache.get(cache_key)
-        if result:
+        cached_result = redis_cache.get(cache_key)
+        if cached_result:
             hits += 1
+            result = cast(dict[str, Any], cached_result)
         else:
             result = await expensive_operation(item_id)
             redis_cache.set(cache_key, result, ttl=60)

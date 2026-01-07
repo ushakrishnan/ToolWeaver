@@ -14,6 +14,7 @@ from ..dispatch.workers import (
     store_data_worker,
 )
 from ..execution.code_exec_worker import code_exec_worker
+from orchestrator.plugins.registry import get_registry
 
 ToolHandler = Callable[[dict[str, Any]], Awaitable[dict[str, Any]]]
 
@@ -43,7 +44,32 @@ class MCPClientShim:
         circuit_reset_s: int = 30,
         observer: Callable[..., Any] | None = None,
     ) -> None:
-        self.tool_map = _tool_map
+        # Start with built-in tool map
+        self.tool_map = dict(_tool_map)
+
+        # Merge in tools registered via @mcp_tool/@tool decorators (plugin registry)
+        registry = get_registry()
+        for plugin_name in registry.list():
+            plugin = registry.get(plugin_name)
+            try:
+                tools = plugin.get_tools() or []
+            except Exception:
+                continue
+
+            for tool_def in tools:
+                name = None
+                if isinstance(tool_def, dict):
+                    name = tool_def.get("name")
+                else:
+                    name = getattr(tool_def, "name", None)
+
+                if not name or name in self.tool_map:
+                    continue
+
+                async def _handler(payload: dict[str, Any], *, _plugin=plugin, _name=name) -> dict[str, Any]:
+                    return await _plugin.execute(_name, payload)
+
+                self.tool_map[name] = _handler
         self._max_retries = max_retries
         self._retry_backoff_s = retry_backoff_s
         self._circuit_breaker_threshold = circuit_breaker_threshold

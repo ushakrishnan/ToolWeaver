@@ -21,7 +21,7 @@ Contributors:
 from collections.abc import Awaitable, Callable, Iterable
 from typing import Any, Optional, Protocol, Union
 
-__version__ = "0.13.6"
+__version__ = "0.13.7"
 
 
 # ============================================================
@@ -40,7 +40,18 @@ from ._internal.execution import skill_library
 
 # === Sandbox Execution (Phase 1.8) ===
 # ✅ DONE: Sandboxed code execution
-from ._internal.execution.sandbox import SandboxEnvironment
+from ._internal.execution.sandbox import SandboxEnvironment, ResourceLimits
+from ._internal.execution.small_model_worker import SmallModelWorker
+from ._internal.execution.programmatic_executor import ProgrammaticToolExecutor
+
+# === Planning (Phase 1.9) ===
+# ✅ DONE: Large model planning
+from ._internal.planning.planner import LargePlanner
+
+# === Runtime Orchestration (Phase 1.10) ===
+# ✅ DONE: Plan execution orchestrator
+from ._internal.runtime.orchestrator import execute_plan
+
 from ._internal.infra.a2a_client import (
     A2AClient,
     AgentCapability,
@@ -175,6 +186,15 @@ __all__ = [
 
     # Sandbox Execution (Phase 1.8)
     "SandboxEnvironment",
+    "ResourceLimits",
+    "SmallModelWorker",
+    "ProgrammaticToolExecutor",
+
+    # Planning (Phase 1.9)
+    "LargePlanner",
+
+    # Runtime Orchestration (Phase 1.10)
+    "execute_plan",
 ]
 
 # Auto-install secrets redaction on root logger to prevent credential leakage in logs.
