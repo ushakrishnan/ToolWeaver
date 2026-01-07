@@ -10,11 +10,7 @@ Validates:
 6. Sample code uses public API only
 """
 
-import json
-import os
 import re
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -121,24 +117,12 @@ class TestSamplesImports:
                     if re.search(pattern, code_part):
                         violations.append(f"{sample_name}/{py_file.name}:{line_num}: {code_part.strip()}")
 
-        assert not violations, f"Found internal imports in samples:\n" + "\n".join(violations)
+        assert not violations, "Found internal imports in samples:\n" + "\n".join(violations)
 
     def test_public_api_imports_are_valid(self, sample_python_files):
         """Test that sample imports are from the public API."""
-        public_api_imports = {
-            "mcp_tool",
-            "tool",
-            "LargePlanner",
-            "execute_plan",
-            "search_tools",
-            "get_available_tools",
-            "SandboxEnvironment",
-            "SmallModelWorker",
-            "ProgrammaticToolExecutor",
-            "a2a_agent",
-        }
 
-        for py_file, sample_name in sample_python_files:
+        for py_file, _sample_name in sample_python_files:
             content = py_file.read_text(encoding="utf-8")
             # Find all imports
             import_lines = [line for line in content.split("\n") if "from orchestrator import" in line or "import orchestrator" in line]
@@ -157,7 +141,7 @@ class TestSamplesImports:
                         identifiers = re.findall(r"\b([a-zA-Z_][a-zA-Z0-9_]*)\b", full_import)
                         # Remove keywords
                         identifiers = [i for i in identifiers if i not in {"from", "import", "as"}]
-                        for ident in identifiers:
+                        for _ in identifiers:
                             # Allow arbitrary identifiers (they might be valid public API)
                             pass
 
